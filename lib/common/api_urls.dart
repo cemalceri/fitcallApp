@@ -4,3 +4,5 @@ String getSporcu =
     "https://binayacademi.herokuapp.com/api/getSporcu"; // (bearer token)
 String getOdemeBilgileri =
     "https://binayacademi.herokuapp.com/api/getAidatOdemeGecmisi"; // (bearer token)
+String getDersProgrami =
+    "https://binayacademi.herokuapp.com/api/getSporcuDersProgram"; // (bearer token)

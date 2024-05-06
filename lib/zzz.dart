@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,7 +17,8 @@ class ProfilePage extends StatelessWidget {
             ProfileInfoRow(label: 'Adı Soyadı', value: 'John Doe'),
             ProfileInfoRow(label: 'Telefon', value: '555 123 4567'),
             ProfileInfoRow(label: 'Mail Adresi', value: 'john.doe@example.com'),
-            ProfileInfoRow(label: 'Adres', value: '123 Main Street, City, Country'),
+            ProfileInfoRow(
+                label: 'Adres', value: '123 Main Street, City, Country'),
             ProfileInfoRow(label: 'Üye Numarası', value: '123456789'),
             ProfileInfoRow(label: 'Aktiflik Durumu', value: 'Aktif'),
             ProfileInfoRow(label: 'Seviye', value: 'Gold'),
@@ -31,6 +34,7 @@ class ProfileInfoRow extends StatelessWidget {
   final String value;
 
   const ProfileInfoRow({
+    super.key,
     required this.label,
     required this.value,
   });

@@ -2,6 +2,7 @@ import 'package:fitcall/common/routes.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
+  HomePage({super.key});
   final List<Map<String, dynamic>> buttons = [
     {
       'name': routeEnums[SayfaAdi.profil]!,
@@ -13,7 +14,11 @@ class HomePage extends StatelessWidget {
       'icon': Icons.payment,
       'text': 'Ödeme/Borç Bilgilerim'
     },
-    {'name': 3, 'icon': Icons.shopping_cart, 'text': 'Alışveriş Sepeti'},
+    {
+      'name': routeEnums[SayfaAdi.dersler]!,
+      'icon': Icons.sports_tennis,
+      'text': 'Derslerim'
+    },
     {'name': 4, 'icon': Icons.settings, 'text': 'Ayarlar'},
     {'name': 5, 'icon': Icons.notifications, 'text': 'Bildirimler'},
     {'name': 6, 'icon': Icons.help, 'text': 'Yardım'},
@@ -46,7 +51,8 @@ class HomePage extends StatelessWidget {
                     const SizedBox(height: 10),
                     Text(
                       button['text'],
-                      style: TextStyle(fontSize: 18),
+                      style: const TextStyle(fontSize: 18),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),

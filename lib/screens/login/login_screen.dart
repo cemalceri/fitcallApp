@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:fitcall/common/routes.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -9,12 +11,14 @@ class LoginPage extends StatelessWidget {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  LoginPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         body: Container(
-          margin: EdgeInsets.all(24),
+          margin: const EdgeInsets.all(24),
           child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -39,11 +43,11 @@ class LoginPage extends StatelessWidget {
           width: 200, // Resmin genişliği
           height: 200, // Resmin yüksekliği
         ),
-        Text(
+        const Text(
           "Hoşgeldiniz",
           style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
         ),
-        Text("Giriş için lütfen bilgilerinizi giriniz."),
+        const Text("Giriş için lütfen bilgilerinizi giriniz."),
       ],
     );
   }
@@ -61,9 +65,9 @@ class LoginPage extends StatelessWidget {
                   borderSide: BorderSide.none),
               fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
               filled: true,
-              prefixIcon: Icon(Icons.person)),
+              prefixIcon: const Icon(Icons.person)),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         TextField(
           controller: _passwordController,
           decoration: InputDecoration(
@@ -73,11 +77,11 @@ class LoginPage extends StatelessWidget {
                 borderSide: BorderSide.none),
             fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
             filled: true,
-            prefixIcon: Icon(Icons.person),
+            prefixIcon: const Icon(Icons.person),
           ),
           obscureText: true,
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         ElevatedButton(
           onPressed: () {
             loginUser(
@@ -87,10 +91,10 @@ class LoginPage extends StatelessWidget {
             );
           },
           style: ElevatedButton.styleFrom(
-            shape: StadiumBorder(),
-            padding: EdgeInsets.symmetric(vertical: 16),
+            shape: const StadiumBorder(),
+            padding: const EdgeInsets.symmetric(vertical: 16),
           ),
-          child: Text(
+          child: const Text(
             "Login",
             style: TextStyle(fontSize: 20),
           ),
@@ -100,15 +104,15 @@ class LoginPage extends StatelessWidget {
   }
 
   _forgotPassword(context) {
-    return TextButton(onPressed: () {}, child: Text("Forgot password?"));
+    return TextButton(onPressed: () {}, child: const Text("Forgot password?"));
   }
 
   _signup(context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("Dont have an account? "),
-        TextButton(onPressed: () {}, child: Text("Sign Up"))
+        const Text("Dont have an account? "),
+        TextButton(onPressed: () {}, child: const Text("Sign Up"))
       ],
     );
   }
@@ -131,17 +135,31 @@ class LoginPage extends StatelessWidget {
 
       if (response.statusCode == 200) {
         String jsonResponse = json.decode(response.body);
-        usernameController.clear();
-        passwordController.clear();
         savePrefs("token", jsonResponse);
         if (await kullaniciBilgileriniGetir(jsonResponse)) {
           Navigator.pushNamed(context, routeEnums[SayfaAdi.anasayfa]!);
         }
+        usernameController.clear();
+        passwordController.clear();
+      } else if (response.statusCode == 401 || response.statusCode == 404) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Kullanıcı adı veya şifre hatalı'),
+          ),
+        );
       } else {
-        print("Hata: ${response.reasonPhrase}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Giriş yapılırken bir hata oluştu'),
+          ),
+        );
       }
     } catch (e) {
-      print("İstek yapılırken bir hata oluştu: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Giriş yapılırken bir hata oluştu'),
+        ),
+      );
     }
   }
 }
@@ -153,7 +171,7 @@ Future<bool> kullaniciBilgileriniGetir(String token) async {
       headers: {'Authorization': 'Bearer $token'},
     );
     if (response.statusCode == 200) {
-      savePrefs("kullanici", response.body);
+      savePrefs("kullanici", utf8.decode(response.bodyBytes));
       return true;
     } else {
       print('Kullanıcı bilgileri getirilemedi');

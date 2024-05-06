@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class OdemeBorcModel {
   String hareketTuru;
   String ucretTuru;
@@ -12,9 +14,10 @@ class OdemeBorcModel {
       required this.ucretTuru,
       required this.aciklama});
 
-  static List<OdemeBorcModel?> fromJson(decode) {
+  static List<OdemeBorcModel?> fromJson(response) {
     List<OdemeBorcModel?> odemeBorcListesi = [];
-    for (var odemeBorc in decode) {
+    List<dynamic> list = json.decode(utf8.decode(response.bodyBytes));
+    for (var odemeBorc in list) {
       odemeBorcListesi.add(OdemeBorcModel(
         hareketTuru: odemeBorc['hareket_turu'] ?? '',
         ucretTuru: odemeBorc['ucret_turu'] ?? '',

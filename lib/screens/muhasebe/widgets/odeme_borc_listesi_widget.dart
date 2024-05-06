@@ -7,6 +7,7 @@ class OdemeBorcListesiWidget extends StatelessWidget {
   final List<OdemeBorcModel?> odemeBorcModelList;
 
   const OdemeBorcListesiWidget({
+    super.key,
     required this.baslik,
     required this.odemeBorcModelList,
   });
@@ -26,7 +27,7 @@ class OdemeBorcListesiWidget extends StatelessWidget {
             ),
           ),
         ),
-        Divider(),
+        const Divider(),
         Expanded(
           child: ListView.builder(
             itemCount: odemeBorcModelList.length,
@@ -34,7 +35,7 @@ class OdemeBorcListesiWidget extends StatelessWidget {
               final item = odemeBorcModelList[index];
               return OdemeBorcSatiriWidget(
                 label: item!.ucretTuru,
-                date: item!.tarih,
+                date: item.tarih,
                 value: ' ${item.tutar} TL',
               );
             },
@@ -51,6 +52,7 @@ class OdemeBorcSatiriWidget extends StatelessWidget {
   final DateTime date;
 
   const OdemeBorcSatiriWidget({
+    super.key,
     required this.label,
     required this.value,
     required this.date,
@@ -76,6 +78,7 @@ class KalanBakiyeWidget extends StatelessWidget {
   final double kalanBakiye;
 
   const KalanBakiyeWidget({
+    super.key,
     required this.kalanBakiye,
   });
 
@@ -87,7 +90,7 @@ class KalanBakiyeWidget extends StatelessWidget {
         kalanBakiye > 0
             ? 'Kalan Borç: ${kalanBakiye.toStringAsFixed(2)} TL'
             : 'Fazla Ödeme: ${kalanBakiye.toStringAsFixed(2)} TL',
-        style: TextStyle(
+        style: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 18.0,
         ),

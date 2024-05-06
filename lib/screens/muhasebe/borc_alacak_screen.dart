@@ -1,9 +1,10 @@
-import 'dart:convert';
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/models/muhasebe_models.dart';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'widgets/odeme_borc_listesi_widget.dart';
 
 class BorcAlacakPage extends StatefulWidget {
@@ -33,7 +34,7 @@ class _BorcAlacakPageState extends State<BorcAlacakPage> {
         );
         if (response.statusCode == 200) {
           List<OdemeBorcModel?> odemeBorcModel =
-              OdemeBorcModel.fromJson(json.decode(response.body));
+              OdemeBorcModel.fromJson(response);
           setState(() {
             odemeBorcListesi = odemeBorcModel;
             kalanBakiye = _kalanBakiyeHesapla(odemeBorcModel);
@@ -57,7 +58,7 @@ class _BorcAlacakPageState extends State<BorcAlacakPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ödeme ve Borç Bilgilerim'),
+        title: const Text('Ödeme ve Borç Bilgilerim'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -93,36 +94,4 @@ _kalanBakiyeHesapla(List<OdemeBorcModel?> odemeBorcModel) {
       .map((e) => double.parse(e!.tutar))
       .fold(0, (previousValue, element) => previousValue + element);
   return toplamBorcTutari - toplamOdemeTutari;
-}
-
-Future<List<OdemeBorcModel>?> odemeBorcBilgileriniGetir(context) async {
-  var token = await getToken(context);
-  if (token != null) {
-    try {
-      var response = await http.post(
-        Uri.parse(getOdemeBilgileri),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-      if (response.statusCode == 200) {
-        return null;
-        //OdemeBorcModel.fromJson(json.decode(response.body));
-      } else {
-        print('Kullanıcı bilgileri getirilemedi');
-        return null;
-      }
-    } catch (e) {
-      print("Kullanıcı bilgileri getirilirken bir hata oluştu: $e");
-      return null;
-    }
-  }
-}
-
-Future<String?> getToken(context) async {
-  SharedPreferences sp = await SharedPreferences.getInstance();
-  String? token = sp.getString('token');
-  if (token != null) {
-    return token;
-  } else {
-    return null;
-  }
 }

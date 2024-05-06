@@ -43,7 +43,6 @@ class UserModel {
   final String? babaMeslek;
   final int user;
   final int kullaniciHesabi;
-  final String? okul;
   final List<String> gunler;
   final List<String> saatler;
 
@@ -85,7 +84,6 @@ class UserModel {
     this.babaMeslek,
     required this.user,
     required this.kullaniciHesabi,
-    this.okul,
     required this.gunler,
     required this.saatler,
   });
@@ -119,7 +117,7 @@ class UserModel {
       aktifMi: json['aktif_mi'] ?? false,
       uyeTipi: json['uye_tipi'] ?? 0,
       referansi: json['referansi'] ?? '',
-      tenisGecmisiVarMi: json['tenis_gecmisi_var_mi'] ?? false,
+      tenisGecmisiVarMi: json['tenis_gecmisi_var_mi'] ?? '',
       programTercihi: json['program_tercihi'] ?? '',
       profilFotografi: json['profil_fotografi'],
       indirimOrani: json['indirim_orani'] != null
@@ -137,7 +135,6 @@ class UserModel {
       babaMeslek: json['baba_meslek'],
       user: json['user'] ?? 0,
       kullaniciHesabi: json['kullanici_hesabi'] ?? 0,
-      okul: json['okul'],
       gunler: json['gunler'] != null ? List<String>.from(json['gunler']) : [],
       saatler:
           json['saatler'] != null ? List<String>.from(json['saatler']) : [],
@@ -183,7 +180,6 @@ class UserModel {
       'babaMeslek': babaMeslek,
       'user': user,
       'kullaniciHesabi': kullaniciHesabi,
-      'okul': okul,
       'gunler': gunler,
       'saatler': saatler,
     };
