@@ -6,14 +6,6 @@ import 'package:http/http.dart' as http;
 
 import 'widgets/ders_listesi_widget.dart';
 
-// Örnek randevu modeli
-class Randevu {
-  final int id;
-  final String baslangicTarihi;
-
-  Randevu({required this.id, required this.baslangicTarihi});
-}
-
 class DersListesiPage extends StatefulWidget {
   const DersListesiPage({super.key});
 
@@ -80,19 +72,19 @@ class _DersListesiPageState extends State<DersListesiPage> {
             const Padding(
               padding: EdgeInsets.all(16),
               child: Text(
-                'Geçmiş Dersler',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            DersListesiWidget(dersler: gecmisDersler),
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
                 'Gelecek Dersler',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
             ),
             DersListesiWidget(dersler: gelecekDersler),
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Geçmiş Dersler',
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              ),
+            ),
+            DersListesiWidget(dersler: gecmisDersler),
           ],
         ),
       ),

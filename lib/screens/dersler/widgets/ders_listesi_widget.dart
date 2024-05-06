@@ -19,7 +19,8 @@ class DersListesiWidget extends StatelessWidget {
       itemCount: dersler.length,
       separatorBuilder: (BuildContext context, int index) {
         return const SizedBox(
-            height: 10); // Liste elemanları arasına boşluk ekler
+          height: 10,
+        ); // Liste elemanları arasına boşluk ekler
       },
       itemBuilder: (context, index) {
         DersModel ders = dersler[index]!;
@@ -36,14 +37,17 @@ class DersListesiWidget extends StatelessWidget {
           child: Card(
             elevation: 3, // Kartın yükselti derecesi
             margin: const EdgeInsets.symmetric(
-                horizontal: 10), // Kartın kenar boşluğu
+              horizontal: 10,
+            ), // Kartın kenar boşluğu
+            color: Colors.blue[50], // Kartın arka plan rengi
             child: ListTile(
               title: Text(
                 'Ders ${index + 1}', // Ders numarasını göster
                 style: const TextStyle(
-                    color: Colors.blue, // Başlık için mavi renk
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22),
+                  color: Colors.blue, // Başlık için mavi renk
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                ),
               ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,25 +55,22 @@ class DersListesiWidget extends StatelessWidget {
                   Text(
                     'Antrenör: ${ders.antrenorAdi}',
                     style: const TextStyle(
-                        color: Colors.black, // Altyazı için gri renk
-                        fontSize: 18),
+                      color: Colors.black, // Antrenör adı için siyah renk
+                      fontSize: 18,
+                    ),
                   ),
                   Text(
                     'Kort: ${ders.kortAdi}',
                     style: const TextStyle(
-                      color: Colors.black, // Altyazı için gri renk
+                      color: Colors.black, // Kort adı için siyah renk
+                      fontSize: 18,
                     ),
                   ),
                   Text(
-                    'Başlangıç Tarihi: ${DateFormat('dd.MM.yyyy HH:mm').format(ders.baslangicTarihSaat)}',
+                    'Tarih: ${DateFormat('dd.MM.yyyy HH:mm').format(ders.baslangicTarihSaat)}-${DateFormat('HH:mm').format(ders.bitisTarihSaat)}',
                     style: const TextStyle(
-                      color: Colors.black, // Altyazı için gri renk
-                    ),
-                  ),
-                  Text(
-                    'Bitiş Tarihi: ${DateFormat('dd.MM.yyyy HH:mm').format(ders.bitisTarihSaat)}',
-                    style: const TextStyle(
-                      color: Colors.black, // Altyazı için gri renk
+                      color: Colors.black, // Tarih için siyah renk
+                      fontSize: 18,
                     ),
                   ),
                   // Diğer altbilgiler buraya eklenebilir

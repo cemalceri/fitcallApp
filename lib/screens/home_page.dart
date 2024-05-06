@@ -19,7 +19,11 @@ class HomePage extends StatelessWidget {
       'icon': Icons.sports_tennis,
       'text': 'Derslerim'
     },
-    {'name': 4, 'icon': Icons.settings, 'text': 'Ayarlar'},
+    {
+      'name': routeEnums[SayfaAdi.uyelikPaket]!,
+      'icon': Icons.calendar_month,
+      'text': 'Üyelik ve Paket Bilgilerim'
+    },
     {'name': 5, 'icon': Icons.notifications, 'text': 'Bildirimler'},
     {'name': 6, 'icon': Icons.help, 'text': 'Yardım'},
   ];

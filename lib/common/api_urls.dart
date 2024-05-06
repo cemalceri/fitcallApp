@@ -6,3 +6,5 @@ String getOdemeBilgileri =
     "https://binayacademi.herokuapp.com/api/getAidatOdemeGecmisi"; // (bearer token)
 String getDersProgrami =
     "https://binayacademi.herokuapp.com/api/getSporcuDersProgram"; // (bearer token)
+String getPaketBilgileri =
+    'https://binayacademi.herokuapp.com/api/getUyePaketBilgileri'; // (bearer token)

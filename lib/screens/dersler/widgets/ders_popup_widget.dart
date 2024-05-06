@@ -35,13 +35,7 @@ class DersPopupWidget extends StatelessWidget {
             ),
           ),
           Text(
-            'Başlangıç Tarihi: ${DateFormat('dd.MM.yyyy HH:mm').format(ders.baslangicTarihSaat)}',
-            style: const TextStyle(
-              color: Colors.grey, // Altyazı için gri renk
-            ),
-          ),
-          Text(
-            'Bitiş Tarihi: ${DateFormat('dd.MM.yyyy HH:mm').format(ders.bitisTarihSaat)}',
+            'Tarih: ${DateFormat('dd.MM.yyyy HH:mm').format(ders.baslangicTarihSaat)}-${DateFormat('HH:mm').format(ders.bitisTarihSaat)}',
             style: const TextStyle(
               color: Colors.grey, // Altyazı için gri renk
             ),
@@ -91,11 +85,11 @@ class DersPopupWidget extends StatelessWidget {
 }
 
 Future<void> _launchUrl(BuildContext context, DersModel ders, mesaj) async {
-  var contact = "+905433508514";
+  var contact = "+905422462982";
   var androidUrl =
-      "whatsapp://send?phone=$contact&text=Merhaba, ${DateFormat('dd.MM.yyyy HH:mm').format(ders.baslangicTarihSaat)} tarihli dersinize ${mesaj}.";
+      "whatsapp://send?phone=$contact&text=Merhaba, ${DateFormat('dd.MM.yyyy HH:mm').format(ders.baslangicTarihSaat)} tarihinde ${ders.antrenorAdi ?? ''} ile olan derse $mesaj.";
   var iosUrl =
-      "https://wa.me/$contact?text=${Uri.parse('Merhaba, ${DateFormat('dd-MM-yyyy HH-mm').format(ders.baslangicTarihSaat)} tarihli dersinize ${mesaj}.')}";
+      "https://wa.me/$contact?text=${Uri.parse('Merhaba, ${DateFormat('dd-MM-yyyy HH-mm').format(ders.baslangicTarihSaat)} tarihinde ${ders.antrenorAdi ?? ''} ile olan derse $mesaj.')}";
 
   try {
     if (Platform.isIOS) {

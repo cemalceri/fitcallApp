@@ -59,7 +59,7 @@ class LoginPage extends StatelessWidget {
         TextField(
           controller: _usernameController,
           decoration: InputDecoration(
-              hintText: "Username",
+              hintText: "Kullanıcı Adı",
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none),
@@ -71,7 +71,7 @@ class LoginPage extends StatelessWidget {
         TextField(
           controller: _passwordController,
           decoration: InputDecoration(
-            hintText: "Password",
+            hintText: "Şifre",
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none),
@@ -95,7 +95,7 @@ class LoginPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
           child: const Text(
-            "Login",
+            "Giriş",
             style: TextStyle(fontSize: 20),
           ),
         )
@@ -104,15 +104,15 @@ class LoginPage extends StatelessWidget {
   }
 
   _forgotPassword(context) {
-    return TextButton(onPressed: () {}, child: const Text("Forgot password?"));
+    return TextButton(onPressed: () {}, child: const Text("Şifremi unuttum!"));
   }
 
   _signup(context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text("Dont have an account? "),
-        TextButton(onPressed: () {}, child: const Text("Sign Up"))
+        const Text("Hesabın yok mu? "),
+        TextButton(onPressed: () {}, child: const Text("Kayıt ol"))
       ],
     );
   }
@@ -156,8 +156,8 @@ class LoginPage extends StatelessWidget {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Giriş yapılırken bir hata oluştu'),
+        SnackBar(
+          content: Text('Giriş yapılırken bir hata oluştu. Hata:$e'),
         ),
       );
     }

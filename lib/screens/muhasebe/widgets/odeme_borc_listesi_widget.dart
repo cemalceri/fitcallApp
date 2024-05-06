@@ -66,8 +66,8 @@ class OdemeBorcSatiriWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label),
-          Text(value),
           Text(DateFormat('dd.MM.yyyy').format(date)),
+          Text(value),
         ],
       ),
     );
@@ -87,9 +87,9 @@ class KalanBakiyeWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Text(
-        kalanBakiye > 0
-            ? 'Kalan Borç: ${kalanBakiye.toStringAsFixed(2)} TL'
-            : 'Fazla Ödeme: ${kalanBakiye.toStringAsFixed(2)} TL',
+        kalanBakiye < 0
+            ? 'Fazla Ödeme: ${kalanBakiye.toStringAsFixed(2)} TL'
+            : 'Kalan Borç: ${kalanBakiye.toStringAsFixed(2)} TL',
         style: const TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 18.0,
