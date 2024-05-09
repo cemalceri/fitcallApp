@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:fitcall/common/methods.dart';
+import 'package:fitcall/common/widgets.dart';
 import 'package:fitcall/models/muhasebe_models.dart';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:flutter/material.dart';
@@ -17,11 +18,14 @@ class BorcAlacakPage extends StatefulWidget {
 class _BorcAlacakPageState extends State<BorcAlacakPage> {
   List<OdemeBorcModel?> odemeBorcListesi = [];
   double kalanBakiye = 0;
+  bool _apiIstegiTamamlandiMi = false;
 
   @override
   void initState() {
     super.initState();
-    _odemeBilgileriniCek();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _odemeBilgileriniCek();
+    });
   }
 
   Future<void> _odemeBilgileriniCek() async {
@@ -50,6 +54,10 @@ class _BorcAlacakPageState extends State<BorcAlacakPage> {
             content: Text('Ödeme bilgileri alınırken bir hata oluştu: $e'),
           ),
         );
+      } finally {
+        setState(() {
+          _apiIstegiTamamlandiMi = true;
+        });
       }
     }
   }
@@ -60,26 +68,35 @@ class _BorcAlacakPageState extends State<BorcAlacakPage> {
       appBar: AppBar(
         title: const Text('Ödeme ve Borç Bilgilerim'),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-              child: OdemeBorcListesiWidget(
-            baslik: 'Borç Bilgilerim',
-            odemeBorcModelList: odemeBorcListesi
-                .where((element) => element!.hareketTuru == 'Borc')
-                .toList(),
-          )),
-          Expanded(
-              child: OdemeBorcListesiWidget(
-            baslik: 'Ödeme Bilgilerim',
-            odemeBorcModelList: odemeBorcListesi
-                .where((element) => element!.hareketTuru == 'Odeme')
-                .toList(),
-          )),
-          KalanBakiyeWidget(kalanBakiye: kalanBakiye),
-        ],
-      ),
+      body: _apiIstegiTamamlandiMi
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                    child: _apiIstegiTamamlandiMi
+                        ? OdemeBorcListesiWidget(
+                            baslik: 'Borç Bilgilerim',
+                            odemeBorcModelList: odemeBorcListesi
+                                .where(
+                                    (element) => element!.hareketTuru == 'Borc')
+                                .toList(),
+                          )
+                        : const Text("Yükleniyor...")),
+                Expanded(
+                    child: _apiIstegiTamamlandiMi
+                        ? OdemeBorcListesiWidget(
+                            baslik: 'Ödeme Bilgilerim',
+                            odemeBorcModelList: odemeBorcListesi
+                                .where((element) =>
+                                    element!.hareketTuru == 'Odeme')
+                                .toList(),
+                          )
+                        : const Text("Yükleniyor...")),
+                KalanBakiyeWidget(kalanBakiye: kalanBakiye),
+              ],
+            )
+          : const LoadingSpinnerWidget(
+              message: "Ödeme ve borç bilgileriniz yükleniyor..."),
     );
   }
 }

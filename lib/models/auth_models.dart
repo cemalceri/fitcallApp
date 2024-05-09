@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class LoginModel {
   String username;
   String password;
@@ -182,6 +184,31 @@ class UserModel {
       'kullaniciHesabi': kullaniciHesabi,
       'gunler': gunler,
       'saatler': saatler,
+    };
+  }
+}
+
+class TokenModel {
+  final String accessToken;
+  final DateTime expireDate;
+
+  TokenModel({
+    required this.accessToken,
+    required this.expireDate,
+  });
+
+  factory TokenModel.fromJson(response) {
+    var json = jsonDecode(response.body);
+    return TokenModel(
+      accessToken: json['access_token'],
+      expireDate: DateTime.parse(json['expire_date']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'access_token': accessToken,
+      'expire_date': expireDate,
     };
   }
 }

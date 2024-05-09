@@ -1,20 +1,29 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/common/widgets.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  LoginPage({super.key});
+  bool _beniHatirla = false;
 
   @override
   Widget build(BuildContext context) {
+    checkLoginStatus(context);
     return SafeArea(
       child: Scaffold(
         body: Container(
@@ -25,6 +34,7 @@ class LoginPage extends StatelessWidget {
               children: [
                 _header(context),
                 _inputField(context),
+                _rememberMeCheckbox(),
                 _forgotPassword(context),
                 _signup(context),
               ],
@@ -84,11 +94,17 @@ class LoginPage extends StatelessWidget {
         const SizedBox(height: 10),
         ElevatedButton(
           onPressed: () {
+            LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
             loginUser(
               context,
-              _usernameController,
-              _passwordController,
-            );
+              _usernameController.text,
+              _passwordController.text,
+            ).then((value) {
+              LoadingSpinner.hide(context);
+              if (value) {
+                Navigator.pushNamed(context, routeEnums[SayfaAdi.anasayfa]!);
+              }
+            });
           },
           style: ElevatedButton.styleFrom(
             shape: const StadiumBorder(),
@@ -99,6 +115,23 @@ class LoginPage extends StatelessWidget {
             style: TextStyle(fontSize: 20),
           ),
         )
+      ],
+    );
+  }
+
+  _rememberMeCheckbox() {
+    return Row(
+      children: [
+        Checkbox(
+          value: _beniHatirla,
+          onChanged: (bool? value) {
+            setState(() {
+              _beniHatirla = value!;
+              savePrefsBool('beni_hatirla', _beniHatirla);
+            });
+          },
+        ),
+        const Text("Beni Hatırla"),
       ],
     );
   }
@@ -117,73 +150,30 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Future<void> loginUser(
-      BuildContext context,
-      TextEditingController usernameController,
-      TextEditingController passwordController) async {
-    Map<String, String> data = {
-      'username': usernameController.text,
-      'password': passwordController.text
-    };
-
+  Future<bool> kullaniciBilgileriniGetir(String token) async {
     try {
       var response = await http.post(
-        Uri.parse(loginUrl),
-        body: json.encode(data),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse(getSporcu),
+        headers: {'Authorization': 'Bearer $token'},
       );
-
       if (response.statusCode == 200) {
-        String jsonResponse = json.decode(response.body);
-        savePrefs("token", jsonResponse);
-        if (await kullaniciBilgileriniGetir(jsonResponse)) {
-          Navigator.pushNamed(context, routeEnums[SayfaAdi.anasayfa]!);
-        }
-        usernameController.clear();
-        passwordController.clear();
-      } else if (response.statusCode == 401 || response.statusCode == 404) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Kullanıcı adı veya şifre hatalı'),
-          ),
-        );
+        savePrefs("kullanici", utf8.decode(response.bodyBytes));
+        return true;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Giriş yapılırken bir hata oluştu'),
-          ),
-        );
+        print('Kullanıcı bilgileri getirilemedi');
+        return false;
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Giriş yapılırken bir hata oluştu. Hata:$e'),
-        ),
-      );
-    }
-  }
-}
-
-Future<bool> kullaniciBilgileriniGetir(String token) async {
-  try {
-    var response = await http.post(
-      Uri.parse(getSporcu),
-      headers: {'Authorization': 'Bearer $token'},
-    );
-    if (response.statusCode == 200) {
-      savePrefs("kullanici", utf8.decode(response.bodyBytes));
-      return true;
-    } else {
-      print('Kullanıcı bilgileri getirilemedi');
+      print("Kullanıcı bilgileri getirilirken bir hata oluştu: $e");
       return false;
     }
-  } catch (e) {
-    print("Kullanıcı bilgileri getirilirken bir hata oluştu: $e");
-    return false;
   }
-}
 
-Future<void> savePrefs(String key, String value) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.setString(key, value);
+  void checkLoginStatus(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    if (token != null) {
+      Navigator.pushReplacementNamed(context, routeEnums[SayfaAdi.anasayfa]!);
+    }
+  }
 }

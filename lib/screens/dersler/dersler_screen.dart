@@ -1,5 +1,6 @@
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/methods.dart';
+import 'package:fitcall/common/widgets.dart';
 import 'package:fitcall/models/ders_models.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -17,6 +18,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
   // Örnek randevu listesi
   List<DersModel?> gecmisDersler = [];
   List<DersModel?> gelecekDersler = [];
+  bool _apiIstegiTamamlandiMi = false;
 
   @override
   void initState() {
@@ -49,12 +51,19 @@ class _DersListesiPageState extends State<DersListesiPage> {
           throw Exception('API isteği başarısız oldu: ${response.statusCode}');
         }
       } catch (e) {
+        if (mounted) {
+          // Hata durumunda kullanıcıya bildirim gösterebilirsiniz
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Dersler alınırken bir hata oluştu: $e'),
+            ),
+          );
+        }
         // Hata durumunda kullanıcıya bildirim gösterebilirsiniz
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Ödeme bilgileri alınırken bir hata oluştu: $e'),
-          ),
-        );
+      } finally {
+        setState(() {
+          _apiIstegiTamamlandiMi = true;
+        });
       }
     }
   }
@@ -65,29 +74,33 @@ class _DersListesiPageState extends State<DersListesiPage> {
       appBar: AppBar(
         title: const Text('Ders Listesi'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Gelecek Dersler',
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+      body: _apiIstegiTamamlandiMi
+          ? SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'Gelecek Dersler',
+                      style:
+                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DersListesiWidget(dersler: gelecekDersler),
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'Geçmiş Dersler',
+                      style:
+                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  DersListesiWidget(dersler: gecmisDersler),
+                ],
               ),
-            ),
-            DersListesiWidget(dersler: gelecekDersler),
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Geçmiş Dersler',
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-              ),
-            ),
-            DersListesiWidget(dersler: gecmisDersler),
-          ],
-        ),
-      ),
+            )
+          : const LoadingSpinnerWidget(message: 'Dersler yükleniyor...'),
     );
   }
 }
