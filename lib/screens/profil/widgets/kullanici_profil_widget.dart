@@ -1,4 +1,4 @@
-import 'package:fitcall/models/auth_models.dart';
+import 'package:fitcall/models/auth/login_model.dart';
 import 'package:flutter/material.dart';
 
 class KullaniciProfilWidget extends StatelessWidget {

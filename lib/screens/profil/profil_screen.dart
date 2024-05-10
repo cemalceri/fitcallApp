@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:fitcall/models/auth_models.dart';
-import 'package:fitcall/screens/login/login_screen.dart';
+import 'package:fitcall/models/auth/login_model.dart';
+import 'package:fitcall/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'widgets/kullanici_profil_widget.dart';

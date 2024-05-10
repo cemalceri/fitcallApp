@@ -145,7 +145,11 @@ class _LoginPageState extends State<LoginPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text("Hesabın yok mu? "),
-        TextButton(onPressed: () {}, child: const Text("Kayıt ol"))
+        TextButton(
+            onPressed: () {
+              Navigator.pushNamed(context, routeEnums[SayfaAdi.kayitol]!);
+            },
+            child: const Text("Kayıt ol"))
       ],
     );
   }

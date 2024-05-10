@@ -1,6 +1,7 @@
+import 'package:fitcall/screens/auth/register_screen.dart';
 import 'package:fitcall/screens/dersler/dersler_screen.dart';
 import 'package:fitcall/screens/home_page.dart';
-import 'package:fitcall/screens/login/login_screen.dart';
+import 'package:fitcall/screens/auth/login_screen.dart';
 import 'package:fitcall/screens/muhasebe/borc_alacak_screen.dart';
 import 'package:fitcall/screens/profil/profil_screen.dart';
 import 'package:fitcall/screens/uyelik/uyelik_paket_screen.dart';
@@ -14,15 +15,17 @@ enum SayfaAdi {
   borcAlacak,
   dersler,
   uyelikPaket,
+  kayitol,
 }
 
 final Map<String, WidgetBuilder> routes = {
-  '/': (context) => LoginPage(),
+  '/': (context) => const LoginPage(),
   '/anasayfa': (context) => HomePage(),
   '/profil': (context) => const ProfilePage(),
   '/borcalacak': (context) => const BorcAlacakPage(),
   '/dersler': (context) => const DersListesiPage(),
   '/uyelikPaket': (context) => const UyelikPaketPage(),
+  '/kayitol': (context) => const RegisterPage(),
 };
 
 final Map<SayfaAdi, String> routeEnums = {
@@ -32,4 +35,5 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.borcAlacak: '/borcalacak',
   SayfaAdi.dersler: '/dersler',
   SayfaAdi.uyelikPaket: '/uyelikPaket',
+  SayfaAdi.kayitol: '/kayitol',
 };

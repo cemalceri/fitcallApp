@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:http/http.dart' as http;
 import 'package:fitcall/common/routes.dart';
-import 'package:fitcall/models/auth_models.dart';
+import 'package:fitcall/models/auth/login_model.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
