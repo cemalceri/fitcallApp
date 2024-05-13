@@ -1,5 +1,3 @@
-import 'package:fitcall/common/generic_form_builder.dart';
-
 class TemelBilgilerModel {
   String? adi;
   String? soyadi;
@@ -50,18 +48,6 @@ class TemelBilgilerModel {
       'uyeTipi': uyeTipi,
     };
   }
-
-  static final Map<String, FieldMetaData> metaData = {
-    'adi': const FieldMetaData(label: 'Adı', type: String),
-    'soyadi': const FieldMetaData(label: 'Soyadı', type: String),
-    'kimlikNo': const FieldMetaData(label: 'Kimlik Numarası', type: String),
-    'cinsiyet': const FieldMetaData(label: 'Cinsiyet', type: String),
-    'telefon': const FieldMetaData(label: 'Telefon', type: String),
-    'email': const FieldMetaData(label: 'E-mail', type: String),
-    'adres': const FieldMetaData(label: 'Adres', type: String),
-    'seviyeRengi': const FieldMetaData(label: 'Seviye Rengi', type: String),
-    'uyeTipi': const FieldMetaData(label: 'Üye Tipi', type: int),
-  };
 }
 
 class ProfilBilgilerModel {
@@ -130,21 +116,4 @@ class ProfilBilgilerModel {
       'referansi': referansi,
     };
   }
-
-  static final Map<String, FieldMetaData> metaData = {
-    'dogumTarihi': const FieldMetaData(label: 'Doğum Tarihi', type: DateTime),
-    'dogumYeri': const FieldMetaData(label: 'Doğum Yeri', type: String),
-    'meslek': const FieldMetaData(label: 'Meslek', type: String),
-    'anneAdiSoyadi':
-        const FieldMetaData(label: 'Anne Adı Soyadı', type: String),
-    'anneTelefon': const FieldMetaData(label: 'Anne Telefon', type: String),
-    'anneMail': const FieldMetaData(label: 'Anne E-mail', type: String),
-    'anneMeslek': const FieldMetaData(label: 'Anne Meslek', type: String),
-    'babaAdiSoyadi':
-        const FieldMetaData(label: 'Baba Adı Soyadı', type: String),
-    'babaTelefon': const FieldMetaData(label: 'Baba Telefon', type: String),
-    'babaMail': const FieldMetaData(label: 'Baba E-mail', type: String),
-    'babaMeslek': const FieldMetaData(label: 'Baba Meslek', type: String),
-    'referansi': const FieldMetaData(label: 'Referansı', type: String),
-  };
 }
