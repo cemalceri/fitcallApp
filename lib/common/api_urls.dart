@@ -13,14 +13,14 @@ String uyeKaydet =
 
 //Localhost
 
-String localloginUrl = 'http://127.0.0.1:8000/api/getToken'; // (bearer token)
-String localgetSporcu = 'http://127.0.0.1:8000/api/getSporcu'; // (bearer token)
+String localloginUrl = 'http://10.0.2.2:8000/api/getToken'; // (bearer token)
+String localgetSporcu = 'http://10.0.2.2:8000/api/getSporcu'; // (bearer token)
 String localgetOdemeBilgileri =
-    'http://127.0.0.1:8000/api/getAidatOdemeGecmisi'; // (bearer token)
+    'http://10.0.2.2:8000/api/getAidatOdemeGecmisi'; // (bearer token)
 String localgetDersProgrami =
-    'http://127.0.0.1:8000/api/getSporcuDersProgram'; // (bearer token)
+    'http://10.0.2.2:8000/api/getSporcuDersProgram'; // (bearer token)
 String localgetPaketBilgileri =
-    'http://127.0.0.1:8000/api/getUyePaketBilgileri'; // (bearer token)
+    'http://10.0.2.2:8000/api/getUyePaketBilgileri'; // (bearer token)
 String localuyeKaydet = 'http://10.0.2.2:8000/api/uyeKaydet'; // (bearer token)
 
 

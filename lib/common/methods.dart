@@ -47,6 +47,13 @@ Future<bool> loginUser(
           content: Text('Kullanıcı adı veya şifre hatalı'),
         ),
       );
+    } else if (response.statusCode == 403) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Hesabınız henüz aktif değil. Lütfen yöneticinizle iletişime geçin.'),
+        ),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
