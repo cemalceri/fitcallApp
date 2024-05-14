@@ -1,3 +1,6 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:async';
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:http/http.dart' as http;
@@ -30,17 +33,22 @@ Future<bool> loginUser(
     BuildContext context, String username, String password) async {
   Map<String, String> data = {'username': username, 'password': password};
   try {
-    var response = await http.post(
+    final response = await http.post(
       Uri.parse(loginUrl),
       body: json.encode(data),
       headers: {'Content-Type': 'application/json'},
-    );
+    ).timeout(const Duration(seconds: 15));
 
     if (response.statusCode == 200) {
       TokenModel tokenModel = TokenModel.fromJson(response);
-      savePrefs("token", tokenModel.accessToken);
-      savePrefs("token_exp", tokenModel.expireDate.toString());
-      return true;
+      await savePrefs("token", tokenModel.accessToken);
+      await savePrefs("token_exp", tokenModel.expireDate.toString());
+      bool userInfoFetched =
+          await kullaniciBilgileriniGetir(tokenModel.accessToken);
+      if (userInfoFetched) {
+        return true;
+      }
+      return false;
     } else if (response.statusCode == 401 || response.statusCode == 404) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -61,14 +69,37 @@ Future<bool> loginUser(
         ),
       );
     }
+  } on TimeoutException catch (_) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Sunucuya bağlanırken bir hata oluştu'),
+      ),
+    );
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Giriş yapılırken bir hata oluştu. Hata:$e'),
+        content: Text('Bir hata oluştu: $e'),
       ),
     );
   }
   return false;
+}
+
+Future<bool> kullaniciBilgileriniGetir(String token) async {
+  try {
+    var response = await http.post(
+      Uri.parse(getSporcu),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode == 200) {
+      savePrefs("kullanici", utf8.decode(response.bodyBytes));
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    return false;
+  }
 }
 
 void logout(context) async {

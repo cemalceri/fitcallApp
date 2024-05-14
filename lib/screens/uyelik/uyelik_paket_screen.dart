@@ -1,6 +1,9 @@
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/methods.dart';
+import 'package:fitcall/common/widgets.dart';
 import 'package:fitcall/models/uyelik_paket_models.dart';
+import 'package:fitcall/screens/uyelik/widgets/paketlerim_widget.dart';
+import 'package:fitcall/screens/uyelik/widgets/uyeliklerim_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -12,7 +15,9 @@ class UyelikPaketPage extends StatefulWidget {
 }
 
 class _UyelikPaketPageState extends State<UyelikPaketPage> {
-  List<PaketModel?> paketListesi = [];
+  List<UyelikModel>? uyelikListesi = [];
+  List<PaketModel>? paketListesi = [];
+  bool _apiIstegiTamamlandiMi = false;
 
   @override
   void initState() {
@@ -23,214 +28,83 @@ class _UyelikPaketPageState extends State<UyelikPaketPage> {
   Future<void> _uyelikPaketBilgileriniCek() async {
     var token = await getToken(context);
     if (token != null) {
-      try {
-        var response = await http.post(
-          Uri.parse(getPaketBilgileri),
-          headers: {'Authorization': 'Bearer $token'},
-        );
+      await http.post(
+        Uri.parse(getPaketBilgileri),
+        headers: {'Authorization': 'Bearer $token'},
+      ).then((response) {
         if (response.statusCode == 200) {
-          List<PaketModel?> paketModelList = PaketModel.fromJson(response);
+          List<UyelikModel>? uyelikModelList = UyelikModel.fromJson(response);
+          List<PaketModel>? paketModelList = PaketModel.fromJson(response);
           setState(() {
             paketListesi = paketModelList;
+            uyelikListesi = uyelikModelList;
+            _apiIstegiTamamlandiMi = true;
           });
         } else {
-          // Hata durumunda
-          throw Exception('API isteği başarısız oldu: ${response.statusCode}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content:
+                  Text('Üyelik ve paket bilgileri alınırken bir hata oluştu'),
+            ),
+          );
         }
-      } catch (e) {
-        // Hata durumunda kullanıcıya bildirim gösterebilirsiniz
+      }).catchError((e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Ödeme bilgileri alınırken bir hata oluştu: $e'),
+            content:
+                Text('Üyelik ve paket bilgileri alınırken bir hata oluştu: $e'),
           ),
         );
-      }
+      }).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('İstek zaman aşımına uğradı'),
+            ),
+          );
+        },
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Üyelik ve Paketlerim'),
-        backgroundColor: Colors.blue,
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            color: Colors.blue[200],
-            child: const Text(
-              'Üyeliklerim',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              color: Colors.blue[100],
-              child: const Column(
+        appBar: AppBar(
+          title: const Text('Üyelik ve Paketlerim'),
+        ),
+        body: _apiIstegiTamamlandiMi
+            ? Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  MembershipCard(
-                    title: 'Standart Üyelik',
-                    subTitle: 'Aylık 19.99 TL',
-                    icon: Icons.star,
-                    color: Colors.orange,
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    color: Colors.blue[200],
+                    child: const Text(
+                      'Paketlerim',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                  SizedBox(height: 10),
-                  MembershipCard(
-                    title: 'Premium Üyelik',
-                    subTitle: 'Aylık 29.99 TL',
-                    icon: Icons.star_border,
-                    color: Colors.deepPurple,
+                  PaketlerimWidget(paketListesi),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    color: Colors.blue[200],
+                    child: const Text(
+                      'Üyeliklerim',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
+                  UyeliklerimWidget(uyelikListesi),
                 ],
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(20),
-            color: Colors.blue[200],
-            child: const Text(
-              'Paketlerim',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              color: Colors.blue[100],
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  PackageCard(
-                    title: 'Temel Paket',
-                    description: '3 Ekran, HD Çözünürlük',
-                    icon: Icons.tv,
-                    color: Colors.green,
-                  ),
-                  SizedBox(height: 10),
-                  PackageCard(
-                    title: 'Standart Paket',
-                    description: '5 Ekran, Ultra HD Çözünürlük',
-                    icon: Icons.tv,
-                    color: Colors.amber,
-                  ),
-                  SizedBox(height: 10),
-                  PackageCard(
-                    title: 'Premium Paket',
-                    description: 'Sınırsız Ekran, Ultra HD Çözünürlük',
-                    icon: Icons.tv,
-                    color: Colors.deepOrange,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class MembershipCard extends StatelessWidget {
-  final String title;
-  final String subTitle;
-  final IconData icon;
-  final Color color;
-
-  const MembershipCard({
-    Key? key,
-    required this.title,
-    required this.subTitle,
-    required this.icon,
-    required this.color,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      color: color,
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: Colors.white,
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Colors.white,
-          ),
-        ),
-        subtitle: Text(
-          subTitle,
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
-        trailing: const Icon(
-          Icons.arrow_forward,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-}
-
-class PackageCard extends StatelessWidget {
-  final String title;
-  final String description;
-  final IconData icon;
-  final Color color;
-
-  const PackageCard({
-    Key? key,
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.color,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      color: color,
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: Colors.white,
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Colors.white,
-          ),
-        ),
-        subtitle: Text(
-          description,
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
-        trailing: const Icon(
-          Icons.arrow_forward,
-          color: Colors.white,
-        ),
-      ),
-    );
+              )
+            : const LoadingSpinnerWidget(
+                message: "Üyelik ve paket bilgileri alınıyor..."));
   }
 }

@@ -8,19 +8,23 @@ String getDersProgrami =
     "https://binayacademi.herokuapp.com/api/getSporcuDersProgram"; // (bearer token)
 String getPaketBilgileri =
     'https://binayacademi.herokuapp.com/api/getUyePaketBilgileri'; // (bearer token)
+String getUyelikBilgileri =
+    'https://binayacademi.herokuapp.com/api/getUyePaketBilgileri'; // (bearer token)
 String uyeKaydet =
     'https://binayacademi.herokuapp.com/api/uyeKaydet'; // (// bearer token)
 
-//Localhost
-
-String localloginUrl = 'http://10.0.2.2:8000/api/getToken'; // (bearer token)
-String localgetSporcu = 'http://10.0.2.2:8000/api/getSporcu'; // (bearer token)
-String localgetOdemeBilgileri =
+ 
+/*
+String loginUrl = 'http://10.0.2.2:8000/api/getToken'; // (bearer token)
+String getSporcu = 'http://10.0.2.2:8000/api/getSporcu'; // (bearer token)
+String getOdemeBilgileri =
     'http://10.0.2.2:8000/api/getAidatOdemeGecmisi'; // (bearer token)
-String localgetDersProgrami =
+String getDersProgrami =
     'http://10.0.2.2:8000/api/getSporcuDersProgram'; // (bearer token)
-String localgetPaketBilgileri =
+String getPaketBilgileri =
     'http://10.0.2.2:8000/api/getUyePaketBilgileri'; // (bearer token)
-String localuyeKaydet = 'http://10.0.2.2:8000/api/uyeKaydet'; // (bearer token)
+String getUyelikBilgileri =
+    'https://binayacademi.herokuapp.com/api/getUyePaketBilgileri'; // (bearer token)
+String uyeKaydet = 'http://10.0.2.2:8000/api/uyeKaydet'; // (bearer token)
 
-
+*/

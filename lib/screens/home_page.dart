@@ -32,14 +32,17 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ana Sayfa'), actions: [
-        IconButton(
-          icon: const Icon(Icons.logout),
-          onPressed: () {
-            logout(context);
-          },
-        ),
-      ]),
+      appBar: AppBar(
+          title: const Text('Ana Sayfa'),
+          automaticallyImplyLeading: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () {
+                logout(context);
+              },
+            ),
+          ]),
       body: GridView.count(
         crossAxisCount: 2,
         padding: const EdgeInsets.all(16),

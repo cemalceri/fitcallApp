@@ -75,30 +75,34 @@ class _DersListesiPageState extends State<DersListesiPage> {
         title: const Text('Ders Listesi'),
       ),
       body: _apiIstegiTamamlandiMi
-          ? SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text(
-                      'Gelecek Dersler',
-                      style:
-                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  color: Colors.blue[200],
+                  child: const Text(
+                    'Gelecek Dersler',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  DersListesiWidget(dersler: gelecekDersler),
-                  const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text(
-                      'Geçmiş Dersler',
-                      style:
-                          TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                ),
+                DersListesiWidget(dersler: gelecekDersler),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  color: Colors.blue[200],
+                  child: const Text(
+                    'Geçmiş Dersler',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  DersListesiWidget(dersler: gecmisDersler),
-                ],
-              ),
+                ),
+                DersListesiWidget(dersler: gecmisDersler),
+              ],
             )
           : const LoadingSpinnerWidget(message: 'Dersler yükleniyor...'),
     );

@@ -22,7 +22,7 @@ class ProfilePage extends StatelessWidget {
             UserModel kullanici = snapshot.data!;
             return KullaniciProfilWidget(kullanici: kullanici);
           } else {
-            return LoginPage();
+            return const LoginPage();
           }
         }
       },

@@ -4,10 +4,7 @@ import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/widgets.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:fitcall/common/api_urls.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,7 +20,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    checkLoginStatus(context);
     return SafeArea(
       child: Scaffold(
         body: Container(
@@ -87,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                 borderSide: BorderSide.none),
             fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
             filled: true,
-            prefixIcon: const Icon(Icons.person),
+            prefixIcon: const Icon(Icons.lock),
           ),
           obscureText: true,
         ),
@@ -154,30 +150,12 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<bool> kullaniciBilgileriniGetir(String token) async {
-    try {
-      var response = await http.post(
-        Uri.parse(getSporcu),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-      if (response.statusCode == 200) {
-        savePrefs("kullanici", utf8.decode(response.bodyBytes));
-        return true;
-      } else {
-        print('Kullanıcı bilgileri getirilemedi');
-        return false;
-      }
-    } catch (e) {
-      print("Kullanıcı bilgileri getirilirken bir hata oluştu: $e");
-      return false;
-    }
-  }
-
   void checkLoginStatus(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
-    if (token != null) {
-      Navigator.pushReplacementNamed(context, routeEnums[SayfaAdi.anasayfa]!);
+    DateTime exp = DateTime.tryParse(prefs.getString('token_exp') ?? '')!;
+    if (token != null && exp.isAfter(DateTime.now())) {
+      Navigator.pushNamed(context, routeEnums[SayfaAdi.anasayfa]!);
     }
   }
 }

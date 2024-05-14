@@ -21,9 +21,10 @@ class PaketModel {
     required this.ozellikler,
   });
 
-  static List<PaketModel?> fromJson(response) {
-    List<PaketModel?> paketListesi = [];
-    List<dynamic> list = json.decode(utf8.decode(response.bodyBytes));
+  static List<PaketModel>? fromJson(response) {
+    List<PaketModel>? paketListesi = [];
+    var body = utf8.decode(response.bodyBytes);
+    List<dynamic> list = json.decode(body)['paketler'];
     for (var paket in list) {
       paketListesi.add(PaketModel(
         id: paket['id'] ?? 0,
@@ -41,5 +42,40 @@ class PaketModel {
       ));
     }
     return paketListesi;
+  }
+}
+
+class UyelikModel {
+  int id;
+  String haftaninGunu;
+  String baslangicSaati;
+  String bitisSaati;
+  String kortAdi;
+  String aktifMi;
+
+  UyelikModel({
+    required this.id,
+    required this.haftaninGunu,
+    required this.baslangicSaati,
+    required this.bitisSaati,
+    required this.kortAdi,
+    required this.aktifMi,
+  });
+
+  static List<UyelikModel>? fromJson(response) {
+    List<UyelikModel>? uyelikListesi = [];
+    var body = utf8.decode(response.bodyBytes);
+    List<dynamic> list = json.decode(body)['uyelikler'];
+    for (var uyelik in list) {
+      uyelikListesi.add(UyelikModel(
+          id: uyelik['id'] ?? 0,
+          haftaninGunu: uyelik['gun_adi'] ?? '',
+          baslangicSaati:
+              uyelik['baslangic_tarih_saat'].toString().split('T')[1],
+          bitisSaati: uyelik['bitis_tarih_saat'].toString().split('T')[1],
+          kortAdi: uyelik['kort_adi'] ?? '',
+          aktifMi: uyelik['aktif_mi'] ? "Aktif" : "Pasif"));
+    }
+    return uyelikListesi;
   }
 }
