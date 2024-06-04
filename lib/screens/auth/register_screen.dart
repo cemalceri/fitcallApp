@@ -22,6 +22,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPage extends State<RegisterPage> {
   bool _isAgree = false;
   Map<String, dynamic>? formData;
+  String _selectedRole = 'Yetişkin';
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _isletmeController = TextEditingController();
   final TextEditingController _adiController = TextEditingController();
@@ -414,9 +415,10 @@ class _RegisterPage extends State<RegisterPage> {
             onChanged: (String? newValue) {
               setState(() {
                 _uyeTipiController.text = newValue ?? '';
+                _selectedRole = newValue!;
               });
             },
-            items: <String>['Yetişkin', 'Genç Sporcu']
+            items: <String>['Yetişkin', 'Sporcu']
                 .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
@@ -478,140 +480,164 @@ class _RegisterPage extends State<RegisterPage> {
             ),
           ),
           const SizedBox(height: 10),
-          TextFormField(
-            controller: _meslekController,
-            decoration: InputDecoration(
-              labelText: "Meslek",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
+          Visibility(
+            visible: _selectedRole == 'Yetişkin',
+            child: TextFormField(
+              controller: _meslekController,
+              decoration: InputDecoration(
+                labelText: "Meslek",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                filled: true,
+                prefixIcon: const Icon(Icons.work),
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              filled: true,
-              prefixIcon: const Icon(Icons.work),
             ),
           ),
           const SizedBox(height: 10),
-          TextFormField(
-            controller: _anneAdiSoyadiController,
-            decoration: InputDecoration(
-              labelText: "Anne Adı Soyadı",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
+          Visibility(
+            visible: _selectedRole == 'Sporcu',
+            child: TextFormField(
+              controller: _anneAdiSoyadiController,
+              decoration: InputDecoration(
+                labelText: "Anne Adı Soyadı",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                filled: true,
+                prefixIcon: const Icon(Icons.person),
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              filled: true,
-              prefixIcon: const Icon(Icons.person),
             ),
           ),
           const SizedBox(height: 10),
-          TextFormField(
-            controller: _anneTelefonController,
-            keyboardType: TextInputType.phone,
-            maxLength: 11,
-            decoration: InputDecoration(
-              labelText: "Anne Telefon",
-              hintText: "05551114455",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
+          Visibility(
+            visible: _selectedRole == 'Sporcu',
+            child: TextFormField(
+              controller: _anneTelefonController,
+              keyboardType: TextInputType.phone,
+              maxLength: 11,
+              decoration: InputDecoration(
+                labelText: "Anne Telefon",
+                hintText: "05551114455",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                filled: true,
+                prefixIcon: const Icon(Icons.phone),
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              filled: true,
-              prefixIcon: const Icon(Icons.phone),
             ),
           ),
           const SizedBox(height: 10),
-          TextFormField(
-            controller: _anneMailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              labelText: "Anne Email",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
+          Visibility(
+            visible: _selectedRole == 'Sporcu',
+            child: TextFormField(
+              controller: _anneMailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: "Anne Email",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                filled: true,
+                prefixIcon: const Icon(Icons.email),
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              filled: true,
-              prefixIcon: const Icon(Icons.email),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return null; // Eğer değer null veya boş ise geçerli kabul edilir.
-              } else if (!emailValidatorRegExp.hasMatch(value)) {
-                return 'Geçerli bir e-posta adresi girin';
-              }
-              return null; // Tüm kontrol koşulları sağlandığında null döndürülür ve geçerli kabul edilir.
-            },
-          ),
-          const SizedBox(height: 10),
-          TextFormField(
-            controller: _anneMeslekController,
-            decoration: InputDecoration(
-              labelText: "Anne Meslek",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
-              ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              filled: true,
-              prefixIcon: const Icon(Icons.work),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return null; // Eğer değer null veya boş ise geçerli kabul edilir.
+                } else if (!emailValidatorRegExp.hasMatch(value)) {
+                  return 'Geçerli bir e-posta adresi girin';
+                }
+                return null; // Tüm kontrol koşulları sağlandığında null döndürülür ve geçerli kabul edilir.
+              },
             ),
           ),
           const SizedBox(height: 10),
-          TextFormField(
-            controller: _babaAdiSoyadiController,
-            decoration: InputDecoration(
-              labelText: "Baba Adı Soyadı",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
+          Visibility(
+            visible: _selectedRole == 'Sporcu',
+            child: TextFormField(
+              controller: _anneMeslekController,
+              decoration: InputDecoration(
+                labelText: "Anne Meslek",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                filled: true,
+                prefixIcon: const Icon(Icons.work),
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              filled: true,
-              prefixIcon: const Icon(Icons.person),
             ),
           ),
           const SizedBox(height: 10),
-          TextFormField(
-            controller: _babaTelefonController,
-            keyboardType: TextInputType.phone,
-            maxLength: 11,
-            decoration: InputDecoration(
-              labelText: "Baba Telefon",
-              hintText: "05551114455",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
+          Visibility(
+            visible: _selectedRole == 'Sporcu',
+            child: TextFormField(
+              controller: _babaAdiSoyadiController,
+              decoration: InputDecoration(
+                labelText: "Baba Adı Soyadı",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                filled: true,
+                prefixIcon: const Icon(Icons.person),
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              filled: true,
-              prefixIcon: const Icon(Icons.phone),
             ),
           ),
           const SizedBox(height: 10),
-          TextFormField(
-            controller: _babaMailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              labelText: "Baba Email",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
-                borderSide: BorderSide.none,
+          Visibility(
+            visible: _selectedRole == 'Sporcu',
+            child: TextFormField(
+              controller: _babaTelefonController,
+              keyboardType: TextInputType.phone,
+              maxLength: 11,
+              decoration: InputDecoration(
+                labelText: "Baba Telefon",
+                hintText: "05551114455",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                filled: true,
+                prefixIcon: const Icon(Icons.phone),
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
-              filled: true,
-              prefixIcon: const Icon(Icons.email),
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return null; // Eğer değer null veya boş ise geçerli kabul edilir.
-              } else if (!emailValidatorRegExp.hasMatch(value)) {
-                return 'Geçerli bir e-posta adresi girin';
-              }
-              return null; // Tüm kontrol koşulları sağlandığında null döndürülür ve geçerli kabul edilir.
-            },
+          ),
+          const SizedBox(height: 10),
+          Visibility(
+            visible: _selectedRole == 'Sporcu',
+            child: TextFormField(
+              controller: _babaMailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: "Baba Email",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  borderSide: BorderSide.none,
+                ),
+                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                filled: true,
+                prefixIcon: const Icon(Icons.email),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return null; // Eğer değer null veya boş ise geçerli kabul edilir.
+                } else if (!emailValidatorRegExp.hasMatch(value)) {
+                  return 'Geçerli bir e-posta adresi girin';
+                }
+                return null; // Tüm kontrol koşulları sağlandığında null döndürülür ve geçerli kabul edilir.
+              },
+            ),
           ),
         ],
       ),

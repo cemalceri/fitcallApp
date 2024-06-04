@@ -1,10 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
 import 'dart:io';
+import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/ders_models.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 class DersPopupWidget extends StatelessWidget {
   const DersPopupWidget({
@@ -53,36 +56,72 @@ class DersPopupWidget extends StatelessWidget {
           child: ders.bitisTarihSaat.isAfter(DateTime.now())
               ? GestureDetector(
                   onTap: () {
-                    //TODO: Derse katılacağım whatsapp yönlendir isteği gönder
                     _launchUrl(context, ders, 'katılacağım');
                   },
                   child: const Text('Katılacağım'))
-              : GestureDetector(
-                  onTap: () {
-                    //TODO: Derse yapıldı api isteği gönder
-                  },
-                  child: const Text('Ders Yapıldı')),
+              : Visibility(
+                  visible: !ders.tamamlandiUye!,
+                  child: GestureDetector(
+                      onTap: () {
+                        _dersDurumuGonder(context, ders, true);
+                      },
+                      child: const Text('Ders Yapıldı')),
+                ),
         ),
         TextButton(
           onPressed: () {
             Navigator.of(context).pop(); // Popup'ı kapat
           },
           child: ders.bitisTarihSaat.isBefore(DateTime.now())
-              ? GestureDetector(
-                  onTap: () {
-                    //TODO: Derse yapılmadı api isteği gönder
-                  },
-                  child: const Text('Ders Yapılmadı'),
+              ? Visibility(
+                  visible: ders.tamamlandiUye!,
+                  child: GestureDetector(
+                    onTap: () {
+                      _dersDurumuGonder(context, ders, false);
+                    },
+                    child: const Text('Ders Yapılmadı'),
+                  ),
                 )
               : GestureDetector(
                   onTap: () {
-                    //TODO: Derse katılamayacağım whatsapp yönlendir isteği gönder
                     _launchUrl(context, ders, 'katılamayacağım');
                   },
                   child: const Text('Katılamacağım')),
         ),
       ],
     );
+  }
+}
+
+Future<void> _dersDurumuGonder(
+    BuildContext context, DersModel ders, bool bool) async {
+  try {
+    // Prepare the data to be sent in the request body
+    var data = {
+      'dersId': ders.id.toString(),
+      'durum': bool.toString(),
+    };
+    var url = Uri.parse(setDersYapildiDurumu);
+
+    var response = await http.post(
+      url,
+      body: json.encode(data),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode == 200) {
+      //popup kapat
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Hata oluştu: ${response.statusCode}'),
+      ));
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Hata oluştu: $e'),
+    ));
   }
 }
 
