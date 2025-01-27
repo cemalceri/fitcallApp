@@ -1,3 +1,4 @@
+import 'package:fitcall/screens/auth/qr_kod_page.dart';
 import 'package:fitcall/screens/auth/register_screen.dart';
 import 'package:fitcall/screens/dersler/dersler_screen.dart';
 import 'package:fitcall/screens/home_page.dart';
@@ -16,6 +17,7 @@ enum SayfaAdi {
   dersler,
   uyelikPaket,
   kayitol,
+  qrKod,
 }
 
 final Map<String, WidgetBuilder> routes = {
@@ -26,6 +28,7 @@ final Map<String, WidgetBuilder> routes = {
   '/dersler': (context) => const DersListesiPage(),
   '/uyelikPaket': (context) => const UyelikPaketPage(),
   '/kayitol': (context) => const RegisterPage(),
+  '/qrKod': (context) => const QRKodPage(),
 };
 
 final Map<SayfaAdi, String> routeEnums = {

@@ -49,5 +49,7 @@
 	<array>
     	<string>whatsapp</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Uygulama, QR kod taramak için kameraya ihtiyaç duyar.</string>
 </dict>
 </plist>

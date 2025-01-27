@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
+
   final List<Map<String, dynamic>> buttons = [
     {
       'name': routeEnums[SayfaAdi.profil]!,
@@ -27,22 +28,31 @@ class HomePage extends StatelessWidget {
     },
     {'name': 5, 'icon': Icons.notifications, 'text': 'Bildirimler'},
     {'name': 6, 'icon': Icons.help, 'text': 'Yardım'},
+
+    // YENİ EKLEDİĞİMİZ MENÜ:
+    {
+      'name': routeEnums[
+          SayfaAdi.qrKod]!, // Burada sizin proje spesifik route'unuz olmalı
+      'icon': Icons.qr_code,
+      'text': 'QR Kod Okut'
+    },
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text('Ana Sayfa'),
-          automaticallyImplyLeading: false,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () {
-                logout(context);
-              },
-            ),
-          ]),
+        title: const Text('Ana Sayfa'),
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              logout(context);
+            },
+          ),
+        ],
+      ),
       body: GridView.count(
         crossAxisCount: 2,
         padding: const EdgeInsets.all(16),
