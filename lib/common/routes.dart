@@ -39,4 +39,5 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.dersler: '/dersler',
   SayfaAdi.uyelikPaket: '/uyelikPaket',
   SayfaAdi.kayitol: '/kayitol',
+  SayfaAdi.qrKod: '/qrKod',
 };

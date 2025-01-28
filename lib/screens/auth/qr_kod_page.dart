@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/models/auth/login_model.dart';
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,102 +13,94 @@ class QRKodPage extends StatefulWidget {
 }
 
 class _QRKodPageState extends State<QRKodPage> {
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  QRViewController? controller;
+  final MobileScannerController _cameraController = MobileScannerController();
 
-  String scanResult = ''; // Taranan kodu ekranda göstermek için
-  bool isProcessing =
-      false; // Aynı kodun arka arkaya okunmasını engellemek için
+  bool isProcessing = false; // Aynı kodu tekrar tekrar işlememek için
+  String scanResult = ''; // Ekranda göstermek için taranan kod
 
   @override
   void dispose() {
-    controller?.dispose();
+    _cameraController.dispose();
     super.dispose();
   }
 
-  void _onQRViewCreated(QRViewController ctrl) {
-    controller = ctrl;
+  /// Tarama gerçekleştiğinde tetiklenen SENKRON callback.
+  /// Asenkron işlemleri `_processCaptureAsync` fonksiyonuna devrediyoruz.
+  void _onDetect(BarcodeCapture capture) {
+    // capture.barcodes listesinde bir veya birden fazla barkod/QR olabilir
+    final code =
+        capture.barcodes.isNotEmpty ? capture.barcodes.first.rawValue : null;
 
-    // Kameradan gelen tarama sonuçlarını dinliyoruz
-    controller!.scannedDataStream.listen((scanData) async {
-      if (!isProcessing) {
-        isProcessing = true;
+    if (code == null) return; // Geçerli data yoksa çık
+    if (!isProcessing) {
+      isProcessing = true;
+      setState(() {
+        scanResult = code;
+      });
 
-        final code = scanData.code ?? '';
-        setState(() {
-          scanResult = code;
-        });
-
-        // Tarama sonrası Django'ya POST isteği at
-        await _postToDjango(code);
-
-        // Birkaç saniye bekleyip tekrar taramaya izin ver
-        await Future.delayed(const Duration(seconds: 2));
-        isProcessing = false;
-      }
-    });
+      // Asenkron iş (HTTP isteği vb.) için ayrı fonksiyon:
+      _processCaptureAsync(code);
+    }
   }
 
-  /// Django'ya tarama sonuçlarını gönderen method
-  ///
-  /// - 200 dönerse: Sayfayı kapat (Navigator.pop).
-  /// - 400 dönerse: Uyarı göster, tekrar okutmaya devam et.
-  /// - Diğer durumlar: Genel bir hata mesajı göster.
-  Future<void> _postToDjango(String code) async {
+  /// QR kodu veya barkodu yakaladıktan sonra asenkron işlemleri yöneteceğimiz fonksiyon.
+  Future<void> _processCaptureAsync(String code) async {
     try {
-      // SharedPreferences'tan kullanıcı bilgisi alalım.
+      // Örnek: SharedPreferences'tan kullanıcı bilgisi
       final sp = await SharedPreferences.getInstance();
       final kullaniciJson = sp.getString('kullanici');
 
-      // Eğer kullanıcı kaydı yoksa user_id olarak örneğin '0' gönderilebilir.
-      // Normalde login olmuş kullanıcı bilgisi parse edilmelidir.
-      String userId = '0';
+      String userId = '0'; // Eğer kayıt yoksa varsayılan ID
       if (kullaniciJson != null) {
-        final Map<String, dynamic> userMap = jsonDecode(kullaniciJson);
-        final userModel = UserModel.fromJson(userMap);
-        userId = userModel.id.toString();
+        final userMap = jsonDecode(kullaniciJson) as Map<String, dynamic>;
+        // Kullanıcı modelinizde ID nasıl tutuluyorsa ona göre değiştirin.
+        userId = userMap['id'].toString();
       }
 
-      // Django'ya POST isteği
-      final url = Uri.parse(qrInOrOut); // common/api_urls.dart içinde tanımlı
+      // Django endpoint'iniz (örnek):
+      final url = Uri.parse(qrInOrOut);
+
+      // POST isteği
       final response = await http.post(url, body: {
         'user_id': userId,
         'guid': code,
       });
 
+      if (!mounted) return;
+
       if (response.statusCode == 200) {
-        // Başarılı durum: sayfayı kapatıyoruz
-        if (!mounted) return;
+        // Başarılı -> sayfayı kapatıyoruz
         Navigator.pop(context);
       } else if (response.statusCode == 400) {
-        // Kullanıcıya hatalı kod uyarısı gösterelim
-        if (!mounted) return;
+        // Geçersiz kod
         _showAlertDialog(
           context: context,
           title: 'Geçersiz Kod',
           message: 'Kod geçerli değil, lütfen tekrar deneyin.',
         );
       } else {
-        // Diğer durumlar (örneğin sunucu hatası vb.)
-        if (!mounted) return;
+        // Diğer durumlar
         _showAlertDialog(
           context: context,
           title: 'Hata',
-          message: 'Bir hata oluştu. Hata kodu: ${response.statusCode}',
+          message: 'Bir hata oluştu. Kod: ${response.statusCode}',
         );
       }
     } catch (e) {
-      // İstek atarken exception alırsa
       if (!mounted) return;
       _showAlertDialog(
         context: context,
         title: 'Hata',
-        message: 'İstek sırasında bir sorun oluştu.\n$e',
+        message: 'Bir sorun oluştu.\n$e',
       );
     }
+
+    // 2 saniye bekleyip tekrar taramaya izin verelim
+    await Future.delayed(const Duration(seconds: 2));
+    isProcessing = false;
   }
 
-  /// Basit uyarı dialog'u
+  /// Basit diyalog gösteren yardımcı fonksiyon
   void _showAlertDialog({
     required BuildContext context,
     required String title,
@@ -141,23 +132,20 @@ class _QRKodPageState extends State<QRKodPage> {
           // Kameranın bulunduğu alan
           Expanded(
             flex: 4,
-            child: QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
+            child: MobileScanner(
+              controller: _cameraController,
+              // allowDuplicates parametresi kaldırıldığı için yok.
+              onDetect: _onDetect, // senkron callback
             ),
           ),
-
-          // Taranan kodu göstermek için alt kısım
+          // Taranan kodu basitçe göstermek için alt kısım
           Expanded(
             flex: 1,
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Taranan Kod:',
-                    style: TextStyle(fontSize: 16),
-                  ),
+                  const Text('Taranan Kod:', style: TextStyle(fontSize: 16)),
                   const SizedBox(height: 8),
                   Text(
                     scanResult,

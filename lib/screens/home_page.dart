@@ -31,8 +31,7 @@ class HomePage extends StatelessWidget {
 
     // YENİ EKLEDİĞİMİZ MENÜ:
     {
-      'name': routeEnums[
-          SayfaAdi.qrKod]!, // Burada sizin proje spesifik route'unuz olmalı
+      'name': routeEnums[SayfaAdi.qrKod]!,
       'icon': Icons.qr_code,
       'text': 'QR Kod Okut'
     },
