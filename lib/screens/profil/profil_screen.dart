@@ -1,8 +1,7 @@
-import 'dart:convert';
-import 'package:fitcall/models/auth/login_model.dart';
+import 'package:fitcall/common/methods.dart';
+import 'package:fitcall/models/user_model.dart';
 import 'package:fitcall/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'widgets/kullanici_profil_widget.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -27,15 +26,5 @@ class ProfilePage extends StatelessWidget {
         }
       },
     );
-  }
-}
-
-Future<UserModel?> kullaniciBilgileriniGetir(context) async {
-  SharedPreferences sp = await SharedPreferences.getInstance();
-  String? kullaniciJson = sp.getString('kullanici');
-  if (kullaniciJson != null) {
-    return UserModel.fromJson(json.decode(kullaniciJson));
-  } else {
-    return null;
   }
 }

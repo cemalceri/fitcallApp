@@ -35,34 +35,42 @@ class _UyelikPaketPageState extends State<UyelikPaketPage> {
         if (response.statusCode == 200) {
           List<UyelikModel>? uyelikModelList = UyelikModel.fromJson(response);
           List<PaketModel>? paketModelList = PaketModel.fromJson(response);
-          setState(() {
-            paketListesi = paketModelList;
-            uyelikListesi = uyelikModelList;
-            _apiIstegiTamamlandiMi = true;
-          });
+          if (mounted) {
+            setState(() {
+              paketListesi = paketModelList;
+              uyelikListesi = uyelikModelList;
+              _apiIstegiTamamlandiMi = true;
+            });
+          }
         } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content:
+                    Text('Üyelik ve paket bilgileri alınırken bir hata oluştu'),
+              ),
+            );
+          }
+        }
+      }).catchError((e) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content:
-                  Text('Üyelik ve paket bilgileri alınırken bir hata oluştu'),
+            SnackBar(
+              content: Text(
+                  'Üyelik ve paket bilgileri alınırken bir hata oluştu: $e'),
             ),
           );
         }
-      }).catchError((e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-                Text('Üyelik ve paket bilgileri alınırken bir hata oluştu: $e'),
-          ),
-        );
       }).timeout(
         const Duration(seconds: 10),
         onTimeout: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('İstek zaman aşımına uğradı'),
-            ),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('İstek zaman aşımına uğradı'),
+              ),
+            );
+          }
         },
       );
     }

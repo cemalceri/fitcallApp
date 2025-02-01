@@ -1,10 +1,11 @@
+// login_page.dart
+
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -46,8 +47,8 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         Image.asset(
           'assets/images/logo.png',
-          width: 200, // Resmin genişliği
-          height: 200, // Resmin yüksekliği
+          width: 200,
+          height: 200,
         ),
         const Text(
           "Hoşgeldiniz",
@@ -69,7 +70,8 @@ class _LoginPageState extends State<LoginPage> {
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.person)),
         ),
@@ -81,7 +83,8 @@ class _LoginPageState extends State<LoginPage> {
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none),
-            fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+            fillColor:
+                Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
             filled: true,
             prefixIcon: const Icon(Icons.lock),
           ),
@@ -92,12 +95,15 @@ class _LoginPageState extends State<LoginPage> {
           onPressed: () {
             LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
             loginUser(
-              context,
-              _usernameController.text,
-              _passwordController.text,
-            ).then((value) {
+                    context, _usernameController.text, _passwordController.text)
+                .then((role) {
               LoadingSpinner.hide(context);
-              if (value) {
+              if (role == "antrenor") {
+                // Antrenör ise antrenör ana sayfasına yönlendir:
+                Navigator.pushNamed(
+                    context, routeEnums[SayfaAdi.antrenorAnasayfa]!);
+              } else if (role == "uye") {
+                // Üye ise mevcut anasayfaya yönlendir:
                 Navigator.pushNamed(context, routeEnums[SayfaAdi.anasayfa]!);
               }
             });
@@ -148,14 +154,5 @@ class _LoginPageState extends State<LoginPage> {
             child: const Text("Kayıt ol"))
       ],
     );
-  }
-
-  void checkLoginStatus(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
-    DateTime exp = DateTime.tryParse(prefs.getString('token_exp') ?? '')!;
-    if (token != null && exp.isAfter(DateTime.now())) {
-      Navigator.pushNamed(context, routeEnums[SayfaAdi.anasayfa]!);
-    }
   }
 }

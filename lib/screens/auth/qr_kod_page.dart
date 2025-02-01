@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
+import 'package:fitcall/models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class QRKodPage extends StatefulWidget {
-  const QRKodPage({Key? key}) : super(key: key);
+  const QRKodPage({super.key});
 
   @override
   State<QRKodPage> createState() => _QRKodPageState();
@@ -50,11 +51,10 @@ class _QRKodPageState extends State<QRKodPage> {
       final sp = await SharedPreferences.getInstance();
       final kullaniciJson = sp.getString('kullanici');
 
-      String userId = '0'; // Eğer kayıt yoksa varsayılan ID
+      String uyeId = '0'; // Eğer kayıt yoksa varsayılan ID
       if (kullaniciJson != null) {
-        final userMap = jsonDecode(kullaniciJson) as Map<String, dynamic>;
-        // Kullanıcı modelinizde ID nasıl tutuluyorsa ona göre değiştirin.
-        userId = userMap['id'].toString();
+        final user = UserModel.fromJson(json.decode(kullaniciJson));
+        uyeId = user.id.toString();
       }
 
       // Django endpoint'iniz (örnek):
@@ -62,7 +62,7 @@ class _QRKodPageState extends State<QRKodPage> {
 
       // POST isteği
       final response = await http.post(url, body: {
-        'user_id': userId,
+        'uye_id': uyeId,
         'guid': code,
       });
 
@@ -83,7 +83,8 @@ class _QRKodPageState extends State<QRKodPage> {
         _showAlertDialog(
           context: context,
           title: 'Hata',
-          message: 'Bir hata oluştu. Kod: ${response.statusCode}',
+          message:
+              'Bir hata oluştu. Kod: ${response.statusCode} ${response.body}',
         );
       }
     } catch (e) {

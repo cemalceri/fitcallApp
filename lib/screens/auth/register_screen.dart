@@ -103,7 +103,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.home_max),
             ),
@@ -135,7 +136,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.person),
             ),
@@ -155,7 +157,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.person),
             ),
@@ -175,7 +178,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.person_add),
             ),
@@ -196,7 +200,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.lock),
             ),
@@ -219,7 +224,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.lock),
             ),
@@ -243,7 +249,9 @@ class _RegisterPage extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
                 ),
-                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                fillColor: Theme.of(context)
+                    .primaryColor
+                    .withAlpha((0.1 * 255).toInt()),
                 filled: true,
                 prefixIcon: const Icon(Icons.confirmation_number),
               ),
@@ -266,7 +274,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.wc),
             ),
@@ -301,7 +310,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.phone),
             ),
@@ -322,7 +332,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.email),
             ),
@@ -346,7 +357,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.location_on),
             ),
@@ -368,7 +380,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.palette),
             ),
@@ -408,7 +421,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.format_list_numbered),
             ),
@@ -441,7 +455,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.calendar_today),
             ),
@@ -460,7 +475,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.sports_tennis),
             ),
@@ -474,7 +490,8 @@ class _RegisterPage extends State<RegisterPage> {
                 borderRadius: BorderRadius.circular(18),
                 borderSide: BorderSide.none,
               ),
-              fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              fillColor:
+                  Theme.of(context).primaryColor.withAlpha((0.1 * 255).toInt()),
               filled: true,
               prefixIcon: const Icon(Icons.place),
             ),
@@ -490,7 +507,9 @@ class _RegisterPage extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
                 ),
-                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                fillColor: Theme.of(context)
+                    .primaryColor
+                    .withAlpha((0.1 * 255).toInt()),
                 filled: true,
                 prefixIcon: const Icon(Icons.work),
               ),
@@ -507,7 +526,9 @@ class _RegisterPage extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
                 ),
-                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                fillColor: Theme.of(context)
+                    .primaryColor
+                    .withAlpha((0.1 * 255).toInt()),
                 filled: true,
                 prefixIcon: const Icon(Icons.person),
               ),
@@ -527,7 +548,9 @@ class _RegisterPage extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
                 ),
-                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                fillColor: Theme.of(context)
+                    .primaryColor
+                    .withAlpha((0.1 * 255).toInt()),
                 filled: true,
                 prefixIcon: const Icon(Icons.phone),
               ),
@@ -545,7 +568,9 @@ class _RegisterPage extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
                 ),
-                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                fillColor: Theme.of(context)
+                    .primaryColor
+                    .withAlpha((0.1 * 255).toInt()),
                 filled: true,
                 prefixIcon: const Icon(Icons.email),
               ),
@@ -570,7 +595,9 @@ class _RegisterPage extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
                 ),
-                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                fillColor: Theme.of(context)
+                    .primaryColor
+                    .withAlpha((0.1 * 255).toInt()),
                 filled: true,
                 prefixIcon: const Icon(Icons.work),
               ),
@@ -587,7 +614,9 @@ class _RegisterPage extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
                 ),
-                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                fillColor: Theme.of(context)
+                    .primaryColor
+                    .withAlpha((0.1 * 255).toInt()),
                 filled: true,
                 prefixIcon: const Icon(Icons.person),
               ),
@@ -607,7 +636,9 @@ class _RegisterPage extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
                 ),
-                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                fillColor: Theme.of(context)
+                    .primaryColor
+                    .withAlpha((0.1 * 255).toInt()),
                 filled: true,
                 prefixIcon: const Icon(Icons.phone),
               ),
@@ -625,7 +656,9 @@ class _RegisterPage extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(18),
                   borderSide: BorderSide.none,
                 ),
-                fillColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                fillColor: Theme.of(context)
+                    .primaryColor
+                    .withAlpha((0.1 * 255).toInt()),
                 filled: true,
                 prefixIcon: const Icon(Icons.email),
               ),

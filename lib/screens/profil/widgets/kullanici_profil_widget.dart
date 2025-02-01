@@ -1,4 +1,4 @@
-import 'package:fitcall/models/auth/login_model.dart';
+import 'package:fitcall/models/user_model.dart';
 import 'package:flutter/material.dart';
 
 class KullaniciProfilWidget extends StatelessWidget {
@@ -22,7 +22,7 @@ class KullaniciProfilWidget extends StatelessWidget {
             ProfileInfoRow(
                 label: 'Adı Soyadı',
                 value: '${kullanici.adi} ${kullanici.soyadi}'),
-            ProfileInfoRow(label: 'Telefon', value: kullanici.telefon),
+            ProfileInfoRow(label: 'Telefon', value: kullanici.telefon ?? ''),
             ProfileInfoRow(label: 'Mail Adresi', value: kullanici.email ?? ''),
             ProfileInfoRow(label: 'Adres', value: kullanici.adres),
             ProfileInfoRow(
