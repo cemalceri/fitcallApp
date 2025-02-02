@@ -22,6 +22,7 @@ class DersModel {
   final String? aciklama;
   String? antrenorAciklama; // Django: antrenor_aciklama
   final int grup;
+  final String grupAdi;
   final int kort;
   final int? antrenor;
   final int? yardimciAntrenor; // Django: yardimci_antrenor
@@ -50,6 +51,7 @@ class DersModel {
     this.aciklama,
     this.antrenorAciklama,
     required this.grup,
+    required this.grupAdi,
     required this.kort,
     required this.antrenor,
     required this.yardimciAntrenor,
@@ -86,6 +88,7 @@ class DersModel {
         aciklama: jsonItem['aciklama'] ?? '',
         antrenorAciklama: jsonItem['antrenor_aciklama'] ?? '',
         grup: jsonItem['grup'] ?? 0,
+        grupAdi: jsonItem['grup_adi'] ?? '',
         kort: jsonItem['kort'] ?? 0,
         antrenor: jsonItem['antrenor'] ?? 0,
         yardimciAntrenor: jsonItem['yardimci_antrenor'],

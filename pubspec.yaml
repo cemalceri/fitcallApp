@@ -13,6 +13,7 @@ dependencies:
   intl: ^0.20.2
   url_launcher: ^6.2.6
   mobile_scanner: ^6.0.5
+  flutter_launcher_icons: ^0.14.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -22,3 +23,10 @@ flutter:
   assets: 
     - assets/
     - assets/images/
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/app_icon.png"
+  # adaptive_icon_foreground: "assets/adaptive_foreground.png"
+  # adaptive_icon_background: "assets/adaptive_background.png"

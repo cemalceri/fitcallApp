@@ -15,9 +15,12 @@
 // String setDersYapildiDurumu =
 //     'https://binayacademi.herokuapp.com/api/setDersYapildiDurumu'; // (// bearer token)
 // String qrInOrOut = 'https://binayacademi.herokuapp.com/api/qrInOrOut';
-// String qrInOrOut = 'https://binayacademi.herokuapp.com/api/getAntrenorDersProgrami'
+// String getAntrenorDersProgrami =
+//     'https://binayacademi.herokuapp.com/api/getAntrenorDersProgrami';
 // String antrenorDersYapildiDurumu =
 //     'https://binayacademi.herokuapp.com/api/antrenorDersYapildiDurumu';
+// String getAntrenorOgrenciler =
+//     'https://binayacademi.herokuapp.com/api/getAntrenorOgrenciler';
 
 String loginUrl = 'http://10.0.2.2:8000/api/getToken'; // (bearer token)
 String getUser = 'http://10.0.2.2:8000/api/getUser'; // (bearer token)
@@ -38,3 +41,4 @@ String getAntrenorDersProgrami =
     'http://10.0.2.2:8000/api/getAntrenorDersProgrami'; // (bearer token)
 String antrenorDersYapildiDurumu =
     'http://10.0.2.2:8000/api/antrenorDersYapildiDurumu';
+String getAntrenorOgrenciler = 'http://10.0.2.2:8000/api/getAntrenorOgrenciler';

@@ -5,6 +5,7 @@ import 'package:fitcall/common/widgets.dart';
 import 'package:fitcall/models/ders_models.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart'; // Tarih formatlamak için gerekli paket
 
 class AntrenorDerslerPage extends StatefulWidget {
   const AntrenorDerslerPage({super.key});
@@ -14,51 +15,153 @@ class AntrenorDerslerPage extends StatefulWidget {
 }
 
 class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
-  List<DersModel?> gecmisDersler = [];
   List<DersModel?> gelecekDersler = [];
+  List<DersModel?> gecmisDersler = [];
   bool _apiIstegiTamamlandiMi = false;
+  bool _isUpcomingLoading = false;
+  bool _isPastLoading = false;
+
+  // Filtre seçenekleri; default "bugün" seçili
+  String upcomingFilter = "today"; // seçenekler: "today", "thisWeek", "all"
+  String pastFilter = "today"; // seçenekler: "today", "lastWeek", "all"
 
   @override
   void initState() {
     super.initState();
-    _dersBilgileriniCek();
+    _fetchAllLessons();
   }
 
-  Future<void> _dersBilgileriniCek() async {
+  Future<void> _fetchAllLessons() async {
+    await Future.wait([_fetchUpcomingLessons(), _fetchPastLessons()]);
+    setState(() {
+      _apiIstegiTamamlandiMi = true;
+    });
+  }
+
+  /// Gelecek dersler için, seçili filtreye göre tarih aralığı hesapla
+  Map<String, DateTime> _getUpcomingDateRange(String filter) {
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final todayEnd = todayStart
+        .add(const Duration(days: 1))
+        .subtract(const Duration(seconds: 1));
+    if (filter == "today") {
+      return {"start": todayStart, "end": todayEnd};
+    } else if (filter == "thisWeek") {
+      // Haftanın son günü (pazar) hesaplanıyor
+      final int daysToSunday = 7 - now.weekday; // Eğer bugün pazar ise 0 döner
+      final weekEnd = todayEnd.add(Duration(days: daysToSunday));
+      return {"start": todayStart, "end": weekEnd};
+    } else if (filter == "all") {
+      // Tüm gelecek dersler: şimdi'den çok ileri bir tarihe kadar
+      return {"start": now, "end": DateTime(2100)};
+    }
+    return {"start": todayStart, "end": todayEnd};
+  }
+
+  /// Geçmiş dersler için, seçili filtreye göre tarih aralığı hesapla
+  Map<String, DateTime> _getPastDateRange(String filter) {
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final todayEnd = todayStart
+        .add(const Duration(days: 1))
+        .subtract(const Duration(seconds: 1));
+    if (filter == "today") {
+      return {"start": todayStart, "end": todayEnd};
+    } else if (filter == "lastWeek") {
+      // Örneğin: geçerli haftanın başlangıcını bulup bir hafta geriye alıyoruz.
+      final currentWeekStart =
+          todayStart.subtract(Duration(days: now.weekday - 1));
+      final lastWeekStart = currentWeekStart.subtract(const Duration(days: 7));
+      final lastWeekEnd = currentWeekStart.subtract(const Duration(seconds: 1));
+      return {"start": lastWeekStart, "end": lastWeekEnd};
+    } else if (filter == "all") {
+      // Tüm geçmiş dersler: çok eski bir tarihten şimdilik
+      return {"start": DateTime(1900), "end": now};
+    }
+    return {"start": todayStart, "end": todayEnd};
+  }
+
+  /// API'ye baslangic ve bitis tarihleri göndererek gelecek dersleri getir
+  Future<void> _fetchUpcomingLessons() async {
+    setState(() {
+      _isUpcomingLoading = true;
+    });
     var token = await getToken(context);
     if (token != null) {
+      final dateRange = _getUpcomingDateRange(upcomingFilter);
       try {
         var response = await http.post(
           Uri.parse(getAntrenorDersProgrami),
-          headers: {'Authorization': 'Bearer $token'},
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'baslangic': dateRange["start"]!.toIso8601String(),
+            'bitis': dateRange["end"]!.toIso8601String(),
+          }),
         );
         if (response.statusCode == 200) {
-          // DersModel.fromJson metodunuz response.body veya içindeki JSON veriyi almalı.
-          List<DersModel?> tumDersler = DersModel.fromJson(response);
+          // DersModel.fromJson metodunuzun, gelen JSON listesini doğru şekilde parse ettiğini varsayıyoruz.
+          List<DersModel?> lessons = DersModel.fromJson(response);
           setState(() {
-            gecmisDersler = tumDersler
-                .where((element) =>
-                    element!.bitisTarihSaat.isBefore(DateTime.now()))
-                .toList();
-            gelecekDersler = tumDersler
-                .where((element) =>
-                    element!.bitisTarihSaat.isAfter(DateTime.now()))
-                .toList();
+            gelecekDersler = lessons;
           });
         } else {
           throw Exception('API isteği başarısız oldu: ${response.statusCode}');
         }
       } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Dersler alınırken bir hata oluştu: $e'),
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gelecek dersler alınırken hata: $e'),
+          ),
+        );
       } finally {
         setState(() {
-          _apiIstegiTamamlandiMi = true;
+          _isUpcomingLoading = false;
+        });
+      }
+    }
+  }
+
+  /// API'ye baslangic ve bitis tarihleri göndererek geçmiş dersleri getir
+  Future<void> _fetchPastLessons() async {
+    setState(() {
+      _isPastLoading = true;
+    });
+    var token = await getToken(context);
+    if (token != null) {
+      final dateRange = _getPastDateRange(pastFilter);
+      try {
+        var response = await http.post(
+          Uri.parse(getAntrenorDersProgrami),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode({
+            'baslangic': dateRange["start"]!.toIso8601String(),
+            'bitis': dateRange["end"]!.toIso8601String(),
+          }),
+        );
+        if (response.statusCode == 200) {
+          List<DersModel?> lessons = DersModel.fromJson(response);
+          setState(() {
+            gecmisDersler = lessons;
+          });
+        } else {
+          throw Exception('API isteği başarısız oldu: ${response.statusCode}');
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Geçmiş dersler alınırken hata: $e'),
+          ),
+        );
+      } finally {
+        setState(() {
+          _isPastLoading = false;
         });
       }
     }
@@ -78,14 +181,136 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
             ],
           ),
         ),
-        body: _apiIstegiTamamlandiMi
-            ? TabBarView(
-                children: [
-                  _buildClassesList(gelecekDersler, Colors.blue, false),
-                  _buildClassesList(gecmisDersler, Colors.green, true),
-                ],
-              )
-            : const LoadingSpinnerWidget(message: 'Dersler yükleniyor...'),
+        body: TabBarView(
+          children: [
+            _buildUpcomingTab(),
+            _buildPastTab(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUpcomingTab() {
+    return Column(
+      children: [
+        _buildUpcomingFilterButtons(),
+        Expanded(
+          child: _isUpcomingLoading
+              ? const LoadingSpinnerWidget(message: 'Dersler yükleniyor...')
+              : _buildClassesList(gelecekDersler, Colors.blue, false),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPastTab() {
+    return Column(
+      children: [
+        _buildPastFilterButtons(),
+        Expanded(
+          child: _isPastLoading
+              ? const LoadingSpinnerWidget(message: 'Dersler yükleniyor...')
+              : _buildClassesList(gecmisDersler, Colors.green, true),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUpcomingFilterButtons() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ChoiceChip(
+            label: const Text("Bugün"),
+            selected: upcomingFilter == "today",
+            onSelected: (selected) {
+              if (selected) {
+                setState(() {
+                  upcomingFilter = "today";
+                });
+                _fetchUpcomingLessons();
+              }
+            },
+          ),
+          const SizedBox(width: 8),
+          ChoiceChip(
+            label: const Text("Bu Hafta"),
+            selected: upcomingFilter == "thisWeek",
+            onSelected: (selected) {
+              if (selected) {
+                setState(() {
+                  upcomingFilter = "thisWeek";
+                });
+                _fetchUpcomingLessons();
+              }
+            },
+          ),
+          const SizedBox(width: 8),
+          ChoiceChip(
+            label: const Text("Tümü"),
+            selected: upcomingFilter == "all",
+            onSelected: (selected) {
+              if (selected) {
+                setState(() {
+                  upcomingFilter = "all";
+                });
+                _fetchUpcomingLessons();
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPastFilterButtons() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ChoiceChip(
+            label: const Text("Bugün"),
+            selected: pastFilter == "today",
+            onSelected: (selected) {
+              if (selected) {
+                setState(() {
+                  pastFilter = "today";
+                });
+                _fetchPastLessons();
+              }
+            },
+          ),
+          const SizedBox(width: 8),
+          ChoiceChip(
+            label: const Text("Geçen Hafta"),
+            selected: pastFilter == "lastWeek",
+            onSelected: (selected) {
+              if (selected) {
+                setState(() {
+                  pastFilter = "lastWeek";
+                });
+                _fetchPastLessons();
+              }
+            },
+          ),
+          const SizedBox(width: 8),
+          ChoiceChip(
+            label: const Text("Tümü"),
+            selected: pastFilter == "all",
+            onSelected: (selected) {
+              if (selected) {
+                setState(() {
+                  pastFilter = "all";
+                });
+                _fetchPastLessons();
+              }
+            },
+          ),
+        ],
       ),
     );
   }
@@ -105,6 +330,16 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
       itemCount: classes.length,
       itemBuilder: (context, index) {
         final ders = classes[index];
+
+        // Tarih ve saat formatlama
+        String formattedDate =
+            DateFormat('dd-MM-yyyy').format(ders!.baslangicTarihSaat);
+        String formattedTime =
+            DateFormat('HH:mm').format(ders.baslangicTarihSaat);
+
+        // Ders durumu belirleme
+        String dersDurumu = ders.iptalMi == true ? "İptal Edildi" : "Aktif";
+
         return Card(
           elevation: 4,
           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -118,19 +353,20 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
               child: const Icon(Icons.calendar_today, color: Colors.white),
             ),
             title: Text(
-              ders!.kortAdi ?? 'Öğrenci Belli Değil',
+              '${ders.kortAdi} - ${ders.grupAdi}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('📅 Tarih: ${ders.baslangicTarihSaat.toLocal()}'),
-                Text(
-                    '⏰ Saat: ${ders.baslangicTarihSaat.hour}:${ders.baslangicTarihSaat.minute}'),
-                // Antrenörün belirlediği durumu gösteriyoruz.
+                Text('📅 Tarih: $formattedDate'),
+                Text('⏰ Saat: $formattedTime'),
                 Text(
                     '📌 Antrenör Durumu: ${ders.tamamlandiAntrenor == true ? "Tamamlandı" : "Tamamlanmadı"}'),
-                // Eğer daha önce kaydedilmiş antrenör açıklaması varsa, bunu göster.
+                Text('📢 Ders Durumu: $dersDurumu',
+                    style: TextStyle(
+                        color:
+                            ders.iptalMi == true ? Colors.red : Colors.green)),
                 if (ders.antrenorAciklama != null &&
                     ders.antrenorAciklama!.isNotEmpty)
                   Padding(
@@ -157,7 +393,6 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
   }
 
   void _showEditPopup(BuildContext context, DersModel ders) {
-    // Eğer daha önce kaydedilmiş antrenör açıklaması varsa, TextField buna göre dolu gelsin.
     TextEditingController notController =
         TextEditingController(text: ders.antrenorAciklama ?? '');
     bool dersTamamlandi = ders.tamamlandiAntrenor ?? false;
@@ -207,8 +442,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                final dersId = ders
-                    .id; // Modelinizde id alanının bulunduğunu varsayıyoruz.
+                final dersId = ders.id;
                 final notValue = notController.text;
                 var token = await getToken(context);
                 if (token != null) {
@@ -226,7 +460,6 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
                       }),
                     );
                     if (response.statusCode == 200) {
-                      // API isteği başarılı ise, ilgili dersin durumu ve açıklamasını güncelliyoruz.
                       setState(() {
                         ders.tamamlandiAntrenor = dersTamamlandi;
                         ders.antrenorAciklama = notValue;

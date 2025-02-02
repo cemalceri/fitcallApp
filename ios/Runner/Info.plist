@@ -49,5 +49,7 @@
 	<array>
     	<string>whatsapp</string>
 	</array>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
 </dict>
 </plist>
