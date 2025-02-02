@@ -1,3 +1,6 @@
+import 'package:fitcall/screens/antrenor/antrenor_dersler_page.dart';
+import 'package:fitcall/screens/antrenor/antrenor_ogrenciler_page.dart';
+import 'package:fitcall/screens/antrenor/antrenor_profil_page.dart';
 import 'package:fitcall/screens/antrenor_home_page.dart';
 import 'package:fitcall/screens/auth/qr_kod_page.dart';
 import 'package:fitcall/screens/auth/register_screen.dart';
@@ -19,7 +22,10 @@ enum SayfaAdi {
   uyelikPaket,
   kayitol,
   qrKod,
-  antrenorAnasayfa
+  antrenorAnasayfa,
+  antrenorProfil,
+  antrenorDersler,
+  antrenorOgrenciler,
 }
 
 final Map<String, WidgetBuilder> routes = {
@@ -31,7 +37,10 @@ final Map<String, WidgetBuilder> routes = {
   '/uyelikPaket': (context) => const UyelikPaketPage(),
   '/kayitol': (context) => const RegisterPage(),
   '/qrKod': (context) => const QRKodPage(),
-  '/antrenorAnasayfa': (context) => const AntrenorHomePage(),
+  '/antrenorAnasayfa': (context) => AntrenorHomePage(),
+  '/antrenor_profil': (context) => AntrenorProfilPage(),
+  '/antrenor_dersler': (context) => AntrenorDerslerPage(),
+  '/antrenor_ogrenciler': (context) => AntrenorOgrencilerPage(),
 };
 
 final Map<SayfaAdi, String> routeEnums = {
@@ -44,4 +53,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.kayitol: '/kayitol',
   SayfaAdi.qrKod: '/qrKod',
   SayfaAdi.antrenorAnasayfa: '/antrenorAnasayfa',
+  SayfaAdi.antrenorProfil: '/antrenor_profil',
+  SayfaAdi.antrenorDersler: '/antrenor_dersler',
+  SayfaAdi.antrenorOgrenciler: '/antrenor_ogrenciler',
 };

@@ -1,74 +1,59 @@
-import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/common/methods.dart';
-import 'package:fitcall/common/widgets.dart';
-import 'package:fitcall/models/ders_models.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-class DersListesiPage extends StatefulWidget {
-  const DersListesiPage({super.key});
+class AntrenorDerslerPage extends StatelessWidget {
+  AntrenorDerslerPage({super.key});
 
-  @override
-  State<DersListesiPage> createState() => _DersListesiPageState();
-}
+  // Gelecek Dersler Listesi (Örnek)
+  final List<Map<String, String>> upcomingClasses = [
+    {
+      'date': '12 Şubat 2024',
+      'time': '14:00',
+      'student': 'Ahmet Yılmaz',
+      'status': 'Planlandı',
+    },
+    {
+      'date': '15 Şubat 2024',
+      'time': '16:00',
+      'student': 'Zeynep Kaya',
+      'status': 'Planlandı',
+    },
+    {
+      'date': '20 Şubat 2024',
+      'time': '10:00',
+      'student': 'Mehmet Öz',
+      'status': 'Planlandı',
+    },
+  ];
 
-class _DersListesiPageState extends State<DersListesiPage> {
-  List<DersModel?> gecmisDersler = [];
-  List<DersModel?> gelecekDersler = [];
-  bool _apiIstegiTamamlandiMi = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _dersBilgileriniCek();
-  }
-
-  Future<void> _dersBilgileriniCek() async {
-    var token = await getToken(context);
-    if (token != null) {
-      try {
-        var response = await http.post(
-          Uri.parse(getDersProgrami),
-          headers: {'Authorization': 'Bearer $token'},
-        );
-        if (response.statusCode == 200) {
-          List<DersModel?> tumDersler = DersModel.fromJson(response);
-          setState(() {
-            gecmisDersler = tumDersler
-                .where((element) =>
-                    element!.bitisTarihSaat.isBefore(DateTime.now()))
-                .toList();
-            gelecekDersler = tumDersler
-                .where((element) =>
-                    element!.bitisTarihSaat.isAfter(DateTime.now()))
-                .toList();
-          });
-        } else {
-          throw Exception('API isteği başarısız oldu: ${response.statusCode}');
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Dersler alınırken bir hata oluştu: $e'),
-            ),
-          );
-        }
-      } finally {
-        setState(() {
-          _apiIstegiTamamlandiMi = true;
-        });
-      }
-    }
-  }
+  // Geçmiş Dersler Listesi (Örnek)
+  final List<Map<String, String>> pastClasses = [
+    {
+      'date': '05 Şubat 2024',
+      'time': '14:00',
+      'student': 'Ayşe Demir',
+      'status': 'Tamamlandı',
+    },
+    {
+      'date': '02 Şubat 2024',
+      'time': '16:00',
+      'student': 'Emre Can',
+      'status': 'Tamamlandı',
+    },
+    {
+      'date': '29 Ocak 2024',
+      'time': '10:00',
+      'student': 'Fatma Aksoy',
+      'status': 'Tamamlandı',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2, // 2 sekme: Gelecek Dersler & Geçmiş Dersler
+      length: 2, // 2 Sekme: Gelecek Dersler & Geçmiş Dersler
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Ders Listesi'),
+          title: const Text('Derslerim'),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Gelecek Dersler'),
@@ -76,34 +61,24 @@ class _DersListesiPageState extends State<DersListesiPage> {
             ],
           ),
         ),
-        body: _apiIstegiTamamlandiMi
-            ? TabBarView(
-                children: [
-                  _buildClassesList(gelecekDersler, Colors.blue, false),
-                  _buildClassesList(gecmisDersler, Colors.green, true),
-                ],
-              )
-            : const LoadingSpinnerWidget(message: 'Dersler yükleniyor...'),
+        body: TabBarView(
+          children: [
+            _buildClassesList(upcomingClasses, Colors.blue, context, false),
+            _buildClassesList(pastClasses, Colors.green, context, true),
+          ],
+        ),
       ),
     );
   }
 
   // Dersleri Listeleyen Widget
-  Widget _buildClassesList(List<DersModel?> classes, Color color, bool isPast) {
-    if (classes.isEmpty) {
-      return const Center(
-        child: Text(
-          "Bu kategoriye ait ders bulunmamaktadır.",
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
-      );
-    }
-
+  Widget _buildClassesList(List<Map<String, String>> classes, Color color,
+      BuildContext context, bool isPast) {
     return ListView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: classes.length,
       itemBuilder: (context, index) {
-        final ders = classes[index];
+        final lesson = classes[index];
         return Card(
           elevation: 4,
           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -117,24 +92,22 @@ class _DersListesiPageState extends State<DersListesiPage> {
               child: const Icon(Icons.calendar_today, color: Colors.white),
             ),
             title: Text(
-              ders!.kortAdi ?? 'Kort Belli Değil',
+              lesson['student']!,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('📅 Tarih: ${ders.baslangicTarihSaat.toLocal()}'),
-                Text(
-                    '⏰ Saat: ${ders.baslangicTarihSaat.hour}:${ders.baslangicTarihSaat.minute}'),
-                Text(
-                    '📌 Durum: ${ders.bitisTarihSaat.isBefore(DateTime.now()) ? "Tamamlandı" : "Planlandı"}'),
+                Text('📅 Tarih: ${lesson['date']}'),
+                Text('⏰ Saat: ${lesson['time']}'),
+                Text('📌 Durum: ${lesson['status']}'),
               ],
             ),
             trailing: isPast
                 ? IconButton(
                     icon: const Icon(Icons.edit, color: Colors.grey),
                     onPressed: () {
-                      _showEditPopup(context, ders);
+                      _showEditPopup(context, lesson);
                     },
                   )
                 : const Icon(Icons.arrow_forward_ios, color: Colors.grey),
@@ -145,9 +118,9 @@ class _DersListesiPageState extends State<DersListesiPage> {
   }
 
   // **Popup Penceresi (Geçmiş Dersler için)**
-  void _showEditPopup(BuildContext context, DersModel ders) {
+  void _showEditPopup(BuildContext context, Map<String, String> lesson) {
     TextEditingController notController = TextEditingController();
-    bool dersTamamlandi = false;
+    bool dersTamamlandi = true;
 
     showDialog(
       context: context,
@@ -160,6 +133,16 @@ class _DersListesiPageState extends State<DersListesiPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Ders Bilgileri
+              Text(
+                lesson['student']!,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text('📅 Tarih: ${lesson['date']}'),
+              Text('⏰ Saat: ${lesson['time']}'),
+              const Divider(),
               // Not Ekleme Alanı
               TextField(
                 controller: notController,
@@ -178,7 +161,6 @@ class _DersListesiPageState extends State<DersListesiPage> {
                     value: dersTamamlandi,
                     onChanged: (value) {
                       dersTamamlandi = value!;
-                      setState(() {});
                     },
                   ),
                   const Text("Ders Tamamlandı"),
