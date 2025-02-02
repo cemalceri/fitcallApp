@@ -250,28 +250,28 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             // Resim Galerisi Grid
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: GridView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: galleryImages.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemBuilder: (context, index) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      galleryImages[index],
-                      fit: BoxFit.cover,
-                    ),
-                  );
-                },
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 16),
+            //   child: GridView.builder(
+            //     physics: const NeverScrollableScrollPhysics(),
+            //     shrinkWrap: true,
+            //     itemCount: galleryImages.length,
+            //     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            //       crossAxisCount: 3,
+            //       crossAxisSpacing: 8,
+            //       mainAxisSpacing: 8,
+            //     ),
+            //     itemBuilder: (context, index) {
+            //       return ClipRRect(
+            //         borderRadius: BorderRadius.circular(12),
+            //         child: Image.network(
+            //           galleryImages[index],
+            //           fit: BoxFit.cover,
+            //         ),
+            //       );
+            //     },
+            //   ),
+            // ),
             const SizedBox(height: 24),
           ],
         ),

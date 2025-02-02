@@ -1,5 +1,5 @@
 /// Üye (sporcu) bilgilerini içeren model
-class UserModel {
+class UyeModel {
   final int id;
   final bool isActive;
   final bool isDeleted;
@@ -45,7 +45,7 @@ class UserModel {
   final List<String> gunler;
   final List<String> saatler;
 
-  UserModel({
+  UyeModel({
     required this.id,
     required this.isActive,
     required this.isDeleted,
@@ -92,8 +92,8 @@ class UserModel {
     required this.saatler,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
+  factory UyeModel.fromJson(Map<String, dynamic> json) {
+    return UyeModel(
       id: json['id'] ?? 0,
       isActive: json['is_active'] ?? false,
       isDeleted: json['is_deleted'] ?? false,

@@ -1,55 +1,60 @@
+import 'package:fitcall/common/methods.dart';
+import 'package:fitcall/models/antrenor_model.dart';
+import 'package:fitcall/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 
-// Antrenör Modeli
-class TrainerModel {
-  final String adi;
-  final String soyadi;
-  final String telefon;
-  final String email;
-  final String adres;
-  final String uzmanlik;
-  final bool aktifMi;
-  final String seviye;
+class AntrenorProfilPage extends StatelessWidget {
+  const AntrenorProfilPage({super.key});
 
-  TrainerModel({
-    required this.adi,
-    required this.soyadi,
-    required this.telefon,
-    required this.email,
-    required this.adres,
-    required this.uzmanlik,
-    required this.aktifMi,
-    required this.seviye,
-  });
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<AntrenorModel?>(
+      future: antrenorBilgileriniGetir(context),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Bir hata oluştu: ${snapshot.error}'));
+        } else {
+          if (snapshot.data != null) {
+            AntrenorModel antrenor = snapshot.data!;
+            return AntrenorProfilWidget(antrenor: antrenor);
+          } else {
+            return const LoginPage();
+          }
+        }
+      },
+    );
+  }
 }
 
-class AntrenorProfilPage extends StatelessWidget {
-  AntrenorProfilPage({super.key});
+class AntrenorProfilWidget extends StatelessWidget {
+  const AntrenorProfilWidget({super.key, required this.antrenor});
 
-  // Örnek Antrenör Bilgileri
-  final TrainerModel trainer = TrainerModel(
-    adi: 'Ahmet',
-    soyadi: 'Yılmaz',
-    telefon: '+90 555 123 45 67',
-    email: 'ahmet.yilmaz@example.com',
-    adres: 'İstanbul, Türkiye',
-    uzmanlik: 'Fitness ve Vücut Geliştirme',
-    aktifMi: true,
-    seviye: 'İleri Düzey',
-  );
+  final AntrenorModel antrenor;
+
+  Color _getColorFromHex(String? hexColor) {
+    if (hexColor == null || hexColor.isEmpty) {
+      return Colors.grey;
+    }
+    hexColor = hexColor.replaceFirst('#', '');
+    if (hexColor.length == 6) {
+      return Color(int.parse('0xFF$hexColor'));
+    } else if (hexColor.length == 8) {
+      return Color(int.parse('0x$hexColor'));
+    }
+    return Colors.grey;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Antrenör Profili'),
-      ),
+      appBar: AppBar(title: const Text('Antrenör Profili')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Profil Resmi (Şimdilik İkon Kullanıldı)
             CircleAvatar(
               radius: 50,
               backgroundColor: Colors.blueAccent,
@@ -61,30 +66,27 @@ class AntrenorProfilPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              '${trainer.adi} ${trainer.soyadi}',
+              '${antrenor.adi} ${antrenor.user}',
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 10),
-            Text(
-              trainer.uzmanlik,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
             const SizedBox(height: 20),
-
-            // Profil Bilgileri
-            ProfileInfoRow(label: 'Telefon', value: trainer.telefon),
-            ProfileInfoRow(label: 'Mail Adresi', value: trainer.email),
-            ProfileInfoRow(label: 'Adres', value: trainer.adres),
-            ProfileInfoRow(label: 'Seviye', value: trainer.seviye),
             ProfileInfoRow(
-              label: 'Aktiflik Durumu',
-              value: trainer.aktifMi ? 'Aktif' : 'Pasif',
+                label: 'Telefon', value: antrenor.telefon ?? 'Bilinmiyor'),
+            ProfileInfoRow(label: 'Mail Adresi', value: antrenor.ePosta),
+            ProfileInfoRow(
+              label: 'Renk',
+              value: '',
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _getColorFromHex(antrenor.renk),
+                ),
+              ),
             ),
           ],
         ),
@@ -93,16 +95,13 @@ class AntrenorProfilPage extends StatelessWidget {
   }
 }
 
-// **Profil Satırı Bileşeni**
 class ProfileInfoRow extends StatelessWidget {
   final String label;
   final String value;
+  final Widget? child;
 
-  const ProfileInfoRow({
-    super.key,
-    required this.label,
-    required this.value,
-  });
+  const ProfileInfoRow(
+      {super.key, required this.label, required this.value, this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -114,21 +113,20 @@ class ProfileInfoRow extends StatelessWidget {
             flex: 1,
             child: Text(
               label,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
           Expanded(
             flex: 2,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.grey),
-              ),
-              child: Text(value),
-            ),
+            child: child ??
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: Text(value),
+                ),
           ),
         ],
       ),

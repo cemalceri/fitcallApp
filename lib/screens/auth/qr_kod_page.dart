@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/models/user_model.dart';
+import 'package:fitcall/models/uye_model.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
@@ -53,7 +53,7 @@ class _QRKodPageState extends State<QRKodPage> {
 
       String uyeId = '0'; // Eğer kayıt yoksa varsayılan ID
       if (kullaniciJson != null) {
-        final user = UserModel.fromJson(json.decode(kullaniciJson));
+        final user = UyeModel.fromJson(json.decode(kullaniciJson));
         uyeId = user.id.toString();
       }
 

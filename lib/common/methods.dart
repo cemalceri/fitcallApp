@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
+import 'package:fitcall/models/antrenor_model.dart';
+import 'package:fitcall/models/auth/group_model.dart';
 import 'package:fitcall/models/auth/token_model.dart';
-import 'package:fitcall/models/user_model.dart';
+import 'package:fitcall/models/auth/user_model.dart';
+import 'package:fitcall/models/uye_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:fitcall/common/routes.dart';
 import 'package:flutter/material.dart';
@@ -60,8 +63,10 @@ Future<String?> loginUser(
       if (userResponse.statusCode == 200) {
         // Gelen veriyi decode edip kaydediyoruz:
         var decoded = jsonDecode(utf8.decode(userResponse.bodyBytes));
-        await savePrefs("user", jsonEncode(decoded));
+        await savePrefs("user", jsonEncode(decoded["user"]));
         await savePrefs("groups", jsonEncode(decoded["groups"]));
+        await savePrefs("uye", jsonEncode(decoded["uye"]));
+        await savePrefs("antrenor", jsonEncode(decoded["antrenor"]));
 
         // Rol kontrolü:
         if (decoded["antrenor"] != null) {
@@ -134,11 +139,41 @@ Future<void> savePrefsBool(String key, bool value) async {
   await prefs.setBool(key, value);
 }
 
-Future<UserModel?> kullaniciBilgileriniGetir(context) async {
+Future<UyeModel?> uyeBilgileriniGetir(context) async {
   SharedPreferences sp = await SharedPreferences.getInstance();
-  String? kullaniciJson = sp.getString('kullanici');
-  if (kullaniciJson != null) {
-    return UserModel.fromJson(json.decode(kullaniciJson));
+  String? uyeJson = sp.getString('uye');
+  if (uyeJson != null) {
+    return UyeModel.fromJson(json.decode(uyeJson));
+  } else {
+    return null;
+  }
+}
+
+Future<AntrenorModel?> antrenorBilgileriniGetir(context) async {
+  SharedPreferences sp = await SharedPreferences.getInstance();
+  String? antrenor = sp.getString('antrenor');
+  if (antrenor != null) {
+    return AntrenorModel.fromJson(json.decode(antrenor));
+  } else {
+    return null;
+  }
+}
+
+Future<GroupModel?> groupBilgileriniGetir(context) async {
+  SharedPreferences sp = await SharedPreferences.getInstance();
+  String? groups = sp.getString('groups');
+  if (groups != null) {
+    return GroupModel.fromJson(json.decode(groups));
+  } else {
+    return null;
+  }
+}
+
+Future<UserModel?> userBilgileriniGetir(context) async {
+  SharedPreferences sp = await SharedPreferences.getInstance();
+  String? user = sp.getString('user');
+  if (user != null) {
+    return UserModel.fromJson(json.decode(user));
   } else {
     return null;
   }

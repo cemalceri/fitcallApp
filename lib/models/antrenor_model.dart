@@ -1,5 +1,5 @@
 /// Antrenör bilgilerini içeren model
-class TrainerModel {
+class AntrenorModel {
   final int id;
   final bool isActive;
   final bool isDeleted;
@@ -7,13 +7,14 @@ class TrainerModel {
   final DateTime updatedAt;
   final int isletme;
   final String adi;
+  final String soyadi;
   final String ePosta;
   final String? telefon;
   final String? renk;
   final String? ucretKatsayisi;
   final int user;
 
-  TrainerModel({
+  AntrenorModel({
     required this.id,
     required this.isActive,
     required this.isDeleted,
@@ -21,6 +22,7 @@ class TrainerModel {
     required this.updatedAt,
     required this.isletme,
     required this.adi,
+    required this.soyadi,
     required this.ePosta,
     this.telefon,
     this.renk,
@@ -28,8 +30,8 @@ class TrainerModel {
     required this.user,
   });
 
-  factory TrainerModel.fromJson(Map<String, dynamic> json) {
-    return TrainerModel(
+  factory AntrenorModel.fromJson(Map<String, dynamic> json) {
+    return AntrenorModel(
       id: json['id'] ?? 0,
       isActive: json['is_active'] ?? false,
       isDeleted: json['is_deleted'] ?? false,
@@ -41,6 +43,7 @@ class TrainerModel {
           : DateTime.now(),
       isletme: json['isletme'] ?? 0,
       adi: json['adi'] ?? '',
+      soyadi: json['soyadi'] ?? '',
       ePosta: json['e_posta'] ?? '',
       telefon: json['telefon'],
       renk: json['renk'],
@@ -58,6 +61,7 @@ class TrainerModel {
       'updated_at': updatedAt.toIso8601String(),
       'isletme': isletme,
       'adi': adi,
+      'soyadi': soyadi,
       'e_posta': ePosta,
       'telefon': telefon,
       'renk': renk,
