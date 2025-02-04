@@ -1,0 +1,14 @@
+platform :ios, '12.0'  # iOS minimum sürümünü ayarla, gerekirse '13.0' yap
+
+use_frameworks!
+use_modular_headers!
+
+target 'Runner' do
+  use_frameworks!
+  use_modular_headers!
+
+  # Firebase bağımlılıkları
+  pod 'Firebase/Core'
+  pod 'Firebase/Messaging'
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+end

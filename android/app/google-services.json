@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "888830173927",
+    "project_id": "fitcallapp",
+    "storage_bucket": "fitcallapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:888830173927:android:e79265d563ba784b67b842",
+        "android_client_info": {
+          "package_name": "com.ceri.fitcall"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3nlq2kQ686Z4pMyMGBq3XzzcOOaQSG84"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
