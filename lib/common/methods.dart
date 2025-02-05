@@ -10,6 +10,9 @@ import 'package:http/http.dart' as http;
 import 'package:fitcall/common/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 Future<String?> getToken(BuildContext context) async {
   SharedPreferences sp = await SharedPreferences.getInstance();
@@ -71,9 +74,13 @@ Future<String?> loginUser(
         // Rol kontrolü:
         if (decoded["antrenor"] != null) {
           await savePrefs("antrenor", jsonEncode(decoded["antrenor"]));
+          // Başarılı login sonrası FCM cihaz bilgisini gönder
+          await sendFCMDevice(tokenModel.accessToken);
           return "antrenor";
         } else if (decoded["uye"] != null) {
           await savePrefs("uye", jsonEncode(decoded["uye"]));
+          // Başarılı login sonrası FCM cihaz bilgisini gönder
+          await sendFCMDevice(tokenModel.accessToken);
           return "uye";
         } else {
           if (context.mounted) {
@@ -206,4 +213,65 @@ Future<bool> beniHatirlaIsaretlenmisMi() async {
   SharedPreferences sp = await SharedPreferences.getInstance();
   bool? beniHatirla = sp.getBool('beni_hatirla');
   return beniHatirla == true;
+}
+
+Future<void> sendFCMDevice(String bearerToken) async {
+  // FCM token'ını al
+  String? fcmToken = await FirebaseMessaging.instance.getToken();
+  if (fcmToken == null) {
+    print("FCM token alınamadı");
+    return;
+  }
+
+  // Cihaz bilgilerini al
+  String deviceId = "unknown_device";
+  String deviceModel = "unknown_model";
+  String osVersion = "unknown_version";
+  DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+
+  if (Platform.isAndroid) {
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+    deviceId = androidInfo.id ?? "unknown_android_id";
+    deviceModel = androidInfo.model ?? "unknown_android_model";
+    osVersion = androidInfo.version.release ?? "unknown_version";
+  } else if (Platform.isIOS) {
+    IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+    deviceId = iosInfo.identifierForVendor ?? "unknown_ios_id";
+    // iOS'ta cihaz model bilgisini almak için:
+    deviceModel = iosInfo.utsname.machine ?? "unknown_ios_model";
+    osVersion = iosInfo.systemVersion ?? "unknown_version";
+  }
+
+  // Cihaz tipini belirle
+  String deviceType = Platform.isAndroid ? "android" : "ios";
+
+  // API'ye gönderilecek body verisini hazırla. Ek alanlar da ekleniyor.
+  Map<String, dynamic> bodyData = {
+    "device_id": deviceId,
+    "fcm_token": fcmToken,
+    "device_type": deviceType,
+    "device_model": deviceModel,
+    "os_version": osVersion,
+  };
+
+  // API URL'nizi buraya yerleştirin.
+
+  try {
+    final response = await http.post(
+      Uri.parse(cihazKaydetGuncelle),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $bearerToken',
+      },
+      body: jsonEncode(bodyData),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print("FCM cihaz bilgileri kaydedildi/güncellendi");
+    } else {
+      print("FCM cihaz bilgileri kaydedilemedi: ${response.statusCode}");
+    }
+  } catch (e) {
+    print("FCM cihaz bilgileri gönderilirken hata oluştu: $e");
+  }
 }

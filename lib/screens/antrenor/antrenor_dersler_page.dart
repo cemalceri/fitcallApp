@@ -17,7 +17,6 @@ class AntrenorDerslerPage extends StatefulWidget {
 class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
   List<DersModel?> gelecekDersler = [];
   List<DersModel?> gecmisDersler = [];
-  bool _apiIstegiTamamlandiMi = false;
   bool _isUpcomingLoading = false;
   bool _isPastLoading = false;
 
@@ -33,9 +32,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
 
   Future<void> _fetchAllLessons() async {
     await Future.wait([_fetchUpcomingLessons(), _fetchPastLessons()]);
-    setState(() {
-      _apiIstegiTamamlandiMi = true;
-    });
+    setState(() {});
   }
 
   /// Gelecek dersler için, seçili filtreye göre tarih aralığı hesapla

@@ -1,5 +1,6 @@
 import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/widgets/notification_icon.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -27,7 +28,11 @@ class HomePage extends StatelessWidget {
       'icon': Icons.calendar_month,
       'text': 'Üyelik ve Paket Bilgilerim'
     },
-    {'name': 5, 'icon': Icons.notifications, 'text': 'Bildirimler'},
+    {
+      'name': 'notifications',
+      'icon': Icons.notifications,
+      'text': 'Bildirimler'
+    },
     {'name': 6, 'icon': Icons.help, 'text': 'Yardım'},
     {
       'name': routeEnums[SayfaAdi.qrKod]!,
@@ -50,6 +55,30 @@ class HomePage extends StatelessWidget {
     },
   ];
 
+  // Örnek bildirim verileri (Tarih bilgileri eklenmiştir)
+  final List<Map<String, dynamic>> notifications = [
+    {
+      'title': 'Yeni Mesaj',
+      'subtitle': 'Bir eğitmen size mesaj attı.',
+      'date': DateTime.now(),
+    },
+    {
+      'title': 'Güncelleme',
+      'subtitle': 'Sistem bakım çalışması 22:00\'de başlayacak.',
+      'date': DateTime.now().subtract(const Duration(days: 2)),
+    },
+    {
+      'title': 'Özel Teklif',
+      'subtitle': 'Yeni indirimler sizi bekliyor.',
+      'date': DateTime.now().subtract(const Duration(days: 10)),
+    },
+    {
+      'title': 'Yorum Geldi',
+      'subtitle': 'Bir gönderiniz beğenildi.',
+      'date': DateTime.now().subtract(const Duration(hours: 5)),
+    },
+  ];
+
   // Örnek resim galerisi verileri
   final List<String> galleryImages =
       List.generate(6, (index) => 'https://via.placeholder.com/150');
@@ -60,6 +89,8 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Ana Sayfa'),
         actions: [
+          // Ortak NotificationIcon widget'ı kullanılarak bildirim sayfasına yönlendirme sağlanır.
+          NotificationIcon(notifications: notifications),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -68,7 +99,6 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      // Sol tarafta açılır menü
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -76,20 +106,14 @@ class HomePage extends StatelessWidget {
             DrawerHeader(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).primaryColor,
-                    Colors.blueAccent,
-                  ],
+                  colors: [Theme.of(context).primaryColor, Colors.blueAccent],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
               ),
               child: const Text(
                 'Menü',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 28),
               ),
             ),
             // Menü elemanları
@@ -147,7 +171,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            // Duyurular Bölümü Başlığı
+            // Duyurular Bölümü
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -156,16 +180,12 @@ class HomePage extends StatelessWidget {
                   SizedBox(width: 8),
                   Text(
                     'Duyurular',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 8),
-            // Duyurular için swipeable PageView
             SizedBox(
               height: 200,
               child: PageView.builder(
@@ -205,8 +225,7 @@ class HomePage extends StatelessWidget {
                                 Text(
                                   announcement['title']!,
                                   style: const TextStyle(
-                                    color: Colors
-                                        .black, // Daha okunabilir koyu renk
+                                    color: Colors.black,
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -215,8 +234,7 @@ class HomePage extends StatelessWidget {
                                 Text(
                                   announcement['subtitle']!,
                                   style: const TextStyle(
-                                    color: Colors
-                                        .black87, // Alt bilgi için koyu ton
+                                    color: Colors.black87,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -231,7 +249,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            // Resim Galerisi Bölümü Başlığı
+            // Resim Galerisi Bölümü
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -240,38 +258,34 @@ class HomePage extends StatelessWidget {
                   SizedBox(width: 8),
                   Text(
                     'Resim Galerisi',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 8),
-            // Resim Galerisi Grid
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 16),
-            //   child: GridView.builder(
-            //     physics: const NeverScrollableScrollPhysics(),
-            //     shrinkWrap: true,
-            //     itemCount: galleryImages.length,
-            //     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            //       crossAxisCount: 3,
-            //       crossAxisSpacing: 8,
-            //       mainAxisSpacing: 8,
-            //     ),
-            //     itemBuilder: (context, index) {
-            //       return ClipRRect(
-            //         borderRadius: BorderRadius.circular(12),
-            //         child: Image.network(
-            //           galleryImages[index],
-            //           fit: BoxFit.cover,
-            //         ),
-            //       );
-            //     },
-            //   ),
-            // ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: galleryImages.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemBuilder: (context, index) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      galleryImages[index],
+                      fit: BoxFit.cover,
+                    ),
+                  );
+                },
+              ),
+            ),
             const SizedBox(height: 24),
           ],
         ),
