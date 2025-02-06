@@ -100,11 +100,12 @@ class _LoginPageState extends State<LoginPage> {
               LoadingSpinner.hide(context);
               if (role == "antrenor") {
                 // Antrenör ise antrenör ana sayfasına yönlendir:
-                Navigator.pushNamed(
+                Navigator.pushReplacementNamed(
                     context, routeEnums[SayfaAdi.antrenorAnasayfa]!);
               } else if (role == "uye") {
                 // Üye ise mevcut anasayfaya yönlendir:
-                Navigator.pushNamed(context, routeEnums[SayfaAdi.anasayfa]!);
+                Navigator.pushReplacementNamed(
+                    context, routeEnums[SayfaAdi.anasayfa]!);
               }
             });
           },

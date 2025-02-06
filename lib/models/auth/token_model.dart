@@ -11,7 +11,7 @@ class TokenModel {
   });
 
   factory TokenModel.fromJson(dynamic response) {
-    var jsonData = jsonDecode(response.body);
+    var jsonData = jsonDecode(utf8.decode(response.bodyBytes));
     return TokenModel(
       accessToken: jsonData['access_token'],
       expireDate: DateTime.parse(jsonData['expire_date']),

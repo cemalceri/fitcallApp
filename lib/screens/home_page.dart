@@ -77,7 +77,7 @@ class _HomePageState extends State<HomePage> {
       ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
-        var decoded = jsonDecode(response.body);
+        var decoded = jsonDecode(utf8.decode(response.bodyBytes));
         // Her bir öğeyi Map<String, String> olarak döndürüyoruz
         return List<AnnouncementModel>.from(decoded.map((e) {
           return AnnouncementModel.fromJson(e);
@@ -103,7 +103,7 @@ class _HomePageState extends State<HomePage> {
       ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
-        var decoded = jsonDecode(response.body);
+        var decoded = jsonDecode(utf8.decode(response.bodyBytes));
         return List<String>.from(decoded.map((e) => e["url"]));
       } else {
         throw Exception(

@@ -75,7 +75,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
       ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
-        var decoded = jsonDecode(response.body);
+        var decoded = jsonDecode(utf8.decode(response.bodyBytes));
         // API'den gelen her öğeyi AnnouncementModel'e çeviriyoruz
         return List<AnnouncementModel>.from(decoded.map((e) {
           return AnnouncementModel.fromJson(e);
@@ -104,7 +104,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
 
       if (response.statusCode == 200) {
         // JSON veriyi decode ediyoruz -> [{"url": "resim1"}, {"url": "resim2"}, ...]
-        var decoded = jsonDecode(response.body);
+        var decoded = jsonDecode(utf8.decode(response.bodyBytes));
         return List<String>.from(decoded.map((e) => e["url"]));
       } else {
         throw Exception(

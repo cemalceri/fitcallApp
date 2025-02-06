@@ -42,7 +42,7 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
       );
 
       if (response.statusCode == 200) {
-        List<dynamic> jsonList = jsonDecode(response.body);
+        List<dynamic> jsonList = jsonDecode(utf8.decode(response.bodyBytes));
         List<UyeModel> fetchedStudents =
             jsonList.map((json) => UyeModel.fromJson(json)).toList();
         setState(() {
