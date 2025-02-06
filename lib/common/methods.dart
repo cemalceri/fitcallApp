@@ -231,15 +231,15 @@ Future<void> sendFCMDevice(String bearerToken) async {
 
   if (Platform.isAndroid) {
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-    deviceId = androidInfo.id ?? "unknown_android_id";
-    deviceModel = androidInfo.model ?? "unknown_android_model";
-    osVersion = androidInfo.version.release ?? "unknown_version";
+    deviceId = androidInfo.id;
+    deviceModel = androidInfo.model;
+    osVersion = androidInfo.version.release;
   } else if (Platform.isIOS) {
     IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
     deviceId = iosInfo.identifierForVendor ?? "unknown_ios_id";
     // iOS'ta cihaz model bilgisini almak için:
-    deviceModel = iosInfo.utsname.machine ?? "unknown_ios_model";
-    osVersion = iosInfo.systemVersion ?? "unknown_version";
+    deviceModel = iosInfo.utsname.machine;
+    osVersion = iosInfo.systemVersion;
   }
 
   // Cihaz tipini belirle
