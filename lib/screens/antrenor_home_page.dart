@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'package:fitcall/common/api_urls.dart';
+import 'package:fitcall/common/api_urls.dart'; // getAnnouncements tanımlı olsun
 import 'package:fitcall/common/methods.dart';
+import 'package:fitcall/models/duyur_model.dart';
 import 'package:fitcall/screens/fotograf/full_screen_image_page.dart';
 import 'package:fitcall/screens/widgets/notification_icon.dart';
 import 'package:flutter/material.dart';
@@ -29,21 +30,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
     },
   ];
 
-  // Örnek duyuru verileri
-  final List<Map<String, String>> announcements = [
-    {
-      'title': 'Önemli Duyuru',
-      'subtitle': 'Öğrenciler için yeni ders programı yayınlandı.',
-      'imageUrl': 'https://via.placeholder.com/300x200'
-    },
-    {
-      'title': 'Yeni Özellik!',
-      'subtitle': 'Mobil uygulamamız güncellendi, yeni özellikler eklendi.',
-      'imageUrl': 'https://via.placeholder.com/300x200'
-    },
-  ];
-
-  // Örnek bildirim verileri (Tarih bilgileri eklenmiştir)
+  // Bildirim örnek verileri (Tarih bilgileri eklenmiştir)
   final List<Map<String, dynamic>> notifications = [
     {
       'title': 'Yeni Mesaj',
@@ -62,14 +49,43 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
     },
   ];
 
-  // Galeri resimleri listesini tutacak Future
+  // Django backend'den gelen duyuruları tutacak Future
+  late Future<List<AnnouncementModel>> _announcementsFuture;
+  // Galeri resimlerini tutacak Future
   late Future<List<String>> _galleryImagesFuture;
 
   @override
   void initState() {
     super.initState();
-    // Sayfa açıldığında galeri resimlerini çekiyoruz
+    _announcementsFuture = fetchAnnouncements();
     _galleryImagesFuture = fetchGalleryImages();
+  }
+
+  // Django API'den duyuruları çekiyoruz
+  Future<List<AnnouncementModel>> fetchAnnouncements() async {
+    try {
+      // Login sonrası token'ı alıyoruz (getPrefs projenizde tanımlı)
+      String? token = await getPrefs("token");
+      final response = await http.post(
+        Uri.parse(getDuyurular),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        var decoded = jsonDecode(response.body);
+        // API'den gelen her öğeyi AnnouncementModel'e çeviriyoruz
+        return List<AnnouncementModel>.from(decoded.map((e) {
+          return AnnouncementModel.fromJson(e);
+        }));
+      } else {
+        throw Exception("Duyurular alınamadı. Status: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("Duyurular çekilirken hata oluştu: $e");
+    }
   }
 
   // Django /gallery/ endpoint'ine POST isteği atarak resim URL'lerini çekiyoruz
@@ -87,7 +103,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
       ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
-        // JSON veriyi decode ediyoruz -> ["url1","url2",...]
+        // JSON veriyi decode ediyoruz -> [{"url": "resim1"}, {"url": "resim2"}, ...]
         var decoded = jsonDecode(response.body);
         return List<String>.from(decoded.map((e) => e["url"]));
       } else {
@@ -146,83 +162,76 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
           ],
         ),
       ),
-      // Galeri resimlerini FutureBuilder ile gösteriyoruz
-      body: FutureBuilder<List<String>>(
-        future: _galleryImagesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Veriler yükleniyor
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            // Hata varsa
-            return Center(child: Text('Hata oluştu: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            // Veri yok veya boşsa
-            return const Center(child: Text('Hiç resim bulunamadı'));
-          }
-
-          // Veri başarılı şekilde geldiyse
-          final galleryImages = snapshot.data!;
-
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                // Üst Banner / Hoş Geldiniz Mesajı
-                Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue, Colors.lightBlueAccent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(30),
-                      bottomRight: Radius.circular(30),
+      // Sayfanın içeriğini SingleChildScrollView içerisine alıyoruz
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Üst Banner / Hoş Geldiniz Mesajı
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue, Colors.lightBlueAccent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Hoş Geldiniz!',
+                    style: TextStyle(
+                      fontSize: 28,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Hoş Geldiniz!',
-                        style: TextStyle(
-                          fontSize: 28,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Güncel duyuruları ve galeriyi inceleyin.',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
+                  SizedBox(height: 8),
+                  Text(
+                    'Güncel duyuruları ve galeriyi inceleyin.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white70,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                // Duyurular Bölümü
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.announcement, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text(
-                        'Duyurular',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Duyurular Bölümü
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: const [
+                  Icon(Icons.announcement, color: Colors.blue),
+                  SizedBox(width: 8),
+                  Text(
+                    'Duyurular',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Duyuruları FutureBuilder ile çekiyoruz
+            FutureBuilder<List<AnnouncementModel>>(
+              future: _announcementsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Hata: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('Hiç duyuru bulunamadı'));
+                }
+                final announcements = snapshot.data!;
+                return SizedBox(
                   height: 200,
                   child: PageView.builder(
                     controller: PageController(viewportFraction: 0.9),
@@ -240,43 +249,35 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                             elevation: 4,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                image: DecorationImage(
-                                  image: NetworkImage(
-                                      announcement['imageUrl'] ?? ''),
-                                  fit: BoxFit.cover,
-                                  colorFilter: ColorFilter.mode(
-                                    Colors.black.withAlpha((0.3 * 255).toInt()),
-                                    BlendMode.darken,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    announcement.title,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      announcement['title'] ?? '',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    announcement.subtitle,
+                                    style: const TextStyle(
+                                      fontSize: 16,
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      announcement['subtitle'] ?? '',
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 14,
-                                      ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    announcement.content,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -284,26 +285,37 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
                       );
                     },
                   ),
-                ),
-                const SizedBox(height: 24),
-                // Resim Galerisi Bölümü
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.photo_album, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text(
-                        'Resim Galerisi',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+            // Resim Galerisi Bölümü
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: const [
+                  Icon(Icons.photo_album, color: Colors.blue),
+                  SizedBox(width: 8),
+                  Text(
+                    'Resim Galerisi',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                ),
-                const SizedBox(height: 8),
-                // Burada artık statik liste yerine sunucudan gelen liste kullanıyoruz
-                Padding(
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            FutureBuilder<List<String>>(
+              future: _galleryImagesFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Hata: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('Hiç resim bulunamadı'));
+                }
+                final galleryImages = snapshot.data!;
+                return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: GridView.builder(
                     physics: const NeverScrollableScrollPhysics(),
@@ -311,7 +323,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
                     itemCount: galleryImages.length,
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3, // 3 sütun
+                      crossAxisCount: 3,
                       crossAxisSpacing: 8,
                       mainAxisSpacing: 8,
                     ),
@@ -334,12 +346,12 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
                       );
                     },
                   ),
-                ),
-                const SizedBox(height: 24),
-              ],
+                );
+              },
             ),
-          );
-        },
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
