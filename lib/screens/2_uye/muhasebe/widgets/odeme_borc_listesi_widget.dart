@@ -1,4 +1,4 @@
-import 'package:fitcall/models/muhasebe_models.dart';
+import 'package:fitcall/models/2_uye/muhasebe_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 

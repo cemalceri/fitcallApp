@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/models/antrenor_model.dart';
-import 'package:fitcall/models/auth/group_model.dart';
-import 'package:fitcall/models/auth/token_model.dart';
-import 'package:fitcall/models/auth/user_model.dart';
-import 'package:fitcall/models/uye_model.dart';
+import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
+import 'package:fitcall/models/4_auth/group_model.dart';
+import 'package:fitcall/models/4_auth/token_model.dart';
+import 'package:fitcall/models/4_auth/user_model.dart';
+import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:fitcall/common/routes.dart';
 import 'package:flutter/material.dart';

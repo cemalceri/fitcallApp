@@ -1,5 +1,5 @@
 import 'package:fitcall/common/routes.dart';
-import 'package:fitcall/services/notification_service.dart';
+import 'package:fitcall/screens/1_common/1_notification/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 

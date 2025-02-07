@@ -1,6 +1,6 @@
 import 'package:fitcall/common/methods.dart';
-import 'package:fitcall/models/antrenor_model.dart';
-import 'package:fitcall/screens/auth/login_screen.dart';
+import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
+import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:flutter/material.dart';
 
 class AntrenorProfilPage extends StatelessWidget {

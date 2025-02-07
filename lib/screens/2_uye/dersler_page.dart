@@ -1,7 +1,7 @@
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/widgets.dart';
-import 'package:fitcall/models/ders_models.dart';
+import 'package:fitcall/models/0_ortak/ders_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 

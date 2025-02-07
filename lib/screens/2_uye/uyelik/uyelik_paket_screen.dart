@@ -1,9 +1,9 @@
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/widgets.dart';
-import 'package:fitcall/models/uyelik_paket_models.dart';
-import 'package:fitcall/screens/uyelik/widgets/paketlerim_widget.dart';
-import 'package:fitcall/screens/uyelik/widgets/uyeliklerim_widget.dart';
+import 'package:fitcall/models/2_uye/uyelik_paket_model.dart';
+import 'package:fitcall/screens/2_uye/uyelik/widgets/paketlerim_widget.dart';
+import 'package:fitcall/screens/2_uye/uyelik/widgets/uyeliklerim_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 

@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart'; // getAnnouncements tanımlı olsun
 import 'package:fitcall/common/methods.dart';
-import 'package:fitcall/models/duyur_model.dart';
-import 'package:fitcall/screens/fotograf/full_screen_image_page.dart';
-import 'package:fitcall/screens/widgets/notification_icon.dart';
+import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/screens/1_common/2_fotograf/full_screen_image_page.dart';
+import 'package:fitcall/screens/1_common/1_notification/notification_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class AntrenorHomePage extends StatefulWidget {
-  const AntrenorHomePage({Key? key}) : super(key: key);
+  const AntrenorHomePage({super.key});
 
   @override
   State<AntrenorHomePage> createState() => _AntrenorHomePageState();

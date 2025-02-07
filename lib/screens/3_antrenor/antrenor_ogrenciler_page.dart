@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:fitcall/models/uye_model.dart';
+import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 

@@ -1,4 +1,4 @@
-import 'package:fitcall/models/uyelik_paket_models.dart';
+import 'package:fitcall/models/2_uye/uyelik_paket_model.dart';
 import 'package:flutter/material.dart';
 
 class UyeliklerimWidget extends StatelessWidget {

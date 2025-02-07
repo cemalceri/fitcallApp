@@ -26,8 +26,9 @@
 //     'https://binayacademi.herokuapp.com/api/cihazKaydetGuncelle';
 // String getGaleriImages =
 //     'https://binayacademi.herokuapp.com/api/getGaleriImages';
-// String getDuyurular =
-//     'https://binayacademi.herokuapp.com/api/getDuyurular';
+// String getDuyurular = 'https://binayacademi.herokuapp.com/api/getDuyurular';
+// String dersTalebiOlustur =
+//     'https://binayacademi.herokuapp.com/api/dersTalebiOlustur';
 
 String loginUrl = 'http://10.0.2.2:8000/api/getToken'; // (bearer token)
 String getUser = 'http://10.0.2.2:8000/api/getUser'; // (bearer token)
@@ -52,3 +53,4 @@ String getAntrenorOgrenciler = 'http://10.0.2.2:8000/api/getAntrenorOgrenciler';
 String cihazKaydetGuncelle = 'http://10.0.2.2:8000/api/cihazKaydetGuncelle';
 String getGaleriImages = 'http://10.0.2.2:8000/api/getGaleriImages';
 String getDuyurular = 'http://10.0.2.2:8000/api/getDuyurular';
+String dersTalebiOlustur = 'http://10.0.2.2:8000/api/dersTalebiOlustur';

@@ -1,12 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
-
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/regex.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/widgets.dart';
-import 'package:fitcall/screens/auth/widgets/register/kullanici_sozlesmesi_widget.dart';
+import 'package:fitcall/screens/4_auth/widgets/register/kullanici_sozlesmesi_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';

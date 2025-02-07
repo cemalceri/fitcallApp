@@ -101,7 +101,7 @@ class NotificationPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withAlpha((0.05 * 255).toInt()),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         )
@@ -125,7 +125,7 @@ class NotificationPage extends StatelessWidget {
                       subtitle: Text(notif['subtitle']),
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           );

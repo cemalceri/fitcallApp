@@ -1,6 +1,6 @@
 import 'package:fitcall/common/methods.dart';
-import 'package:fitcall/models/uye_model.dart';
-import 'package:fitcall/screens/auth/login_screen.dart';
+import 'package:fitcall/models/2_uye/uye_model.dart';
+import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {
