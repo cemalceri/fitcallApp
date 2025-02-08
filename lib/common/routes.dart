@@ -1,3 +1,4 @@
+import 'package:fitcall/screens/2_uye/ders_talep_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_dersler_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_ogrenciler_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
@@ -42,7 +43,7 @@ final Map<String, WidgetBuilder> routes = {
   '/antrenor_profil': (context) => AntrenorProfilPage(),
   '/antrenor_dersler': (context) => AntrenorDerslerPage(),
   '/antrenor_ogrenciler': (context) => AntrenorOgrencilerPage(),
-  '/uyeDersTalepleri': (context) => const DersListesiPage(),
+  '/uyeDersTalepleri': (context) => const DersTalepPage(),
 };
 
 final Map<SayfaAdi, String> routeEnums = {

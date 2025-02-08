@@ -1,38 +1,45 @@
-class DersZamanDilimi {
-  final String gun;
-  final String baslangic;
-  final String bitis;
+class DersZamanDilimiModel {
+  final int gun;
+  final List<String> saatler;
 
-  DersZamanDilimi(
-      {required this.gun, required this.baslangic, required this.bitis});
+  DersZamanDilimiModel({required this.gun, required this.saatler});
 
-  factory DersZamanDilimi.fromJson(Map<String, dynamic> json) =>
-      DersZamanDilimi(
-          gun: json['gun'] as String,
-          baslangic: json['baslangic'] as String,
-          bitis: json['bitis'] as String);
+  factory DersZamanDilimiModel.fromJson(Map<String, dynamic> json) {
+    final int gun = json['gun'] as int;
+    List<String> saatler;
+    if (json.containsKey('saatler') && json['saatler'] != null) {
+      saatler = List<String>.from(json['saatler']);
+    } else if (json.containsKey('baslangic') && json['baslangic'] != null) {
+      saatler = [json['baslangic'].toString()];
+    } else {
+      saatler = [];
+    }
+    return DersZamanDilimiModel(gun: gun, saatler: saatler);
+  }
 
-  Map<String, dynamic> toJson() =>
-      {'gun': gun, 'baslangic': baslangic, 'bitis': bitis};
+  Map<String, dynamic> toJson() => {
+        'gun': gun,
+        'saatler': saatler,
+      };
 }
 
-class DersTalebi {
+class DersTalebiModel {
+  final int? id;
   final String? uye;
   final String? misafir;
   final String? seviye;
-  final int? onemDerecesi;
   final String? referans;
   final int? antrenor;
   final bool aktifMi;
   final String? aciklama;
   final int? user;
-  final List<DersZamanDilimi> zamanDilimleri;
+  final List<DersZamanDilimiModel> zamanDilimleri;
 
-  DersTalebi({
+  DersTalebiModel({
+    this.id,
     this.uye,
     this.misafir,
     this.seviye,
-    this.onemDerecesi,
     this.referans,
     this.antrenor,
     required this.aktifMi,
@@ -41,16 +48,16 @@ class DersTalebi {
     required this.zamanDilimleri,
   });
 
-  factory DersTalebi.fromJson(Map<String, dynamic> json) {
-    var zamanList = json['zaman_dilimleri'] as List<dynamic>;
-    List<DersZamanDilimi> zamanDilimleri = zamanList
-        .map((e) => DersZamanDilimi.fromJson(e as Map<String, dynamic>))
+  factory DersTalebiModel.fromJson(Map<String, dynamic> json) {
+    var zamanList = json['zaman_dilimleri'] as List<dynamic>? ?? [];
+    List<DersZamanDilimiModel> zamanDilimleri = zamanList
+        .map((e) => DersZamanDilimiModel.fromJson(e as Map<String, dynamic>))
         .toList();
-    return DersTalebi(
-      uye: json['uye'] as String?,
+    return DersTalebiModel(
+      id: json['id'] as int?,
+      uye: json['uye']?.toString(),
       misafir: json['misafir'] as String?,
       seviye: json['seviye'] as String,
-      onemDerecesi: json['onem_derecesi'] as int?,
       referans: json['referans'] as String?,
       antrenor: json['antrenor'] as int?,
       aktifMi: json['aktif_mi'] as bool,
@@ -61,10 +68,10 @@ class DersTalebi {
   }
 
   Map<String, dynamic> toJson() => {
+        'id': id,
         'uye': uye,
         'misafir': misafir,
         'seviye': seviye,
-        'onem_derecesi': onemDerecesi,
         'referans': referans,
         'antrenor': antrenor,
         'aktif_mi': aktifMi,

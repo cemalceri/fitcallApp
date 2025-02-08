@@ -68,8 +68,6 @@ Future<String?> loginUser(
         var decoded = jsonDecode(utf8.decode(userResponse.bodyBytes));
         await savePrefs("user", jsonEncode(decoded["user"]));
         await savePrefs("groups", jsonEncode(decoded["groups"]));
-        await savePrefs("uye", jsonEncode(decoded["uye"]));
-        await savePrefs("antrenor", jsonEncode(decoded["antrenor"]));
 
         // Rol kontrolü:
         if (decoded["antrenor"] != null) {
