@@ -44,6 +44,11 @@ class _HomePageState extends State<HomePage> {
       'text': 'Ders Taleplerim'
     },
     {
+      'name': routeEnums[SayfaAdi.uygunSaatler]!,
+      'icon': Icons.calendar_view_day,
+      'text': 'Ders Rezerve Et'
+    },
+    {
       'name': 'notifications',
       'icon': Icons.notifications,
       'text': 'Bildirimler'

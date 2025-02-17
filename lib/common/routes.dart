@@ -1,4 +1,5 @@
 import 'package:fitcall/screens/2_uye/ders_talep_page.dart';
+import 'package:fitcall/screens/2_uye/uygun_saatler_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_dersler_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_ogrenciler_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
@@ -28,6 +29,7 @@ enum SayfaAdi {
   antrenorDersler,
   antrenorOgrenciler,
   uyeDersTalepleri,
+  uygunSaatler,
 }
 
 final Map<String, WidgetBuilder> routes = {
@@ -44,6 +46,7 @@ final Map<String, WidgetBuilder> routes = {
   '/antrenor_dersler': (context) => AntrenorDerslerPage(),
   '/antrenor_ogrenciler': (context) => AntrenorOgrencilerPage(),
   '/uyeDersTalepleri': (context) => const DersTalepPage(),
+  '/uygunSaatler': (context) => const UygunSaatlerPage(),
 };
 
 final Map<SayfaAdi, String> routeEnums = {
@@ -60,4 +63,5 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.antrenorDersler: '/antrenor_dersler',
   SayfaAdi.antrenorOgrenciler: '/antrenor_ogrenciler',
   SayfaAdi.uyeDersTalepleri: '/uyeDersTalepleri',
+  SayfaAdi.uygunSaatler: '/uygunSaatler',
 };

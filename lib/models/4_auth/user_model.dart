@@ -3,7 +3,6 @@ import 'dart:convert';
 class UserModel {
   final int id;
   final String password;
-  final DateTime lastLogin;
   final bool isSuperuser;
   final String username;
   final String firstName;
@@ -18,7 +17,6 @@ class UserModel {
   UserModel({
     required this.id,
     required this.password,
-    required this.lastLogin,
     required this.isSuperuser,
     required this.username,
     required this.firstName,
@@ -35,17 +33,18 @@ class UserModel {
     return UserModel(
       id: json['id'],
       password: json['password'],
-      lastLogin: DateTime.parse(json['last_login']),
       isSuperuser: json['is_superuser'],
       username: json['username'],
-      firstName: json['first_name'],
-      lastName: json['last_name'],
+      firstName: json['first_name'] ?? '',
+      lastName: json['last_name'] ?? '',
       email: json['email'],
-      isStaff: json['is_staff'],
-      isActive: json['is_active'],
-      dateJoined: DateTime.parse(json['date_joined']),
-      groups: List<int>.from(json['groups']),
-      userPermissions: List<dynamic>.from(json['user_permissions']),
+      isStaff: json['is_staff'] ?? false,
+      isActive: json['is_active'] ?? false,
+      dateJoined: json['date_joined'] != null
+          ? DateTime.parse(json['date_joined'])
+          : DateTime.now(),
+      groups: List<int>.from(json['groups']) ?? [],
+      userPermissions: List<dynamic>.from(json['user_permissions']) ?? [],
     );
   }
 
@@ -53,7 +52,6 @@ class UserModel {
     return {
       'id': id,
       'password': password,
-      'last_login': lastLogin.toIso8601String(),
       'is_superuser': isSuperuser,
       'username': username,
       'first_name': firstName,

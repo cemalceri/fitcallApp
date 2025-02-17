@@ -62,7 +62,7 @@ class DersTalepPageState extends State<DersTalepPage> {
     setState(() {
       token = prefs.getString('token');
       uye =
-          UyeModel.fromJson(jsonDecode(prefs.getString('user')!)).id.toString();
+          UyeModel.fromJson(jsonDecode(prefs.getString('uye')!)).id.toString();
       user = UserModel.fromJson(jsonDecode(prefs.getString('user')!)).id;
     });
     _fetchPreviousRequests();
