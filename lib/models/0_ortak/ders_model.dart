@@ -15,11 +15,11 @@ class DersModel {
   final String seviye;
   bool? tamamlandiAntrenor;
   final bool? tamamlandiYonetici;
-  final bool? tamamlandiUye;
+  bool? tamamlandiUye;
   final bool? iptalMi;
   final String? iptalEden;
   final DateTime? iptalTarihSaat;
-  final String? aciklama;
+  String? aciklama;
   String? antrenorAciklama; // Django: antrenor_aciklama
   final int grup;
   final String grupAdi;

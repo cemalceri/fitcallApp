@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/widgets.dart';
@@ -88,7 +89,6 @@ class _DersListesiPageState extends State<DersListesiPage> {
     );
   }
 
-  // Dersleri Listeleyen Widget
   Widget _buildClassesList(List<DersModel?> classes, Color color, bool isPast) {
     if (classes.isEmpty) {
       return const Center(
@@ -127,7 +127,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
                 Text(
                     '⏰ Saat: ${ders.baslangicTarihSaat.hour}:${ders.baslangicTarihSaat.minute}'),
                 Text(
-                    '📌 Durum: ${ders.bitisTarihSaat.isBefore(DateTime.now()) ? "Tamamlandı" : "Planlandı"}'),
+                    '📌 Durum:  ${ders.tamamlandiUye == true ? "Tamamlandı" : "Tamamlanmadı"}'),
               ],
             ),
             trailing: isPast
@@ -144,10 +144,10 @@ class _DersListesiPageState extends State<DersListesiPage> {
     );
   }
 
-  // **Popup Penceresi (Geçmiş Dersler için)**
   void _showEditPopup(BuildContext context, DersModel ders) {
-    TextEditingController notController = TextEditingController();
-    bool dersTamamlandi = false;
+    TextEditingController notController =
+        TextEditingController(text: ders.aciklama ?? '');
+    bool dersTamamlandi = ders.tamamlandiUye ?? false;
 
     showDialog(
       context: context,
@@ -157,53 +157,80 @@ class _DersListesiPageState extends State<DersListesiPage> {
             borderRadius: BorderRadius.circular(16),
           ),
           title: const Text("Ders Değerlendirme"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Not Ekleme Alanı
-              TextField(
-                controller: notController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: "Not Ekle",
-                  hintText: "Derse dair yorumlarınızı ekleyin...",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Ders Tamamlandı Checkbox
-              Row(
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Checkbox(
+                  CheckboxListTile(
+                    title: const Text("Ders tamamlandı mı?"),
                     value: dersTamamlandi,
-                    onChanged: (value) {
-                      dersTamamlandi = value!;
-                      setState(() {});
+                    onChanged: (bool? value) {
+                      setState(() {
+                        dersTamamlandi = value ?? false;
+                      });
                     },
                   ),
-                  const Text("Ders Tamamlandı"),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: notController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: "Not Ekle",
+                      hintText: "Derse dair yorumlarınızı ekleyin...",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
           actions: [
-            // Kapat Butonu
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               child: const Text("Kapat"),
             ),
-            // Kaydet Butonu
             ElevatedButton(
-              onPressed: () {
-                // Burada not ve tamamlanma durumu API'ye gönderilebilir.
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        "Not kaydedildi: ${notController.text}, Tamamlandı: $dersTamamlandi"),
-                  ),
-                );
+              onPressed: () async {
+                final dersId = ders.id;
+                final notValue = notController.text;
+                var token = await getToken(context);
+                if (token != null) {
+                  try {
+                    var response = await http.post(
+                      Uri.parse(setDersYapildiBilgisi),
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer $token',
+                      },
+                      body: jsonEncode({
+                        'ders_id': dersId,
+                        'aciklama': notValue,
+                        'tamamlandi': dersTamamlandi,
+                      }),
+                    );
+                    if (response.statusCode == 200) {
+                      setState(() {
+                        ders.tamamlandiUye = dersTamamlandi;
+                        ders.aciklama = notValue;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text("Değerlendirme kaydedildi.")),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Hata: ${response.statusCode}")),
+                      );
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("API hatası: $e")),
+                    );
+                  }
+                }
                 Navigator.pop(context);
               },
               child: const Text("Kaydet"),

@@ -43,8 +43,8 @@ class UserModel {
       dateJoined: json['date_joined'] != null
           ? DateTime.parse(json['date_joined'])
           : DateTime.now(),
-      groups: List<int>.from(json['groups']) ?? [],
-      userPermissions: List<dynamic>.from(json['user_permissions']) ?? [],
+      groups: List<int>.from(json['groups']),
+      userPermissions: List<dynamic>.from(json['user_permissions']),
     );
   }
 
