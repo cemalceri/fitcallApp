@@ -20,6 +20,44 @@ class _LoginPageState extends State<LoginPage> {
   bool _beniHatirla = false;
 
   @override
+  void initState() {
+    super.initState();
+    _checkAutoLogin();
+  }
+
+  Future<void> _checkAutoLogin() async {
+    // 'beni_hatirla' değeri okunuyor:
+    bool? remember = await getPrefsBool('beni_hatirla');
+    if (remember == true) {
+      // Eğer true ise, kaydedilmiş kullanıcı adı ve şifre de alınıyor:
+      String? savedUsername = await getPrefs('username');
+      String? savedPassword = await getPrefs('password');
+      if (savedUsername != null && savedPassword != null) {
+        // TextField'ları da güncelleyelim:
+        _usernameController.text = savedUsername;
+        _passwordController.text = savedPassword;
+        setState(() {
+          _beniHatirla = true;
+        });
+        // Otomatik giriş için loading spinner gösteriliyor:
+        LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
+        loginUser(context, savedUsername, savedPassword).then((role) {
+          LoadingSpinner.hide(context);
+          if (role == "antrenor") {
+            // Antrenör ise antrenör ana sayfasına yönlendir:
+            Navigator.pushReplacementNamed(
+                context, routeEnums[SayfaAdi.antrenorAnasayfa]!);
+          } else if (role == "uye") {
+            // Üye ise mevcut anasayfaya yönlendir:
+            Navigator.pushReplacementNamed(
+                context, routeEnums[SayfaAdi.uyeAnasayfa]!);
+          }
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
@@ -105,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
               } else if (role == "uye") {
                 // Üye ise mevcut anasayfaya yönlendir:
                 Navigator.pushReplacementNamed(
-                    context, routeEnums[SayfaAdi.anasayfa]!);
+                    context, routeEnums[SayfaAdi.uyeAnasayfa]!);
               }
             });
           },
@@ -127,7 +165,7 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         Checkbox(
           value: _beniHatirla,
-          onChanged: (bool? value) {
+          onChanged: (value) {
             setState(() {
               _beniHatirla = value!;
               savePrefsBool('beni_hatirla', _beniHatirla);

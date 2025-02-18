@@ -15,7 +15,7 @@ import 'package:fitcall/screens/2_uye/uyelik/uyelik_paket_screen.dart';
 import 'package:flutter/material.dart';
 
 enum SayfaAdi {
-  anasayfa,
+  uyeAnasayfa,
   login,
   profil,
   odemeler,
@@ -34,7 +34,7 @@ enum SayfaAdi {
 
 final Map<String, WidgetBuilder> routes = {
   '/': (context) => const LoginPage(),
-  '/anasayfa': (context) => HomePage(),
+  '/uyeAnasayfa': (context) => HomePage(),
   '/profil': (context) => const ProfilePage(),
   '/borcalacak': (context) => const BorcAlacakPage(),
   '/dersler': (context) => const DersListesiPage(),
@@ -51,7 +51,7 @@ final Map<String, WidgetBuilder> routes = {
 
 final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.login: '/',
-  SayfaAdi.anasayfa: '/anasayfa',
+  SayfaAdi.uyeAnasayfa: '/uyeAnasayfa',
   SayfaAdi.profil: '/profil',
   SayfaAdi.borcAlacak: '/borcalacak',
   SayfaAdi.dersler: '/dersler',

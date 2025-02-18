@@ -56,6 +56,8 @@ Future<String?> loginUser(
       TokenModel tokenModel = TokenModel.fromJson(response);
       await savePrefs("token", tokenModel.accessToken);
       await savePrefs("token_exp", tokenModel.expireDate.toString());
+      await savePrefs("username", username);
+      await savePrefs("password", password);
 
       // Kullanıcı bilgilerini çekiyoruz:
       var userResponse = await http.post(
@@ -187,6 +189,10 @@ Future<UserModel?> userBilgileriniGetir(context) async {
 void logout(context) async {
   SharedPreferences sp = await SharedPreferences.getInstance();
   sp.remove('token_exp');
+  sp.remove('username ');
+  sp.remove('password');
+  sp.remove('user');
+  sp.remove('beni_hatirla');
   sp.remove('token').then((value) {
     if (context.mounted) {
       Navigator.pushReplacementNamed(context, routeEnums[SayfaAdi.login]!);
@@ -197,6 +203,12 @@ void logout(context) async {
 Future<String?> getPrefs(String key) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? value = prefs.getString(key);
+  return value;
+}
+
+Future<bool?> getPrefsBool(String key) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool? value = prefs.getBool(key);
   return value;
 }
 

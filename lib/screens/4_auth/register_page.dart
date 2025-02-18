@@ -81,7 +81,7 @@ class _RegisterPage extends State<RegisterPage> {
           "Hoşgeldiniz",
           style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
         ),
-        Text("Giriş için lütfen bilgilerinizi giriniz."),
+        Text("Kayıt olmak için lütfen bilgilerinizi giriniz."),
       ],
     );
   }
@@ -801,7 +801,8 @@ class _RegisterPage extends State<RegisterPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
     if (token != null) {
-      Navigator.pushReplacementNamed(context, routeEnums[SayfaAdi.anasayfa]!);
+      Navigator.pushReplacementNamed(
+          context, routeEnums[SayfaAdi.uyeAnasayfa]!);
     }
   }
 
