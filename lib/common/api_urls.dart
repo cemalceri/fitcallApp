@@ -32,7 +32,6 @@
 //     'https://binayacademi.herokuapp.com/api/getUyedersTalepListesi';
 // String silUyedersTalebi =
 //     'https://binayacademi.herokuapp.com/api/silUyedersTalebi';
-
 // String getUygunSaatler =
 //     'https://binayacademi.herokuapp.com/api/getUygunSaatler';
 

@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/widgets.dart';
-import 'package:fitcall/models/0_ortak/ders_model.dart';
+import 'package:fitcall/models/0_ortak/etkinlik_model.dart';
+import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart'; // Tarih formatlamak için gerekli paket
@@ -15,8 +16,8 @@ class AntrenorDerslerPage extends StatefulWidget {
 }
 
 class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
-  List<DersModel?> gelecekDersler = [];
-  List<DersModel?> gecmisDersler = [];
+  List<EtkinlikModel>? gelecekDersler = [];
+  List<EtkinlikModel>? gecmisDersler = [];
   bool _isUpcomingLoading = false;
   bool _isPastLoading = false;
 
@@ -24,14 +25,23 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
   String upcomingFilter = "today"; // seçenekler: "today", "thisWeek", "all"
   String pastFilter = "today"; // seçenekler: "today", "lastWeek", "all"
 
+  // Giriş yapan antrenörün id'si. Bu değeri uygulamanızın kullanıcı yönetiminden alabilirsiniz.
+  AntrenorModel? currentAntrenor;
+
   @override
   void initState() {
     super.initState();
     _fetchAllLessons();
+    _loadCurrentAntrenor();
   }
 
   Future<void> _fetchAllLessons() async {
     await Future.wait([_fetchUpcomingLessons(), _fetchPastLessons()]);
+    setState(() {});
+  }
+
+  Future<void> _loadCurrentAntrenor() async {
+    currentAntrenor = await antrenorBilgileriniGetir(context);
     setState(() {});
   }
 
@@ -45,12 +55,10 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
     if (filter == "today") {
       return {"start": todayStart, "end": todayEnd};
     } else if (filter == "thisWeek") {
-      // Haftanın son günü (pazar) hesaplanıyor
-      final int daysToSunday = 7 - now.weekday; // Eğer bugün pazar ise 0 döner
+      final int daysToSunday = 7 - now.weekday;
       final weekEnd = todayEnd.add(Duration(days: daysToSunday));
       return {"start": todayStart, "end": weekEnd};
     } else if (filter == "all") {
-      // Tüm gelecek dersler: şimdi'den çok ileri bir tarihe kadar
       return {"start": now, "end": DateTime(2100)};
     }
     return {"start": todayStart, "end": todayEnd};
@@ -66,20 +74,17 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
     if (filter == "today") {
       return {"start": todayStart, "end": todayEnd};
     } else if (filter == "lastWeek") {
-      // Örneğin: geçerli haftanın başlangıcını bulup bir hafta geriye alıyoruz.
       final currentWeekStart =
           todayStart.subtract(Duration(days: now.weekday - 1));
       final lastWeekStart = currentWeekStart.subtract(const Duration(days: 7));
       final lastWeekEnd = currentWeekStart.subtract(const Duration(seconds: 1));
       return {"start": lastWeekStart, "end": lastWeekEnd};
     } else if (filter == "all") {
-      // Tüm geçmiş dersler: çok eski bir tarihten şimdilik
       return {"start": DateTime(1900), "end": now};
     }
     return {"start": todayStart, "end": todayEnd};
   }
 
-  /// API'ye baslangic ve bitis tarihleri göndererek gelecek dersleri getir
   Future<void> _fetchUpcomingLessons() async {
     setState(() {
       _isUpcomingLoading = true;
@@ -100,8 +105,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
           }),
         );
         if (response.statusCode == 200) {
-          // DersModel.fromJson metodunuzun, gelen JSON listesini doğru şekilde parse ettiğini varsayıyoruz.
-          List<DersModel?> lessons = DersModel.fromJson(response);
+          List<EtkinlikModel>? lessons = EtkinlikModel.fromJson(response);
           setState(() {
             gelecekDersler = lessons;
           });
@@ -110,9 +114,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gelecek dersler alınırken hata: $e'),
-          ),
+          SnackBar(content: Text('Gelecek dersler alınırken hata: $e')),
         );
       } finally {
         setState(() {
@@ -122,7 +124,6 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
     }
   }
 
-  /// API'ye baslangic ve bitis tarihleri göndererek geçmiş dersleri getir
   Future<void> _fetchPastLessons() async {
     setState(() {
       _isPastLoading = true;
@@ -143,7 +144,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
           }),
         );
         if (response.statusCode == 200) {
-          List<DersModel?> lessons = DersModel.fromJson(response);
+          List<EtkinlikModel>? lessons = EtkinlikModel.fromJson(response);
           setState(() {
             gecmisDersler = lessons;
           });
@@ -152,9 +153,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Geçmiş dersler alınırken hata: $e'),
-          ),
+          SnackBar(content: Text('Geçmiş dersler alınırken hata: $e')),
         );
       } finally {
         setState(() {
@@ -312,8 +311,9 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
     );
   }
 
-  Widget _buildClassesList(List<DersModel?> classes, Color color, bool isPast) {
-    if (classes.isEmpty) {
+  Widget _buildClassesList(
+      List<EtkinlikModel>? classes, Color color, bool isPast) {
+    if (classes == null || classes.isEmpty) {
       return const Center(
         child: Text(
           "Bu kategoriye ait ders bulunmamaktadır.",
@@ -330,13 +330,29 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
 
         // Tarih ve saat formatlama
         String formattedDate =
-            DateFormat('dd-MM-yyyy').format(ders!.baslangicTarihSaat);
+            DateFormat('dd-MM-yyyy').format(ders.baslangicTarihSaat);
         String formattedTime =
             DateFormat('HH:mm').format(ders.baslangicTarihSaat);
 
-        // Ders durumu belirleme
+        // Ders durumu
         String dersDurumu = ders.iptalMi == true ? "İptal Edildi" : "Aktif";
 
+        bool displayCompleted = false;
+        String displayAciklama = "";
+        bool isMainAntrenor = false;
+        bool isYardimciAntrenor = false;
+        if (currentAntrenor != null) {
+          isMainAntrenor = ders.antrenor == currentAntrenor!.id;
+          isYardimciAntrenor = ders.yardimciAntrenor == currentAntrenor!.id;
+
+          if (isMainAntrenor) {
+            displayCompleted = ders.tamamlandiAntrenor ?? false;
+            displayAciklama = ders.antrenorAciklama ?? "";
+          } else if (isYardimciAntrenor) {
+            displayCompleted = ders.tamamlandiYardimciAntrenor ?? false;
+            displayAciklama = ders.yardimciAntrenorAciklama ?? "";
+          }
+        }
         return Card(
           elevation: 4,
           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -359,27 +375,27 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
                 Text('📅 Tarih: $formattedDate'),
                 Text('⏰ Saat: $formattedTime'),
                 Text(
-                    '📌 Antrenör Durumu: ${ders.tamamlandiAntrenor == true ? "Tamamlandı" : "Tamamlanmadı"}'),
+                    '📌 Durum: ${displayCompleted ? "Tamamlandı" : "Tamamlanmadı"}'),
+                if (displayAciklama.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text(
+                      '✏️ Açıklama: $displayAciklama',
+                      style: const TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
                 Text('📢 Ders Durumu: $dersDurumu',
                     style: TextStyle(
                         color:
                             ders.iptalMi == true ? Colors.red : Colors.green)),
-                if (ders.antrenorAciklama != null &&
-                    ders.antrenorAciklama!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      '✏️ Açıklama: ${ders.antrenorAciklama}',
-                      style: const TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ),
               ],
             ),
-            trailing: isPast
+            trailing: (isMainAntrenor || isYardimciAntrenor)
                 ? IconButton(
                     icon: const Icon(Icons.edit, color: Colors.grey),
                     onPressed: () {
-                      _showEditPopup(context, ders);
+                      _showEditPopup(context, ders, displayCompleted,
+                          displayAciklama, isYardimciAntrenor);
                     },
                   )
                 : const Icon(Icons.arrow_forward_ios, color: Colors.grey),
@@ -389,10 +405,11 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
     );
   }
 
-  void _showEditPopup(BuildContext context, DersModel ders) {
+  void _showEditPopup(BuildContext context, EtkinlikModel ders,
+      bool currentCompleted, String currentAciklama, bool isYardimci) {
     TextEditingController notController =
-        TextEditingController(text: ders.antrenorAciklama ?? '');
-    bool dersTamamlandi = ders.tamamlandiAntrenor ?? false;
+        TextEditingController(text: currentAciklama);
+    bool dersTamamlandi = currentCompleted;
 
     showDialog(
       context: context,
@@ -444,22 +461,35 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
                 var token = await getToken(context);
                 if (token != null) {
                   try {
+                    // Payload'da, hangi rolün güncelleneceğini belirtmek için 'is_yardimci' alanı ekleniyor.
+                    Map<String, dynamic> payload = {
+                      'ders_id': dersId,
+                      'not': notValue,
+                      'is_yardimci': isYardimci,
+                    };
+                    // Eğer ana antrenör ise 'antrenor_tamamlandi', yardımcı ise 'yardimci_antrenor_tamamlandi'
+                    if (isYardimci) {
+                      payload['yardimci_antrenor_tamamlandi'] = dersTamamlandi;
+                    } else {
+                      payload['antrenor_tamamlandi'] = dersTamamlandi;
+                    }
                     var response = await http.post(
                       Uri.parse(antrenorDersYapildiDurumu),
                       headers: {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer $token',
                       },
-                      body: jsonEncode({
-                        'ders_id': dersId,
-                        'not': notValue,
-                        'antrenor_tamamlandi': dersTamamlandi,
-                      }),
+                      body: jsonEncode(payload),
                     );
                     if (response.statusCode == 200) {
                       setState(() {
-                        ders.tamamlandiAntrenor = dersTamamlandi;
-                        ders.antrenorAciklama = notValue;
+                        if (isYardimci) {
+                          ders.tamamlandiYardimciAntrenor = dersTamamlandi;
+                          ders.yardimciAntrenorAciklama = notValue;
+                        } else {
+                          ders.tamamlandiAntrenor = dersTamamlandi;
+                          ders.antrenorAciklama = notValue;
+                        }
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

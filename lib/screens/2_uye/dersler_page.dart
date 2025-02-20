@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/widgets.dart';
-import 'package:fitcall/models/0_ortak/ders_model.dart';
+import 'package:fitcall/models/0_ortak/etkinlik_model.dart';
+import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,14 +15,23 @@ class DersListesiPage extends StatefulWidget {
 }
 
 class _DersListesiPageState extends State<DersListesiPage> {
-  List<DersModel?> gecmisDersler = [];
-  List<DersModel?> gelecekDersler = [];
+  List<EtkinlikModel?> gecmisDersler = [];
+  List<EtkinlikModel?> gelecekDersler = [];
   bool _apiIstegiTamamlandiMi = false;
+
+  // Prefs'den çekilen UyeModel örneği; mevcut kullanıcının id'si burada tutulacak.
+  UyeModel? currentUye;
 
   @override
   void initState() {
     super.initState();
+    _loadCurrentUye();
     _dersBilgileriniCek();
+  }
+
+  Future<void> _loadCurrentUye() async {
+    currentUye = await uyeBilgileriniGetir(context);
+    setState(() {});
   }
 
   Future<void> _dersBilgileriniCek() async {
@@ -33,13 +43,13 @@ class _DersListesiPageState extends State<DersListesiPage> {
           headers: {'Authorization': 'Bearer $token'},
         );
         if (response.statusCode == 200) {
-          List<DersModel?> tumDersler = DersModel.fromJson(response);
+          List<EtkinlikModel>? tumDersler = EtkinlikModel.fromJson(response);
           setState(() {
-            gecmisDersler = tumDersler
+            gecmisDersler = (tumDersler ?? [])
                 .where((element) =>
                     element!.bitisTarihSaat.isBefore(DateTime.now()))
                 .toList();
-            gelecekDersler = tumDersler
+            gelecekDersler = (tumDersler ?? [])
                 .where((element) =>
                     element!.bitisTarihSaat.isAfter(DateTime.now()))
                 .toList();
@@ -89,7 +99,8 @@ class _DersListesiPageState extends State<DersListesiPage> {
     );
   }
 
-  Widget _buildClassesList(List<DersModel?> classes, Color color, bool isPast) {
+  Widget _buildClassesList(
+      List<EtkinlikModel?> classes, Color color, bool isPast) {
     if (classes.isEmpty) {
       return const Center(
         child: Text(
@@ -104,6 +115,20 @@ class _DersListesiPageState extends State<DersListesiPage> {
       itemCount: classes.length,
       itemBuilder: (context, index) {
         final ders = classes[index];
+        // Mevcut kullanıcının onay bilgisini, "uye_onaylari" listesinden arıyoruz.
+        UyeEtkinlikOnayModel? userApproval;
+        if (ders!.uyeOnaylari != null && currentUye != null) {
+          for (final approval in ders.uyeOnaylari!) {
+            if (approval.uye == currentUye!.id) {
+              // id üzerinden karşılaştırma yapılıyor.
+              userApproval = approval;
+              break;
+            }
+          }
+        }
+        final bool userCompleted = userApproval?.tamamlandi ?? false;
+        final String userAciklama = userApproval?.aciklama ?? '';
+
         return Card(
           elevation: 4,
           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -117,7 +142,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
               child: const Icon(Icons.calendar_today, color: Colors.white),
             ),
             title: Text(
-              ders!.kortAdi ?? 'Kort Belli Değil',
+              ders.kortAdi ?? 'Kort Belli Değil',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             subtitle: Column(
@@ -127,14 +152,16 @@ class _DersListesiPageState extends State<DersListesiPage> {
                 Text(
                     '⏰ Saat: ${ders.baslangicTarihSaat.hour}:${ders.baslangicTarihSaat.minute}'),
                 Text(
-                    '📌 Durum:  ${ders.tamamlandiUye == true ? "Tamamlandı" : "Tamamlanmadı"}'),
+                    '📌 Durum: ${userCompleted ? "Tamamlandı" : "Tamamlanmadı"}'),
+                if (userAciklama.isNotEmpty) Text('💬 Açıklama: $userAciklama'),
               ],
             ),
             trailing: isPast
                 ? IconButton(
                     icon: const Icon(Icons.edit, color: Colors.grey),
                     onPressed: () {
-                      _showEditPopup(context, ders);
+                      _showEditPopup(
+                          context, ders, userCompleted, userAciklama);
                     },
                   )
                 : const Icon(Icons.arrow_forward_ios, color: Colors.grey),
@@ -144,10 +171,11 @@ class _DersListesiPageState extends State<DersListesiPage> {
     );
   }
 
-  void _showEditPopup(BuildContext context, DersModel ders) {
+  void _showEditPopup(BuildContext context, EtkinlikModel ders,
+      bool userCompleted, String userAciklama) {
     TextEditingController notController =
-        TextEditingController(text: ders.aciklama ?? '');
-    bool dersTamamlandi = ders.tamamlandiUye ?? false;
+        TextEditingController(text: userAciklama);
+    bool dersTamamlandi = userCompleted;
 
     showDialog(
       context: context,
@@ -213,8 +241,25 @@ class _DersListesiPageState extends State<DersListesiPage> {
                     );
                     if (response.statusCode == 200) {
                       setState(() {
-                        ders.tamamlandiUye = dersTamamlandi;
-                        ders.aciklama = notValue;
+                        if (ders.uyeOnaylari != null && currentUye != null) {
+                          bool found = false;
+                          for (var approval in ders.uyeOnaylari!) {
+                            if (approval.uye == currentUye!.id) {
+                              approval.tamamlandi = dersTamamlandi;
+                              approval.aciklama = notValue;
+                              found = true;
+                              break;
+                            }
+                          }
+                          if (!found) {
+                            ders.uyeOnaylari!.add(UyeEtkinlikOnayModel(
+                              id: 0, // API tarafından belirlenecek.
+                              uye: currentUye!.id,
+                              tamamlandi: dersTamamlandi,
+                              aciklama: notValue,
+                            ));
+                          }
+                        }
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
