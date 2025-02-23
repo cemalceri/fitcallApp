@@ -34,6 +34,8 @@
 //     'https://binayacademi.herokuapp.com/api/silUyedersTalebi';
 // String getUygunSaatler =
 //     'https://binayacademi.herokuapp.com/api/getUygunSaatler';
+// String setQRKodBilgisi =
+//     'https://binayacademi.herokuapp.com/api/setQRKodBilgisi';
 
 String loginUrl = 'http://10.0.2.2:8000/api/getToken'; // (bearer token)
 String getUser = 'http://10.0.2.2:8000/api/getUser'; // (bearer token)
@@ -63,3 +65,4 @@ String getUyedersTalepListesi =
     'http://10.0.2.2:8000/api/getUyedersTalepListesi';
 String silUyedersTalebi = 'http://10.0.2.2:8000/api/silUyedersTalebi';
 String getUygunSaatler = 'http://10.0.2.2:8000/api/getUygunSaatler';
+String setQRKodBilgisi = 'http://10.0.2.2:8000/api/setQRKodBilgisi';

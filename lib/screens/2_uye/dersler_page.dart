@@ -47,11 +47,11 @@ class _DersListesiPageState extends State<DersListesiPage> {
           setState(() {
             gecmisDersler = (tumDersler ?? [])
                 .where((element) =>
-                    element!.bitisTarihSaat.isBefore(DateTime.now()))
+                    element.bitisTarihSaat.isBefore(DateTime.now()))
                 .toList();
             gelecekDersler = (tumDersler ?? [])
-                .where((element) =>
-                    element!.bitisTarihSaat.isAfter(DateTime.now()))
+                .where(
+                    (element) => element.bitisTarihSaat.isAfter(DateTime.now()))
                 .toList();
           });
         } else {

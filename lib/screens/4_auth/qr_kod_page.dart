@@ -1,10 +1,16 @@
 import 'dart:convert';
-import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/models/2_uye/uye_model.dart';
+import 'dart:math';
+import 'package:flutter/rendering.dart';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+import 'package:fitcall/common/api_urls.dart';
+import 'package:fitcall/common/methods.dart';
+import 'package:fitcall/models/4_auth/group_model.dart';
 
 class QRKodPage extends StatefulWidget {
   const QRKodPage({super.key});
@@ -14,155 +20,333 @@ class QRKodPage extends StatefulWidget {
 }
 
 class _QRKodPageState extends State<QRKodPage> {
-  final MobileScannerController _cameraController = MobileScannerController();
+  // QR verileri
+  String _generatedCode = '';
+  String? _validityTime;
+  String? _passCount;
 
-  bool isProcessing = false; // Aynı kodu tekrar tekrar işlememek için
-  String scanResult = ''; // Ekranda göstermek için taranan kod
+  // Kullanıcı grubu
+  GroupModel? _currentGroup; // groupBilgileriniGetir(context) sonucu
+  bool _isLoadingGroup = true;
+
+  // Ekrandaki seçimler
+  bool _isMisafirSecildi = false;
+  String _selectedSure = '5dk'; // Varsayılan
+  int _kullanimSayisi = 1; // Yonetici/cafe misafir girebilir
+
+  // Bu key, QrImageView’i kaydedebilmemiz için gerekli
+  final GlobalKey _qrBoundaryKey = GlobalKey();
 
   @override
-  void dispose() {
-    _cameraController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _initGroup();
   }
 
-  /// Tarama gerçekleştiğinde tetiklenen SENKRON callback.
-  /// Asenkron işlemleri `_processCaptureAsync` fonksiyonuna devrediyoruz.
-  void _onDetect(BarcodeCapture capture) {
-    // capture.barcodes listesinde bir veya birden fazla barkod/QR olabilir
-    final code =
-        capture.barcodes.isNotEmpty ? capture.barcodes.first.rawValue : null;
-
-    if (code == null) return; // Geçerli data yoksa çık
-    if (!isProcessing) {
-      isProcessing = true;
-      setState(() {
-        scanResult = code;
-      });
-
-      // Asenkron iş (HTTP isteği vb.) için ayrı fonksiyon:
-      _processCaptureAsync(code);
-    }
-  }
-
-  /// QR kodu veya barkodu yakaladıktan sonra asenkron işlemleri yöneteceğimiz fonksiyon.
-  Future<void> _processCaptureAsync(String code) async {
-    try {
-      // Örnek: SharedPreferences'tan kullanıcı bilgisi
-      final sp = await SharedPreferences.getInstance();
-      final kullaniciJson = sp.getString('kullanici');
-
-      String uyeId = '0'; // Eğer kayıt yoksa varsayılan ID
-      if (kullaniciJson != null) {
-        final user = UyeModel.fromJson(json.decode(kullaniciJson));
-        uyeId = user.id.toString();
-      }
-
-      // Django endpoint'iniz (örnek):
-      final url = Uri.parse(qrInOrOut);
-
-      // POST isteği
-      final response = await http.post(url, body: {
-        'uye_id': uyeId,
-        'guid': code,
-      });
-
-      if (!mounted) return;
-
-      if (response.statusCode == 200) {
-        // Başarılı -> sayfayı kapatıyoruz
-        Navigator.pop(context);
-      } else if (response.statusCode == 400) {
-        // Geçersiz kod
-        _showAlertDialog(
-          context: context,
-          title: 'Geçersiz Kod',
-          message: 'Kod geçerli değil, lütfen tekrar deneyin.',
-        );
-      } else {
-        // Diğer durumlar
-        _showAlertDialog(
-          context: context,
-          title: 'Hata',
-          message:
-              'Bir hata oluştu. Kod: ${response.statusCode} ${response.body}',
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      _showAlertDialog(
-        context: context,
-        title: 'Hata',
-        message: 'Bir sorun oluştu.\n$e',
-      );
-    }
-
-    // 2 saniye bekleyip tekrar taramaya izin verelim
-    await Future.delayed(const Duration(seconds: 2));
-    isProcessing = false;
-  }
-
-  /// Basit diyalog gösteren yardımcı fonksiyon
-  void _showAlertDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-  }) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Tamam'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _initGroup() async {
+    _currentGroup = await groupBilgileriniGetir(context);
+    setState(() {
+      _isLoadingGroup = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingGroup) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('QR Kod Okuyucu'),
+        title: const Text('QR Kod İle Giriş'),
       ),
-      body: Column(
-        children: [
-          // Kameranın bulunduğu alan
-          Expanded(
-            flex: 4,
-            child: MobileScanner(
-              controller: _cameraController,
-              // allowDuplicates parametresi kaldırıldığı için yok.
-              onDetect: _onDetect, // senkron callback
-            ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // (1) Giriş mi, Misafir mi seçimi
+              _buildQrTypeSelection(),
+              const SizedBox(height: 16),
+
+              // (2) Misafir seçildiyse süre seçenekleri
+              if (_isMisafirSecildi) _buildMisafirSureSecimi(),
+
+              // (3) Eğer user group = yonetici veya cafe ve misafir seçiliyse => kullanım sayısı (1-5 arası combobox)
+              if (_isMisafirSecildi &&
+                  (_currentGroup!.name == 'yonetici' ||
+                      _currentGroup!.name == 'cafe')) ...[
+                const SizedBox(height: 16),
+                _buildKullanimSayisiDropdown(),
+              ],
+              const SizedBox(height: 24),
+
+              // (4) Oluşturulmuş QR kod görüntüsü
+              if (_generatedCode.isNotEmpty) _buildQrResult(),
+            ],
           ),
-          // Taranan kodu basitçe göstermek için alt kısım
-          Expanded(
-            flex: 1,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Taranan Kod:', style: TextStyle(fontSize: 16)),
-                  const SizedBox(height: 8),
-                  Text(
-                    scanResult,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
+  }
+
+  /// Widget: Giriş veya Misafir seçimi (ChoiceChip)
+  Widget _buildQrTypeSelection() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ChoiceChip(
+          label: const Text('Giriş QR Oluştur'),
+          selected: !_isMisafirSecildi,
+          onSelected: (val) {
+            setState(() {
+              _isMisafirSecildi = false;
+            });
+            _generateQrCode(); // Seçim değişince anında QR oluştur
+          },
+        ),
+        const SizedBox(width: 16),
+        ChoiceChip(
+          label: const Text('Misafir QR Oluştur'),
+          selected: _isMisafirSecildi,
+          onSelected: (val) {
+            setState(() {
+              _isMisafirSecildi = true;
+            });
+            _generateQrCode(); // Seçim değişince anında QR oluştur
+          },
+        ),
+      ],
+    );
+  }
+
+  /// Widget: Misafir Süre Seçimi (ChoiceChip)
+  Widget _buildMisafirSureSecimi() {
+    final groupName = _currentGroup!.name;
+    final durationsForUye = ['5dk', '1saat', '1gun'];
+    final durationsForYonetici = ['5dk', '1saat', '1gun', '1hafta'];
+
+    final list = (groupName == 'yonetici' || groupName == 'cafe')
+        ? durationsForYonetici
+        : durationsForUye;
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
+      children: list.map((sure) {
+        return ChoiceChip(
+          label: Text(sure),
+          selected: _selectedSure == sure,
+          onSelected: (selected) {
+            if (selected) {
+              setState(() {
+                _selectedSure = sure;
+              });
+              _generateQrCode(); // Süre değişince de QR otomatik güncellenir
+            }
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  /// Widget: Yönetici / Cafe misafir kullanım sayısı combo
+  Widget _buildKullanimSayisiDropdown() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text('Kullanım Hakkı: '),
+        const SizedBox(width: 8),
+        DropdownButton<int>(
+          value: _kullanimSayisi,
+          items: [1, 2, 3, 4, 5].map((val) {
+            return DropdownMenuItem<int>(
+              value: val,
+              child: Text('$val'),
+            );
+          }).toList(),
+          onChanged: (val) {
+            if (val == null) return;
+            setState(() {
+              _kullanimSayisi = val;
+            });
+            _generateQrCode(); // Kullanım hakkı değişince de yeniden oluştur
+          },
+        ),
+      ],
+    );
+  }
+
+  /// Widget: Oluşmuş QR Kodu & Bilgiler & (misafir ise paylaş)
+  Widget _buildQrResult() {
+    return Column(
+      children: [
+        // QrImage'ı RepaintBoundary içine alıyoruz ki resmi paylaşabilelim
+        RepaintBoundary(
+          key: _qrBoundaryKey,
+          child: QrImageView(
+            data: _generatedCode,
+            version: QrVersions.auto,
+            size: 300.0, // QR biraz daha büyük
+          ),
+        ),
+        const SizedBox(height: 16),
+        if (_validityTime != null)
+          Text(
+            'Geçerlilik Süresi: $_validityTime',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        if (_passCount != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Geçiş Hakkı: $_passCount',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ],
+
+        // Misafir ise paylaş butonu
+        if (_isMisafirSecildi) ...[
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _shareQrAsImage,
+            icon: const Icon(Icons.share),
+            label: const Text('QR Kodunu Paylaş'),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Misafir QR’ı resim olarak paylaşmak
+  Future<void> _shareQrAsImage() async {
+    try {
+      // 1) RepaintBoundary'yi bul
+      final boundary = _qrBoundaryKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null) return;
+
+      // 2) Görseli UI Image olarak al
+      final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+
+      // 3) ByteData -> Uint8List (PNG)
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return;
+      final pngBytes = byteData.buffer.asUint8List();
+
+      // 4) Geçici dizine kaydet
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/qrcode.png');
+      await file.writeAsBytes(pngBytes);
+
+      // 5) share_plus ile paylaş
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'Bu benim misafir QR kodum!',
+      );
+    } catch (e) {
+      debugPrint('Hata (QR paylaşırken): $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Paylaşım hatası: $e'),
+        ),
+      );
+    }
+  }
+
+  /// QR Oluşturma & Sunucuya Gönderme
+  Future<void> _generateQrCode() async {
+    try {
+      final token = await getToken(context);
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Token bulunamadı. Giriş yapın.')),
+        );
+        return;
+      }
+
+      final newCode = _generateUuid();
+
+      // Geçerlilik süresi (dakika)
+      int minutesToAdd = 5; // Giriş seçimi = 5 dk
+      if (_isMisafirSecildi) {
+        switch (_selectedSure) {
+          case '5dk':
+            minutesToAdd = 5;
+            break;
+          case '1saat':
+            minutesToAdd = 60;
+            break;
+          case '1gun':
+            minutesToAdd = 60 * 24;
+            break;
+          case '1hafta':
+            minutesToAdd = 60 * 24 * 7;
+            break;
+          default:
+            minutesToAdd = 5;
+        }
+      }
+
+      // Kullanım hakkı
+      int usageCount = 1; // Normalde tek
+      if (_isMisafirSecildi &&
+          (_currentGroup!.name == 'yonetici' ||
+              _currentGroup!.name == 'cafe')) {
+        usageCount = _kullanimSayisi;
+      }
+
+      final payload = {
+        'kod': newCode,
+        'misafir_mi': _isMisafirSecildi,
+        'gecerlilik_suresi_dakika': minutesToAdd,
+        'giris_hakki_sayisi': usageCount,
+      };
+
+      final response = await http.post(
+        Uri.parse(setQRKodBilgisi),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _generatedCode = newCode;
+          _validityTime = data['gecerlilik_suresi']?.toString();
+          _passCount = data['kalan_giris_hakki_sayisi']?.toString();
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('QR Kod oluşturulamadı: ${response.statusCode}'),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Hata: $e'),
+        ),
+      );
+    }
+  }
+
+  /// Basit UUID v4 üretimi
+  String _generateUuid() {
+    final rnd = Random.secure();
+    const template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+
+    return template.replaceAllMapped(RegExp('[xy]'), (match) {
+      final r = rnd.nextInt(16);
+      final v = (match[0] == 'x') ? r : (r & 0x3 | 0x8);
+      return v.toRadixString(16);
+    });
   }
 }

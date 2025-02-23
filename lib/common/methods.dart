@@ -170,10 +170,14 @@ Future<GroupModel?> groupBilgileriniGetir(context) async {
   SharedPreferences sp = await SharedPreferences.getInstance();
   String? groups = sp.getString('groups');
   if (groups != null) {
-    return GroupModel.fromJson(json.decode(groups));
-  } else {
-    return null;
+    // Bu aşamada, groups örn: '[{"id":4,"name":"uye","permissions":[]}]'
+    final List<dynamic> parsed = json.decode(groups);
+    // Sadece ilk elemanı al
+    if (parsed.isNotEmpty) {
+      return GroupModel.fromJson(parsed.first);
+    }
   }
+  return null;
 }
 
 Future<UserModel?> userBilgileriniGetir(context) async {

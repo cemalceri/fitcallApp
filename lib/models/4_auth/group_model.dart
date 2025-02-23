@@ -27,10 +27,13 @@ class GroupModel {
     };
   }
 
+  /// Gelen JSON string doğrudan bir liste (array) içeriyorsa:
+  /// örnek:
+  /// [
+  ///   {"id":4,"name":"uye","permissions":[]}
+  /// ]
   static List<GroupModel> fromJsonList(String jsonString) {
-    final parsed = jsonDecode(jsonString);
-    return List<GroupModel>.from(
-      parsed['groups'].map((group) => GroupModel.fromJson(group)),
-    );
+    final List<dynamic> parsed = jsonDecode(jsonString);
+    return parsed.map((item) => GroupModel.fromJson(item)).toList();
   }
 }
