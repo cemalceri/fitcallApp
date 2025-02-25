@@ -1,21 +1,23 @@
 import 'dart:convert';
-import 'package:fitcall/common/api_urls.dart'; // getAnnouncements tanımlı olsun
+import 'package:fitcall/common/api_urls.dart'; // getAnnouncements, getNotifications, getGaleriImages tanımlı olsun
 import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/models/1_common/notification_model.dart'; // NotificationModel burada tanımlı olsun
+import 'package:fitcall/screens/1_common/1_notification/notification_methods.dart';
 import 'package:fitcall/screens/1_common/2_fotograf/full_screen_image_page.dart';
 import 'package:fitcall/screens/1_common/1_notification/notification_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class UyeHomePage extends StatefulWidget {
+  const UyeHomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<UyeHomePage> createState() => _UyeHomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _UyeHomePageState extends State<UyeHomePage> {
   // Menü elemanları
   final List<Map<String, dynamic>> menuItems = [
     {
@@ -56,27 +58,29 @@ class _HomePageState extends State<HomePage> {
     {
       'name': routeEnums[SayfaAdi.qrKod]!,
       'icon': Icons.qr_code,
-      'text': 'QR Kod Okut'
+      'text': 'QR Kod İle Giriş'
     },
     {'name': 6, 'icon': Icons.help, 'text': 'Yardım'},
   ];
 
   // Django backend'den gelen duyuruları tutacak Future
   late Future<List<AnnouncementModel>> _announcementsFuture;
-  // Galeri resimlerini tutacak Future (mevcut kodunuz)
+  // Django backend'den gelen bildirimleri tutacak Future
+  late Future<List<NotificationModel>> _notificationsFuture;
+  // Galeri resimlerini tutacak Future
   late Future<List<String>> _galleryImagesFuture;
 
   @override
   void initState() {
     super.initState();
     _announcementsFuture = fetchAnnouncements();
+    _notificationsFuture = fetchNotifications(context);
     _galleryImagesFuture = fetchGalleryImages();
   }
 
   // Django API'den duyuruları çekiyoruz
   Future<List<AnnouncementModel>> fetchAnnouncements() async {
     try {
-      // Login sonrası token'ı alıyoruz (getPrefs() projenizde tanımlı)
       String? token = await getPrefs("token");
       final response = await http.post(
         Uri.parse(getDuyurular),
@@ -88,10 +92,8 @@ class _HomePageState extends State<HomePage> {
 
       if (response.statusCode == 200) {
         var decoded = jsonDecode(utf8.decode(response.bodyBytes));
-        // Her bir öğeyi Map<String, String> olarak döndürüyoruz
-        return List<AnnouncementModel>.from(decoded.map((e) {
-          return AnnouncementModel.fromJson(e);
-        }));
+        return List<AnnouncementModel>.from(
+            decoded.map((e) => AnnouncementModel.fromJson(e)));
       } else {
         throw Exception("Duyurular alınamadı. Status: ${response.statusCode}");
       }
@@ -100,7 +102,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Mevcut galeri resimlerini çeken fonksiyonunuz (değişiklik yok)
+  // Django /gallery/ endpoint'ine POST isteği atarak resim URL'lerini çekiyoruz
   Future<List<String>> fetchGalleryImages() async {
     try {
       String? token = await getPrefs("token");
@@ -130,8 +132,30 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Ana Sayfa'),
         actions: [
-          NotificationIcon(
-              notifications: []), // Bildirim verilerini buraya ekleyin
+          // Bildirimleri FutureBuilder ile çekip NotificationIcon widget'ına gönderiyoruz
+          FutureBuilder<List<NotificationModel>>(
+            future: _notificationsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return IconButton(
+                  icon: const Icon(Icons.notifications),
+                  onPressed: () {},
+                );
+              } else if (snapshot.hasError) {
+                return IconButton(
+                  icon: const Icon(Icons.notifications),
+                  onPressed: () {},
+                );
+              } else if (snapshot.hasData) {
+                return NotificationIcon(notifications: snapshot.data!);
+              } else {
+                return IconButton(
+                  icon: const Icon(Icons.notifications),
+                  onPressed: () {},
+                );
+              }
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {

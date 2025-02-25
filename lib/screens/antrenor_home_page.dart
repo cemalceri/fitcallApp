@@ -1,7 +1,10 @@
 import 'dart:convert';
-import 'package:fitcall/common/api_urls.dart'; // getAnnouncements tanımlı olsun
+import 'package:fitcall/common/api_urls.dart'; // getAnnouncements, getNotifications, getGaleriImages tanımlı olsun
 import 'package:fitcall/common/methods.dart';
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/models/1_common/notification_model.dart'; // NotificationModel burada tanımlı olsun
+import 'package:fitcall/screens/1_common/1_notification/notification_methods.dart';
 import 'package:fitcall/screens/1_common/2_fotograf/full_screen_image_page.dart';
 import 'package:fitcall/screens/1_common/1_notification/notification_icon.dart';
 import 'package:flutter/material.dart';
@@ -28,29 +31,17 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
       'icon': Icons.group,
       'text': 'Öğrencilerim'
     },
-  ];
-
-  // Bildirim örnek verileri (Tarih bilgileri eklenmiştir)
-  final List<Map<String, dynamic>> notifications = [
     {
-      'title': 'Yeni Mesaj',
-      'subtitle': 'Bir öğrenciniz size mesaj attı.',
-      'date': DateTime.now()
-    },
-    {
-      'title': 'Güncelleme',
-      'subtitle': 'Sistem bakım çalışması 22:00\'de başlayacak.',
-      'date': DateTime.now().subtract(const Duration(days: 2))
-    },
-    {
-      'title': 'Özel Teklif',
-      'subtitle': 'Yeni indirimler sizi bekliyor.',
-      'date': DateTime.now().subtract(const Duration(days: 10))
+      'name': routeEnums[SayfaAdi.qrKod]!,
+      'icon': Icons.qr_code,
+      'text': 'QR Kod İle Giriş'
     },
   ];
 
   // Django backend'den gelen duyuruları tutacak Future
   late Future<List<AnnouncementModel>> _announcementsFuture;
+  // Django backend'den gelen bildirimleri tutacak Future
+  late Future<List<NotificationModel>> _notificationsFuture;
   // Galeri resimlerini tutacak Future
   late Future<List<String>> _galleryImagesFuture;
 
@@ -58,13 +49,13 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
   void initState() {
     super.initState();
     _announcementsFuture = fetchAnnouncements();
+    _notificationsFuture = fetchNotifications(context);
     _galleryImagesFuture = fetchGalleryImages();
   }
 
   // Django API'den duyuruları çekiyoruz
   Future<List<AnnouncementModel>> fetchAnnouncements() async {
     try {
-      // Login sonrası token'ı alıyoruz (getPrefs projenizde tanımlı)
       String? token = await getPrefs("token");
       final response = await http.post(
         Uri.parse(getDuyurular),
@@ -76,24 +67,28 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
 
       if (response.statusCode == 200) {
         var decoded = jsonDecode(utf8.decode(response.bodyBytes));
-        // API'den gelen her öğeyi AnnouncementModel'e çeviriyoruz
-        return List<AnnouncementModel>.from(decoded.map((e) {
-          return AnnouncementModel.fromJson(e);
-        }));
+        return List<AnnouncementModel>.from(
+            decoded.map((e) => AnnouncementModel.fromJson(e)));
       } else {
-        throw Exception("Duyurular alınamadı. Status: ${response.statusCode}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('Hata: Duyurular alınamadı ${response.statusCode}')),
+        );
+        return [];
       }
     } catch (e) {
-      throw Exception("Duyurular çekilirken hata oluştu: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hata: Duyurular alınamadı')),
+      );
+      return [];
     }
   }
 
   // Django /gallery/ endpoint'ine POST isteği atarak resim URL'lerini çekiyoruz
   Future<List<String>> fetchGalleryImages() async {
     try {
-      // Login sonrası savePrefs("token", ...) ile kaydedilen token'ı okuyoruz:
       String? token = await getPrefs("token");
-
       final response = await http.post(
         Uri.parse(getGaleriImages),
         headers: {
@@ -103,15 +98,21 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
       ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
-        // JSON veriyi decode ediyoruz -> [{"url": "resim1"}, {"url": "resim2"}, ...]
         var decoded = jsonDecode(utf8.decode(response.bodyBytes));
         return List<String>.from(decoded.map((e) => e["url"]));
       } else {
-        throw Exception(
-            "Galeri resimleri alınamadı. Status: ${response.statusCode}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Hata: Galeri resimleri alınamadı ${response.statusCode}')),
+        );
+        return [];
       }
     } catch (e) {
-      throw Exception("Galeri verileri çekilirken hata oluştu: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hata: Galeri resimleri alınamadı')),
+      );
+      return [];
     }
   }
 
@@ -121,8 +122,32 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
       appBar: AppBar(
         title: const Text('Antrenör Ana Sayfası'),
         actions: [
-          // Ortak NotificationIcon widget'ı kullanarak bildirim sayfasına yönlendirme
-          NotificationIcon(notifications: notifications),
+          // Bildirimleri FutureBuilder ile çekip NotificationIcon widget'ına gönderiyoruz
+          FutureBuilder<List<NotificationModel>>(
+            future: _notificationsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return IconButton(
+                  icon: const Icon(Icons.notifications),
+                  onPressed: () {},
+                );
+              } else if (snapshot.hasError) {
+                return IconButton(
+                  icon: const Icon(Icons.notifications),
+                  onPressed: () {
+                    // Hata durumunda kullanıcıya mesaj gösterilebilir
+                  },
+                );
+              } else if (snapshot.hasData) {
+                return NotificationIcon(notifications: snapshot.data!);
+              } else {
+                return IconButton(
+                  icon: const Icon(Icons.notifications),
+                  onPressed: () {},
+                );
+              }
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -162,7 +187,6 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
           ],
         ),
       ),
-      // Sayfanın içeriğini SingleChildScrollView içerisine alıyoruz
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -219,7 +243,6 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
               ),
             ),
             const SizedBox(height: 8),
-            // Duyuruları FutureBuilder ile çekiyoruz
             FutureBuilder<List<AnnouncementModel>>(
               future: _announcementsFuture,
               builder: (context, snapshot) {

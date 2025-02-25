@@ -1,12 +1,21 @@
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/1_notification/notification_icon.dart';
+import 'package:fitcall/screens/4_auth/login_page.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await NotificationService.instance.setupFlutterNotifications();
   await NotificationService.instance.showNotification(message);
 }
+
+/// Global pending target. Bu değişken, bildirime göre gidilmesi gereken sayfayı saklar.
+String? logindenSonraGit;
 
 class NotificationService {
   NotificationService._();
@@ -18,14 +27,8 @@ class NotificationService {
 
   Future<void> initialize() async {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    // FCM izni iste
     await _requestPermission();
-
-    // Mesaj event handler'larını ayarla
     await _setupMessageHandlers();
-
-    // FCM token al
     final token = await _messaging.getToken();
     print('FCM Token: $token');
   }
@@ -40,16 +43,12 @@ class NotificationService {
       carPlay: false,
       criticalAlert: false,
     );
-
     print('Permission status: ${settings.authorizationStatus}');
   }
 
   Future<void> setupFlutterNotifications() async {
-    if (_isFlutterLocalNotificationsInitialized) {
-      return;
-    }
+    if (_isFlutterLocalNotificationsInitialized) return;
 
-    // Android tarafı için bildirim kanalı tanımı
     const channel = AndroidNotificationChannel(
       'high_importance_channel',
       'High Importance Notifications',
@@ -62,33 +61,18 @@ class NotificationService {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
 
-    // Android initialization ayarları
     const initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    // --- ESKİ KULLANIM (Artık gerek yok) ---
-    // final initializationSettingsDarwin = DarwinInitializationSettings(
-    //   onDidReceiveLocalNotification: (id, title, body, payload) async {
-    //     // Handle iOS foreground notification
-    //   },
-    // );
-
-    // YENİ KULLANIM:
-    // iOS 10 ve üstü desteklendiği için callback kaldırıldı
-    // Eğer foreground veya tap eventi yakalamak istenirse,
-    // onDidReceiveNotificationResponse kullanılabilir.
     final initializationSettingsDarwin = DarwinInitializationSettings();
-
     final initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
     );
 
-    // Flutter Local Notifications initialize
     await _localNotifications.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (details) {
-        // iOS/Android bildirime tıklanınca yapılacaklar (isteğe göre).
+        // İsteğe bağlı: bildirime tıklanınca yapılacaklar
       },
     );
 
@@ -125,24 +109,34 @@ class NotificationService {
   }
 
   Future<void> _setupMessageHandlers() async {
-    // Foreground mesajı
+    // Foreground mesajları
     FirebaseMessaging.onMessage.listen((message) {
       showNotification(message);
     });
 
-    // Arka planda bildirime tıklanmışsa
+    // Background'da bildirime tıklanırsa
     FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessage);
 
-    // Uygulama tamamen kapalıyken bildirim tıklanırsa
+    // Uygulama tamamen kapalıyken bildirime tıklanırsa
     final initialMessage = await _messaging.getInitialMessage();
     if (initialMessage != null) {
       _handleBackgroundMessage(initialMessage);
     }
   }
 
-  void _handleBackgroundMessage(RemoteMessage message) {
-    if (message.data['type'] == 'chat') {
-      // Burada chat ekranını açma gibi bir işlem yapılabilir
-    }
+  Future<void> _handleBackgroundMessage(RemoteMessage message) async {
+    // Bildirime göre gidilmesi gereken sayfa belirleniyor.
+    // Şimdilik NotificationPage olsun; ileride notification türüne göre değiştirilebilir.
+    logindenSonraGit = routeEnums[SayfaAdi.bildirimler]!;
+    // Widget tree hazır olduğunda, LoginPage'e yönlendirme yapılıyor ve LoginPage'e pendingTarget parametresi aktarılıyor.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (navigatorKey.currentState != null) {
+        navigatorKey.currentState!.push(
+          MaterialPageRoute(
+            builder: (_) => LoginPage(logindenSonraGit: logindenSonraGit),
+          ),
+        );
+      }
+    });
   }
 }

@@ -36,6 +36,8 @@
 //     'https://binayacademi.herokuapp.com/api/getUygunSaatler';
 // String setQRKodBilgisi =
 //     'https://binayacademi.herokuapp.com/api/setQRKodBilgisi';
+// String getNotifications =
+//     'https://binayacademi.herokuapp.com/api/getNotifications';
 
 String loginUrl = 'http://10.0.2.2:8000/api/getToken'; // (bearer token)
 String getUser = 'http://10.0.2.2:8000/api/getUser'; // (bearer token)
@@ -51,7 +53,6 @@ String uyeKaydet = 'http://10.0.2.2:8000/api/uyeKaydet'; // (bearer token)
 String setDersYapildiBilgisi =
     'http://10.0.2.2:8000/api/setDersYapildiBilgisi'; //
 String qrInOrOut = 'http://10.0.2.2:8000/api/qrInOrOut';
-
 String getAntrenorDersProgrami =
     'http://10.0.2.2:8000/api/getAntrenorDersProgrami'; // (bearer token)
 String antrenorDersYapildiDurumu =
@@ -66,3 +67,4 @@ String getUyedersTalepListesi =
 String silUyedersTalebi = 'http://10.0.2.2:8000/api/silUyedersTalebi';
 String getUygunSaatler = 'http://10.0.2.2:8000/api/getUygunSaatler';
 String setQRKodBilgisi = 'http://10.0.2.2:8000/api/setQRKodBilgisi';
+String getNotifications = 'http://10.0.2.2:8000/api/getNotifications';

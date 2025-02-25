@@ -1,31 +1,7 @@
-class UserModel {
-  final int id;
-  final String username;
-
-  UserModel({
-    required this.id,
-    required this.username,
-  });
-
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
-      id: json['id'] as int,
-      username: json['username'] as String,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'username': username,
-    };
-  }
-}
-
 class NotificationModel {
   final int id;
-  final UserModel recipient;
-  final UserModel? actor;
+  final int recipient;
+  final String? actor;
   final String title;
   final String subject;
   final String body;
@@ -48,8 +24,8 @@ class NotificationModel {
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
       id: json['id'] as int,
-      recipient: UserModel.fromJson(json['recipient']),
-      actor: json['actor'] != null ? UserModel.fromJson(json['actor']) : null,
+      recipient: json['recipient'] as int,
+      actor: json['actor'] as String?,
       title: json['title'] as String,
       subject: json['subject'] as String,
       body: json['body'] as String,
@@ -62,8 +38,8 @@ class NotificationModel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'recipient': recipient.toJson(),
-      'actor': actor?.toJson(),
+      'recipient': recipient,
+      'actor': actor ?? '',
       'title': title,
       'subject': subject,
       'body': body,

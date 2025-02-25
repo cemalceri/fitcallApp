@@ -188,10 +188,14 @@ class _QRKodPageState extends State<QRKodPage> {
         // QrImage'ı RepaintBoundary içine alıyoruz ki resmi paylaşabilelim
         RepaintBoundary(
           key: _qrBoundaryKey,
-          child: QrImageView(
-            data: _generatedCode,
-            version: QrVersions.auto,
-            size: 300.0, // QR biraz daha büyük
+          // Arka plana beyaz veriyoruz ki siyah resim olarak görünmesin
+          child: Container(
+            color: Colors.white,
+            child: QrImageView(
+              data: _generatedCode,
+              version: QrVersions.auto,
+              size: 300.0, // QR biraz daha büyük
+            ),
           ),
         ),
         const SizedBox(height: 16),

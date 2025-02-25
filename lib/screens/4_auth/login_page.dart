@@ -1,5 +1,4 @@
 // login_page.dart
-
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:fitcall/common/methods.dart';
@@ -8,7 +7,8 @@ import 'package:fitcall/common/widgets.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final String? logindenSonraGit;
+  const LoginPage({super.key, this.logindenSonraGit});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -26,34 +26,39 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _checkAutoLogin() async {
-    // 'beni_hatirla' değeri okunuyor:
     bool? remember = await getPrefsBool('beni_hatirla');
     if (remember == true) {
-      // Eğer true ise, kaydedilmiş kullanıcı adı ve şifre de alınıyor:
       String? savedUsername = await getPrefs('username');
       String? savedPassword = await getPrefs('password');
       if (savedUsername != null && savedPassword != null) {
-        // TextField'ları da güncelleyelim:
         _usernameController.text = savedUsername;
         _passwordController.text = savedPassword;
         setState(() {
           _beniHatirla = true;
         });
-        // Otomatik giriş için loading spinner gösteriliyor:
         LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
-        loginUser(context, savedUsername, savedPassword).then((role) {
+        loginUser(context, savedUsername, savedPassword).then((role) async {
           LoadingSpinner.hide(context);
-          if (role == "antrenor") {
-            // Antrenör ise antrenör ana sayfasına yönlendir:
-            Navigator.pushReplacementNamed(
-                context, routeEnums[SayfaAdi.antrenorAnasayfa]!);
-          } else if (role == "uye") {
-            // Üye ise mevcut anasayfaya yönlendir:
-            Navigator.pushReplacementNamed(
-                context, routeEnums[SayfaAdi.uyeAnasayfa]!);
-          }
+          _navigateAfterLogin(role);
         });
       }
+    }
+  }
+
+  void _navigateAfterLogin(String? role) async {
+    // Eğer pendingTarget belirlenmişse, login işleminden sonra o sayfaya yönlendir.
+    if (widget.logindenSonraGit != null) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        widget.logindenSonraGit!,
+        (route) => true,
+      );
+    } else if (role == "antrenor") {
+      Navigator.pushReplacementNamed(
+          context, routeEnums[SayfaAdi.antrenorAnasayfa]!);
+    } else if (role == "uye") {
+      Navigator.pushReplacementNamed(
+          context, routeEnums[SayfaAdi.uyeAnasayfa]!);
     }
   }
 
@@ -134,17 +139,9 @@ class _LoginPageState extends State<LoginPage> {
             LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
             loginUser(
                     context, _usernameController.text, _passwordController.text)
-                .then((role) {
+                .then((role) async {
               LoadingSpinner.hide(context);
-              if (role == "antrenor") {
-                // Antrenör ise antrenör ana sayfasına yönlendir:
-                Navigator.pushReplacementNamed(
-                    context, routeEnums[SayfaAdi.antrenorAnasayfa]!);
-              } else if (role == "uye") {
-                // Üye ise mevcut anasayfaya yönlendir:
-                Navigator.pushReplacementNamed(
-                    context, routeEnums[SayfaAdi.uyeAnasayfa]!);
-              }
+              _navigateAfterLogin(role);
             });
           },
           style: ElevatedButton.styleFrom(
