@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart'; // getAnnouncements, getNotifications, getGaleriImages tanımlı olsun
-import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/models/1_common/notification_model.dart'; // NotificationModel burada tanımlı olsun
 import 'package:fitcall/screens/1_common/1_notification/notification_methods.dart';
 import 'package:fitcall/screens/1_common/2_fotograf/full_screen_image_page.dart';
 import 'package:fitcall/screens/1_common/1_notification/notification_icon.dart';
+import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -81,7 +81,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
   // Django API'den duyuruları çekiyoruz
   Future<List<AnnouncementModel>> fetchAnnouncements() async {
     try {
-      String? token = await getPrefs("token");
+      String? token = await AuthService.getToken();
       final response = await http.post(
         Uri.parse(getDuyurular),
         headers: {
@@ -105,7 +105,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
   // Django /gallery/ endpoint'ine POST isteği atarak resim URL'lerini çekiyoruz
   Future<List<String>> fetchGalleryImages() async {
     try {
-      String? token = await getPrefs("token");
+      String? token = await AuthService.getToken();
       final response = await http.post(
         Uri.parse(getGaleriImages),
         headers: {
@@ -159,7 +159,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              logout(context);
+              AuthService.logout(context);
             },
           ),
         ],

@@ -1,9 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/common/methods.dart';
-import 'package:fitcall/common/widgets.dart';
+import 'package:fitcall/common/windgets/show_message_widget.dart';
+import 'package:fitcall/common/windgets/spinner_widgets.dart';
 import 'package:fitcall/models/0_ortak/etkinlik_model.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
+import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -30,12 +33,12 @@ class _DersListesiPageState extends State<DersListesiPage> {
   }
 
   Future<void> _loadCurrentUye() async {
-    currentUye = await uyeBilgileriniGetir(context);
+    currentUye = await AuthService.uyeBilgileriniGetir();
     setState(() {});
   }
 
   Future<void> _dersBilgileriniCek() async {
-    var token = await getToken(context);
+    var token = await AuthService.getToken();
     if (token != null) {
       try {
         var response = await http.post(
@@ -224,7 +227,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
               onPressed: () async {
                 final dersId = ders.id;
                 final notValue = notController.text;
-                var token = await getToken(context);
+                var token = await AuthService.getToken();
                 if (token != null) {
                   try {
                     var response = await http.post(
@@ -261,19 +264,14 @@ class _DersListesiPageState extends State<DersListesiPage> {
                           }
                         }
                       });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("Değerlendirme kaydedildi.")),
-                      );
+                      ShowMessage.success(context, "Değerlendirme kaydedildi.");
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Hata: ${response.statusCode}")),
-                      );
+                      ShowMessage.error(
+                          context, "Değerlendirme kaydedilemedi.");
                     }
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("API hatası: $e")),
-                    );
+                    ShowMessage.error(
+                        context, "Değerlendirme kaydedilemedi: $e");
                   }
                 }
                 Navigator.pop(context);

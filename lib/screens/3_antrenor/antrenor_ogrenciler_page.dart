@@ -1,14 +1,17 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
+import 'package:fitcall/common/windgets/show_message_widget.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
+import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 // API URL'lerinizi ve token alma metodunuzu içeren dosyaları import edin.
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/common/methods.dart';
 
 class AntrenorOgrencilerPage extends StatefulWidget {
-  const AntrenorOgrencilerPage({Key? key}) : super(key: key);
+  const AntrenorOgrencilerPage({super.key});
 
   @override
   State<AntrenorOgrencilerPage> createState() => _AntrenorOgrencilerPageState();
@@ -29,7 +32,7 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
       isLoading = true;
     });
 
-    var token = await getToken(context);
+    var token = await AuthService.getToken();
     try {
       var response = await http.post(
         Uri.parse(getAntrenorOgrenciler),
@@ -49,14 +52,13 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
           students = fetchedStudents;
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Hata: ${response.statusCode}')),
-        );
+        ShowMessage.error(
+            context, 'Öğrenciler alınamadı ${response.statusCode}');
+        // Hata durumunda API yanıtını göstermek için:
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('API isteği sırasında hata: $e')),
-      );
+      ShowMessage.error(context, 'Öğrenciler alınamadı.');
+      // Hata durumunda API yanıtını göstermek için:
     }
 
     setState(() {

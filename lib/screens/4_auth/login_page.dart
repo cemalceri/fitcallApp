@@ -1,9 +1,9 @@
-// login_page.dart
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/common/routes.dart';
-import 'package:fitcall/common/widgets.dart';
+import 'package:fitcall/common/windgets/spinner_widgets.dart';
+import 'package:fitcall/services/auth_service.dart';
+import 'package:fitcall/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -26,10 +26,12 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _checkAutoLogin() async {
-    bool? remember = await getPrefsBool('beni_hatirla');
+    bool? remember = await SecureStorageService.getValue<bool>('beni_hatirla');
     if (remember == true) {
-      String? savedUsername = await getPrefs('username');
-      String? savedPassword = await getPrefs('password');
+      String? savedUsername =
+          await SecureStorageService.getValue<String>('username');
+      String? savedPassword =
+          await SecureStorageService.getValue<String>('password');
       if (savedUsername != null && savedPassword != null) {
         _usernameController.text = savedUsername;
         _passwordController.text = savedPassword;
@@ -37,7 +39,8 @@ class _LoginPageState extends State<LoginPage> {
           _beniHatirla = true;
         });
         LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
-        loginUser(context, savedUsername, savedPassword).then((role) async {
+        AuthService.loginUser(context, savedUsername, savedPassword)
+            .then((role) async {
           LoadingSpinner.hide(context);
           _navigateAfterLogin(role);
         });
@@ -137,7 +140,7 @@ class _LoginPageState extends State<LoginPage> {
         ElevatedButton(
           onPressed: () {
             LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
-            loginUser(
+            AuthService.loginUser(
                     context, _usernameController.text, _passwordController.text)
                 .then((role) async {
               LoadingSpinner.hide(context);
@@ -165,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
           onChanged: (value) {
             setState(() {
               _beniHatirla = value!;
-              savePrefsBool('beni_hatirla', _beniHatirla);
+              SecureStorageService.setValue<bool>('beni_hatirla', _beniHatirla);
             });
           },
         ),

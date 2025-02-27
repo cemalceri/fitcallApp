@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fitcall/common/routes.dart';
-import 'package:fitcall/screens/1_common/1_notification/notification_icon.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -29,8 +28,6 @@ class NotificationService {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     await _requestPermission();
     await _setupMessageHandlers();
-    final token = await _messaging.getToken();
-    print('FCM Token: $token');
   }
 
   Future<void> _requestPermission() async {

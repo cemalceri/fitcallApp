@@ -1,19 +1,22 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart'; // getUygunSaatler URL'sinin burada tanımlı olduğunu varsayıyoruz.
+import 'package:fitcall/common/windgets/show_message_widget.dart';
 import 'package:fitcall/models/2_uye/uygun_saatler_model.dart';
+import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class UygunSaatlerPage extends StatefulWidget {
   const UygunSaatlerPage({super.key});
 
   @override
-  _UygunSaatlerPageState createState() => _UygunSaatlerPageState();
+  UygunSaatlerPageState createState() => UygunSaatlerPageState();
 }
 
-class _UygunSaatlerPageState extends State<UygunSaatlerPage> {
+class UygunSaatlerPageState extends State<UygunSaatlerPage> {
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isLoading = false;
@@ -67,17 +70,7 @@ class _UygunSaatlerPageState extends State<UygunSaatlerPage> {
       _fetchedSlots = [];
     });
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
-    if (token == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Token bulunamadı.")),
-      );
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
+    var token = AuthService.getToken();
 
     Map<String, dynamic> payload = {
       "start_date": _startDate!.toIso8601String().substring(0, 10),
@@ -106,9 +99,7 @@ class _UygunSaatlerPageState extends State<UygunSaatlerPage> {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Veriler alınamadı: ${response.statusCode}")),
-      );
+      ShowMessage.error(context, 'Uygun saatler alınamadı.');
     }
   }
 

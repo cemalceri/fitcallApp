@@ -1,6 +1,6 @@
-import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
+import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -9,7 +9,7 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<UyeModel?>(
-      future: uyeBilgileriniGetir(context),
+      future: AuthService.uyeBilgileriniGetir(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

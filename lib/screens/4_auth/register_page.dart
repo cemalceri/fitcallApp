@@ -4,11 +4,11 @@ import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/regex.dart';
 import 'package:fitcall/common/routes.dart';
-import 'package:fitcall/common/widgets.dart';
+import 'package:fitcall/common/windgets/spinner_widgets.dart';
 import 'package:fitcall/screens/4_auth/widgets/register/kullanici_sozlesmesi_widget.dart';
+import 'package:fitcall/services/auth_service.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class RegisterPage extends StatefulWidget {
@@ -798,12 +798,12 @@ class _RegisterPage extends State<RegisterPage> {
   }
 
   void checkLoginStatus(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
-    if (token != null) {
-      Navigator.pushReplacementNamed(
-          context, routeEnums[SayfaAdi.uyeAnasayfa]!);
-    }
+    AuthService.getToken().then((value) {
+      if (value != null) {
+        Navigator.pushReplacementNamed(
+            context, routeEnums[SayfaAdi.uyeAnasayfa]!);
+      }
+    });
   }
 
   Future<bool> _kayitOl(BuildContext context) async {

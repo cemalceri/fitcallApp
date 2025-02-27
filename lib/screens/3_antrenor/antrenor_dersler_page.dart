@@ -1,9 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/common/methods.dart';
-import 'package:fitcall/common/widgets.dart';
+import 'package:fitcall/common/windgets/show_message_widget.dart';
+import 'package:fitcall/common/windgets/spinner_widgets.dart';
 import 'package:fitcall/models/0_ortak/etkinlik_model.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
+import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart'; // Tarih formatlamak için gerekli paket
@@ -41,7 +44,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
   }
 
   Future<void> _loadCurrentAntrenor() async {
-    currentAntrenor = await antrenorBilgileriniGetir(context);
+    currentAntrenor = await AuthService.antrenorBilgileriniGetir();
     setState(() {});
   }
 
@@ -89,7 +92,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
     setState(() {
       _isUpcomingLoading = true;
     });
-    var token = await getToken(context);
+    var token = await AuthService.getToken();
     if (token != null) {
       final dateRange = _getUpcomingDateRange(upcomingFilter);
       try {
@@ -110,12 +113,11 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
             gelecekDersler = lessons;
           });
         } else {
-          throw Exception('API isteği başarısız oldu: ${response.statusCode}');
+          ShowMessage.error(context,
+              'Gelecek dersler alınırken hata: ${response.statusCode}');
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gelecek dersler alınırken hata: $e')),
-        );
+        ShowMessage.error(context, 'Gelecek dersler alınırken hata: $e');
       } finally {
         setState(() {
           _isUpcomingLoading = false;
@@ -128,7 +130,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
     setState(() {
       _isPastLoading = true;
     });
-    var token = await getToken(context);
+    var token = await AuthService.getToken();
     if (token != null) {
       final dateRange = _getPastDateRange(pastFilter);
       try {
@@ -149,12 +151,11 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
             gecmisDersler = lessons;
           });
         } else {
-          throw Exception('API isteği başarısız oldu: ${response.statusCode}');
+          ShowMessage.error(
+              context, 'Geçmiş dersler alınırken hata: ${response.statusCode}');
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Geçmiş dersler alınırken hata: $e')),
-        );
+        ShowMessage.error(context, 'Geçmiş dersler alınırken hata: $e');
       } finally {
         setState(() {
           _isPastLoading = false;
@@ -458,7 +459,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
               onPressed: () async {
                 final dersId = ders.id;
                 final notValue = notController.text;
-                var token = await getToken(context);
+                var token = await AuthService.getToken();
                 if (token != null) {
                   try {
                     // Payload'da, hangi rolün güncelleneceğini belirtmek için 'is_yardimci' alanı ekleniyor.
@@ -491,19 +492,14 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
                           ders.antrenorAciklama = notValue;
                         }
                       });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("Değerlendirme kaydedildi.")),
-                      );
+                      ShowMessage.success(context, 'Ders durumu güncellendi.');
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Hata: ${response.statusCode}")),
-                      );
+                      ShowMessage.error(context,
+                          'Ders durumu güncellenirken hata: ${response.statusCode}');
                     }
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("API hatası: $e")),
-                    );
+                    ShowMessage.error(
+                        context, 'Ders durumu güncellenirken hata: $e');
                   }
                 }
                 Navigator.pop(context);

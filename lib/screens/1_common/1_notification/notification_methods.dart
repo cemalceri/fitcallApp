@@ -1,14 +1,14 @@
 import 'dart:convert';
-
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/common/methods.dart';
+import 'package:fitcall/common/windgets/show_message_widget.dart';
 import 'package:fitcall/models/1_common/notification_model.dart';
+import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 Future<List<NotificationModel>> fetchNotifications(BuildContext context) async {
   try {
-    String? token = await getPrefs("token");
+    String? token = await AuthService.getToken();
     final response = await http.post(
       Uri.parse(
           getNotifications), // API URL'nizde bildirimler için tanımlı olmalı
@@ -23,15 +23,13 @@ Future<List<NotificationModel>> fetchNotifications(BuildContext context) async {
       return List<NotificationModel>.from(
           decoded.map((e) => NotificationModel.fromJson(e)));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Hata: Bildirimler alınamadı')),
-      );
+      // ignore: use_build_context_synchronously
+      ShowMessage.error(context, 'Bildirimler alınamadı.');
       return [];
     }
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Hata: Bildirimler alınamadı')),
-    );
+    // ignore: use_build_context_synchronously
+    ShowMessage.error(context, 'Bildirimler alınamadı.');
     return [];
   }
 }

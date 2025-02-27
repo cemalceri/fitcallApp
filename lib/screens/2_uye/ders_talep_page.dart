@@ -1,10 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
+import 'package:fitcall/common/windgets/show_message_widget.dart';
 import 'package:fitcall/models/2_uye/ders_talebi_model.dart';
-import 'package:fitcall/models/2_uye/uye_model.dart';
-import 'package:fitcall/models/4_auth/user_model.dart';
+import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class DersTalepPage extends StatefulWidget {
@@ -58,18 +59,18 @@ class DersTalepPageState extends State<DersTalepPage> {
   }
 
   Future<void> _loadUserInfo() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final tokenValue = await AuthService.getToken();
+    final uyeInfo = await AuthService.uyeBilgileriniGetir();
+    final userInfo = await AuthService.userBilgileriniGetir();
     setState(() {
-      token = prefs.getString('token');
-      uye =
-          UyeModel.fromJson(jsonDecode(prefs.getString('uye')!)).id.toString();
-      user = UserModel.fromJson(jsonDecode(prefs.getString('user')!)).id;
+      token = tokenValue;
+      uye = uyeInfo?.id.toString();
+      user = userInfo?.id;
     });
     _fetchPreviousRequests();
   }
 
   Future<void> _fetchPreviousRequests() async {
-    if (token == null) return;
     setState(() {
       _isLoadingRequests = true;
     });
@@ -91,10 +92,7 @@ class DersTalepPageState extends State<DersTalepPage> {
       setState(() {
         _isLoadingRequests = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Önceki talepler alınamadı: ${response.statusCode}')),
-      );
+      ShowMessage.error(context, 'Talepler alınırken bir hata oluştu.');
     }
   }
 
@@ -129,14 +127,10 @@ class DersTalepPageState extends State<DersTalepPage> {
     );
 
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ders talebi başarıyla oluşturuldu.')),
-      );
+      ShowMessage.success(context, 'Ders talebi başarıyla oluşturuldu.');
       _fetchPreviousRequests(); // Yeni talep eklendikten sonra listeyi yenile
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Hata oluştu: ${response.statusCode}')),
-      );
+      ShowMessage.error(context, 'Ders talebi oluşturulurken bir hata oluştu.');
     }
   }
 
@@ -266,14 +260,10 @@ class DersTalepPageState extends State<DersTalepPage> {
       body: jsonEncode({'id': id}),
     );
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Talep silindi.')),
-      );
+      ShowMessage.success(context, 'Talep başarıyla silindi.');
       _fetchPreviousRequests();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Silme hatası: ${response.statusCode}')),
-      );
+      ShowMessage.error(context, 'Talep silinirken bir hata oluştu.');
     }
   }
 
@@ -302,7 +292,7 @@ class DersTalepPageState extends State<DersTalepPage> {
                     child: Text(
                         "${_gunler[zaman.gun]}: ${zaman.saatler.join(', ')}"),
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),

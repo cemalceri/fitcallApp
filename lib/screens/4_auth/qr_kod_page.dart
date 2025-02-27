@@ -1,5 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:math';
+import 'package:fitcall/common/windgets/show_message_widget.dart';
+import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -9,7 +13,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/common/methods.dart';
 import 'package:fitcall/models/4_auth/group_model.dart';
 
 class QRKodPage extends StatefulWidget {
@@ -44,7 +47,7 @@ class _QRKodPageState extends State<QRKodPage> {
   }
 
   Future<void> _initGroup() async {
-    _currentGroup = await groupBilgileriniGetir(context);
+    _currentGroup = await AuthService.groupBilgileriniGetir();
     setState(() {
       _isLoadingGroup = false;
     });
@@ -253,25 +256,14 @@ class _QRKodPageState extends State<QRKodPage> {
       );
     } catch (e) {
       debugPrint('Hata (QR paylaşırken): $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Paylaşım hatası: $e'),
-        ),
-      );
+      ShowMessage.error(context, 'QR Kod paylaşılamadı!');
     }
   }
 
   /// QR Oluşturma & Sunucuya Gönderme
   Future<void> _generateQrCode() async {
     try {
-      final token = await getToken(context);
-      if (token == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Token bulunamadı. Giriş yapın.')),
-        );
-        return;
-      }
-
+      final token = await AuthService.getToken();
       final newCode = _generateUuid();
 
       // Geçerlilik süresi (dakika)
@@ -327,18 +319,10 @@ class _QRKodPageState extends State<QRKodPage> {
           _passCount = data['kalan_giris_hakki_sayisi']?.toString();
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('QR Kod oluşturulamadı: ${response.statusCode}'),
-          ),
-        );
+        ShowMessage.error(context, 'QR Kod oluşturulamadı!');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Hata: $e'),
-        ),
-      );
+      ShowMessage.error(context, 'QR Kod oluşturulamadı!');
     }
   }
 

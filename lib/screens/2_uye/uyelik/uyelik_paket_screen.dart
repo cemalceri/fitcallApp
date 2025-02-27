@@ -1,9 +1,9 @@
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/common/methods.dart';
-import 'package:fitcall/common/widgets.dart';
+import 'package:fitcall/common/windgets/spinner_widgets.dart';
 import 'package:fitcall/models/2_uye/uyelik_paket_model.dart';
 import 'package:fitcall/screens/2_uye/uyelik/widgets/paketlerim_widget.dart';
 import 'package:fitcall/screens/2_uye/uyelik/widgets/uyeliklerim_widget.dart';
+import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -26,7 +26,7 @@ class _UyelikPaketPageState extends State<UyelikPaketPage> {
   }
 
   Future<void> _uyelikPaketBilgileriniCek() async {
-    var token = await getToken(context);
+    var token = await AuthService.getToken();
     if (token != null) {
       await http.post(
         Uri.parse(getPaketBilgileri),
