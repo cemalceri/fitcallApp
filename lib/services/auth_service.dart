@@ -161,24 +161,15 @@ class AuthService {
     switch (code) {
       case 401:
       case 404:
-        _showSnackBar(context, 'Kullanıcı adı veya şifre hatalı');
+        ShowMessage.error(context, 'Kullanıcı adı veya şifre hatalı');
         break;
       case 403:
-        _showSnackBar(context,
+        ShowMessage.error(context,
             'Hesabınız henüz aktif değil. Lütfen yöneticinizle iletişime geçin.');
         break;
       default:
-        _showSnackBar(context, 'Giriş yapılırken bir hata oluştu');
+        ShowMessage.error(context, 'Giriş yapılırken bir hata oluştu');
     }
     return null;
-  }
-
-  /// SnackBar yardımcısı
-  static void _showSnackBar(BuildContext context, String message) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
-    }
   }
 }
