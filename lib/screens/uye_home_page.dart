@@ -56,7 +56,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
       'text': 'Bildirimler'
     },
     {
-      'name': routeEnums[SayfaAdi.qrKod]!,
+      'name': routeEnums[SayfaAdi.qrKodKayit]!,
       'icon': Icons.qr_code,
       'text': 'QR Kod İle Giriş'
     },

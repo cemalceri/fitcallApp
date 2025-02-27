@@ -1,3 +1,4 @@
+import 'package:fitcall/screens/4_auth/qr_kod_dogrula_page.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/screens/1_common/1_notification/notification_icon.dart';
 import 'package:fitcall/screens/2_uye/ders_talep_page.dart';
@@ -6,7 +7,7 @@ import 'package:fitcall/screens/3_antrenor/antrenor_dersler_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_ogrenciler_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
 import 'package:fitcall/screens/antrenor_home_page.dart';
-import 'package:fitcall/screens/4_auth/qr_kod_page.dart';
+import 'package:fitcall/screens/4_auth/qr_kod_kayit_page.dart';
 import 'package:fitcall/screens/4_auth/register_page.dart';
 import 'package:fitcall/screens/2_uye/dersler_page.dart';
 import 'package:fitcall/screens/uye_home_page.dart';
@@ -22,7 +23,8 @@ import 'package:fitcall/services/auth_service.dart';
 enum SayfaAdi {
   login,
   kayitol,
-  qrKod,
+  qrKodKayit,
+  qrKodDogrula,
   uyeAnasayfa,
   profil,
   borcAlacak,
@@ -41,7 +43,8 @@ enum SayfaAdi {
 final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.login: '/',
   SayfaAdi.kayitol: '/kayitol',
-  SayfaAdi.qrKod: '/qrKod',
+  SayfaAdi.qrKodKayit: '/qrKodKayit',
+  SayfaAdi.qrKodDogrula: '/qrKodDogrula',
   SayfaAdi.uyeAnasayfa: '/uyeAnasayfa',
   SayfaAdi.profil: '/profil',
   SayfaAdi.borcAlacak: '/borcalacak',
@@ -60,7 +63,8 @@ final Map<SayfaAdi, String> routeEnums = {
 final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.login]!: (context) => const LoginPage(),
   routeEnums[SayfaAdi.kayitol]!: (context) => const RegisterPage(),
-  routeEnums[SayfaAdi.qrKod]!: (context) => const QRKodPage(),
+  routeEnums[SayfaAdi.qrKodKayit]!: (context) => const QRKodKayitPage(),
+  routeEnums[SayfaAdi.qrKodDogrula]!: (context) => const QRKodDogrulaPage(),
   routeEnums[SayfaAdi.uyeAnasayfa]!: (context) => UyeHomePage(),
   routeEnums[SayfaAdi.profil]!: (context) => const ProfilePage(),
   routeEnums[SayfaAdi.borcAlacak]!: (context) => const BorcAlacakPage(),
@@ -82,7 +86,6 @@ final Map<String, WidgetBuilder> routes = {
 final Set<String> publicRoutes = {
   routeEnums[SayfaAdi.login]!, // login -> '/'
   routeEnums[SayfaAdi.kayitol]!, // '/kayitol'
-  routeEnums[SayfaAdi.qrKod]!, // '/qrKod'
 };
 
 /// 4) onGenerateRoute: Rota oluşturma + Token kontrolü

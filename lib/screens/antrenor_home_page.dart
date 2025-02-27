@@ -35,9 +35,14 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
       'text': 'Öğrencilerim'
     },
     {
-      'name': routeEnums[SayfaAdi.qrKod]!,
+      'name': routeEnums[SayfaAdi.qrKodKayit]!,
       'icon': Icons.qr_code,
       'text': 'QR Kod İle Giriş'
+    },
+    {
+      'name': routeEnums[SayfaAdi.qrKodDogrula]!,
+      'icon': Icons.qr_code_2,
+      'text': 'QR Kod Doğrula'
     },
   ];
 

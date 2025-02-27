@@ -56,5 +56,7 @@
  	<string>fetch</string> 
  	<string>remote-notification</string>
  	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Bu uygulama QR kodları taramak için kameranızı kullanır.</string>
 </dict>
 </plist>

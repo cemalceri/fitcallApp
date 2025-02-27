@@ -15,14 +15,14 @@ import 'dart:io';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/4_auth/group_model.dart';
 
-class QRKodPage extends StatefulWidget {
-  const QRKodPage({super.key});
+class QRKodKayitPage extends StatefulWidget {
+  const QRKodKayitPage({super.key});
 
   @override
-  State<QRKodPage> createState() => _QRKodPageState();
+  State<QRKodKayitPage> createState() => _QRKodKayitState();
 }
 
-class _QRKodPageState extends State<QRKodPage> {
+class _QRKodKayitState extends State<QRKodKayitPage> {
   // QR verileri
   String _generatedCode = '';
   String? _validityTime;
