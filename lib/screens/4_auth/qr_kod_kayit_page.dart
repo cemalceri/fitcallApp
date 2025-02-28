@@ -252,7 +252,8 @@ class _QRKodKayitState extends State<QRKodKayitPage> {
       // 5) share_plus ile paylaş
       await Share.shareXFiles(
         [XFile(file.path)],
-        text: 'Bu benim misafir QR kodum!',
+        text:
+            'Merhaba! Bu QR Kod ile $_validityTime tarihine kadar $_passCount kez giriş yapabilirsiniz.',
       );
     } catch (e) {
       debugPrint('Hata (QR paylaşırken): $e');
