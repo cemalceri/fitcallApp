@@ -13,31 +13,20 @@ import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-class AntrenorHomePage extends StatefulWidget {
-  const AntrenorHomePage({super.key});
+class YoneticiHomePage extends StatefulWidget {
+  const YoneticiHomePage({super.key});
 
   @override
-  State<AntrenorHomePage> createState() => _AntrenorHomePageState();
+  State<YoneticiHomePage> createState() => _YoneticiHomePageState();
 }
 
-class _AntrenorHomePageState extends State<AntrenorHomePage> {
+class _YoneticiHomePageState extends State<YoneticiHomePage> {
   // Menü elemanları
   final List<Map<String, dynamic>> menuItems = [
-    {'name': '/antrenor_profil', 'icon': Icons.person, 'text': 'Bilgilerim'},
-    {
-      'name': '/antrenor_dersler',
-      'icon': Icons.sports_tennis,
-      'text': 'Derslerim'
-    },
-    {
-      'name': '/antrenor_ogrenciler',
-      'icon': Icons.group,
-      'text': 'Öğrencilerim'
-    },
     {
       'name': routeEnums[SayfaAdi.qrKodKayit]!,
       'icon': Icons.qr_code,
-      'text': 'QR Kod İle Giriş'
+      'text': 'QR Kod Oluştur'
     },
     {
       'name': routeEnums[SayfaAdi.qrKodDogrula]!,
@@ -118,7 +107,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Antrenör Ana Sayfası'),
+        title: const Text('Yönetici Ana Sayfası'),
         actions: [
           // Bildirimleri FutureBuilder ile çekip NotificationIcon widget'ına gönderiyoruz
           FutureBuilder<List<NotificationModel>>(

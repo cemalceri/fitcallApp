@@ -2,8 +2,8 @@
 
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/common/windgets/show_message_widget.dart';
-import 'package:fitcall/common/windgets/spinner_widgets.dart';
+import 'package:fitcall/common/widgets/show_message_widget.dart';
+import 'package:fitcall/common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/0_ortak/etkinlik_model.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/services/auth_service.dart';

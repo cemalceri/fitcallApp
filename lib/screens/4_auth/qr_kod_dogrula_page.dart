@@ -58,11 +58,12 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
         String result = "$welcomeMessage\n\nGeçerlilik Süresi: $expiration";
         if (remaining != null && remaining is int && remaining > 0) {
           result +=
-              "\n\nBu QR kod ile $remaining kadar daha giriş yapabilirsiniz.";
+              "\n\nBu QR kod ile $remaining kez daha giriş yapabilirsiniz.";
         }
         return result;
       } else {
-        final hataMesaji = jsonDecode(response.body)['message'];
+        final hataMesaji =
+            jsonDecode(utf8.decode(response.bodyBytes))['message'];
         return 'Hata: ${hataMesaji ?? 'Hata oluştu.'}';
       }
     } catch (e) {

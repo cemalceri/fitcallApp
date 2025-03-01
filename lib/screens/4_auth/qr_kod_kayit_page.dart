@@ -2,7 +2,7 @@
 
 import 'dart:convert';
 import 'dart:math';
-import 'package:fitcall/common/windgets/show_message_widget.dart';
+import 'package:fitcall/common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;

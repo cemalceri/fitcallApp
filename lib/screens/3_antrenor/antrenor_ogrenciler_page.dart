@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
-import 'package:fitcall/common/windgets/show_message_widget.dart';
+import 'package:fitcall/common/widgets/show_message_widget.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';

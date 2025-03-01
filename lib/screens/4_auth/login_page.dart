@@ -1,7 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/common/constants.dart';
 import 'package:fitcall/common/routes.dart';
-import 'package:fitcall/common/windgets/spinner_widgets.dart';
+import 'package:fitcall/common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/auth_service.dart';
 import 'package:fitcall/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _navigateAfterLogin(String? role) async {
+  void _navigateAfterLogin(Roller? role) async {
     // Eğer pendingTarget belirlenmişse, login işleminden sonra o sayfaya yönlendir.
     if (widget.logindenSonraGit != null) {
       Navigator.pushNamedAndRemoveUntil(
@@ -56,12 +57,15 @@ class _LoginPageState extends State<LoginPage> {
         widget.logindenSonraGit!,
         (route) => true,
       );
-    } else if (role == "antrenor") {
+    } else if (role == Roller.antrenor) {
       Navigator.pushReplacementNamed(
           context, routeEnums[SayfaAdi.antrenorAnasayfa]!);
-    } else if (role == "uye") {
+    } else if (role == Roller.uye) {
       Navigator.pushReplacementNamed(
           context, routeEnums[SayfaAdi.uyeAnasayfa]!);
+    } else if (role == Roller.yonetici) {
+      Navigator.pushReplacementNamed(
+          context, routeEnums[SayfaAdi.yoneticiAnasayfa]!);
     }
   }
 

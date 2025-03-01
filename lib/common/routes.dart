@@ -1,4 +1,5 @@
 import 'package:fitcall/screens/4_auth/qr_kod_dogrula_page.dart';
+import 'package:fitcall/screens/yonetici_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/screens/1_common/1_notification/notification_icon.dart';
 import 'package:fitcall/screens/2_uye/ders_talep_page.dart';
@@ -15,8 +16,6 @@ import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/screens/2_uye/muhasebe/borc_alacak_page.dart';
 import 'package:fitcall/screens/2_uye/profil_page.dart';
 import 'package:fitcall/screens/2_uye/uyelik/uyelik_paket_screen.dart';
-
-// AuthService -> Token kontrolünü yapan servis (onGenerateRoute'ta kullanacağız)
 import 'package:fitcall/services/auth_service.dart';
 
 /// Uygulama genelinde kullanacağımız sayfaların enum değerleri
@@ -37,6 +36,7 @@ enum SayfaAdi {
   uyeDersTalepleri,
   uygunSaatler,
   bildirimler,
+  yoneticiAnasayfa,
 }
 
 /// 1) Enum -> Rota ismi eşleşmesi
@@ -57,6 +57,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.uyeDersTalepleri: '/uyeDersTalepleri',
   SayfaAdi.uygunSaatler: '/uygunSaatler',
   SayfaAdi.bildirimler: '/bildirimler',
+  SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
 };
 
 /// 2) Rota -> Widget eşleşmesi (onGenerateRoute içinde kullanacağız)
@@ -79,6 +80,7 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.uygunSaatler]!: (context) => const UygunSaatlerPage(),
   routeEnums[SayfaAdi.bildirimler]!: (context) =>
       NotificationPage(notifications: []),
+  routeEnums[SayfaAdi.yoneticiAnasayfa]!: (context) => YoneticiHomePage(),
 };
 
 /// 3) Public rotalar (token kontrolü olmadan açılabilen ekranlar)

@@ -3,8 +3,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
+import 'package:fitcall/common/constants.dart';
 import 'package:fitcall/common/routes.dart';
-import 'package:fitcall/common/windgets/show_message_widget.dart';
+import 'package:fitcall/common/widgets/show_message_widget.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/models/4_auth/group_model.dart';
@@ -75,7 +76,7 @@ class AuthService {
     return value == true;
   }
 
-  static Future<String?> loginUser(
+  static Future<Roller?> loginUser(
       BuildContext context, String username, String password) async {
     final data = {'username': username, 'password': password};
 
@@ -104,29 +105,37 @@ class AuthService {
         final decoded = jsonDecode(utf8.decode(userResponse.bodyBytes));
         await _storeUser(decoded);
 
-        // Rol kontrolü
-        if (decoded["antrenor"] != null) {
+        final List<GroupModel> groups =
+            GroupModel.fromJsonList(jsonEncode(decoded["groups"] ?? []));
+        if (groups.any((element) => element.name == Roller.antrenor.name)) {
+          await _storeAndSendFcm(Roller.antrenor.name, decoded["antrenor"],
+              tokenModel.accessToken);
+          return Roller.antrenor;
+        } else if (groups.any((element) => element.name == Roller.uye.name)) {
           await _storeAndSendFcm(
-              'antrenor', decoded["antrenor"], tokenModel.accessToken);
-          return "antrenor";
+              Roller.uye.name, decoded["uye"], tokenModel.accessToken);
+          return Roller.uye;
+        } else if (groups
+            .any((element) => element.name == Roller.yonetici.name)) {
+          await _storeAndSendFcm(Roller.yonetici.name, decoded["yonetici"],
+              tokenModel.accessToken);
+          return Roller.yonetici;
+        } else if (groups.any((element) => element.name == Roller.cafe.name)) {
+          await _storeAndSendFcm(
+              Roller.cafe.name, decoded["cafe"], tokenModel.accessToken);
+          return Roller.cafe;
+        } else {
+          ShowMessage.error(context,
+              'Kullanıcı yetkisi bulunamadı. Lütfen yöneticinizle iletişime geçin.');
+          return null;
         }
-        if (decoded["uye"] != null) {
-          await _storeAndSendFcm('uye', decoded["uye"], tokenModel.accessToken);
-          return "uye";
-        }
-
-        ShowMessage.error(context, 'Rol bilgisi alınamadı.');
-        return null;
       }
-
-      // 2) Hatalı durum (200 dışı)
       return _handleErrorStatus(context, response.statusCode);
     } on TimeoutException {
       ShowMessage.error(context, 'Sunucuya bağlanırken bir hata oluştu');
     } catch (e) {
       ShowMessage.error(context, 'Bir hata oluştu: $e');
     }
-
     return null;
   }
 
@@ -157,7 +166,7 @@ class AuthService {
   }
 
   /// StatusCode'a göre hata mesajı
-  static String? _handleErrorStatus(BuildContext context, int code) {
+  static Roller? _handleErrorStatus(BuildContext context, int code) {
     switch (code) {
       case 401:
       case 404:
