@@ -70,7 +70,7 @@ class UygunSaatlerPageState extends State<UygunSaatlerPage> {
       _fetchedSlots = [];
     });
 
-    var token = AuthService.getToken();
+    var token = await AuthService.getToken();
 
     Map<String, dynamic> payload = {
       "start_date": _startDate!.toIso8601String().substring(0, 10),

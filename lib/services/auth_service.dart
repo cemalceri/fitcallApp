@@ -1,33 +1,37 @@
+// lib/services/auth_service.dart
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
 import 'dart:convert';
-import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/common/constants.dart';
+
 import 'package:fitcall/common/routes.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:fitcall/common/api_urls.dart'; // loginUrl, getUser, getMyMembers
+import 'package:fitcall/common/constants.dart'; // Roller enum, routeEnums, SayfaAdi
 import 'package:fitcall/common/widgets/show_message_widget.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/models/4_auth/group_model.dart';
-import 'package:fitcall/models/4_auth/token_model.dart';
 import 'package:fitcall/models/4_auth/user_model.dart';
-import 'package:fitcall/services/fcm_service.dart';
+import 'package:fitcall/models/4_auth/token_model.dart';
+import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:fitcall/services/secure_storage_service.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class AuthService {
+  /// Token hâlâ geçerli mi?
   static Future<bool> tokenGecerliMi() async {
     String? tokenExp = await SecureStorageService.getValue<String>('token_exp');
     return tokenExp != null &&
         DateTime.tryParse(tokenExp)?.isAfter(DateTime.now()) == true;
-    //todo expire olmuşsa refresh token alacağız
   }
 
+  /// Saklanan token’ı getir
   static Future<String?> getToken() async {
     return SecureStorageService.getValue<String>('token');
   }
 
+  /// Çıkış yap
   static void logout(BuildContext context) async {
     await SecureStorageService.clearAll();
     if (context.mounted) {
@@ -35,6 +39,7 @@ class AuthService {
     }
   }
 
+  /// SecureStorage’daki “uye” verisini getir
   static Future<UyeModel?> uyeBilgileriniGetir() async {
     final uyeJson = await SecureStorageService.getValue<String>('uye');
     if (uyeJson != null) {
@@ -43,15 +48,16 @@ class AuthService {
     return null;
   }
 
+  /// SecureStorage’daki “antrenor” verisini getir
   static Future<AntrenorModel?> antrenorBilgileriniGetir() async {
-    final antrenorJson =
-        await SecureStorageService.getValue<String>('antrenor');
-    if (antrenorJson != null) {
-      return AntrenorModel.fromJson(json.decode(antrenorJson));
+    final jsonStr = await SecureStorageService.getValue<String>('antrenor');
+    if (jsonStr != null) {
+      return AntrenorModel.fromJson(json.decode(jsonStr));
     }
     return null;
   }
 
+  /// SecureStorage’daki “groups” verisini getir (ilk grup)
   static Future<GroupModel?> groupBilgileriniGetir() async {
     final groupsJson = await SecureStorageService.getValue<String>('groups');
     if (groupsJson != null) {
@@ -63,6 +69,7 @@ class AuthService {
     return null;
   }
 
+  /// SecureStorage’daki “user” verisini getir
   static Future<UserModel?> userBilgileriniGetir() async {
     final userJson = await SecureStorageService.getValue<String>('user');
     if (userJson != null) {
@@ -71,114 +78,113 @@ class AuthService {
     return null;
   }
 
+  /// “Beni Hatırla” işaretli mi?
   static Future<bool> beniHatirlaIsaretlenmisMi() async {
-    final value = await SecureStorageService.getValue<bool>('beni_hatirla');
-    return value == true;
+    final val = await SecureStorageService.getValue<bool>('beni_hatirla');
+    return val == true;
   }
 
-  static Future<Roller?> loginUser(
-      BuildContext context, String username, String password) async {
+  /// Sadece üye–kullanıcı ilişkilerini alır ve liste döner. Hata durumunda null.
+  static Future<List<KullaniciProfilModel>?> fetchMyMembers(
+    BuildContext context,
+    String username,
+    String password,
+  ) async {
     final data = {'username': username, 'password': password};
+    final resp = await http.post(
+      Uri.parse(getMyMembers),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(data),
+    );
+    if (resp.statusCode != 200) {
+      ShowMessage.error(context, 'Üyeler alınamadı: ${resp.statusCode}');
+      return null;
+    }
+    final List<dynamic> relList = jsonDecode(utf8.decode(resp.bodyBytes));
+    return relList
+        .map((e) => KullaniciProfilModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
 
+  /// Giriş yap: token, user bilgisi ve üyeleri alır, rollerini belirler, LoginResult döner.
+  static Future<Roller?> loginUser(
+      BuildContext context, KullaniciProfilModel relation) async {
+    await SecureStorageService.setValue<String>(
+      'uye',
+      jsonEncode(relation.uye?.toJson()),
+    );
+    await SecureStorageService.setValue<String>(
+      'antrenor',
+      jsonEncode(relation.antrenor?.toJson()),
+    );
+    await SecureStorageService.setValue<String>(
+      'user',
+      jsonEncode(relation.kullanici.toJson()),
+    );
+    await SecureStorageService.setValue<bool>(
+      'ana_hesap_mi',
+      relation.anaHesap,
+    );
+    await SecureStorageService.setValue<String>(
+      'gruplar',
+      jsonEncode(relation.gruplar),
+    );
+    await SecureStorageService.setValue<String>(
+      'uye_kullanici_relation',
+      jsonEncode(relation.toJson()),
+    );
+
+    // 2) Token için API isteği
+    final payload = {
+      'user_id': relation.kullanici.id,
+      'uye_id': relation.uye?.id,
+      'antrenor_id': relation.antrenor?.id,
+    };
     try {
-      final response = await http.post(Uri.parse(loginUrl),
-          body: jsonEncode(data),
-          headers: {
-            'Content-Type': 'application/json'
-          }).timeout(const Duration(seconds: 15));
+      final resp = await http
+          .post(
+            Uri.parse(createToken),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 15));
 
-      // 1) Başarılı durum
-      if (response.statusCode == 200) {
-        final tokenModel = TokenModel.fromJson(response);
-        await _storeCredentials(tokenModel, username, password);
-
-        // Kullanıcı bilgisi al
-        final userResponse = await http.post(
-          Uri.parse(getUser),
-          headers: {'Authorization': 'Bearer ${tokenModel.accessToken}'},
-        );
-        if (userResponse.statusCode != 200) {
-          ShowMessage.error(context, 'Kullanıcı bilgileri alınamadı.');
-          return null;
-        }
-
-        final decoded = jsonDecode(utf8.decode(userResponse.bodyBytes));
-        await _storeUser(decoded);
-
-        final List<GroupModel> groups =
-            GroupModel.fromJsonList(jsonEncode(decoded["groups"] ?? []));
-        if (groups.any((element) => element.name == Roller.antrenor.name)) {
-          await _storeAndSendFcm(Roller.antrenor.name, decoded["antrenor"],
-              tokenModel.accessToken);
-          return Roller.antrenor;
-        } else if (groups.any((element) => element.name == Roller.uye.name)) {
-          await _storeAndSendFcm(
-              Roller.uye.name, decoded["uye"], tokenModel.accessToken);
-          return Roller.uye;
-        } else if (groups
-            .any((element) => element.name == Roller.yonetici.name)) {
-          await _storeAndSendFcm(Roller.yonetici.name, decoded["yonetici"],
-              tokenModel.accessToken);
-          return Roller.yonetici;
-        } else if (groups.any((element) => element.name == Roller.cafe.name)) {
-          await _storeAndSendFcm(
-              Roller.cafe.name, decoded["cafe"], tokenModel.accessToken);
-          return Roller.cafe;
-        } else {
-          ShowMessage.error(context,
-              'Kullanıcı yetkisi bulunamadı. Lütfen yöneticinizle iletişime geçin.');
-          return null;
-        }
+      if (resp.statusCode != 200) {
+        ShowMessage.error(context, 'Token alınamadı: ${resp.statusCode}');
+        return null;
       }
-      return _handleErrorStatus(context, response.statusCode);
-    } on TimeoutException {
-      ShowMessage.error(context, 'Sunucuya bağlanırken bir hata oluştu');
-    } catch (e) {
-      ShowMessage.error(context, 'Bir hata oluştu: $e');
-    }
-    return null;
-  }
 
-  /// Token ve kullanıcı adı/şifreyi kaydeder.
-  static Future<void> _storeCredentials(
-      TokenModel tokenModel, String user, String pass) async {
-    await SecureStorageService.setValue<String>(
-        'token', tokenModel.accessToken);
-    await SecureStorageService.setValue<String>(
-        'token_exp', tokenModel.expireDate.toString());
-    await SecureStorageService.setValue<String>('username', user);
-    await SecureStorageService.setValue<String>('password', pass);
-  }
+      // 3) Gelen tokenu sakla
+      final tokenModel = TokenModel.fromJson(resp);
+      await SecureStorageService.setValue<String>(
+          'token', tokenModel.accessToken);
+      await SecureStorageService.setValue<String>(
+          'token_exp', tokenModel.expireDate.toIso8601String());
 
-  /// User, Groups gibi genel bilgileri kaydeder.
-  static Future<void> _storeUser(Map<String, dynamic> decoded) async {
-    await SecureStorageService.setValue<String>(
-        'user', jsonEncode(decoded["user"]));
-    await SecureStorageService.setValue<String>(
-        'groups', jsonEncode(decoded["groups"]));
-  }
-
-  /// Antrenör veya Üye verisini kaydedip FCM gönderir.
-  static Future<void> _storeAndSendFcm(
-      String key, dynamic data, String accessToken) async {
-    await SecureStorageService.setValue<String>(key, jsonEncode(data));
-    await sendFCMDevice(accessToken);
-  }
-
-  /// StatusCode'a göre hata mesajı
-  static Roller? _handleErrorStatus(BuildContext context, int code) {
-    switch (code) {
-      case 401:
-      case 404:
-        ShowMessage.error(context, 'Kullanıcı adı veya şifre hatalı');
-        break;
-      case 403:
+      // 4) Relation içindeki roller üzerinden role belirle
+      final gruplar = relation.gruplar;
+      if (gruplar.contains(Roller.antrenor.name)) {
+        return Roller.antrenor;
+      } else if (gruplar.contains(Roller.uye.name)) {
+        return Roller.uye;
+      } else if (gruplar.contains(Roller.yonetici.name)) {
+        return Roller.yonetici;
+      } else if (gruplar.contains(Roller.cafe.name)) {
+        return Roller.cafe;
+      } else {
         ShowMessage.error(context,
-            'Hesabınız henüz aktif değil. Lütfen yöneticinizle iletişime geçin.');
-        break;
-      default:
-        ShowMessage.error(context, 'Giriş yapılırken bir hata oluştu');
+            'Henüz uygulamaya giriş yetkisi verilmemiş. Lütfen yönetici ile iletişime geçin.');
+        return null;
+      }
+    } on TimeoutException {
+      ShowMessage.error(context, 'Sunucuya bağlanırken bir hata oluştu.');
+      return null;
+    } catch (e) {
+      print(e);
+      ShowMessage.error(context, 'Bir hata oluştu: $e');
+      return null;
     }
-    return null;
   }
 }

@@ -313,7 +313,7 @@ class _QRKodKayitState extends State<QRKodKayitPage> {
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
         setState(() {
           _generatedCode = newCode;
           _validityTime = data['gecerlilik_suresi']?.toString();

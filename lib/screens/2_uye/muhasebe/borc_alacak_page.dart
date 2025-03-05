@@ -8,6 +8,7 @@ import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'dart:convert';
 
 class BorcAlacakPage extends StatefulWidget {
   const BorcAlacakPage({super.key});
@@ -40,9 +41,8 @@ class _BorcAlacakPageState extends State<BorcAlacakPage> {
           headers: {'Authorization': 'Bearer $token'},
         );
         if (response.statusCode == 200) {
-          // API yanıtını güncellenmiş modele göre ayrıştırıyoruz.
           List<OdemeBorcModel?> odemeBorcModel =
-              OdemeBorcModel.fromJsonList(response.body);
+              OdemeBorcModel.fromJsonList(utf8.decode(response.bodyBytes));
           setState(() {
             odemeBorcListesi = odemeBorcModel;
             kalanBakiye = _kalanBakiyeHesapla(odemeBorcModel);

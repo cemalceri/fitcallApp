@@ -1,3 +1,4 @@
+import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/screens/4_auth/qr_kod_dogrula_page.dart';
 import 'package:fitcall/screens/yonetici_home_page.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ import 'package:fitcall/services/auth_service.dart';
 /// Uygulama genelinde kullanacağımız sayfaların enum değerleri
 enum SayfaAdi {
   login,
+  profilSec,
   kayitol,
   qrKodKayit,
   qrKodDogrula,
@@ -42,6 +44,7 @@ enum SayfaAdi {
 /// 1) Enum -> Rota ismi eşleşmesi
 final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.login: '/',
+  SayfaAdi.profilSec: '/profilSec',
   SayfaAdi.kayitol: '/kayitol',
   SayfaAdi.qrKodKayit: '/qrKodKayit',
   SayfaAdi.qrKodDogrula: '/qrKodDogrula',
@@ -63,6 +66,9 @@ final Map<SayfaAdi, String> routeEnums = {
 /// 2) Rota -> Widget eşleşmesi (onGenerateRoute içinde kullanacağız)
 final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.login]!: (context) => const LoginPage(),
+  routeEnums[SayfaAdi.profilSec]!: (context) => const ProfilSecPage(
+        relations: [],
+      ),
   routeEnums[SayfaAdi.kayitol]!: (context) => const RegisterPage(),
   routeEnums[SayfaAdi.qrKodKayit]!: (context) => const QRKodKayitPage(),
   routeEnums[SayfaAdi.qrKodDogrula]!: (context) => const QRKodDogrulaPage(),
