@@ -7,10 +7,10 @@ class AppTheme {
       brightness: Brightness.light,
     ),
     useMaterial3: true,
-    scaffoldBackgroundColor: const Color(0xFFF5F5F5), // Arka plan rengi
+    scaffoldBackgroundColor: const Color(0xFFF5F555), // Arka plan rengi
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.white.withOpacity(0.8),
+      fillColor: Colors.white.withAlpha(204),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
