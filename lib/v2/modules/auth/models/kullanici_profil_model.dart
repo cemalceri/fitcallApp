@@ -1,65 +1,132 @@
-// lib/models/kullanici_profil_model.dart
+// lib/models/login_response.dart
 
-import 'package:fitcall/v2/modules/antrenor/models/antrenor_model.dart';
 import 'package:fitcall/v2/modules/auth/models/kullanici_model.dart';
-import 'package:fitcall/v2/modules/uye/models/uye_model.dart';
-import 'package:fitcall/v2/shared/models/base_model.dart';
 
-class KullaniciProfilModel extends BaseModel {
-  final int? uyeId;
-  final int? antrenorId;
-  final int kullaniciId;
+class UyeProfil {
+  final int id;
+  final String adi;
+  final String soyadi;
   final bool anaHesapMi;
 
-  /// Nested objects
-  final UyeModel? uye;
-  final AntrenorModel? antrenor;
-  final KullaniciModel kullanici;
-
-  KullaniciProfilModel({
-    required super.id,
-    required super.olusturulmaZamani,
-    required super.guncellenmeZamani,
-    required super.isletmeId,
-    this.uyeId,
-    this.antrenorId,
-    required this.kullaniciId,
+  UyeProfil({
+    required this.id,
+    required this.adi,
+    required this.soyadi,
     required this.anaHesapMi,
-    this.uye,
-    this.antrenor,
-    required this.kullanici,
   });
 
-  factory KullaniciProfilModel.fromJson(Map<String, dynamic> json) {
-    final uyeJson = json['uye'];
-    final antrenorJson = json['antrenor'];
-    final kullaniciJson = json['kullanici'] as Map<String, dynamic>;
+  factory UyeProfil.fromJson(Map<String, dynamic> json) => UyeProfil(
+        id: json['id'] as int,
+        adi: json['adi'] as String,
+        soyadi: json['soyadi'] as String,
+        anaHesapMi: json['ana_hesap_mi'] as bool,
+      );
+}
 
-    return KullaniciProfilModel(
-      id: json['id'] as int,
-      olusturulmaZamani: DateTime.parse(json['olusturulma_zamani'] as String),
-      guncellenmeZamani: DateTime.parse(json['guncellenme_zamani'] as String),
-      isletmeId: json['isletme'] as int,
-      uyeId: uyeJson != null ? (uyeJson['id'] as int?) : null,
-      antrenorId: antrenorJson != null ? (antrenorJson['id'] as int?) : null,
-      kullaniciId: kullaniciJson['id'] as int,
-      anaHesapMi: json['ana_hesap_mi'] as bool,
-      uye: uyeJson != null
-          ? UyeModel.fromJson(uyeJson as Map<String, dynamic>)
-          : null,
-      antrenor: antrenorJson != null
-          ? AntrenorModel.fromJson(antrenorJson as Map<String, dynamic>)
-          : null,
-      kullanici: KullaniciModel.fromJson(kullaniciJson),
+class AntrenorProfil {
+  final int id;
+  final String adi;
+  final String soyadi;
+  final bool anaHesapMi;
+
+  AntrenorProfil({
+    required this.id,
+    required this.adi,
+    required this.soyadi,
+    required this.anaHesapMi,
+  });
+
+  factory AntrenorProfil.fromJson(Map<String, dynamic> json) => AntrenorProfil(
+        id: json['id'] as int,
+        adi: json['adi'] as String,
+        soyadi: json['soyadi'] as String,
+        anaHesapMi: json['ana_hesap_mi'] as bool,
+      );
+}
+
+class GroupModel {
+  final int id;
+  final String name;
+
+  GroupModel({required this.id, required this.name});
+
+  factory GroupModel.fromJson(Map<String, dynamic> json) => GroupModel(
+        id: json['id'] as int,
+        name: json['name'] as String,
+      );
+}
+
+class PermissionModel {
+  final int id;
+  final String name;
+  final String grup;
+
+  PermissionModel({
+    required this.id,
+    required this.name,
+    required this.grup,
+  });
+
+  factory PermissionModel.fromJson(Map<String, dynamic> json) =>
+      PermissionModel(
+        id: json['id'] as int,
+        name: json['name'] as String,
+        grup: json['grup'] as String,
+      );
+}
+
+class LoginResponse {
+  final String token;
+  final KullaniciModel user;
+  final List<UyeProfil> uyeler;
+  final List<AntrenorProfil> antrenorler;
+  final List<GroupModel> gruplar;
+  final List<PermissionModel> izinler;
+
+  LoginResponse({
+    required this.token,
+    required this.user,
+    required this.uyeler,
+    required this.antrenorler,
+    required this.gruplar,
+    required this.izinler,
+  });
+
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    // 1) token
+    final token = json['token'] as String;
+
+    // 2) user nesnesi, JSON'daki first_name/last_name → KullaniciModel
+    final u = json['user'] as Map<String, dynamic>;
+    final user = KullaniciModel(
+      id: u['id'] as int,
+      firstName: u['first_name'] as String,
+      lastName: u['last_name'] as String,
+      email: u['email'] as String,
+      // Eğer KullaniciModel başka required alanlar alıyorsa onları da burada ekleyin
+    );
+
+    // 3) listeleri parse et
+    final uyelerJson = json['uyeler'] as List<dynamic>;
+    final antrenorlerJson = json['antrenorler'] as List<dynamic>;
+    final gruplarJson = json['gruplar'] as List<dynamic>;
+    final izinlerJson = json['izinler'] as List<dynamic>;
+
+    return LoginResponse(
+      token: token,
+      user: user,
+      uyeler: uyelerJson
+          .map((e) => UyeProfil.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      antrenorler: antrenorlerJson
+          .map((e) => AntrenorProfil.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      gruplar: gruplarJson
+          .map((e) => GroupModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      izinler: izinlerJson
+          .map((e) => PermissionModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
-
-  @override
-  Map<String, dynamic> toJson() => {
-        ...super.toJson(),
-        'uye': uye?.toJson(),
-        'antrenor': antrenor?.toJson(),
-        'kullanici': kullanici.toJson(),
-        'ana_hesap_mi': anaHesapMi,
-      };
 }

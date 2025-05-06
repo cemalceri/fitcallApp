@@ -1,7 +1,7 @@
-// lib/screens/login_screen.dart
 import 'dart:ui';
 import 'package:fitcall/v2/modules/auth/services/auth_service.dart';
 import 'package:fitcall/v2/router/routes.dart';
+import 'package:fitcall/v2/shared/widgets/show_message_widget.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,27 +15,27 @@ class _LoginScreenState extends State<LoginScreen> {
   final _kullaniciAdiController = TextEditingController();
   final _parolaController = TextEditingController();
   bool _isLoading = false;
-  String? _errorMessage;
 
   Future<void> _girisYap() async {
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
     });
     try {
       final profiller = await AuthService.login(
         _kullaniciAdiController.text,
         _parolaController.text,
       );
-      Navigator.pushNamed(
+      Navigator.pushReplacementNamed(
         context,
-        SayfaAdi.profilSecimV2.name,
+        routeEnums[SayfaAdi.profilSecimV2]!,
         arguments: profiller,
       );
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-      });
+      ShowMessage.error(
+        context,
+        e.toString().replaceAll(
+            'Exception: ', ''), // gereksiz Exception: ön ekini kaldırır
+      );
     } finally {
       setState(() {
         _isLoading = false;
@@ -72,13 +72,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.lock_outline,
-                        size: 80, color: Colors.teal),
+                    const Icon(
+                      Icons.lock_outline,
+                      size: 80,
+                      color: Colors.teal,
+                    ),
                     const SizedBox(height: 24),
                     TextField(
                       controller: _kullaniciAdiController,
                       decoration: const InputDecoration(
-                        hintText: 'Kullanıcı Adı veya E-Mail',
+                        hintText: 'Kullanıcı Adı veya E-posta',
                         prefixIcon: Icon(Icons.person_outline),
                       ),
                     ),
@@ -92,18 +95,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       obscureText: true,
                     ),
                     const SizedBox(height: 16),
-                    if (_errorMessage != null) ...[
-                      Text(_errorMessage!,
-                          style: const TextStyle(color: Colors.red)),
-                      const SizedBox(height: 12),
-                    ],
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _girisYap,
                         child: _isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white)
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
                             : const Text('Giriş Yap'),
                       ),
                     ),
@@ -112,12 +116,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextButton(
-                          onPressed: () {/* Şifremi Unuttum */},
+                          onPressed: () {
+                            // Şifremi unuttum sayfasına yönlendir
+                          },
                           child: const Text('Şifremi Unuttum'),
                         ),
-                        const Text('|'),
+                        const Text('  |  '),
                         TextButton(
-                          onPressed: () {/* Kayıt Ol */},
+                          onPressed: () {
+                            // Kayıt ol sayfasına yönlendir
+                          },
                           child: const Text('Kayıt Ol'),
                         ),
                       ],
