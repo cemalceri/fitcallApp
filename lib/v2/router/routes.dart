@@ -1,23 +1,30 @@
 import 'package:fitcall/v2/modules/auth/screens/login_screen.dart';
 import 'package:fitcall/v2/modules/auth/screens/profil_secim_screen.dart';
+import 'package:fitcall/v2/modules/uye/screens/anasayfa_screen.dart';
 import 'package:flutter/material.dart';
 
 /// Uygulama genelinde kullanacağımız sayfaların enum değerleri
 enum SayfaAdi {
   loginV2,
   profilSecimV2,
+  uyeAnasayfaV2,
+  antrenorAnasayfaV2,
 }
 
 /// 1) Enum -> Rota ismi eşleşmesi
 final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.loginV2: '/',
   SayfaAdi.profilSecimV2: '/profilSecim',
+  SayfaAdi.uyeAnasayfaV2: '/uyeAnasayfa',
+  SayfaAdi.antrenorAnasayfaV2: '/antrenorAnasayfa',
 };
 
 /// 2) Rota -> Widget eşleşmesi (onGenerateRoute içinde kullanacağız)
 final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.loginV2]!: (context) => const LoginScreen(),
-  routeEnums[SayfaAdi.profilSecimV2]!: (context) => ProfilSecimScreen()
+  routeEnums[SayfaAdi.profilSecimV2]!: (context) => ProfilSecimScreen(),
+  routeEnums[SayfaAdi.uyeAnasayfaV2]!: (context) => UyeAnaSayfaScreen(),
+  routeEnums[SayfaAdi.antrenorAnasayfaV2]!: (context) => UyeAnaSayfaScreen(),
 };
 
 /// 3) Public rotalar (token kontrolü olmadan açılabilen ekranlar)

@@ -1,8 +1,10 @@
 // lib/services/auth_service.dart
 
 import 'dart:convert';
+import 'package:fitcall/services/fcm_service.dart';
 import 'package:fitcall/v2/modules/auth/models/kullanici_profil_model.dart';
 import 'package:fitcall/v2/shared/api_urls.dart';
+import 'package:fitcall/v2/shared/services/secure_storage_service.dart';
 import 'package:http/http.dart' as http;
 
 class AuthService {
@@ -24,7 +26,17 @@ class AuthService {
     if (response.statusCode == 200) {
       final data =
           jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      print(data);
+      await SecureStorageService.setValue<String>('token', data['token']);
+      await SecureStorageService.setValue<String>('kullanici_adi',
+          data['kullanici_adi'] ?? kullaniciAdi.trim().toLowerCase());
+      await SecureStorageService.setValue<String>('parola', parola);
+      await SecureStorageService.setValue<bool>(
+          'ana_hesap_mi', data['ana_hesap_mi'] == 'true');
+
+      await sendFCMDevice(
+        data['token'],
+        isMainAccount: data['ana_hesap_mi'] == 'true',
+      );
       return LoginResponse.fromJson(data);
     } else {
       final hataJson = jsonDecode(utf8.decode(response.bodyBytes));

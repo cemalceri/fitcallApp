@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:fitcall/v2/modules/auth/services/auth_service.dart';
 import 'package:fitcall/v2/router/routes.dart';
+import 'package:fitcall/v2/shared/services/fcm_service.dart';
 import 'package:fitcall/v2/shared/widgets/show_message_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -21,15 +22,20 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
     try {
-      final profiller = await AuthService.login(
+      await AuthService.login(
         _kullaniciAdiController.text,
         _parolaController.text,
-      );
-      Navigator.pushReplacementNamed(
-        context,
-        routeEnums[SayfaAdi.profilSecimV2]!,
-        arguments: profiller,
-      );
+      ).then((profiller) {
+        Navigator.pushNamed(
+          context,
+          routeEnums[SayfaAdi.profilSecimV2]!,
+          arguments: profiller,
+        );
+      }).timeout(const Duration(seconds: 20), onTimeout: () {
+        ShowMessage.error(
+            context, 'Zaman aşımına uğradı. Lütfen tekrar deneyin.');
+      });
+      await sendFCMDevice();
     } catch (e) {
       ShowMessage.error(
         context,
