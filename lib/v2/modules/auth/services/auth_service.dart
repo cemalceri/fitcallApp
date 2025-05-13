@@ -46,4 +46,40 @@ class AuthService {
       throw Exception(mesaj ?? 'Giriş işlemi başarısız.');
     }
   }
+
+  /// Yeni kullanıcı kaydı yapar: e-posta, telefon, ad & soyad ve parola gönderilir.
+  static Future<void> register({
+    required String email,
+    required String phone,
+    required String firstName,
+    required String lastName,
+    required String password,
+  }) async {
+    final uri = Uri.parse(kayitOlV2); // api_urls.dart içindeki kayıt endpoint'i
+    final body = jsonEncode({
+      'email': email.trim().toLowerCase(),
+      'telefon': phone.trim(),
+      'adi': firstName.trim(),
+      'soyadi': lastName.trim(),
+      'parola': password,
+    });
+
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      // Kayıt başarılı
+      return;
+    } else {
+      // Hata yanıtını ayrıştırıp kullanıcıya gösterilecek mesajı al
+      final errorData = jsonDecode(utf8.decode(response.bodyBytes));
+      final mesaj = errorData is Map<String, dynamic>
+          ? (errorData['hata'] as String?)
+          : null;
+      throw Exception(mesaj ?? 'Kayıt işlemi başarısız.');
+    }
+  }
 }

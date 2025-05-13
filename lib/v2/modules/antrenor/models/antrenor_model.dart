@@ -28,10 +28,10 @@ class AntrenorModel extends BaseModel {
   final int? guncelleyenId;
 
   AntrenorModel({
-    required int id,
-    required DateTime olusturulmaZamani,
-    required DateTime guncellenmeZamani,
-    required int isletmeId,
+    required super.id,
+    required super.olusturulmaZamani,
+    required super.guncellenmeZamani,
+    required super.isletmeId,
     required this.adi,
     required this.soyadi,
     this.eposta,
@@ -41,12 +41,7 @@ class AntrenorModel extends BaseModel {
     this.userId,
     this.ekleyenId,
     this.guncelleyenId,
-  }) : super(
-          id: id,
-          olusturulmaZamani: olusturulmaZamani,
-          guncellenmeZamani: guncellenmeZamani,
-          isletmeId: isletmeId,
-        );
+  });
 
   factory AntrenorModel.fromJson(Map<String, dynamic> json) => AntrenorModel(
         id: json['id'] as int,

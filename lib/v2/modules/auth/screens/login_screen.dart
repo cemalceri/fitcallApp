@@ -1,3 +1,5 @@
+// lib/modules/auth/screens/login_screen.dart
+
 import 'dart:ui';
 import 'package:fitcall/v2/modules/auth/services/auth_service.dart';
 import 'package:fitcall/v2/router/routes.dart';
@@ -18,9 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   Future<void> _girisYap() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
     try {
       await AuthService.login(
         _kullaniciAdiController.text,
@@ -39,13 +39,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       ShowMessage.error(
         context,
-        e.toString().replaceAll(
-            'Exception: ', ''), // gereksiz Exception: ön ekini kaldırır
+        e.toString().replaceAll('Exception: ', ''),
       );
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -67,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 500),
                 child: Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -130,7 +127,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Text('  |  '),
                         TextButton(
                           onPressed: () {
-                            // Kayıt ol sayfasına yönlendir
+                            Navigator.pushNamed(
+                              context,
+                              routeEnums[SayfaAdi.kayitOlV2]!,
+                            );
                           },
                           child: const Text('Kayıt Ol'),
                         ),
