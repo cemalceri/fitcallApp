@@ -120,7 +120,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         TextButton(
                           onPressed: () {
-                            // Şifremi unuttum sayfasına yönlendir
+                            Navigator.pushNamed(
+                              context,
+                              routeEnums[SayfaAdi.sifreSifirlaV2]!,
+                            );
                           },
                           child: const Text('Şifremi Unuttum'),
                         ),

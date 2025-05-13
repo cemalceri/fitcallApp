@@ -1,6 +1,7 @@
 import 'package:fitcall/v2/modules/auth/screens/kayit_ol_screen.dart';
 import 'package:fitcall/v2/modules/auth/screens/login_screen.dart';
 import 'package:fitcall/v2/modules/auth/screens/profil_secim_screen.dart';
+import 'package:fitcall/v2/modules/auth/screens/sifre_sifirla_screen.dart';
 import 'package:fitcall/v2/modules/uye/screens/anasayfa_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +12,7 @@ enum SayfaAdi {
   uyeAnasayfaV2,
   antrenorAnasayfaV2,
   kayitOlV2,
+  sifreSifirlaV2,
 }
 
 /// 1) Enum -> Rota ismi eşleşmesi
@@ -20,6 +22,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.uyeAnasayfaV2: '/uyeAnasayfa',
   SayfaAdi.antrenorAnasayfaV2: '/antrenorAnasayfa',
   SayfaAdi.kayitOlV2: '/kayitOl',
+  SayfaAdi.sifreSifirlaV2: '/sifreSifirla',
 };
 
 /// 2) Rota -> Widget eşleşmesi (onGenerateRoute içinde kullanacağız)
@@ -29,6 +32,7 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.uyeAnasayfaV2]!: (context) => UyeAnaSayfaScreen(),
   routeEnums[SayfaAdi.antrenorAnasayfaV2]!: (context) => UyeAnaSayfaScreen(),
   routeEnums[SayfaAdi.kayitOlV2]!: (context) => const KayitOlScreen(),
+  routeEnums[SayfaAdi.sifreSifirlaV2]!: (context) => const SifreSifirlaScreen(),
 };
 
 /// 3) Public rotalar (token kontrolü olmadan açılabilen ekranlar)

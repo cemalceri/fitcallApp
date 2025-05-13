@@ -82,4 +82,31 @@ class AuthService {
       throw Exception(mesaj ?? 'Kayıt işlemi başarısız.');
     }
   }
+
+  static Future<void> resetPassword({
+    required String identifier,
+  }) async {
+    final uri =
+        Uri.parse(sifreSifirlaV2); // api_urls.dart içindeki reset endpoint'i
+    final body = jsonEncode({
+      'identifier': identifier.trim(),
+    });
+
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      return;
+    } else {
+      // Hata yanıtını ayrıştırıp mesajı fırlat
+      final errorData = jsonDecode(utf8.decode(response.bodyBytes));
+      final mesaj = errorData is Map<String, dynamic>
+          ? (errorData['hata'] as String?)
+          : null;
+      throw Exception(mesaj ?? 'Şifre sıfırlama isteği başarısız.');
+    }
+  }
 }
