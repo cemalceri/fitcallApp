@@ -1,9 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
+import 'package:fitcall/v2/shared/api_urls.dart';
+import 'package:fitcall/v2/shared/models/notification_model.dart';
+import 'package:fitcall/v2/shared/services/secure_storage_service.dart';
+import 'package:fitcall/v2/shared/widgets/show_message_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:http/http.dart' as http;
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -135,5 +141,33 @@ class NotificationService {
         );
       }
     });
+  }
+}
+
+Future<List<NotificationModel>> fetchNotifications(BuildContext context) async {
+  try {
+    String? token = await SecureStorageService.getValue<String>("token");
+    final response = await http.post(
+      Uri.parse(
+          getNotificationsV2), // API URL'nizde bildirimler için tanımlı olmalı
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    ).timeout(const Duration(seconds: 15));
+
+    if (response.statusCode == 200) {
+      var decoded = jsonDecode(utf8.decode(response.bodyBytes));
+      return List<NotificationModel>.from(
+          decoded.map((e) => NotificationModel.fromJson(e)));
+    } else {
+      // ignore: use_build_context_synchronously
+      ShowMessage.error(context, 'Bildirimler alınamadı.');
+      return [];
+    }
+  } catch (e) {
+    // ignore: use_build_context_synchronously
+    ShowMessage.error(context, 'Bildirimler alınamadı.');
+    return [];
   }
 }
