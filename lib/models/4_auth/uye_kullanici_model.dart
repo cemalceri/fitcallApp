@@ -31,7 +31,7 @@ class KullaniciProfilModel {
       antrenor: json['antrenor'] != null
           ? AntrenorModel.fromJson(json['antrenor'] as Map<String, dynamic>)
           : null,
-      kullanici: UserModel.fromJson(json['kullanici'] as Map<String, dynamic>),
+      kullanici: UserModel.fromJson(json['user'] as Map<String, dynamic>),
       anaHesap: json['ana_hesap_mi'] as bool? ?? false,
       gruplar: (json['gruplar'] as List<dynamic>?)
               ?.map((e) => e as String)

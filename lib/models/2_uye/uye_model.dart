@@ -39,7 +39,6 @@ class UyeModel {
   final String? babaMail;
   final String? babaMeslek;
   final int user;
-  final int kullaniciHesabi;
   final int? sorumluHoca;
   final String? okul;
   final List<String> gunler;
@@ -85,7 +84,6 @@ class UyeModel {
     this.babaMail,
     this.babaMeslek,
     required this.user,
-    required this.kullaniciHesabi,
     this.sorumluHoca,
     this.okul,
     required this.gunler,
@@ -143,7 +141,6 @@ class UyeModel {
       babaMail: json['baba_mail']?.toString(),
       babaMeslek: json['baba_meslek']?.toString(),
       user: json['user'] ?? 0,
-      kullaniciHesabi: json['kullanici_hesabi'] ?? 0,
       sorumluHoca: json['sorumlu_hoca'],
       okul: json['okul']?.toString(),
       gunler: json['gunler'] != null ? List<String>.from(json['gunler']) : [],
@@ -193,7 +190,6 @@ class UyeModel {
       'baba_mail': babaMail,
       'baba_meslek': babaMeslek,
       'user': user,
-      'kullanici_hesabi': kullaniciHesabi,
       'sorumlu_hoca': sorumluHoca,
       'okul': okul,
       'gunler': gunler,

@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/widgets/show_message_widget.dart';
 import 'package:fitcall/common/widgets/spinner_widgets.dart';
-import 'package:fitcall/models/0_ortak/etkinlik_model.dart';
+import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
@@ -346,13 +346,13 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
           isMainAntrenor = ders.antrenor == currentAntrenor!.id;
           isYardimciAntrenor = ders.yardimciAntrenor == currentAntrenor!.id;
 
-          if (isMainAntrenor) {
-            displayCompleted = ders.tamamlandiAntrenor ?? false;
-            displayAciklama = ders.antrenorAciklama ?? "";
-          } else if (isYardimciAntrenor) {
-            displayCompleted = ders.tamamlandiYardimciAntrenor ?? false;
-            displayAciklama = ders.yardimciAntrenorAciklama ?? "";
-          }
+          // if (isMainAntrenor) {
+          //   displayCompleted = ders.tamamlandiAntrenor ?? false;
+          //   displayAciklama = ders.antrenorAciklama ?? "";
+          // } else if (isYardimciAntrenor) {
+          //   displayCompleted = ders.tamamlandiYardimciAntrenor ?? false;
+          //   displayAciklama = ders.yardimciAntrenorAciklama ?? "";
+          // }
         }
         return Card(
           elevation: 4,
@@ -367,7 +367,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
               child: const Icon(Icons.calendar_today, color: Colors.white),
             ),
             title: Text(
-              '${ders.kortAdi} - ${ders.grupAdi}',
+              '${ders.kort} - ${ders.grup}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             subtitle: Column(
@@ -484,13 +484,13 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
                     );
                     if (response.statusCode == 200) {
                       setState(() {
-                        if (isYardimci) {
-                          ders.tamamlandiYardimciAntrenor = dersTamamlandi;
-                          ders.yardimciAntrenorAciklama = notValue;
-                        } else {
-                          ders.tamamlandiAntrenor = dersTamamlandi;
-                          ders.antrenorAciklama = notValue;
-                        }
+                        // if (isYardimci) {
+                        //   ders.tamamlandiYardimciAntrenor = dersTamamlandi;
+                        //   ders.yardimciAntrenorAciklama = notValue;
+                        // } else {
+                        //   ders.tamamlandiAntrenor = dersTamamlandi;
+                        //   ders.antrenorAciklama = notValue;
+                        // }
                       });
                       ShowMessage.success(context, 'Ders durumu güncellendi.');
                     } else {
