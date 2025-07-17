@@ -1,46 +1,46 @@
 // String loginUrl =
-//     "https://binayacademi.herokuapp.com/api/getToken"; // { "username":"480", "password":"480"}
+//     "https://binayakademi-70516933d185.herokuapp.com/api/getToken"; // { "username":"480", "password":"480"}
 // String createToken =
-//     "https://binayacademi.herokuapp.com/api/createToken"; // (bearer token)
+//     "https://binayakademi-70516933d185.herokuapp.com/api/createToken"; // (bearer token)
 // String getOdemeBilgileri =
-//     "https://binayacademi.herokuapp.com/api/getAidatOdemeGecmisi"; // (bearer token)
+//     "https://binayakademi-70516933d185.herokuapp.com/api/getAidatOdemeGecmisi"; // (bearer token)
 // String getDersProgrami =
-//     "https://binayacademi.herokuapp.com/api/getUyeDersProgrami"; // (bearer token)
+//     "https://binayakademi-70516933d185.herokuapp.com/api/getUyeDersProgrami"; // (bearer token)
 // String getPaketBilgileri =
-//     'https://binayacademi.herokuapp.com/api/getUyePaketBilgileri'; // (bearer token)
+//     'https://binayakademi-70516933d185.herokuapp.com/api/getUyePaketBilgileri'; // (bearer token)
 // String getUyelikBilgileri =
-//     'https://binayacademi.herokuapp.com/api/getUyePaketBilgileri'; // (bearer token)
+//     'https://binayakademi-70516933d185.herokuapp.com/api/getUyePaketBilgileri'; // (bearer token)
 // String uyeKaydet =
-//     'https://binayacademi.herokuapp.com/api/uyeKaydet'; // (// bearer token)
+//     'https://binayakademi-70516933d185.herokuapp.com/api/uyeKaydet'; // (// bearer token)
 // String setDersYapildiBilgisi =
-//     'https://binayacademi.herokuapp.com/api/setDersYapildiBilgisi'; // (// bearer token)
-// String qrInOrOut = 'https://binayacademi.herokuapp.com/api/qrInOrOut';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/setDersYapildiBilgisi'; // (// bearer token)
+// String qrInOrOut = 'https://binayakademi-70516933d185.herokuapp.com/api/qrInOrOut';
 // String getAntrenorDersProgrami =
-//     'https://binayacademi.herokuapp.com/api/getAntrenorDersProgrami';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/getAntrenorDersProgrami';
 // String antrenorDersYapildiDurumu =
-//     'https://binayacademi.herokuapp.com/api/antrenorDersYapildiDurumu';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/antrenorDersYapildiDurumu';
 // String getAntrenorOgrenciler =
-//     'https://binayacademi.herokuapp.com/api/getAntrenorOgrenciler';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/getAntrenorOgrenciler';
 // String cihazKaydetGuncelle =
-//     'https://binayacademi.herokuapp.com/api/cihazKaydetGuncelle';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/cihazKaydetGuncelle';
 // String getGaleriImages =
-//     'https://binayacademi.herokuapp.com/api/getGaleriImages';
-// String getDuyurular = 'https://binayacademi.herokuapp.com/api/getDuyurular';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/getGaleriImages';
+// String getDuyurular = 'https://binayakademi-70516933d185.herokuapp.com/api/getDuyurular';
 // String dersTalebiOlustur =
-//     'https://binayacademi.herokuapp.com/api/dersTalebiOlustur';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/dersTalebiOlustur';
 // String getUyedersTalepListesi =
-//     'https://binayacademi.herokuapp.com/api/getUyedersTalepListesi';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/getUyedersTalepListesi';
 // String silUyedersTalebi =
-//     'https://binayacademi.herokuapp.com/api/silUyedersTalebi';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/silUyedersTalebi';
 // String getUygunSaatler =
-//     'https://binayacademi.herokuapp.com/api/getUygunSaatler';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/getUygunSaatler';
 // String setQRKodBilgisi =
-//     'https://binayacademi.herokuapp.com/api/setQRKodBilgisi';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/setQRKodBilgisi';
 // String getQRKodBilgisi =
-//     'https://binayacademi.herokuapp.com/api/getQRKodBilgisi';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/getQRKodBilgisi';
 // String getNotifications =
-//     'https://binayacademi.herokuapp.com/api/getNotifications';
-// String getMyMembers = 'https://binayacademi.herokuapp.com/api/getMyMembers';
+//     'https://binayakademi-70516933d185.herokuapp.com/api/getNotifications';
+// String getMyMembers = 'https://binayakademi-70516933d185.herokuapp.com/api/getMyMembers';
 
 String getMyMembers = 'http://10.0.2.2:8000/api/getMyMembers';
 String createToken = 'http://10.0.2.2:8000/api/createToken'; // (bearer token)
@@ -51,7 +51,7 @@ String getDersProgrami =
 String getPaketBilgileri =
     'http://10.0.2.2:8000/api/getUyePaketBilgileri'; // (bearer token)
 String getUyelikBilgileri =
-    'https://binayacademi.herokuapp.com/api/getUyePaketBilgileri'; // (bearer token)
+    'https://binayakademi-70516933d185.herokuapp.com/api/getUyePaketBilgileri'; // (bearer token)
 String uyeKaydet = 'http://10.0.2.2:8000/api/uyeKaydet'; // (bearer token)
 String setDersYapildiBilgisi =
     'http://10.0.2.2:8000/api/setDersYapildiBilgisi'; //

@@ -2,14 +2,8 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "V2'den Başlat",
-            "program": "lib/main_v2.dart",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
             "name": "V1'den Başlat",
-            "program": "lib/main_v1.dart",
+            "program": "lib/main.dart",
             "request": "launch",
             "type": "dart"
         },

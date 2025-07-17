@@ -75,18 +75,18 @@ class _LoginPageState extends State<LoginPage> {
       );
       return;
     }
+    if (members.isEmpty) {
+      ShowMessage.error(
+        context,
+        'Kullanıcınıza bağlı herhangi bir profil bulunamadı. Lütfen yönetici ile iletişime geçin.',
+      );
+      return;
+    }
     if (members.any((m) => m.gruplar.isEmpty)) {
       // Kullanıcı adı veya şifre hatalı
       ShowMessage.error(
         context,
         'Kullanıcınız henüz yetkilendirilmemiş. Lütfen yönetici ile iletişime geçin.',
-      );
-      return;
-    }
-    if (members.any((m) => m.uye == null && m.antrenor == null)) {
-      ShowMessage.error(
-        context,
-        'Kullanıcınıza bağlı herhangi bir profil bulunamadı. Lütfen yönetici ile iletişime geçin.',
       );
       return;
     }

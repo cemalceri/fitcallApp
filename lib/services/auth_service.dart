@@ -99,7 +99,6 @@ class AuthService {
       body: jsonEncode(data),
     );
     if (resp.statusCode != 200) {
-      ShowMessage.error(context, 'Üyeler alınamadı: ${resp.statusCode}');
       return null;
     }
     final List<dynamic> relList = jsonDecode(utf8.decode(resp.bodyBytes));
