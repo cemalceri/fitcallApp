@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
-import 'package:fitcall/common/api_urls.dart'; //  ←  getDersProgrami, setDersYapildiBilgisi, uyeDersIptal
+import 'package:fitcall/common/api_urls.dart'; // getDersProgrami, getUygunSaatler, setDersYapildiBilgisi, setUyeDersIptal
 import 'package:fitcall/common/widgets/show_message_widget.dart';
 import 'package:fitcall/common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
@@ -14,67 +14,121 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 class DersListesiPage extends StatefulWidget {
   const DersListesiPage({super.key});
-
   @override
   State<DersListesiPage> createState() => _DersListesiPageState();
 }
 
 class _DersListesiPageState extends State<DersListesiPage> {
+  /* -------------------------------------------------------------------------- */
+  /*                             State değişkenleri                             */
+  /* -------------------------------------------------------------------------- */
   EtkinlikDataSource _dataSource = EtkinlikDataSource(const []);
-  bool _apiBitti = false;
+  bool _isLoading = false;
+
   UyeModel? currentUye;
   final Map<int, EtkinlikOnayModel> _userOnaylari = {};
+  final Map<String, List<dynamic>> _slotAlternatifleri = {}; // cache
+  final Set<DateTime> _yuklenenHaftalar = {}; // aynı haftaya tekrar api atmasın
 
   @override
   void initState() {
     super.initState();
-    _init();
+    _prepare();
   }
 
-  Future<void> _init() async {
+  Future<void> _prepare() async {
+    setState(() => _isLoading = true);
     currentUye = await AuthService.uyeBilgileriniGetir();
-    await _dersleriGetir();
+    final now = DateTime.now();
+    await _loadWeek(_haftaBaslangic(now));
+    setState(() => _isLoading = false);
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                             API - Ders listesi                             */
+  /*                                API çağrısı                                 */
   /* -------------------------------------------------------------------------- */
-  Future<void> _dersleriGetir() async {
+  Future<void> _loadWeek(DateTime weekStart) async {
+    if (_yuklenenHaftalar.contains(weekStart)) return; // cache
+    _yuklenenHaftalar.add(weekStart);
+
     final token = await AuthService.getToken();
-    if (token == null) {
-      setState(() => _apiBitti = true);
-      return;
-    }
+    if (token == null) return;
+
+    final weekEnd = weekStart.add(const Duration(days: 7));
 
     try {
-      final res = await http.post(
-        Uri.parse(getDersProgrami),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-      if (res.statusCode == 200) {
-        final dersler = EtkinlikModel.fromJson(res);
-        _dataSource = EtkinlikDataSource(dersler.map(_toAppointment).toList());
-      } else {
-        ShowMessage.error(context, 'API ${res.statusCode}');
+      /* Dersler */
+      final dersRes = await http.post(Uri.parse(getDersProgrami),
+          headers: {'Authorization': 'Bearer $token'},
+          body: jsonEncode({
+            'start': weekStart.toIso8601String(),
+            'end': weekEnd.toIso8601String(),
+          }));
+
+      final List<Appointment> appts = [..._dataSource.appointments ?? []];
+
+      if (dersRes.statusCode == 200) {
+        final dersler = EtkinlikModel.fromJson(dersRes);
+        appts.addAll(dersler.map(_dersToAppt));
       }
+
+      /* Uygun / dolu slotlar */
+      final slotRes = await http.post(Uri.parse(getUygunSaatler),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'start': weekStart.toIso8601String(),
+            'end': weekEnd.toIso8601String(),
+          }));
+
+      if (slotRes.statusCode == 200) {
+        final Map data = jsonDecode(slotRes.body);
+
+        for (final s in data['busy']) {
+          appts.add(_busyToAppt(s));
+        }
+        for (final s in data['available']) {
+          _slotAlternatifleri
+              .putIfAbsent(s['baslangic_tarih_saat'], () => [])
+              .add(s);
+        }
+      }
+
+      setState(() => _dataSource = EtkinlikDataSource(appts));
     } catch (e) {
-      ShowMessage.error(context, 'Dersler alınamadı: $e');
-    } finally {
-      setState(() => _apiBitti = true);
+      ShowMessage.error(context, 'Takvim alınamadı: $e');
     }
   }
 
-  Appointment _toAppointment(EtkinlikModel d) => Appointment(
+  /* -------------------------------------------------------------------------- */
+  /*                               Helpers                                      */
+  /* -------------------------------------------------------------------------- */
+  DateTime _haftaBaslangic(DateTime d) => d
+      .subtract(Duration(days: d.weekday - 1))
+      .copyWith(hour: 7, minute: 0, second: 0, millisecond: 0);
+
+  Appointment _dersToAppt(EtkinlikModel d) => Appointment(
         id: d.id,
         startTime: d.baslangicTarihSaat,
         endTime: d.bitisTarihSaat,
         subject: d.kortAdi,
-        notes: jsonEncode(d.toJson()),
+        notes: jsonEncode({...d.toJson(), 'tip': 'ders'}),
         color: d.iptalMi
-            ? Colors.red
+            ? Colors.grey
             : d.bitisTarihSaat.isBefore(DateTime.now())
                 ? Colors.green
                 : Colors.blue,
+      );
+
+  Appointment _busyToAppt(dynamic s) => Appointment(
+        id: 'busy-${s['baslangic_tarih_saat']}',
+        startTime: DateTime.parse(s['baslangic_tarih_saat']).toLocal(),
+        endTime: DateTime.parse(s['bitis_tarih_saat']).toLocal(),
+        subject: '',
+        notes: jsonEncode({'tip': 'busy'}),
+        color: Colors.grey,
       );
 
   /* -------------------------------------------------------------------------- */
@@ -84,33 +138,60 @@ class _DersListesiPageState extends State<DersListesiPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Ders Takvimi')),
-      body: _apiBitti
-          ? SfCalendar(
-              view: CalendarView.week,
-              dataSource: _dataSource,
-              firstDayOfWeek: 1,
-              timeSlotViewSettings: const TimeSlotViewSettings(
-                startHour: 7,
-                endHour: 23,
-                timeInterval: Duration(minutes: 60),
-              ),
-              onTap: _onTap,
-            )
-          : const LoadingSpinnerWidget(message: 'Dersler yükleniyor...'),
+      body: _isLoading
+          ? const LoadingSpinnerWidget(message: 'Takvim yükleniyor...')
+          : Stack(
+              children: [
+                SfCalendar(
+                  view: CalendarView.week,
+                  dataSource: _dataSource,
+                  firstDayOfWeek: 1,
+                  timeSlotViewSettings: const TimeSlotViewSettings(
+                      startHour: 7,
+                      endHour: 23,
+                      timeInterval: Duration(minutes: 60)),
+                  onTap: _onTap,
+                  onViewChanged: (ViewChangedDetails d) async {
+                    if (d.visibleDates.isEmpty) return;
+                    final wkStart = _haftaBaslangic(d.visibleDates.first);
+                    await _loadWeek(wkStart);
+                  },
+                ),
+                const Positioned(right: 16, bottom: 16, child: _Legend()),
+              ],
+            ),
     );
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                             Takvim Tap-handler                             */
+  /*                                Tap handler                                 */
   /* -------------------------------------------------------------------------- */
-  void _onTap(CalendarTapDetails d) {
-    if (d.targetElement != CalendarElement.appointment ||
-        (d.appointments?.isEmpty ?? true)) return;
+  void _onTap(CalendarTapDetails d) async {
+    /* Hücre boş ise */
+    if (d.targetElement == CalendarElement.calendarCell &&
+        (d.appointments?.isEmpty ?? true)) {
+      await _showBosSaatPopup(d.date!);
+      return;
+    }
 
+    if (d.appointments?.isEmpty ?? true) return;
     final Appointment appt = d.appointments!.first;
-    final EtkinlikModel ders = EtkinlikModel.fromMap(jsonDecode(appt.notes!));
+    Map note;
+    try {
+      note = jsonDecode(appt.notes ?? '{}');
+    } catch (_) {
+      return;
+    }
+    final tip = note['tip'];
+    if (tip == 'busy') {
+      ShowMessage.error(context, 'Bu saat uygun değil.');
+      return;
+    }
+    if (tip != 'ders') return;
 
-    final bool isPast = ders.bitisTarihSaat.isBefore(DateTime.now());
+    final EtkinlikModel ders =
+        EtkinlikModel.fromMap(note.cast<String, dynamic>());
+    final isPast = ders.bitisTarihSaat.isBefore(DateTime.now());
 
     if (ders.iptalMi) {
       ShowMessage.error(context, 'Bu ders iptal edilmiş.');
@@ -136,7 +217,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
       _showIptalPopup(
         ders,
         onCancelled: () {
-          appt.color = Colors.red;
+          appt.color = Colors.grey;
           _dataSource.notifyListeners(
               CalendarDataSourceAction.reset, _dataSource.appointments!);
         },
@@ -145,14 +226,67 @@ class _DersListesiPageState extends State<DersListesiPage> {
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                       Geçmiş ders – tamamlama popup                        */
+  /*                           BOŞ slot – rezervasyon                           */
   /* -------------------------------------------------------------------------- */
-  void _showTamamlamaPopup(
-    EtkinlikModel ders, {
-    required bool userCompleted,
-    required String userAciklama,
-    required void Function(bool, String) onSaved,
-  }) {
+  Future<void> _showBosSaatPopup(DateTime slotStart) async {
+    final token = await AuthService.getToken();
+    if (token == null) return;
+
+    final key = slotStart.toUtc().toIso8601String();
+    List<dynamic> alternatifler = _slotAlternatifleri[key] ?? [];
+
+    if (alternatifler.isEmpty) {
+      final res = await http.post(Uri.parse(getUygunSaatler),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json'
+          },
+          body: jsonEncode({
+            'start': slotStart.toIso8601String(),
+            'end': slotStart.add(const Duration(hours: 1)).toIso8601String(),
+          }));
+      if (res.statusCode == 200) {
+        final Map data = jsonDecode(res.body);
+        alternatifler = data['available'];
+      }
+    }
+
+    if (alternatifler.isEmpty) {
+      ShowMessage.error(context, 'Bu saatte uygun kort/antrenör yok');
+      return;
+    }
+
+    final secim = await showModalBottomSheet<Map>(
+      context: context,
+      builder: (_) => ListView.separated(
+        padding: const EdgeInsets.all(16),
+        separatorBuilder: (_, __) => const Divider(),
+        itemCount: alternatifler.length,
+        itemBuilder: (_, i) {
+          final a = alternatifler[i];
+          return ListTile(
+            title: Text('${a['kort_adi']} – ${a['antrenor_adi']}'),
+            subtitle: Text(
+                '${slotStart.hour.toString().padLeft(2, "0")}:00 – ${(slotStart.hour + 1).toString().padLeft(2, "0")}:00'),
+            onTap: () => Navigator.pop(context, a),
+          );
+        },
+      ),
+    );
+
+    if (secim != null) {
+      ShowMessage.success(context,
+          'Rezervasyon talebi: ${secim['kort_adi']} / ${secim['antrenor_adi']}');
+    }
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                    Geçmiş ders – tamamlama popup                           */
+  /* -------------------------------------------------------------------------- */
+  void _showTamamlamaPopup(EtkinlikModel ders,
+      {required bool userCompleted,
+      required String userAciklama,
+      required void Function(bool, String) onSaved}) {
     final ctrl = TextEditingController(text: userAciklama);
     bool tamamlandi = userCompleted;
 
@@ -165,17 +299,15 @@ class _DersListesiPageState extends State<DersListesiPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               CheckboxListTile(
-                title: const Text('Ders tamamlandı mı?'),
-                value: tamamlandi,
-                onChanged: (v) => setState(() => tamamlandi = v ?? false),
-              ),
+                  title: const Text('Ders tamamlandı mı?'),
+                  value: tamamlandi,
+                  onChanged: (v) => setState(() => tamamlandi = v ?? false)),
               const SizedBox(height: 8),
               TextField(
-                controller: ctrl,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                    labelText: 'Not', border: OutlineInputBorder()),
-              )
+                  controller: ctrl,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                      labelText: 'Not', border: OutlineInputBorder())),
             ],
           ),
         ),
@@ -184,46 +316,42 @@ class _DersListesiPageState extends State<DersListesiPage> {
               onPressed: () => Navigator.pop(context),
               child: const Text('Kapat')),
           ElevatedButton(
-            child: const Text('Kaydet'),
-            onPressed: () async {
-              final token = await AuthService.getToken();
-              if (token == null) return;
-
-              try {
-                final r = await http.post(Uri.parse(setDersYapildiBilgisi),
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': 'Bearer $token'
-                    },
-                    body: jsonEncode({
-                      'ders_id': ders.id,
-                      'aciklama': ctrl.text,
-                      'tamamlandi': tamamlandi
-                    }));
-                if (r.statusCode == 200) {
-                  onSaved(tamamlandi, ctrl.text);
-                  ShowMessage.success(context, 'Kaydedildi');
-                } else {
-                  ShowMessage.error(context, 'Kaydedilemedi');
+              child: const Text('Kaydet'),
+              onPressed: () async {
+                final token = await AuthService.getToken();
+                if (token == null) return;
+                try {
+                  final r = await http.post(Uri.parse(setDersYapildiBilgisi),
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer $token'
+                      },
+                      body: jsonEncode({
+                        'ders_id': ders.id,
+                        'aciklama': ctrl.text,
+                        'tamamlandi': tamamlandi
+                      }));
+                  if (r.statusCode == 200) {
+                    onSaved(tamamlandi, ctrl.text);
+                    ShowMessage.success(context, 'Kaydedildi');
+                  } else {
+                    ShowMessage.error(context, 'Kaydedilemedi');
+                  }
+                } catch (e) {
+                  ShowMessage.error(context, 'Hata: $e');
                 }
-              } catch (e) {
-                ShowMessage.error(context, 'Hata: $e');
-              }
-              Navigator.pop(context);
-            },
-          )
+                Navigator.pop(context);
+              })
         ],
       ),
     );
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                        Gelecek ders – iptal popup                          */
+  /*                     Gelecek ders – iptal popup                             */
   /* -------------------------------------------------------------------------- */
-  void _showIptalPopup(
-    EtkinlikModel ders, {
-    required VoidCallback onCancelled,
-  }) {
+  void _showIptalPopup(EtkinlikModel ders,
+      {required VoidCallback onCancelled}) {
     final ctrl = TextEditingController();
 
     showDialog(
@@ -236,20 +364,17 @@ class _DersListesiPageState extends State<DersListesiPage> {
             const Text('İptal açıklaması (isteğe bağlı)'),
             const SizedBox(height: 8),
             TextField(
-              controller: ctrl,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Neden iptal ediyorsunuz?',
-                border: OutlineInputBorder(),
-              ),
-            ),
+                controller: ctrl,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                    hintText: 'Neden iptal ediyorsunuz?',
+                    border: OutlineInputBorder())),
           ],
         ),
         actions: [
           TextButton(
-            child: const Text('Vazgeç'),
-            onPressed: () => Navigator.pop(context),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Vazgeç')),
           ElevatedButton(
             child: const Text('İptal Et'),
             onPressed: () async {
@@ -257,32 +382,28 @@ class _DersListesiPageState extends State<DersListesiPage> {
               if (token == null) return;
 
               try {
-                final res = await http.post(
-                  Uri.parse(setUyeDersIptal),
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer $token',
-                  },
-                  body: jsonEncode(
-                    {'etkinlik_id': ders.id, 'aciklama': ctrl.text},
-                  ),
-                );
+                final res = await http.post(Uri.parse(setUyeDersIptal),
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': 'Bearer $token'
+                    },
+                    body: jsonEncode(
+                        {'etkinlik_id': ders.id, 'aciklama': ctrl.text}));
 
                 if (res.statusCode == 200) {
                   onCancelled();
                   ShowMessage.success(context,
                       jsonDecode(res.body)['message'] ?? 'İptal edildi');
                 } else {
-                  final errMsg = jsonDecode(res.body)['message'] ??
-                      'İşlem gerçekleştirilemedi';
-                  ShowMessage.error(context, errMsg);
+                  ShowMessage.error(context,
+                      jsonDecode(res.body)['message'] ?? 'İşlem yapılamadı');
                 }
               } catch (e) {
                 ShowMessage.error(context, 'Hata: $e');
               }
               Navigator.pop(context);
             },
-          ),
+          )
         ],
       ),
     );
@@ -290,7 +411,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                              DataSource class                               */
+/*                       CalendarDataSource Wrapper                           */
 /* -------------------------------------------------------------------------- */
 class EtkinlikDataSource extends CalendarDataSource {
   EtkinlikDataSource(List<Appointment> src) {
@@ -299,41 +420,38 @@ class EtkinlikDataSource extends CalendarDataSource {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                             Yardımcı uzantılar                              */
+/*                               Legend Widget                                */
 /* -------------------------------------------------------------------------- */
-extension EtkinlikSerde on EtkinlikModel {
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'haftalik_plan_kodu': haftalikPlanKodu,
-        'grup_adi': grupAdi,
-        'urun_adi': urunAdi,
-        'baslangic_tarih_saat': baslangicTarihSaat.toIso8601String(),
-        'bitis_tarih_saat': bitisTarihSaat.toIso8601String(),
-        'kort_adi': kortAdi,
-        'seviye': seviye,
-        'antrenor_adi': antrenorAdi,
-        'yardimci_antrenor_adi': yardimciAntrenorAdi,
-        'iptal_mi': iptalMi,
-        'iptal_eden': iptalEden,
-        'iptal_tarih_saat': iptalTarihSaat?.toIso8601String(),
-        'ucret': ucret,
-        'is_active': isActive,
-        'is_deleted': isDeleted,
-        'olusturulma_zamani': createdAt.toIso8601String(),
-        'guncellenme_zamani': updatedAt.toIso8601String(),
-      };
-}
-
-extension EtkinlikOnayModelExt on EtkinlikOnayModel {
-  static EtkinlikOnayModel empty() => EtkinlikOnayModel(
-        id: 0,
-        etkinlik: '',
-        rol: '',
-        tamamlandi: false,
-        onayTarihi: DateTime.now(),
-        isActive: true,
-        isDeleted: false,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+class _Legend extends StatelessWidget {
+  const _Legend();
+  Widget _item(Color c, String t, {bool border = false}) => Row(
+        children: [
+          Container(
+              width: 16,
+              height: 16,
+              margin: const EdgeInsets.only(right: 4),
+              decoration: BoxDecoration(
+                  color: c,
+                  border: border ? Border.all(color: Colors.black54) : null)),
+          Text(t),
+        ],
+      );
+  @override
+  Widget build(BuildContext context) => Material(
+        elevation: 2,
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            _item(Colors.blue, 'Gelecek ders'),
+            const SizedBox(height: 4),
+            _item(Colors.green, 'Geçmiş ders'),
+            const SizedBox(height: 4),
+            _item(Colors.grey, 'Uygun olmayan saat'),
+            const SizedBox(height: 4),
+            _item(Colors.white, 'Uygun saat', border: true),
+          ]),
+        ),
       );
 }
