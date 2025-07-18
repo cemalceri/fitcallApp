@@ -343,8 +343,8 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
         bool isMainAntrenor = false;
         bool isYardimciAntrenor = false;
         if (currentAntrenor != null) {
-          isMainAntrenor = ders.antrenor == currentAntrenor!.id;
-          isYardimciAntrenor = ders.yardimciAntrenor == currentAntrenor!.id;
+          isMainAntrenor = ders.antrenorId == currentAntrenor!.id;
+          isYardimciAntrenor = ders.yardimciAntrenorId == currentAntrenor!.id;
 
           // if (isMainAntrenor) {
           //   displayCompleted = ders.tamamlandiAntrenor ?? false;
@@ -367,7 +367,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
               child: const Icon(Icons.calendar_today, color: Colors.white),
             ),
             title: Text(
-              '${ders.kort} - ${ders.grup}',
+              '${ders.kortAdi} - ${ders.grupAdi}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             subtitle: Column(

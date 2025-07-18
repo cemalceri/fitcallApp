@@ -1,105 +1,165 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-/// EtkinlikModel
+/// Etkinlik DTO – Django ‹EtkinlikModel› eşlemesi
 class EtkinlikModel {
+  /* -------------------------------------------------------------------------- */
+  /*                              ZORUNLU alanlar                               */
+  /* -------------------------------------------------------------------------- */
   final int id;
-  final String? haftalikPlanKodu;
-  final String grup; // Django FK: sadece ad
-  final String? urun; // Django FK: sadece ad
+
+  // Grup FK zorunlu
+  final int grupId;
+  final String grupAdi;
+
+  // Kort FK zorunlu
+  final int kortId;
+  final String kortAdi;
+
   final DateTime baslangicTarihSaat;
   final DateTime bitisTarihSaat;
-  final String kort; // Django FK: sadece ad
-  final String seviye;
-  final String? antrenor; // Django FK: sadece ad
-  final String? yardimciAntrenor; // Django FK: sadece ad
-  final bool iptalMi;
-  final String? iptalEden;
-  final DateTime? iptalTarihSaat;
-  final double? ucret;
 
-  // BaseAbstract alanları
+  final String seviye; // default'u var ama null olamaz
+  final bool iptalMi;
+
+  // BaseAbstract alanları da her kayıtta bulunur
   final bool isActive;
   final bool isDeleted;
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /* -------------------------------------------------------------------------- */
+  /*                             OPSİYONEL alanlar                              */
+  /* -------------------------------------------------------------------------- */
+  final String? haftalikPlanKodu;
+
+  final int? urunId;
+  final String? urunAdi;
+
+  final int? antrenorId;
+  final String? antrenorAdi;
+
+  final int? yardimciAntrenorId;
+  final String? yardimciAntrenorAdi;
+
+  final String? iptalEden;
+  final DateTime? iptalTarihSaat;
+  final double? ucret;
+
+  // Diğer meta
+  final int? ekleyen;
+  final int? guncelleyen;
+  final int? isletme;
+
+  /* -------------------------------------------------------------------------- */
+  /*                                 CTOR                                       */
+  /* -------------------------------------------------------------------------- */
   EtkinlikModel({
+    /* zorunlular */
     required this.id,
-    this.haftalikPlanKodu,
-    required this.grup,
-    this.urun,
+    required this.grupId,
+    required this.grupAdi,
+    required this.kortId,
+    required this.kortAdi,
     required this.baslangicTarihSaat,
     required this.bitisTarihSaat,
-    required this.kort,
     required this.seviye,
-    this.antrenor,
-    this.yardimciAntrenor,
     required this.iptalMi,
-    this.iptalEden,
-    this.iptalTarihSaat,
-    this.ucret,
     required this.isActive,
     required this.isDeleted,
     required this.createdAt,
     required this.updatedAt,
+    /* opsiyoneller */
+    this.haftalikPlanKodu,
+    this.urunId,
+    this.urunAdi,
+    this.antrenorId,
+    this.antrenorAdi,
+    this.yardimciAntrenorId,
+    this.yardimciAntrenorAdi,
+    this.iptalEden,
+    this.iptalTarihSaat,
+    this.ucret,
+    this.ekleyen,
+    this.guncelleyen,
+    this.isletme,
   });
 
-  /// Tekil JSON’dan nesne oluşturur
-  factory EtkinlikModel.fromMap(Map<String, dynamic> json) {
-    DateTime? _tryParse(String? value) =>
-        (value == null || value.isEmpty) ? null : DateTime.parse(value);
+  /* -------------------------------------------------------------------------- */
+  /*                              JSON → Model                                  */
+  /* -------------------------------------------------------------------------- */
+  factory EtkinlikModel.fromMap(Map<String, dynamic> j) {
+    DateTime? _d(String? v) =>
+        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+    double? _dbl(dynamic v) => v == null ? null : double.tryParse(v.toString());
 
     return EtkinlikModel(
-      id: json['id'] ?? 0,
-      haftalikPlanKodu: json['haftalik_plan_kodu'],
-      grup: json['grup'] ?? '',
-      urun: json['urun'],
-      baslangicTarihSaat: DateTime.parse(json['baslangic_tarih_saat'] ?? ''),
-      bitisTarihSaat: DateTime.parse(json['bitis_tarih_saat'] ?? ''),
-      kort: json['kort'] ?? '',
-      seviye: json['seviye'] ?? '',
-      antrenor: json['antrenor'],
-      yardimciAntrenor: json['yardimci_antrenor'],
-      iptalMi: json['iptal_mi'] ?? false,
-      iptalEden: json['iptal_eden'],
-      iptalTarihSaat: _tryParse(json['iptal_tarih_saat']),
-      ucret: json['ucret'] != null
-          ? double.tryParse(json['ucret'].toString())
-          : null,
-      isActive: json['is_active'] ?? true,
-      isDeleted: json['is_deleted'] ?? false,
-      createdAt: DateTime.parse(json['olusturulma_zamani'] ?? ''),
-      updatedAt: DateTime.parse(json['guncellenme_zamani'] ?? ''),
+      /* zorunlu */
+      id: j['id'],
+      grupId: j['grup'],
+      grupAdi: j['grup_adi'] ?? '',
+      kortId: j['kort'],
+      kortAdi: j['kort_adi'] ?? '',
+      baslangicTarihSaat: DateTime.parse(j['baslangic_tarih_saat']),
+      bitisTarihSaat: DateTime.parse(j['bitis_tarih_saat']),
+      seviye: j['seviye'] ?? '',
+      iptalMi: j['iptal_mi'] ?? false,
+      isActive: j['is_active'] ?? true,
+      isDeleted: j['is_deleted'] ?? false,
+      createdAt: DateTime.parse(j['olusturulma_zamani']),
+      updatedAt: DateTime.parse(j['guncellenme_zamani']),
+      /* opsiyonel */
+      haftalikPlanKodu: j['haftalik_plan_kodu'],
+      urunId: j['urun'],
+      urunAdi: j['urun_adi'],
+      antrenorId: j['antrenor'],
+      antrenorAdi: j['antrenor_adi'],
+      yardimciAntrenorId: j['yardimci_antrenor'],
+      yardimciAntrenorAdi: j['yardimci_antrenor_adi'],
+      iptalEden: j['iptal_eden'],
+      iptalTarihSaat: _d(j['iptal_tarih_saat']),
+      ucret: _dbl(j['ucret']),
+      ekleyen: j['ekleyen'],
+      guncelleyen: j['guncelleyen'],
+      isletme: j['isletme'],
     );
   }
 
-  /// HTTP cevabından liste oluşturur
-  static List<EtkinlikModel> fromJson(response) {
-    final List<dynamic> list =
-        json.decode(utf8.decode(response.bodyBytes)) as List<dynamic>;
-    return list.map((item) => EtkinlikModel.fromMap(item)).toList();
+  /* ----------------------- HTTP cevabından liste üretir --------------------- */
+  static List<EtkinlikModel> fromJson(http.Response res) {
+    final raw = json.decode(utf8.decode(res.bodyBytes)) as List<dynamic>;
+    return raw.map((e) => EtkinlikModel.fromMap(e)).toList();
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'haftalik_plan_kodu': haftalikPlanKodu,
-      'grup': grup,
-      'urun': urun,
-      'baslangic_tarih_saat': baslangicTarihSaat.toIso8601String(),
-      'bitis_tarih_saat': bitisTarihSaat.toIso8601String(),
-      'kort': kort,
-      'seviye': seviye,
-      'antrenor': antrenor,
-      'yardimci_antrenor': yardimciAntrenor,
-      'iptal_mi': iptalMi,
-      'iptal_eden': iptalEden,
-      'iptal_tarih_saat': iptalTarihSaat?.toIso8601String(),
-      'ucret': ucret,
-      'is_active': isActive,
-      'is_deleted': isDeleted,
-      'olusturulma_zamani': createdAt.toIso8601String(),
-      'guncellenme_zamani': updatedAt.toIso8601String(),
-    };
-  }
+  /* -------------------------------------------------------------------------- */
+  /*                               Model → JSON                                 */
+  /* -------------------------------------------------------------------------- */
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'haftalik_plan_kodu': haftalikPlanKodu,
+        'grup': grupId,
+        'grup_adi': grupAdi,
+        'urun': urunId,
+        'urun_adi': urunAdi,
+        'baslangic_tarih_saat': baslangicTarihSaat.toIso8601String(),
+        'bitis_tarih_saat': bitisTarihSaat.toIso8601String(),
+        'kort': kortId,
+        'kort_adi': kortAdi,
+        'seviye': seviye,
+        'antrenor': antrenorId,
+        'antrenor_adi': antrenorAdi,
+        'yardimci_antrenor': yardimciAntrenorId,
+        'yardimci_antrenor_adi': yardimciAntrenorAdi,
+        'iptal_mi': iptalMi,
+        'iptal_eden': iptalEden,
+        'iptal_tarih_saat': iptalTarihSaat?.toIso8601String(),
+        'ucret': ucret,
+        'is_active': isActive,
+        'is_deleted': isDeleted,
+        'olusturulma_zamani': createdAt.toIso8601String(),
+        'guncellenme_zamani': updatedAt.toIso8601String(),
+        'ekleyen': ekleyen,
+        'guncelleyen': guncelleyen,
+        'isletme': isletme,
+      };
 }

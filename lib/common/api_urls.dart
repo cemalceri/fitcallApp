@@ -41,6 +41,7 @@
 // String getNotifications =
 //     'https://binayakademi-70516933d185.herokuapp.com/api/getNotifications';
 // String getMyMembers = 'https://binayakademi-70516933d185.herokuapp.com/api/getMyMembers';
+// String setUyeDersIptal = 'https://binayakademi-70516933d185.herokuapp.com/api/setUyeDersIptal';
 
 String getMyMembers = 'http://10.0.2.2:8000/api/getMyMembers';
 String createToken = 'http://10.0.2.2:8000/api/createToken'; // (bearer token)
@@ -72,3 +73,4 @@ String getUygunSaatler = 'http://10.0.2.2:8000/api/getUygunSaatler';
 String setQRKodBilgisi = 'http://10.0.2.2:8000/api/setQRKodBilgisi';
 String getQRKodBilgisi = 'http://10.0.2.2:8000/api/getQRKodBilgisi';
 String getNotifications = 'http://10.0.2.2:8000/api/getNotifications';
+String setUyeDersIptal = 'http://10.0.2.2:8000/api/setUyeDersIptal';
