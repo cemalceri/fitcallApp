@@ -1,5 +1,6 @@
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/screens/4_auth/qr_kod_dogrula_page.dart';
+import 'package:fitcall/screens/muhasebe/muhasebe_page.dart';
 import 'package:fitcall/screens/yonetici_home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/screens/1_common/1_notification/notification_icon.dart';
@@ -14,7 +15,6 @@ import 'package:fitcall/screens/4_auth/register_page.dart';
 import 'package:fitcall/screens/2_uye/dersler_page.dart';
 import 'package:fitcall/screens/uye_home_page.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
-import 'package:fitcall/screens/2_uye/muhasebe/borc_alacak_page.dart';
 import 'package:fitcall/screens/2_uye/profil_page.dart';
 import 'package:fitcall/screens/2_uye/uyelik/uyelik_paket_screen.dart';
 import 'package:fitcall/services/auth_service.dart';
@@ -28,7 +28,7 @@ enum SayfaAdi {
   qrKodDogrula,
   uyeAnasayfa,
   profil,
-  borcAlacak,
+  muhasebe,
   dersler,
   uyelikPaket,
   antrenorAnasayfa,
@@ -50,7 +50,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.qrKodDogrula: '/qrKodDogrula',
   SayfaAdi.uyeAnasayfa: '/uyeAnasayfa',
   SayfaAdi.profil: '/profil',
-  SayfaAdi.borcAlacak: '/borcalacak',
+  SayfaAdi.muhasebe: '/muhasebe',
   SayfaAdi.dersler: '/dersler',
   SayfaAdi.uyelikPaket: '/uyelikPaket',
   SayfaAdi.antrenorAnasayfa: '/antrenorAnasayfa',
@@ -74,7 +74,7 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.qrKodDogrula]!: (context) => const QRKodDogrulaPage(),
   routeEnums[SayfaAdi.uyeAnasayfa]!: (context) => UyeHomePage(),
   routeEnums[SayfaAdi.profil]!: (context) => const ProfilePage(),
-  routeEnums[SayfaAdi.borcAlacak]!: (context) => const BorcAlacakPage(),
+  routeEnums[SayfaAdi.muhasebe]!: (context) => const MuhasebePage(),
   routeEnums[SayfaAdi.dersler]!: (context) => const DersListesiPage(),
   routeEnums[SayfaAdi.uyelikPaket]!: (context) => const UyelikPaketPage(),
   routeEnums[SayfaAdi.antrenorAnasayfa]!: (context) => AntrenorHomePage(),

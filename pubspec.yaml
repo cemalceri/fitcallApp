@@ -22,6 +22,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   mobile_scanner: ^6.0.5
   syncfusion_flutter_calendar: ^29.1.38
+  data_table_2: ^2.6.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

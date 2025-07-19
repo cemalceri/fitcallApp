@@ -26,7 +26,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
       'text': 'Bilgilerim'
     },
     {
-      'name': routeEnums[SayfaAdi.borcAlacak]!,
+      'name': routeEnums[SayfaAdi.muhasebe]!,
       'icon': Icons.payment,
       'text': 'Ödeme/Borç'
     },
