@@ -89,9 +89,9 @@ class EtkinlikModel {
   /*                              JSON → Model                                  */
   /* -------------------------------------------------------------------------- */
   factory EtkinlikModel.fromMap(Map<String, dynamic> j) {
-    DateTime? _d(String? v) =>
+    DateTime? d(String? v) =>
         (v == null || v.isEmpty) ? null : DateTime.parse(v);
-    double? _dbl(dynamic v) => v == null ? null : double.tryParse(v.toString());
+    double? dbl(dynamic v) => v == null ? null : double.tryParse(v.toString());
 
     return EtkinlikModel(
       /* zorunlu */
@@ -117,8 +117,8 @@ class EtkinlikModel {
       yardimciAntrenorId: j['yardimci_antrenor'],
       yardimciAntrenorAdi: j['yardimci_antrenor_adi'],
       iptalEden: j['iptal_eden'],
-      iptalTarihSaat: _d(j['iptal_tarih_saat']),
-      ucret: _dbl(j['ucret']),
+      iptalTarihSaat: d(j['iptal_tarih_saat']),
+      ucret: dbl(j['ucret']),
       ekleyen: j['ekleyen'],
       guncelleyen: j['guncelleyen'],
       isletme: j['isletme'],

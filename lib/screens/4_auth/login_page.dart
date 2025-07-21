@@ -1,4 +1,3 @@
-// lib/pages/login_page.dart
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
@@ -11,6 +10,7 @@ import 'package:fitcall/common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:fitcall/services/auth_service.dart';
 import 'package:fitcall/services/secure_storage_service.dart';
+import 'package:fitcall/services/fcm_service.dart';
 import 'profil_sec.dart';
 
 class LoginPage extends StatefulWidget {
@@ -29,103 +29,135 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    _loadRememberFlag();
     _checkAutoLogin();
   }
 
-  /// Eğer daha önce bir üye seçilmiş ve "Beni Hatırla" işaretliyse,
-  /// doğrudan o relation ile loginUser çağırır.
+  Future<void> _loadRememberFlag() async {
+    final remember = await SecureStorageService.getValue<bool>('beni_hatirla');
+    if (remember != null) setState(() => _beniHatirla = remember);
+  }
+
+/* -------------------------------------------------------------
+   _checkAutoLogin  (Beni Hatırla senaryosunu tek/multi profil için yönetir)
+------------------------------------------------------------- */
   Future<void> _checkAutoLogin() async {
-    bool? remember = await SecureStorageService.getValue<bool>('beni_hatirla');
-    if (remember == true) {
-      String? relJson =
-          await SecureStorageService.getValue<String>('uye_kullanici_relation');
-      if (relJson != null) {
-        final rel = KullaniciProfilModel.fromJson(jsonDecode(relJson));
+    final remember = await SecureStorageService.getValue<bool>('beni_hatirla');
+    if (remember != true) return;
 
-        LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
-        final role = await AuthService.loginUser(context, rel);
-        LoadingSpinner.hide(context);
+// Saklanan profil(ler)i oku → hem tek obje hem liste senaryosunu destekle
+    final listJson =
+        await SecureStorageService.getValue<String>('kullanici_profiller');
+    if (listJson == null) return;
 
-        if (role != null) {
-          _navigateAfterLogin(role);
-        }
+    final dynamic decoded = jsonDecode(listJson);
+    final List<KullaniciProfilModel> members = (decoded is List
+            ? decoded
+            : [decoded])
+        .map((e) => KullaniciProfilModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    final bool multiple = members.length > 1;
+    final rel = multiple
+        ? members.firstWhere((m) => m.anaHesap, orElse: () => members.first)
+        : members.first;
+
+    LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
+    final role = await AuthService.loginUser(context, rel);
+    LoadingSpinner.hide(context);
+    if (role == null) return;
+
+    if (multiple) {
+      // FCM cihaz kaydı
+      final token = await SecureStorageService.getValue<String>('token');
+      if (token != null) {
+        await sendFCMDevice(token, isMainAccount: rel.anaHesap);
       }
+
+      // Profil Seç ekranına yönlendir
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProfilSecPage(
+            kullaniciProfilList: members,
+            logindenSonraGit: widget.logindenSonraGit,
+          ),
+        ),
+      );
+    } else {
+      _navigateAfterLogin(role);
     }
   }
 
-  /// Login butonuna basıldığında; önce üyeleri fetch eder,
-  /// birden çok üyeyse seçim sayfasına, tek üyeyse direkt loginUser ile ilerler.
+/* -------------------------------------------------------------
+   _onLoginPressed  (Manuel giriş butonu)
+------------------------------------------------------------- */
   Future<void> _onLoginPressed() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text;
 
     LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
-    final members = await AuthService.fetchMyMembers(
-      context,
-      username,
-      password,
-    );
+    final members =
+        await AuthService.fetchMyMembers(context, username, password);
     LoadingSpinner.hide(context);
 
     if (members == null) {
-      // Kullanıcı adı veya şifre hatalı
       ShowMessage.error(
-        context,
-        'Kullanıcı adı veya şifre hatalı. Lütfen tekrar deneyin.',
-      );
+          context, 'Kullanıcı adı veya şifre hatalı. Lütfen tekrar deneyin.');
       return;
     }
     if (members.isEmpty) {
       ShowMessage.error(
-        context,
-        'Kullanıcınıza bağlı herhangi bir profil bulunamadı. Lütfen yönetici ile iletişime geçin.',
-      );
+          context, 'Profil bulunamadı. Lütfen yönetici ile iletişime geçin.');
       return;
     }
     if (members.any((m) => m.gruplar.isEmpty)) {
-      // Kullanıcı adı veya şifre hatalı
-      ShowMessage.error(
-        context,
-        'Kullanıcınız henüz yetkilendirilmemiş. Lütfen yönetici ile iletişime geçin.',
-      );
+      ShowMessage.error(context,
+          'Kullanıcınız henüz yetkilendirilmemiş. Lütfen yönetici ile iletişime geçin.');
       return;
     }
-    if (members.length == 1) {
-      // Tek bir üye varsa, direkt loginUser ile ilerle
-      final rel = members.first;
-      // Seçilen relation'ı kaydet (auto-login için)
-      await SecureStorageService.setValue<String>(
-        'uye_kullanici_relation',
-        jsonEncode(rel.toJson()),
-      );
-    }
 
-    if (members.length > 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProfilSecPage(
-            relations: members,
-            logindenSonraGit: widget.logindenSonraGit,
-          ),
-        ),
-      );
-    } else if (members.isNotEmpty) {
+    /* Her durumda: profil listesini ve flag’i sakla */
+    await SecureStorageService.setValue<String>('kullanici_profiller',
+        jsonEncode(members.map((e) => e.toJson()).toList()));
+
+    /* ---------- TEK PROFİL ---------- */
+    if (members.length == 1) {
       final rel = members.first;
-      // Seçilen relation'ı kaydet (auto-login için)
-      await SecureStorageService.setValue<String>(
-        'uye_kullanici_relation',
-        jsonEncode(rel.toJson()),
-      );
 
       LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
       final role = await AuthService.loginUser(context, rel);
       LoadingSpinner.hide(context);
 
-      if (role != null) {
-        _navigateAfterLogin(role);
+      if (role != null) _navigateAfterLogin(role);
+      return;
+    }
+
+    /* ---------- BİRDEN FAZLA PROFİL ---------- */
+    if (_beniHatirla) {
+      final rel =
+          members.firstWhere((m) => m.anaHesap, orElse: () => members.first);
+
+      LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
+      await AuthService.loginUser(context, rel);
+      LoadingSpinner.hide(context);
+
+      final token = await SecureStorageService.getValue<String>('token');
+      if (token != null) {
+        await sendFCMDevice(token, isMainAccount: rel.anaHesap);
       }
     }
+
+    // Profil Seç ekranına geç
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProfilSecPage(
+          kullaniciProfilList: members,
+          logindenSonraGit: widget.logindenSonraGit,
+        ),
+      ),
+    );
   }
 
   void _navigateAfterLogin(Roller role) {

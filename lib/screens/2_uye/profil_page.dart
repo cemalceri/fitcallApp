@@ -17,8 +17,8 @@ class ProfilePage extends StatelessWidget {
           return Center(child: Text('Bir hata oluştu: ${snapshot.error}'));
         } else {
           if (snapshot.data != null) {
-            UyeModel kullanici = snapshot.data!;
-            return KullaniciProfilWidget(kullanici: kullanici);
+            UyeModel uye = snapshot.data!;
+            return KullaniciProfilWidget(uye: uye);
           } else {
             return const LoginPage();
           }
@@ -29,9 +29,9 @@ class ProfilePage extends StatelessWidget {
 }
 
 class KullaniciProfilWidget extends StatelessWidget {
-  const KullaniciProfilWidget({super.key, required this.kullanici});
+  const KullaniciProfilWidget({super.key, required this.uye});
 
-  final UyeModel kullanici;
+  final UyeModel uye;
 
   @override
   Widget build(BuildContext context) {
@@ -43,17 +43,15 @@ class KullaniciProfilWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ProfileInfoRow(
-                label: 'Adı Soyadı',
-                value: '${kullanici.adi} ${kullanici.soyadi}'),
-            ProfileInfoRow(label: 'Telefon', value: kullanici.telefon ?? ''),
-            ProfileInfoRow(label: 'Mail Adresi', value: kullanici.email ?? ''),
-            ProfileInfoRow(label: 'Adres', value: kullanici.adres),
-            ProfileInfoRow(
-                label: 'Üye Numarası', value: kullanici.uyeNo.toString()),
+                label: 'Adı Soyadı', value: '${uye.adi} ${uye.soyadi}'),
+            ProfileInfoRow(label: 'Telefon', value: uye.telefon ?? ''),
+            ProfileInfoRow(label: 'Mail Adresi', value: uye.email ?? ''),
+            ProfileInfoRow(label: 'Adres', value: uye.adres),
+            ProfileInfoRow(label: 'Üye Numarası', value: uye.uyeNo.toString()),
             ProfileInfoRow(
                 label: 'Aktiflik Durumu',
-                value: kullanici.aktifMi ? 'Aktif' : 'Pasif'),
-            ProfileInfoRow(label: 'Seviye', value: kullanici.seviyeRengi),
+                value: uye.aktifMi ? 'Aktif' : 'Pasif'),
+            ProfileInfoRow(label: 'Seviye', value: uye.seviyeRengi),
           ],
         ),
       ),

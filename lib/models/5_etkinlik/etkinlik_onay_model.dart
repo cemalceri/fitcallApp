@@ -30,10 +30,10 @@ class EtkinlikOnayModel {
     required this.updatedAt,
   });
 
-  factory EtkinlikOnayModel.fromJson(Map<String, dynamic> json) {
-    DateTime? _tryParse(String? v) =>
-        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+  static DateTime? _tryParse(String? v) =>
+      (v == null || v.isEmpty) ? null : DateTime.parse(v);
 
+  factory EtkinlikOnayModel.fromJson(Map<String, dynamic> json) {
     return EtkinlikOnayModel(
       id: json['id'] ?? 0,
       etkinlik: json['etkinlik'] ?? '',

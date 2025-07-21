@@ -67,7 +67,7 @@ final Map<SayfaAdi, String> routeEnums = {
 final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.login]!: (context) => const LoginPage(),
   routeEnums[SayfaAdi.profilSec]!: (context) => const ProfilSecPage(
-        relations: [],
+        kullaniciProfilList: [],
       ),
   routeEnums[SayfaAdi.kayitol]!: (context) => const RegisterPage(),
   routeEnums[SayfaAdi.qrKodKayit]!: (context) => const QRKodKayitPage(),

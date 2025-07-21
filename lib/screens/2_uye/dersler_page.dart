@@ -439,7 +439,7 @@ class _Legend extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Material(
         elevation: 2,
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withAlpha((0.9 * 255).toInt()),
         borderRadius: BorderRadius.circular(8),
         child: Padding(
           padding: const EdgeInsets.all(8),

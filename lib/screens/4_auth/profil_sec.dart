@@ -1,5 +1,3 @@
-// lib/pages/profil_sec.dart
-
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
@@ -12,12 +10,12 @@ import 'package:fitcall/services/auth_service.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 
 class ProfilSecPage extends StatelessWidget {
-  final List<KullaniciProfilModel> relations;
+  final List<KullaniciProfilModel> kullaniciProfilList;
   final String? logindenSonraGit;
 
   const ProfilSecPage({
     super.key,
-    required this.relations,
+    required this.kullaniciProfilList,
     this.logindenSonraGit,
   });
 
@@ -55,13 +53,12 @@ class ProfilSecPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Profil Seç")),
       body: ListView.builder(
-        itemCount: relations.length,
+        itemCount: kullaniciProfilList.length,
         itemBuilder: (ctx, i) {
-          final rel = relations[i];
-          final adi =
-              rel.uye?.adi ?? rel.antrenor?.adi ?? rel.kullanici.firstName;
+          final rel = kullaniciProfilList[i];
+          final adi = rel.uye?.adi ?? rel.antrenor?.adi ?? rel.user.firstName;
           final soyadi =
-              rel.uye?.soyadi ?? rel.antrenor?.soyadi ?? rel.kullanici.lastName;
+              rel.uye?.soyadi ?? rel.antrenor?.soyadi ?? rel.user.lastName;
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child: ListTile(

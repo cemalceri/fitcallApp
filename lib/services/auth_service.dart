@@ -1,4 +1,3 @@
-// lib/services/auth_service.dart
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
@@ -107,39 +106,39 @@ class AuthService {
         .toList();
   }
 
-  /// Giriş yap: token, user bilgisi ve üyeleri alır, rollerini belirler, LoginResult döner.
+  /// Giriş yap: token, user bilgisi ve üyeleri alır, rollerini belirler, Roller döner.
   static Future<Roller?> loginUser(
-      BuildContext context, KullaniciProfilModel relation) async {
+      BuildContext context, KullaniciProfilModel kullaniciProfil) async {
     await SecureStorageService.setValue<String>(
       'uye',
-      jsonEncode(relation.uye?.toJson()),
+      jsonEncode(kullaniciProfil.uye?.toJson()),
     );
     await SecureStorageService.setValue<String>(
       'antrenor',
-      jsonEncode(relation.antrenor?.toJson()),
+      jsonEncode(kullaniciProfil.antrenor?.toJson()),
     );
     await SecureStorageService.setValue<String>(
       'user',
-      jsonEncode(relation.kullanici.toJson()),
+      jsonEncode(kullaniciProfil.user.toJson()),
     );
     await SecureStorageService.setValue<bool>(
       'ana_hesap_mi',
-      relation.anaHesap,
+      kullaniciProfil.anaHesap,
     );
     await SecureStorageService.setValue<String>(
       'gruplar',
-      jsonEncode(relation.gruplar),
+      jsonEncode(kullaniciProfil.gruplar),
     );
     await SecureStorageService.setValue<String>(
-      'uye_kullanici_relation',
-      jsonEncode(relation.toJson()),
+      'uye_profil',
+      jsonEncode(kullaniciProfil.toJson()),
     );
 
     // 2) Token için API isteği
     final payload = {
-      'user_id': relation.kullanici.id,
-      'uye_id': relation.uye?.id,
-      'antrenor_id': relation.antrenor?.id,
+      'user_id': kullaniciProfil.user.id,
+      'uye_id': kullaniciProfil.uye?.id,
+      'antrenor_id': kullaniciProfil.antrenor?.id,
     };
     try {
       final resp = await http
@@ -163,7 +162,7 @@ class AuthService {
           'token_exp', tokenModel.expireDate.toIso8601String());
 
       // 4) Relation içindeki roller üzerinden role belirle
-      final gruplar = relation.gruplar;
+      final gruplar = kullaniciProfil.gruplar;
       if (gruplar.contains(Roller.antrenor.name)) {
         return Roller.antrenor;
       } else if (gruplar.contains(Roller.uye.name)) {
