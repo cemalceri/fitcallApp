@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class LoadingSpinner {
   static void show(BuildContext context, {String message = 'Yükleniyor...'}) {
+    if (!Navigator.of(context).mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -29,6 +30,7 @@ class LoadingSpinner {
   }
 
   static void hide(BuildContext context) {
+    if (!Navigator.of(context).mounted) return;
     Navigator.of(context, rootNavigator: true).pop();
   }
 }

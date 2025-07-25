@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart'; // getAnnouncements, getNotifications, getGaleriImages tanımlı olsun
 import 'package:fitcall/common/routes.dart';
-import 'package:fitcall/common/widgets/show_message_widget.dart';
+import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/models/1_common/notification_model.dart'; // NotificationModel burada tanımlı olsun
 import 'package:fitcall/screens/1_common/1_notification/notification_methods.dart';

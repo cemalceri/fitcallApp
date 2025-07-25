@@ -10,6 +10,7 @@ class ShowMessage {
     String message, {
     Duration duration = const Duration(seconds: 3),
   }) async {
+    if (!Navigator.of(context).mounted) return;
     return _showOverlay(
       context: context,
       message: message,
@@ -25,6 +26,7 @@ class ShowMessage {
     String message, {
     Duration duration = const Duration(seconds: 3),
   }) async {
+    if (!Navigator.of(context).mounted) return;
     return _showOverlay(
       context: context,
       message: message,

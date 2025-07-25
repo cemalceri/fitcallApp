@@ -1,20 +1,18 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
+import 'package:fitcall/screens/1_common/1_notification/pending_action.dart';
+import 'package:fitcall/screens/1_common/1_notification/pending_action_store.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:fitcall/common/routes.dart';
-import 'package:fitcall/screens/4_auth/login_page.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+/* -------------------------------------------------- */
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await NotificationService.instance.setupFlutterNotifications();
   await NotificationService.instance.showNotification(message);
 }
-
-/// Global pending target. Bu değişken, bildirime göre gidilmesi gereken sayfayı saklar.
-String? logindenSonraGit;
 
 class NotificationService {
   NotificationService._();
@@ -31,25 +29,17 @@ class NotificationService {
   }
 
   Future<void> _requestPermission() async {
-    final settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      provisional: false,
-      announcement: false,
-      carPlay: false,
-      criticalAlert: false,
-    );
-    print('Permission status: ${settings.authorizationStatus}');
+    await _messaging.requestPermission(alert: true, badge: true, sound: true);
   }
 
+  /* ------------------ Local kanal ------------------ */
   Future<void> setupFlutterNotifications() async {
     if (_isFlutterLocalNotificationsInitialized) return;
 
     const channel = AndroidNotificationChannel(
       'high_importance_channel',
       'High Importance Notifications',
-      description: 'This channel is used for important notifications.',
+      description: 'High importance notifications channel.',
       importance: Importance.high,
     );
 
@@ -58,82 +48,68 @@ class NotificationService {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
 
-    const initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    final initializationSettingsDarwin = DarwinInitializationSettings();
-    final initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-    );
+    const initAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+    final initDarwin = DarwinInitializationSettings();
+    final initSettings =
+        InitializationSettings(android: initAndroid, iOS: initDarwin);
 
-    await _localNotifications.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (details) {
-        // İsteğe bağlı: bildirime tıklanınca yapılacaklar
-      },
-    );
-
+    await _localNotifications.initialize(initSettings,
+        onDidReceiveNotificationResponse: (details) {});
     _isFlutterLocalNotificationsInitialized = true;
   }
 
   Future<void> showNotification(RemoteMessage message) async {
-    RemoteNotification? notification = message.notification;
-    AndroidNotification? android = message.notification?.android;
-    if (notification != null && android != null) {
+    final not = message.notification;
+    final android = message.notification?.android;
+    if (not != null && android != null) {
       await _localNotifications.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
+        not.hashCode,
+        not.title,
+        not.body,
+        const NotificationDetails(
           android: AndroidNotificationDetails(
             'high_importance_channel',
             'High Importance Notifications',
-            channelDescription:
-                'This channel is used for important notifications.',
             importance: Importance.high,
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
           ),
-          iOS: const DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-          ),
+          iOS: DarwinNotificationDetails(),
         ),
         payload: message.data.toString(),
       );
     }
   }
 
+  /* ------------------ Mesaj Handlers ------------------ */
   Future<void> _setupMessageHandlers() async {
-    // Foreground mesajları
-    FirebaseMessaging.onMessage.listen((message) {
-      showNotification(message);
-    });
+    FirebaseMessaging.onMessage.listen(showNotification);
+    FirebaseMessaging.onMessageOpenedApp.listen(_cacheForLater);
 
-    // Background'da bildirime tıklanırsa
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessage);
-
-    // Uygulama tamamen kapalıyken bildirime tıklanırsa
-    final initialMessage = await _messaging.getInitialMessage();
-    if (initialMessage != null) {
-      _handleBackgroundMessage(initialMessage);
-    }
+    final initial = await _messaging.getInitialMessage();
+    if (initial != null) await _cacheForLater(initial);
   }
 
-  Future<void> _handleBackgroundMessage(RemoteMessage message) async {
-    // Bildirime göre gidilmesi gereken sayfa belirleniyor.
-    // Şimdilik NotificationPage olsun; ileride notification türüne göre değiştirilebilir.
-    logindenSonraGit = routeEnums[SayfaAdi.bildirimler]!;
-    // Widget tree hazır olduğunda, LoginPage'e yönlendirme yapılıyor ve LoginPage'e pendingTarget parametresi aktarılıyor.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (navigatorKey.currentState != null) {
-        navigatorKey.currentState!.push(
-          MaterialPageRoute(
-            builder: (_) => LoginPage(logindenSonraGit: logindenSonraGit),
-          ),
-        );
-      }
-    });
+  /* ----------------------------------------------------
+     Bildirim tıklandığında → pendingActionStore.set(...)
+     App login’liyse ayrıca hemen push da yap
+  ---------------------------------------------------- */
+  Future<void> _cacheForLater(RemoteMessage message) async {
+    PendingAction action;
+
+    if (message.data['notification_type'] == 'DO' &&
+        message.data['model_name'] == 'EtkinlikModel' &&
+        message.data['model_own_id'] != null) {
+      action = PendingAction(
+        type: PendingActionType.dersTeyit,
+        data: message.data,
+      );
+    } else {
+      action = PendingAction(
+        type: PendingActionType.bildirimListe,
+        data: message.data,
+      );
+    }
+    await PendingActionStore.instance.set(action);
   }
 }

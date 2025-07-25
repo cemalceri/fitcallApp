@@ -2,8 +2,8 @@
 
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart'; // getDersProgrami, getUygunSaatler, setDersYapildiBilgisi, setUyeDersIptal
-import 'package:fitcall/common/widgets/show_message_widget.dart';
-import 'package:fitcall/common/widgets/spinner_widgets.dart';
+import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
+import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_onay_model.dart';

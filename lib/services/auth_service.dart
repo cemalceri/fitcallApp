@@ -4,11 +4,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/services/api_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:fitcall/common/api_urls.dart'; // loginUrl, getUser, getMyMembers
 import 'package:fitcall/common/constants.dart'; // Roller enum, routeEnums, SayfaAdi
-import 'package:fitcall/common/widgets/show_message_widget.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/models/4_auth/group_model.dart';
@@ -85,61 +85,60 @@ class AuthService {
 
   /// Sadece üye–kullanıcı ilişkilerini alır ve liste döner. Hata durumunda null.
   static Future<List<KullaniciProfilModel>?> fetchMyMembers(
-    BuildContext context,
     String username,
     String password,
   ) async {
     final data = {'username': username, 'password': password};
-    final resp = await http.post(
-      Uri.parse(getMyMembers),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(data),
-    );
-    if (resp.statusCode != 200) {
-      return null;
+    try {
+      final resp = await http
+          .post(
+            Uri.parse(getMyMembers),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(data),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (resp.statusCode != 200) {
+        throw ApiException(
+          'TOKEN_ERROR',
+          'Token alınamadı',
+          statusCode: resp.statusCode,
+        );
+      }
+      final List<dynamic> relList = jsonDecode(utf8.decode(resp.bodyBytes));
+      return relList
+          .map((e) => KullaniciProfilModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException('UNKNOWN', 'Bilinmeyen hata: $e');
     }
-    final List<dynamic> relList = jsonDecode(utf8.decode(resp.bodyBytes));
-    return relList
-        .map((e) => KullaniciProfilModel.fromJson(e as Map<String, dynamic>))
-        .toList();
   }
 
-  /// Giriş yap: token, user bilgisi ve üyeleri alır, rollerini belirler, Roller döner.
-  static Future<Roller?> loginUser(
-      BuildContext context, KullaniciProfilModel kullaniciProfil) async {
-    await SecureStorageService.setValue<String>(
-      'uye',
-      jsonEncode(kullaniciProfil.uye?.toJson()),
-    );
-    await SecureStorageService.setValue<String>(
-      'antrenor',
-      jsonEncode(kullaniciProfil.antrenor?.toJson()),
-    );
-    await SecureStorageService.setValue<String>(
-      'user',
-      jsonEncode(kullaniciProfil.user.toJson()),
-    );
-    await SecureStorageService.setValue<bool>(
-      'ana_hesap_mi',
-      kullaniciProfil.anaHesap,
-    );
-    await SecureStorageService.setValue<String>(
-      'gruplar',
-      jsonEncode(kullaniciProfil.gruplar),
-    );
-    await SecureStorageService.setValue<String>(
-      'uye_profil',
-      jsonEncode(kullaniciProfil.toJson()),
-    );
+// lib/services/auth_service.dart  (yalnızca loginUser metodu gösteriliyor)
 
-    // 2) Token için API isteği
+  static Future<Roller> loginUser(KullaniciProfilModel kullaniciProfil) async {
+    /* 1) Profil ve user bilgilerini sakla  */
+    await SecureStorageService.setValue<String>(
+        'uye', jsonEncode(kullaniciProfil.uye?.toJson()));
+    await SecureStorageService.setValue<String>(
+        'antrenor', jsonEncode(kullaniciProfil.antrenor?.toJson()));
+    await SecureStorageService.setValue<String>(
+        'user', jsonEncode(kullaniciProfil.user.toJson()));
+    await SecureStorageService.setValue<bool>(
+        'ana_hesap_mi', kullaniciProfil.anaHesap);
+    await SecureStorageService.setValue<String>(
+        'gruplar', jsonEncode(kullaniciProfil.gruplar));
+    await SecureStorageService.setValue<String>(
+        'uye_profil', jsonEncode(kullaniciProfil.toJson()));
+
+    /* 2) Token isteği */
     final payload = {
       'user_id': kullaniciProfil.user.id,
       'uye_id': kullaniciProfil.uye?.id,
       'antrenor_id': kullaniciProfil.antrenor?.id,
     };
+
     try {
       final resp = await http
           .post(
@@ -150,18 +149,21 @@ class AuthService {
           .timeout(const Duration(seconds: 15));
 
       if (resp.statusCode != 200) {
-        ShowMessage.error(context, 'Token alınamadı: ${resp.statusCode}');
-        return null;
+        throw ApiException(
+          'TOKEN_ERROR',
+          'Token alınamadı',
+          statusCode: resp.statusCode,
+        );
       }
 
-      // 3) Gelen tokenu sakla
+      /* 3) Token’ı sakla */
       final tokenModel = TokenModel.fromJson(resp);
       await SecureStorageService.setValue<String>(
           'token', tokenModel.accessToken);
       await SecureStorageService.setValue<String>(
           'token_exp', tokenModel.expireDate.toIso8601String());
 
-      // 4) Relation içindeki roller üzerinden role belirle
+      /* 4) Rol belirle */
       final gruplar = kullaniciProfil.gruplar;
       if (gruplar.contains(Roller.antrenor.name)) {
         return Roller.antrenor;
@@ -171,18 +173,18 @@ class AuthService {
         return Roller.yonetici;
       } else if (gruplar.contains(Roller.cafe.name)) {
         return Roller.cafe;
-      } else {
-        ShowMessage.error(context,
-            'Henüz uygulamaya giriş yetkisi verilmemiş. Lütfen yönetici ile iletişime geçin.');
-        return null;
       }
+
+      throw ApiException(
+          'ROLE_ERROR',
+          'Henüz uygulamaya giriş yetkisi verilmemiş. '
+              'Lütfen yönetici ile iletişime geçin.');
     } on TimeoutException {
-      ShowMessage.error(context, 'Sunucuya bağlanırken bir hata oluştu.');
-      return null;
+      throw ApiException('TIMEOUT',
+          'Sunucuya bağlanırken bir hata oluştu. Lütfen tekrar deneyin.');
     } catch (e) {
-      print(e);
-      ShowMessage.error(context, 'Bir hata oluştu: $e');
-      return null;
+      if (e is ApiException) rethrow;
+      throw ApiException('UNKNOWN', 'Bilinmeyen hata: $e');
     }
   }
 }

@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/regex.dart';
 import 'package:fitcall/common/routes.dart';
-import 'package:fitcall/common/widgets/spinner_widgets.dart';
+import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/screens/4_auth/widgets/register/kullanici_sozlesmesi_widget.dart';
 import 'package:fitcall/services/auth_service.dart';
 import 'package:intl/intl.dart';

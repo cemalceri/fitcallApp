@@ -15,7 +15,6 @@ Future<void> sendFCMDevice(String bearerToken,
   // 1) FCM token’ı al
   String? fcmToken = await FirebaseMessaging.instance.getToken();
   if (fcmToken == null) {
-    print("FCM token alınamadı");
     return;
   }
 
@@ -51,7 +50,7 @@ Future<void> sendFCMDevice(String bearerToken,
 
   // 4) HTTP isteğini yap
   try {
-    final response = await http.post(
+    await http.post(
       Uri.parse(cihazKaydetGuncelle),
       headers: {
         'Content-Type': 'application/json',
@@ -59,12 +58,6 @@ Future<void> sendFCMDevice(String bearerToken,
       },
       body: jsonEncode(bodyData),
     );
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      print("FCM cihaz bilgileri kaydedildi/güncellendi");
-    } else {
-      print("FCM cihaz bilgileri kaydedilemedi: ${response.statusCode}");
-    }
   } catch (e) {
     print("FCM cihaz bilgileri gönderilirken hata oluştu: $e");
   }
