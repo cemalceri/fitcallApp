@@ -66,7 +66,7 @@ class AntrenorProfilWidget extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              '${antrenor.adi} ${antrenor.user}',
+              '${antrenor.adi} ${antrenor.soyadi}',
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -75,7 +75,8 @@ class AntrenorProfilWidget extends StatelessWidget {
             const SizedBox(height: 20),
             ProfileInfoRow(
                 label: 'Telefon', value: antrenor.telefon ?? 'Bilinmiyor'),
-            ProfileInfoRow(label: 'Mail Adresi', value: antrenor.ePosta),
+            ProfileInfoRow(
+                label: 'Mail Adresi', value: antrenor.ePosta ?? 'Bilinmiyor'),
             ProfileInfoRow(
               label: 'Renk',
               value: '',

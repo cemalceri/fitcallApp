@@ -1,30 +1,26 @@
-// lib/models/antrenor_model.dart
-class AntrenorModel {
+// lib/models/kort_model.dart
+class KortModel {
   final int id;
   final String adi;
-  final String soyadi;
-  final String? ePosta;
-  final String? telefon;
-  final String renk; // Hex renk
-  final double ucretKatsayisi;
+  final int maxEtkinlikSayisi;
+  final String kullanabilecekUyeTurleri;
+  final int sira;
 
   // BaseAbstract alanları
   final bool isActive;
   final bool isDeleted;
-  final int? ekleyen; // User ID
-  final int? guncelleyen; // User ID
-  final int? isletme; // İşletme ID
+  final int? ekleyen;
+  final int? guncelleyen;
+  final int? isletme;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  AntrenorModel({
+  KortModel({
     required this.id,
     required this.adi,
-    required this.soyadi,
-    this.ePosta,
-    this.telefon,
-    required this.renk,
-    required this.ucretKatsayisi,
+    required this.maxEtkinlikSayisi,
+    required this.kullanabilecekUyeTurleri,
+    required this.sira,
     required this.isActive,
     required this.isDeleted,
     this.ekleyen,
@@ -37,16 +33,12 @@ class AntrenorModel {
   static DateTime _dt(String? v) =>
       (v == null || v.isEmpty) ? DateTime.now() : DateTime.parse(v);
 
-  factory AntrenorModel.fromJson(Map<String, dynamic> json) => AntrenorModel(
+  factory KortModel.fromJson(Map<String, dynamic> json) => KortModel(
         id: json['id'] ?? 0,
         adi: json['adi'] ?? '',
-        soyadi: json['soyadi'] ?? '',
-        ePosta: json['e_posta'],
-        telefon: json['telefon'],
-        renk: json['renk'] ?? '#757575',
-        ucretKatsayisi: (json['ucret_katsayisi'] is num)
-            ? json['ucret_katsayisi'].toDouble()
-            : 1.0,
+        maxEtkinlikSayisi: json['max_etkinlik_sayisi'] ?? 0,
+        kullanabilecekUyeTurleri: json['kullanabilecek_uye_turleri'] ?? '',
+        sira: json['sira'] ?? 0,
         isActive: json['is_active'] ?? true,
         isDeleted: json['is_deleted'] ?? false,
         ekleyen: json['ekleyen'],
@@ -59,11 +51,9 @@ class AntrenorModel {
   Map<String, dynamic> toJson() => {
         'id': id,
         'adi': adi,
-        'soyadi': soyadi,
-        'e_posta': ePosta,
-        'telefon': telefon,
-        'renk': renk,
-        'ucret_katsayisi': ucretKatsayisi,
+        'max_etkinlik_sayisi': maxEtkinlikSayisi,
+        'kullanabilecek_uye_turleri': kullanabilecekUyeTurleri,
+        'sira': sira,
         'is_active': isActive,
         'is_deleted': isDeleted,
         'ekleyen': ekleyen,
@@ -73,14 +63,12 @@ class AntrenorModel {
         'guncellenme_zamani': updatedAt.toIso8601String(),
       };
 
-  static AntrenorModel empty() => AntrenorModel(
+  static KortModel empty() => KortModel(
         id: 0,
         adi: '',
-        soyadi: '',
-        ePosta: null,
-        telefon: null,
-        renk: '#757575',
-        ucretKatsayisi: 1.0,
+        maxEtkinlikSayisi: 0,
+        kullanabilecekUyeTurleri: '',
+        sira: 0,
         isActive: true,
         isDeleted: false,
         ekleyen: null,

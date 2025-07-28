@@ -41,14 +41,9 @@ class _UyeHomePageState extends State<UyeHomePage> {
       'text': 'Üyelik ve Paketlerim'
     },
     {
-      'name': routeEnums[SayfaAdi.uyeDersTalepleri]!,
+      'name': routeEnums[SayfaAdi.uyeGenelDersTalep]!,
       'icon': Icons.sports_baseball,
       'text': 'Ders Taleplerim'
-    },
-    {
-      'name': routeEnums[SayfaAdi.uygunSaatler]!,
-      'icon': Icons.calendar_view_day,
-      'text': 'Ders Rezerve Et'
     },
     {
       'name': 'notifications',

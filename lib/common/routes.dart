@@ -1,3 +1,4 @@
+import 'package:fitcall/screens/2_uye/genel_ders_talep.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/services/auth_service.dart';
@@ -15,7 +16,6 @@ import 'package:fitcall/screens/muhasebe/muhasebe_page.dart';
 import 'package:fitcall/screens/2_uye/dersler_page.dart';
 import 'package:fitcall/screens/2_uye/uyelik/uyelik_paket_screen.dart';
 import 'package:fitcall/screens/2_uye/ders_talep_page.dart';
-import 'package:fitcall/screens/2_uye/uygun_saatler_page.dart';
 
 import 'package:fitcall/screens/antrenor_home_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
@@ -42,10 +42,10 @@ enum SayfaAdi {
   antrenorDersler,
   antrenorOgrenciler,
   uyeDersTalepleri,
-  uygunSaatler,
   bildirimler,
   yoneticiAnasayfa,
-  dersTeyit, // << yeni
+  dersTeyit,
+  uyeGenelDersTalep,
 }
 
 /* ------------------ 1) Enum -> String ------------------ */
@@ -65,10 +65,10 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.antrenorDersler: '/antrenor_dersler',
   SayfaAdi.antrenorOgrenciler: '/antrenor_ogrenciler',
   SayfaAdi.uyeDersTalepleri: '/uyeDersTalepleri',
-  SayfaAdi.uygunSaatler: '/uygunSaatler',
   SayfaAdi.bildirimler: '/bildirimler',
   SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
-  SayfaAdi.dersTeyit: '/dersTeyit', // << yeni
+  SayfaAdi.dersTeyit: '/dersTeyit',
+  SayfaAdi.uyeGenelDersTalep: '/uyeGenelDersTalep',
 };
 
 /* ------------------ 2) String -> Widget ------------------ */
@@ -88,8 +88,16 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.antrenorProfil]!: (c) => AntrenorProfilPage(),
   routeEnums[SayfaAdi.antrenorDersler]!: (c) => AntrenorDerslerPage(),
   routeEnums[SayfaAdi.antrenorOgrenciler]!: (c) => AntrenorOgrencilerPage(),
-  routeEnums[SayfaAdi.uyeDersTalepleri]!: (c) => const DersTalepPage(),
-  routeEnums[SayfaAdi.uygunSaatler]!: (c) => const UygunSaatlerPage(),
+  routeEnums[SayfaAdi.uyeDersTalepleri]!: (context) => DersTalepPage(
+        secimJson: const {
+          "kort_id": 0,
+          "antrenor_id": 0,
+          "kort_adi": "",
+          "antrenor_adi": ""
+        },
+        baslangic: DateTime.now(),
+      ),
+  routeEnums[SayfaAdi.uyeGenelDersTalep]!: (ctx) => const GenelDersTalepPage(),
   routeEnums[SayfaAdi.bildirimler]!: (c) => NotificationPage(notifications: []),
   routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiHomePage(),
   routeEnums[SayfaAdi.dersTeyit]!: (c) => const DersTeyitPage(),

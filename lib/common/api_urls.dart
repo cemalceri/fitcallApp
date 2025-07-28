@@ -47,6 +47,9 @@
 // String getAidatOdemeGecmisi = 'https://binayakademi-70516933d185.herokuapp.com/api/getAidatOdemeGecmisi';
 // String setDersTeyit = 'https://binayakademi-70516933d185.herokuapp.com/api/setDersTeyit';
 // String getBildirimById = 'https://binayakademi-70516933d185.herokuapp.com/api/getBildirimById';
+// String setDersTalep = 'https://binayakademi-70516933d185.herokuapp.com/api/setDersTalep';
+// String setGenelDersTalep = 'https://binayakademi-70516933d185.herokuapp.com/api/setGenelDersTalep';
+// String getKortveAntrenorList = 'https://binayakademi-70516933d185.herokuapp.com/api/getKortveAntrenorList';
 
 String getMyMembers = 'http://10.0.2.2:8000/api/getMyMembers';
 String createToken = 'http://10.0.2.2:8000/api/createToken'; // (bearer token)
@@ -83,3 +86,6 @@ String getMuhasebeOzet = 'http://10.0.2.2:8000/api/getMuhasebeOzet';
 String getParaHareketi = 'http://10.0.2.2:8000/api/getParaHareketi';
 String setDersTeyit = 'http://10.0.2.2:8000/api/setDersTeyit';
 String getBildirimById = 'http://10.0.2.2:8000/api/getBildirimById';
+String setDersTalep = 'http://10.0.2.2:8000/api/setDersTalep';
+String setGenelDersTalep = 'http://10.0.2.2:8000/api/setGenelDersTalep';
+String getKortveAntrenorList = 'http://10.0.2.2:8000/api/getKortveAntrenorList';

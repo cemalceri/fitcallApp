@@ -1,16 +1,25 @@
+// lib/screens/ders_listesi_page.dart
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
-import 'package:fitcall/common/api_urls.dart'; // getDersProgrami, getUygunSaatler, setDersYapildiBilgisi, setUyeDersIptal
+import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_onay_model.dart';
+import 'package:fitcall/screens/2_uye/ders_talep_page.dart';
 import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_calendar/calendar.dart';
+
+/* -------------------------------------------------------------------------- */
+/*                            Renk Sabitleri                                   */
+/* -------------------------------------------------------------------------- */
+const Color dersDoluRenk = Colors.grey; // Takvimdeki dolu ders
+const Color uygunSaatRenk = Colors.green; // Rezervasyon yapılabilir saat
+const Color uygunOlmayanRenk = Colors.white; // Meşgul slot
 
 class DersListesiPage extends StatefulWidget {
   const DersListesiPage({super.key});
@@ -55,6 +64,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
     if (token == null) return;
 
     final weekEnd = weekStart.add(const Duration(days: 7));
+    final nowPlus3h = DateTime.now().add(const Duration(hours: 3));
 
     try {
       /* Dersler */
@@ -89,7 +99,11 @@ class _DersListesiPageState extends State<DersListesiPage> {
         for (final s in data['busy']) {
           appts.add(_busyToAppt(s));
         }
+
         for (final s in data['available']) {
+          final bas = DateTime.parse(s['baslangic_tarih_saat']).toLocal();
+          if (bas.isBefore(nowPlus3h)) continue; // 3 saat kuralı
+          appts.add(_availableToAppt(s));
           _slotAlternatifleri
               .putIfAbsent(s['baslangic_tarih_saat'], () => [])
               .add(s);
@@ -115,11 +129,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
         endTime: d.bitisTarihSaat,
         subject: d.kortAdi,
         notes: jsonEncode({...d.toJson(), 'tip': 'ders'}),
-        color: d.iptalMi
-            ? Colors.grey
-            : d.bitisTarihSaat.isBefore(DateTime.now())
-                ? Colors.green
-                : Colors.blue,
+        color: d.iptalMi ? uygunOlmayanRenk : dersDoluRenk,
       );
 
   Appointment _busyToAppt(dynamic s) => Appointment(
@@ -128,7 +138,17 @@ class _DersListesiPageState extends State<DersListesiPage> {
         endTime: DateTime.parse(s['bitis_tarih_saat']).toLocal(),
         subject: '',
         notes: jsonEncode({'tip': 'busy'}),
-        color: Colors.grey,
+        color: uygunOlmayanRenk,
+      );
+
+  Appointment _availableToAppt(dynamic s) => Appointment(
+        id: 'available-${s['baslangic_tarih_saat']}',
+        startTime: DateTime.parse(s['baslangic_tarih_saat']).toLocal(),
+        endTime: DateTime.parse(s['bitis_tarih_saat']).toLocal(),
+        subject: '',
+        notes: jsonEncode(
+            {'tip': 'available', 'baslangic': s['baslangic_tarih_saat']}),
+        color: uygunSaatRenk.withAlpha((0.3 * 255).toInt()),
       );
 
   /* -------------------------------------------------------------------------- */
@@ -183,10 +203,21 @@ class _DersListesiPageState extends State<DersListesiPage> {
       return;
     }
     final tip = note['tip'];
+
+    /* Uygun olmayan */
     if (tip == 'busy') {
       ShowMessage.error(context, 'Bu saat uygun değil.');
       return;
     }
+
+    /* Uygun saat tıklandıysa */
+    if (tip == 'available') {
+      final bas = DateTime.parse(note['baslangic']).toLocal();
+      await _showBosSaatPopup(bas);
+      return;
+    }
+
+    /* Ders */
     if (tip != 'ders') return;
 
     final EtkinlikModel ders =
@@ -208,7 +239,6 @@ class _DersListesiPageState extends State<DersListesiPage> {
           _userOnaylari[ders.id] = EtkinlikOnayModel.empty()
             ..tamamlandi = tam
             ..aciklama = acik;
-          appt.color = Colors.green;
           _dataSource.notifyListeners(
               CalendarDataSourceAction.reset, _dataSource.appointments!);
         },
@@ -217,7 +247,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
       _showIptalPopup(
         ders,
         onCancelled: () {
-          appt.color = Colors.grey;
+          appt.color = uygunOlmayanRenk;
           _dataSource.notifyListeners(
               CalendarDataSourceAction.reset, _dataSource.appointments!);
         },
@@ -229,6 +259,13 @@ class _DersListesiPageState extends State<DersListesiPage> {
   /*                           BOŞ slot – rezervasyon                           */
   /* -------------------------------------------------------------------------- */
   Future<void> _showBosSaatPopup(DateTime slotStart) async {
+    final nowPlus3h = DateTime.now().add(const Duration(hours: 3));
+    if (slotStart.isBefore(nowPlus3h)) {
+      ShowMessage.error(
+          context, 'Rezervasyon en az 3 saat önceden yapılabilir.');
+      return;
+    }
+
     final token = await AuthService.getToken();
     if (token == null) return;
 
@@ -246,8 +283,12 @@ class _DersListesiPageState extends State<DersListesiPage> {
             'end': slotStart.add(const Duration(hours: 1)).toIso8601String(),
           }));
       if (res.statusCode == 200) {
-        final Map data = jsonDecode(res.body);
-        alternatifler = data['available'];
+        final Map data = jsonDecode(utf8.decode(res.bodyBytes));
+        alternatifler = data['available']
+            .where((a) => DateTime.parse(a['baslangic_tarih_saat'])
+                .toLocal()
+                .isAfter(nowPlus3h))
+            .toList();
       }
     }
 
@@ -264,10 +305,12 @@ class _DersListesiPageState extends State<DersListesiPage> {
         itemCount: alternatifler.length,
         itemBuilder: (_, i) {
           final a = alternatifler[i];
+          final bas = slotStart;
+          final bit = bas.add(const Duration(hours: 1));
           return ListTile(
             title: Text('${a['kort_adi']} – ${a['antrenor_adi']}'),
             subtitle: Text(
-                '${slotStart.hour.toString().padLeft(2, "0")}:00 – ${(slotStart.hour + 1).toString().padLeft(2, "0")}:00'),
+                '${bas.hour.toString().padLeft(2, "0")}:00 – ${bit.hour.toString().padLeft(2, "0")}:00'),
             onTap: () => Navigator.pop(context, a),
           );
         },
@@ -275,8 +318,16 @@ class _DersListesiPageState extends State<DersListesiPage> {
     );
 
     if (secim != null) {
-      ShowMessage.success(context,
-          'Rezervasyon talebi: ${secim['kort_adi']} / ${secim['antrenor_adi']}');
+      final bool? sonuc = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DersTalepPage(secimJson: secim, baslangic: slotStart),
+        ),
+      );
+
+      if (sonuc == true) {
+        ShowMessage.success(context, 'Talebiniz alındı');
+      }
     }
   }
 
@@ -392,11 +443,15 @@ class _DersListesiPageState extends State<DersListesiPage> {
 
                 if (res.statusCode == 200) {
                   onCancelled();
-                  ShowMessage.success(context,
-                      jsonDecode(res.body)['message'] ?? 'İptal edildi');
+                  ShowMessage.success(
+                      context,
+                      jsonDecode(utf8.decode(res.bodyBytes))['message'] ??
+                          'İptal edildi');
                 } else {
-                  ShowMessage.error(context,
-                      jsonDecode(res.body)['message'] ?? 'İşlem yapılamadı');
+                  ShowMessage.error(
+                      context,
+                      jsonDecode(utf8.decode(res.bodyBytes))['message'] ??
+                          'İşlem yapılamadı');
                 }
               } catch (e) {
                 ShowMessage.error(context, 'Hata: $e');
@@ -444,13 +499,11 @@ class _Legend extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            _item(Colors.blue, 'Gelecek ders'),
+            _item(dersDoluRenk, 'Dolu ders', border: true),
             const SizedBox(height: 4),
-            _item(Colors.green, 'Geçmiş ders'),
+            _item(uygunSaatRenk, 'Uygun saat'),
             const SizedBox(height: 4),
-            _item(Colors.grey, 'Uygun olmayan saat'),
-            const SizedBox(height: 4),
-            _item(Colors.white, 'Uygun saat', border: true),
+            _item(uygunOlmayanRenk, 'Uygun olmayan saat'),
           ]),
         ),
       );
