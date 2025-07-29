@@ -14,7 +14,6 @@ import 'package:fitcall/screens/uye_home_page.dart';
 import 'package:fitcall/screens/2_uye/profil_page.dart';
 import 'package:fitcall/screens/muhasebe/muhasebe_page.dart';
 import 'package:fitcall/screens/2_uye/dersler_page.dart';
-import 'package:fitcall/screens/2_uye/uyelik/uyelik_paket_screen.dart';
 import 'package:fitcall/screens/2_uye/ders_talep_page.dart';
 
 import 'package:fitcall/screens/antrenor_home_page.dart';
@@ -36,7 +35,6 @@ enum SayfaAdi {
   profil,
   muhasebe,
   dersler,
-  uyelikPaket,
   antrenorAnasayfa,
   antrenorProfil,
   antrenorDersler,
@@ -59,7 +57,6 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.profil: '/profil',
   SayfaAdi.muhasebe: '/muhasebe',
   SayfaAdi.dersler: '/dersler',
-  SayfaAdi.uyelikPaket: '/uyelikPaket',
   SayfaAdi.antrenorAnasayfa: '/antrenorAnasayfa',
   SayfaAdi.antrenorProfil: '/antrenor_profil',
   SayfaAdi.antrenorDersler: '/antrenor_dersler',
@@ -83,7 +80,6 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.profil]!: (c) => const ProfilePage(),
   routeEnums[SayfaAdi.muhasebe]!: (c) => const MuhasebePage(),
   routeEnums[SayfaAdi.dersler]!: (c) => const DersListesiPage(),
-  routeEnums[SayfaAdi.uyelikPaket]!: (c) => const UyelikPaketPage(),
   routeEnums[SayfaAdi.antrenorAnasayfa]!: (c) => AntrenorHomePage(),
   routeEnums[SayfaAdi.antrenorProfil]!: (c) => AntrenorProfilPage(),
   routeEnums[SayfaAdi.antrenorDersler]!: (c) => AntrenorDerslerPage(),

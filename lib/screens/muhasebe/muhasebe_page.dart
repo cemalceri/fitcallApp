@@ -1,6 +1,6 @@
 import 'package:fitcall/models/6_muhasebe/muhasebe_ozet_model.dart';
 import 'package:fitcall/screens/muhasebe/widgets/muhasebe_table.dart';
-import 'package:fitcall/screens/muhasebe/widgets/para_hareket_sheet.dart';
+import 'package:fitcall/screens/muhasebe/widgets/para_hareket_page.dart';
 import 'package:fitcall/services/muhasebe/muhasebe_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -41,17 +41,24 @@ class _MuhasebePageState extends State<MuhasebePage> {
               Expanded(
                 child: MuhasebeTable(
                     rows: snapshot.data!,
-                    onRowTap: (row) =>
-                        showParaHareketDialog(context, row.yil, row.ay)),
+                    onRowTap: (row) => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ParaHareketPage(
+                              yil: row.yil,
+                              ay: row.ay,
+                            ),
+                          ),
+                        )),
               ),
               Container(
                 padding: const EdgeInsets.all(12),
                 color: Colors.grey.shade200,
                 alignment: Alignment.centerRight,
                 child: Text(
-                  toplamFark < 0
-                      ? 'Fazla Ödeme: ${df.format(toplamFark.abs())}'
-                      : 'Kalan Borç: ${df.format(toplamFark)}',
+                  toplamFark > 0
+                      ? 'Fazla Ödeme: ${df.format(toplamFark)}'
+                      : 'Kalan Borç: ${df.format(toplamFark.abs())}',
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 18),
                 ),

@@ -9,7 +9,7 @@ import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart'; // Tarih formatlamak için gerekli paket
+import 'package:intl/intl.dart';
 
 class AntrenorDerslerPage extends StatefulWidget {
   const AntrenorDerslerPage({super.key});
