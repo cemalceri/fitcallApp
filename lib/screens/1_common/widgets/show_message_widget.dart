@@ -46,7 +46,7 @@ class ShowMessage {
   }) async {
     // Eğer context artık geçerli değilse çık
     if (!context.mounted) return;
-    final overlay = Overlay.of(context);
+    final overlay = Overlay.of(context, rootOverlay: true);
 
     // Positioned kullanarak overlay'i ekranın üstünde sabit bir konuma yerleştiriyoruz.
     final overlayEntry = OverlayEntry(
@@ -94,8 +94,6 @@ class ShowMessage {
     await Future.delayed(duration);
 
     // Süre dolduktan sonra context hala geçerliyse overlay'i kaldır
-    if (context.mounted) {
-      overlayEntry.remove();
-    }
+    overlayEntry.remove();
   }
 }

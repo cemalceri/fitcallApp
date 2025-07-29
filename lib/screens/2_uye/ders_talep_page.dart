@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:fitcall/common/api_urls.dart'; // setDersTalep
+import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
@@ -135,20 +135,35 @@ class _DersTalepPageState extends State<DersTalepPage> {
     };
 
     try {
-      final res = await http.post(Uri.parse(setDersTalep),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json'
-          },
-          body: jsonEncode(payload));
+      final res = await http.post(
+        Uri.parse(setDersTalep),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(payload),
+      );
 
       if (!mounted) return;
 
+      Map? body;
+      try {
+        body = jsonDecode(utf8.decode(res.bodyBytes));
+      } catch (_) {
+        body = null; // JSON değilse
+      }
+
       if (res.statusCode == 200) {
-        ShowMessage.success(context, 'Talebiniz oluşturuldu');
+        final successMsg =
+            body?['message'] ?? body?['detail'] ?? 'Talebiniz oluşturuldu';
+        ShowMessage.success(context, successMsg);
         Navigator.pop(context, true);
       } else {
-        ShowMessage.error(context, 'Hata: ${res.statusCode}');
+        final errMsg = body?['detail'] ??
+            body?['message'] ??
+            body?['error'] ??
+            'Hata: ${res.statusCode}';
+        ShowMessage.error(context, errMsg);
         setState(() => _sending = false);
       }
     } catch (e) {
