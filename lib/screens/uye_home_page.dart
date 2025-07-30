@@ -2,11 +2,10 @@ import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart'; // getAnnouncements, getNotifications, getGaleriImages tanımlı olsun
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
-import 'package:fitcall/models/1_common/notification_model.dart'; // NotificationModel burada tanımlı olsun
-import 'package:fitcall/screens/1_common/1_notification/notification_methods.dart';
+import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/screens/1_common/2_fotograf/full_screen_image_page.dart';
-import 'package:fitcall/screens/1_common/1_notification/notification_icon.dart';
 import 'package:fitcall/services/auth_service.dart';
+import 'package:fitcall/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -55,8 +54,6 @@ class _UyeHomePageState extends State<UyeHomePage> {
 
   // Django backend'den gelen duyuruları tutacak Future
   late Future<List<AnnouncementModel>> _announcementsFuture;
-  // Django backend'den gelen bildirimleri tutacak Future
-  late Future<List<NotificationModel>> _notificationsFuture;
   // Galeri resimlerini tutacak Future
   late Future<List<String>> _galleryImagesFuture;
 
@@ -64,8 +61,8 @@ class _UyeHomePageState extends State<UyeHomePage> {
   void initState() {
     super.initState();
     _announcementsFuture = fetchAnnouncements();
-    _notificationsFuture = fetchNotifications(context);
     _galleryImagesFuture = fetchGalleryImages();
+    NotificationService.refreshUnreadCount();
   }
 
   // Django API'den duyuruları çekiyoruz
@@ -122,30 +119,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
       appBar: AppBar(
         title: const Text('Ana Sayfa'),
         actions: [
-          // Bildirimleri FutureBuilder ile çekip NotificationIcon widget'ına gönderiyoruz
-          FutureBuilder<List<NotificationModel>>(
-            future: _notificationsFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return IconButton(
-                  icon: const Icon(Icons.notifications),
-                  onPressed: () {},
-                );
-              } else if (snapshot.hasError) {
-                return IconButton(
-                  icon: const Icon(Icons.notifications),
-                  onPressed: () {},
-                );
-              } else if (snapshot.hasData) {
-                return NotificationIcon(notifications: snapshot.data!);
-              } else {
-                return IconButton(
-                  icon: const Icon(Icons.notifications),
-                  onPressed: () {},
-                );
-              }
-            },
-          ),
+          NotificationsBell(),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {

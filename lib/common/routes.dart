@@ -21,7 +21,7 @@ import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_dersler_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_ogrenciler_page.dart';
 
-import 'package:fitcall/screens/1_common/1_notification/notification_icon.dart';
+import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
 import 'package:fitcall/screens/yonetici_home_page.dart';
 
 /// Uygulama genelinde kullanacağımız sayfaların enum değerleri
@@ -94,7 +94,7 @@ final Map<String, WidgetBuilder> routes = {
         baslangic: DateTime.now(),
       ),
   routeEnums[SayfaAdi.uyeGenelDersTalep]!: (ctx) => const GenelDersTalepPage(),
-  routeEnums[SayfaAdi.bildirimler]!: (c) => NotificationPage(notifications: []),
+  routeEnums[SayfaAdi.bildirimler]!: (c) => NotificationPage(),
   routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiHomePage(),
   routeEnums[SayfaAdi.dersTeyit]!: (c) => const DersTeyitPage(),
 };
