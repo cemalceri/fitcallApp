@@ -17,6 +17,6 @@ class ParaHareketService {
     if (res.statusCode == 200) {
       return ParaHareketModel.listFromResponse(res.body);
     }
-    throw Exception('Para hareketleri alınamadı');
+    throw Exception('Bakiye hareketleri alınamadı');
   }
 }

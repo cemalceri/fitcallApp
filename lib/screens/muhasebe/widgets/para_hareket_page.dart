@@ -27,7 +27,7 @@ class ParaHareketService {
         utf8.decode(res.bodyBytes),
       );
     }
-    throw Exception('Para hareketleri alınamadı');
+    throw Exception('Bakiye hareketleri alınamadı');
   }
 }
 
@@ -57,7 +57,7 @@ class _ParaHareketPageState extends State<ParaHareketPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            '${widget.ay.toString().padLeft(2, "0")}/${widget.yil} Para Hareketleri'),
+            '${widget.ay.toString().padLeft(2, "0")}/${widget.yil} Bakiye Hareketleri'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12),
