@@ -48,6 +48,8 @@
 // String getKortveAntrenorList = 'https://binayakademi-70516933d185.herokuapp.com/api/getKortveAntrenorList';
 // String setNotificationsRead = 'https://binayakademi-70516933d185.herokuapp.com/api/setNotificationsRead';
 // String getUnreadNotificationCount = 'https://binayakademi-70516933d185.herokuapp.com/api/getUnreadNotificationCount';
+// String getUyeUrunList = 'https://binayakademi-70516933d185.herokuapp.com/api/getUyeUrunList';
+// String getHaftalikDersBilgilerim = 'https://binayakademi-70516933d185.herokuapp.com/api/getHaftalikDersBilgilerim';
 
 String getMyMembers = 'http://10.0.2.2:8000/api/getMyMembers';
 String createToken = 'http://10.0.2.2:8000/api/createToken'; // (bearer token)
@@ -86,3 +88,6 @@ String getKortveAntrenorList = 'http://10.0.2.2:8000/api/getKortveAntrenorList';
 String setNotificationsRead = 'http://10.0.2.2:8000/api/setNotificationsRead';
 String getUnreadNotificationCount =
     'http://10.0.2.2:8000/api/getUnreadNotificationCount';
+String getUyeUrunList = 'http://10.0.2.2:8000/api/getUyeUrunList';
+String getHaftalikDersBilgilerim =
+    'http://10.0.2.2:8000/api/getHaftalikDersBilgilerim';

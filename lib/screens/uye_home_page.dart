@@ -1,8 +1,12 @@
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
+import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/auth_service.dart';
+import 'package:fitcall/services/etkinlik/etkinlik_service.dart';
 import 'package:fitcall/services/notification_service.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class UyeHomePage extends StatefulWidget {
   const UyeHomePage({super.key});
@@ -41,79 +45,104 @@ class _UyeHomePageState extends State<UyeHomePage> {
     {'name': 6, 'icon': Icons.help, 'text': 'Yardım'},
   ];
 
+  /* ---------------- Haftalık Program State ---------------- */
+  final Map<int, List<EtkinlikModel>> _haftalik = {
+    for (var k = 1; k <= 7; k++) k: []
+  };
+  bool _loadingWeek = true;
+  EtkinlikModel? _nextLesson; // ← eklendi
+
   @override
   void initState() {
     super.initState();
     NotificationService.refreshUnreadCount();
+    _fetchWeek();
+  }
+
+  Future<void> _fetchWeek() async {
+    try {
+      final list = await EtkinlikService.getirHaftalikDersBilgilerim();
+
+      // Haftanın derslerini grupla
+      final tmp = {for (var k = 1; k <= 7; k++) k: <EtkinlikModel>[]};
+      for (final e in list) {
+        tmp[e.baslangicTarihSaat.weekday]!.add(e);
+      }
+
+      // ▶︎ Şu andan sonraki en erken dersi bul
+      final now = DateTime.now();
+      final filtered =
+          list.where((e) => e.baslangicTarihSaat.isAfter(now)).toList();
+      final next = filtered.isEmpty
+          ? null
+          : filtered.reduce((a, b) =>
+              a.baslangicTarihSaat.isBefore(b.baslangicTarihSaat) ? a : b);
+
+      if (!mounted) return;
+      setState(() {
+        _haftalik
+          ..clear()
+          ..addAll(tmp);
+        _nextLesson = next; // ← artık tam “ilk gelecek” ders
+        _loadingWeek = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ShowMessage.error(context, 'Hata: $e');
+      setState(() => _loadingWeek = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    const gunler = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+    final tf = DateFormat('HH:mm');
+    final df = DateFormat('d MMMM', 'tr_TR');
+
+    // Bir sonraki ders metni
+    String nextLessonText;
+    if (_nextLesson == null) {
+      nextLessonText = 'Planlı ders bulunmuyor';
+    } else {
+      nextLessonText = '${df.format(_nextLesson!.baslangicTarihSaat)}, '
+          '${tf.format(_nextLesson!.baslangicTarihSaat)}–${tf.format(_nextLesson!.bitisTarihSaat)} '
+          'Kort ${_nextLesson!.kortAdi}';
+    }
+
     return Scaffold(
       appBar: AppBar(
-        //title: const Text('Ana Sayfa'),
         actions: [
           NotificationsBell(),
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => AuthService.logout(context),
-          ),
+              icon: const Icon(Icons.logout),
+              onPressed: () => AuthService.logout(context)),
         ],
       ),
-      // drawer: Drawer(
-      //   child: ListView(
-      //     padding: EdgeInsets.zero,
-      //     children: [
-      //       DrawerHeader(
-      //         decoration: BoxDecoration(
-      //           gradient: LinearGradient(
-      //             colors: [Theme.of(context).primaryColor, Colors.blueAccent],
-      //           ),
-      //         ),
-      //         child: const Text(
-      //           'Menü',
-      //           style: TextStyle(color: Colors.white, fontSize: 28),
-      //         ),
-      //       ),
-      //       ...menuItems.map((item) => ListTile(
-      //             leading: Icon(item['icon']),
-      //             title: Text(item['text']),
-      //             onTap: () {
-      //               Navigator.pop(context);
-      //               Navigator.pushNamed(context, item['name']);
-      //             },
-      //           )),
-      //     ],
-      //   ),
-      // ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Hoşgeldin! 🎾",
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
+            const Text("Hoşgeldin! 🎾",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             GridView.count(
               crossAxisCount: 3,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              children: menuItems
-                  .map((item) => InkWell(
-                        onTap: () => Navigator.pushNamed(context, item['name']),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(item['icon'],
-                                size: 36, color: Colors.blueAccent),
-                            const SizedBox(height: 4),
-                            Text(item['text'], textAlign: TextAlign.center),
-                          ],
-                        ),
-                      ))
-                  .toList(),
+              children: menuItems.map((item) {
+                return InkWell(
+                  onTap: () => Navigator.pushNamed(context, item['name']),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(item['icon'], size: 36, color: Colors.blueAccent),
+                      const SizedBox(height: 4),
+                      Text(item['text'], textAlign: TextAlign.center),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 24),
             Card(
@@ -121,32 +150,35 @@ class _UyeHomePageState extends State<UyeHomePage> {
               child: ListTile(
                 leading: const Icon(Icons.calendar_today, color: Colors.blue),
                 title: const Text("Bir Sonraki Dersin"),
-                subtitle: const Text("12 Ağustos, 17:00-18:00 Kort 1"),
+                subtitle: Text(nextLessonText),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () =>
                     Navigator.pushNamed(context, routeEnums[SayfaAdi.dersler]!),
               ),
             ),
             const SizedBox(height: 24),
-            Text(
-              'Haftalık Programım',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+            const Text('Haftalık Programım',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             SizedBox(
               height: 120,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _dayCard("Pzt", "🎾 17:00"),
-                  _dayCard("Sal", "Boş"),
-                  _dayCard("Çar", "🎾 19:00"),
-                  _dayCard("Per", "🎾 18:00"),
-                  _dayCard("Cum", "Boş"),
-                  _dayCard("Cmt", "🎾 11:00"),
-                  _dayCard("Paz", "Boş"),
-                ],
-              ),
+              child: _loadingWeek
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 7,
+                      itemBuilder: (_, i) {
+                        final dayIdx = i + 1;
+                        final dersler = _haftalik[dayIdx] ?? [];
+                        final text = dersler.isEmpty
+                            ? 'Boş'
+                            : dersler
+                                .map((e) =>
+                                    '🎾 ${tf.format(e.baslangicTarihSaat)}')
+                                .join('\n');
+                        return _dayCard(gunler[i], text);
+                      },
+                    ),
             ),
           ],
         ),
@@ -164,7 +196,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
           children: [
             Text(day, style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text(activity),
+            Text(activity, textAlign: TextAlign.center),
           ],
         ),
       );

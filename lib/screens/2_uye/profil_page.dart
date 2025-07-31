@@ -1,5 +1,5 @@
-// lib/screens/profile/profile_page.dart
 import 'package:fitcall/models/2_uye/uye_model.dart';
+import 'package:fitcall/models/2_uye/uye_urun_list_page.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/services/auth_service.dart';
 import 'package:flutter/material.dart';
@@ -93,14 +93,9 @@ class ProfilePage extends StatelessWidget {
               _ProfileTile(
                 icon: Icons.calendar_today,
                 title: 'Üyelik / Paket Bilgilerim',
-                onTap: () => _navigate(
-                  context,
-                  title: 'Program',
-                  data: {
-                    'Günler': uye.gunler.isEmpty ? '-' : uye.gunler.join(', '),
-                    'Saatler':
-                        uye.saatler.isEmpty ? '-' : uye.saatler.join(', '),
-                  },
+                // -------------- YENİ: Liste sayfasına gider ------------------
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const UyeUrunListPage()),
                 ),
               ),
             ],
@@ -121,7 +116,10 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-/// Kafa bölümü – avatar + özet
+/* ------------------------------ (alt sınıflar) ----------------------------- */
+/* _ProfileHeader, _ProfileTile, _ProfileDetailPage, ProfileInfoRow            */
+/*            – Aşağıda değişiklik yok, TAMAMI olduğu gibi –                  */
+
 class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({required this.uye});
   final UyeModel uye;
@@ -169,7 +167,6 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-/// Ana listedeki tek satır
 class _ProfileTile extends StatelessWidget {
   const _ProfileTile({
     required this.icon,
@@ -192,7 +189,6 @@ class _ProfileTile extends StatelessWidget {
   }
 }
 
-/// Detay ekranı – key-value satır listesi
 class _ProfileDetailPage extends StatelessWidget {
   const _ProfileDetailPage({required this.title, required this.data});
 
@@ -217,7 +213,6 @@ class _ProfileDetailPage extends StatelessWidget {
   }
 }
 
-/// Ortak satır bileşeni (değişmedi)
 class ProfileInfoRow extends StatelessWidget {
   final String label;
   final String value;
