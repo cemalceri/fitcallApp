@@ -7,6 +7,7 @@ class AntrenorModel {
   final String? telefon;
   final String renk; // Hex renk
   final double ucretKatsayisi;
+  final String? profileImageUrl;
 
   // BaseAbstract alanları
   final bool isActive;
@@ -25,6 +26,7 @@ class AntrenorModel {
     this.telefon,
     required this.renk,
     required this.ucretKatsayisi,
+    this.profileImageUrl,
     required this.isActive,
     required this.isDeleted,
     this.ekleyen,
@@ -47,6 +49,7 @@ class AntrenorModel {
         ucretKatsayisi: (json['ucret_katsayisi'] is num)
             ? json['ucret_katsayisi'].toDouble()
             : 1.0,
+        profileImageUrl: json['profile_image_url'],
         isActive: json['is_active'] ?? true,
         isDeleted: json['is_deleted'] ?? false,
         ekleyen: json['ekleyen'],
@@ -64,6 +67,7 @@ class AntrenorModel {
         'telefon': telefon,
         'renk': renk,
         'ucret_katsayisi': ucretKatsayisi,
+        'profile_image_url': profileImageUrl,
         'is_active': isActive,
         'is_deleted': isDeleted,
         'ekleyen': ekleyen,
@@ -81,6 +85,7 @@ class AntrenorModel {
         telefon: null,
         renk: '#757575',
         ucretKatsayisi: 1.0,
+        profileImageUrl: null,
         isActive: true,
         isDeleted: false,
         ekleyen: null,

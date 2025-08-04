@@ -190,7 +190,14 @@ class _UyeHomePageState extends State<UyeHomePage> {
         width: 90,
         margin: const EdgeInsets.only(right: 8),
         decoration: BoxDecoration(
-            color: Colors.blue[50], borderRadius: BorderRadius.circular(12)),
+          color: day ==
+                  DateFormat('E', 'tr_TR')
+                      .format(DateTime.now())
+                      .substring(0, 3)
+              ? Colors.orange[100]
+              : Colors.blue[50],
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

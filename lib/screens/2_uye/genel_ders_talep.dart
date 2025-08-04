@@ -131,23 +131,26 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
 
   DropdownButtonFormField<int> _dropdownKort() => DropdownButtonFormField<int>(
         decoration: const InputDecoration(
-            labelText: 'Kort', border: OutlineInputBorder()),
+            labelText: 'Kort (opsiyonel)', border: OutlineInputBorder()),
         value: _selectedKortId,
-        items: _kortlar
-            .map((k) => DropdownMenuItem<int>(value: k.id, child: Text(k.adi)))
-            .toList(),
+        items: [
+          const DropdownMenuItem<int>(value: null, child: Text('Herhangi')),
+          ..._kortlar.map(
+              (k) => DropdownMenuItem<int>(value: k.id, child: Text(k.adi)))
+        ],
         onChanged: (v) => setState(() => _selectedKortId = v),
       );
 
   DropdownButtonFormField<int> _dropdownAntrenor() =>
       DropdownButtonFormField<int>(
         decoration: const InputDecoration(
-            labelText: 'Antrenör', border: OutlineInputBorder()),
+            labelText: 'Antrenör (opsiyonel)', border: OutlineInputBorder()),
         value: _selectedAntrenorId,
-        items: _antrenorler
-            .map((h) => DropdownMenuItem<int>(
-                value: h.id, child: Text('${h.adi} ${h.soyadi}')))
-            .toList(),
+        items: [
+          const DropdownMenuItem<int>(value: null, child: Text('Herhangi')),
+          ..._antrenorler.map((h) => DropdownMenuItem<int>(
+              value: h.id, child: Text('${h.adi} ${h.soyadi}')))
+        ],
         onChanged: (v) => setState(() => _selectedAntrenorId = v),
       );
 
@@ -210,11 +213,7 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
   /*                             Talep Gönderme                                 */
   /* -------------------------------------------------------------------------- */
   Future<void> _gonder() async {
-    if (_selectedKortId == null || _selectedAntrenorId == null) {
-      ShowMessage.error(context, 'Kort ve antrenör seçiniz');
-      return;
-    }
-
+    // En az bir saat seçili olmalı
     final Map<String, List<String>> saatJson = {};
     _secilenSaatler.forEach((gun, list) {
       if (list.isNotEmpty) {
@@ -235,11 +234,11 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
       return;
     }
 
-    final payload = {
-      'kort_id': _selectedKortId,
-      'antrenor_id': _selectedAntrenorId,
+    final payload = <String, dynamic>{
       'saatler': saatJson,
       'aciklama': _aciklamaCtrl.text,
+      if (_selectedKortId != null) 'kort_id': _selectedKortId,
+      if (_selectedAntrenorId != null) 'antrenor_id': _selectedAntrenorId,
     };
 
     try {
