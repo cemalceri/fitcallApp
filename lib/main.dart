@@ -13,6 +13,7 @@ void main() async {
   await Firebase.initializeApp();
   await initializeDateFormatting('tr', null);
   await NotificationService.instance.initialize();
+  NotificationService.instance.registerNavigatorKey(navigatorKey);
 
   /* → storage’taki pendingAction belleğe alınır */
   await PendingActionStore.instance.load();

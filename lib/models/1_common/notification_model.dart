@@ -1,61 +1,77 @@
 // lib/models/notification_model.dart
+// ignore_for_file: constant_identifier_names, unnecessary_this, use_if_null_to_convert_nulls_to_bools
 
 import 'package:flutter/material.dart';
 
-/// Django tarafındaki `NotificationType` enümlerinin Dart eşleniği.
+/// Django’daki `NotificationType` enum’unun Dart eşleniği.
 enum NotificationType {
-  doOnay, // Ders Onayı
-  gecikenOdeme, // Geciken Ödeme
-  paketBitiyor, // Paket Bitiyor
-  paketSuresiDoluyor, // Paket Süresi Doluyor
-  paketBitti, // Paket Bitti
-  telafiKullanildi, // Telafi Kullanıldı
-  telafiHakkiIadeEdildi, // Telafi Hakkı İade Edildi
-  dersIptalEdildi, // Ders İptal Edildi
+  DO, // Ders Onayı
+  GO, // Geciken Ödeme
+  PB, // Paket Bitiyor
+  PS, // Paket Süresi Doluyor
+  PBT, // Paket Bitti
+  TK, // Telafi Kullanıldı
+  THI, // Telafi Hakkı İade Edildi
+  DI, // Ders İptal Edildi
+  PSA, // Paket Satın Alındı
+  PHG, // Paket Hak Güncelleme
+  UT, // Üyelik Tanımlandı
 }
 
 extension _NotificationTypeExt on NotificationType {
   String get code {
     switch (this) {
-      case NotificationType.doOnay:
+      case NotificationType.DO:
         return 'DO';
-      case NotificationType.gecikenOdeme:
+      case NotificationType.GO:
         return 'GO';
-      case NotificationType.paketBitiyor:
+      case NotificationType.PB:
         return 'PB';
-      case NotificationType.paketSuresiDoluyor:
+      case NotificationType.PS:
         return 'PS';
-      case NotificationType.paketBitti:
+      case NotificationType.PBT:
         return 'PBT';
-      case NotificationType.telafiKullanildi:
+      case NotificationType.TK:
         return 'TK';
-      case NotificationType.telafiHakkiIadeEdildi:
+      case NotificationType.THI:
         return 'THI';
-      case NotificationType.dersIptalEdildi:
+      case NotificationType.DI:
         return 'DI';
+      case NotificationType.PSA:
+        return 'PSA';
+      case NotificationType.PHG:
+        return 'PHG';
+      case NotificationType.UT:
+        return 'UT';
     }
   }
 
   static NotificationType fromCode(String code) {
     switch (code) {
       case 'DO':
-        return NotificationType.doOnay;
+        return NotificationType.DO;
       case 'GO':
-        return NotificationType.gecikenOdeme;
+        return NotificationType.GO;
       case 'PB':
-        return NotificationType.paketBitiyor;
+        return NotificationType.PB;
       case 'PS':
-        return NotificationType.paketSuresiDoluyor;
+        return NotificationType.PS;
       case 'PBT':
-        return NotificationType.paketBitti;
+        return NotificationType.PBT;
       case 'TK':
-        return NotificationType.telafiKullanildi;
+        return NotificationType.TK;
       case 'THI':
-        return NotificationType.telafiHakkiIadeEdildi;
+        return NotificationType.THI;
       case 'DI':
-        return NotificationType.dersIptalEdildi;
+        return NotificationType.DI;
+      case 'PSA':
+        return NotificationType.PSA;
+      case 'PHG':
+        return NotificationType.PHG;
+      case 'UT':
+        return NotificationType.UT;
       default:
-        return NotificationType.doOnay; // varsayılan
+        throw ArgumentError('Unknown notification type code: $code');
     }
   }
 }
@@ -73,6 +89,12 @@ class NotificationModel {
   final DateTime timestamp;
   final bool read;
 
+  // ───── Yeni alanlar ─────
+  final String? modelName; // model_name
+  final String? modelOwnId; // model_own_id
+  final int? genericId; // generic_id
+  // ─────────────────────────
+
   const NotificationModel({
     required this.id,
     required this.recipient,
@@ -83,32 +105,37 @@ class NotificationModel {
     required this.type,
     required this.timestamp,
     required this.read,
+    this.modelName,
+    this.modelOwnId,
+    this.genericId,
   });
 
   /* ----------------------------- JSON ----------------------------- */
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
-    int? parseActor(dynamic value) {
+    int? tryParseInt(dynamic value) {
       if (value == null || (value is String && value.isEmpty)) return null;
       if (value is int) return value;
-      if (value is String) {
-        return int.tryParse(value); // "42" → 42, "john" → null
-      }
+      if (value is String) return int.tryParse(value);
       return null;
     }
 
     return NotificationModel(
       id: json['id'] as int,
       recipient: json['recipient'] as int,
-      actor: parseActor(json['actor']),
+      actor: tryParseInt(json['actor']),
       title: json['title'] as String,
       subject: json['subject'] as String,
       body: json['body'] as String? ?? '',
       type: _NotificationTypeExt.fromCode(json['notification_type'] as String),
       timestamp: DateTime.parse(json['timestamp'] as String),
       read: json['read'] as bool? ?? false,
+      modelName: json['model_name'] as String?,
+      modelOwnId: json['model_own_id']?.toString(),
+      genericId: tryParseInt(json['generic_id']),
     );
   }
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'recipient': recipient,
@@ -119,6 +146,9 @@ class NotificationModel {
         'notification_type': type.code,
         'timestamp': timestamp.toIso8601String(),
         'read': read,
+        'model_name': modelName,
+        'model_own_id': modelOwnId,
+        'generic_id': genericId,
       };
 
   /* --------------------------- Yardımcı --------------------------- */
@@ -136,6 +166,9 @@ class NotificationModel {
     NotificationType? type,
     DateTime? timestamp,
     bool? read,
+    String? modelName,
+    String? modelOwnId,
+    int? genericId,
   }) {
     return NotificationModel(
       id: id ?? this.id,
@@ -147,6 +180,9 @@ class NotificationModel {
       type: type ?? this.type,
       timestamp: timestamp ?? this.timestamp,
       read: read ?? this.read,
+      modelName: modelName ?? this.modelName,
+      modelOwnId: modelOwnId ?? this.modelOwnId,
+      genericId: genericId ?? this.genericId,
     );
   }
 }

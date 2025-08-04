@@ -1,3 +1,4 @@
+import 'package:fitcall/screens/1_common/yardim_page.dart';
 import 'package:fitcall/screens/2_uye/genel_ders_talep.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
 import 'package:flutter/material.dart';
@@ -44,6 +45,7 @@ enum SayfaAdi {
   yoneticiAnasayfa,
   dersTeyit,
   uyeGenelDersTalep,
+  yardim,
 }
 
 /* ------------------ 1) Enum -> String ------------------ */
@@ -66,6 +68,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
   SayfaAdi.dersTeyit: '/dersTeyit',
   SayfaAdi.uyeGenelDersTalep: '/uyeGenelDersTalep',
+  SayfaAdi.yardim: '/yardim',
 };
 
 /* ------------------ 2) String -> Widget ------------------ */
@@ -97,6 +100,7 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.bildirimler]!: (c) => NotificationPage(),
   routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiHomePage(),
   routeEnums[SayfaAdi.dersTeyit]!: (c) => const DersTeyitPage(),
+  routeEnums[SayfaAdi.yardim]!: (c) => const YardimPage(),
 };
 
 /* ------------------ 3) Public rotalar ------------------ */

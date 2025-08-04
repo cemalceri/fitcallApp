@@ -42,7 +42,11 @@ class _UyeHomePageState extends State<UyeHomePage> {
       'icon': Icons.qr_code,
       'text': 'QR Kod İle Giriş'
     },
-    {'name': 6, 'icon': Icons.help, 'text': 'Yardım'},
+    {
+      'name': routeEnums[SayfaAdi.yardim]!,
+      'icon': Icons.help,
+      'text': 'Yardım'
+    },
   ];
 
   /* ---------------- Haftalık Program State ---------------- */
@@ -50,7 +54,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
     for (var k = 1; k <= 7; k++) k: []
   };
   bool _loadingWeek = true;
-  EtkinlikModel? _nextLesson; // ← eklendi
+  EtkinlikModel? _nextLesson;
 
   @override
   void initState() {
@@ -63,13 +67,11 @@ class _UyeHomePageState extends State<UyeHomePage> {
     try {
       final list = await EtkinlikService.getirHaftalikDersBilgilerim();
 
-      // Haftanın derslerini grupla
       final tmp = {for (var k = 1; k <= 7; k++) k: <EtkinlikModel>[]};
       for (final e in list) {
         tmp[e.baslangicTarihSaat.weekday]!.add(e);
       }
 
-      // ▶︎ Şu andan sonraki en erken dersi bul
       final now = DateTime.now();
       final filtered =
           list.where((e) => e.baslangicTarihSaat.isAfter(now)).toList();
@@ -83,7 +85,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
         _haftalik
           ..clear()
           ..addAll(tmp);
-        _nextLesson = next; // ← artık tam “ilk gelecek” ders
+        _nextLesson = next;
         _loadingWeek = false;
       });
     } catch (e) {
@@ -99,7 +101,6 @@ class _UyeHomePageState extends State<UyeHomePage> {
     final tf = DateFormat('HH:mm');
     final df = DateFormat('d MMMM', 'tr_TR');
 
-    // Bir sonraki ders metni
     String nextLessonText;
     if (_nextLesson == null) {
       nextLessonText = 'Planlı ders bulunmuyor';
@@ -130,23 +131,13 @@ class _UyeHomePageState extends State<UyeHomePage> {
               crossAxisCount: 3,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              children: menuItems.map((item) {
-                return InkWell(
-                  onTap: () => Navigator.pushNamed(context, item['name']),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(item['icon'], size: 36, color: Colors.blueAccent),
-                      const SizedBox(height: 4),
-                      Text(item['text'], textAlign: TextAlign.center),
-                    ],
-                  ),
-                );
-              }).toList(),
+              children: menuItems.map(_buildMenuButton).toList(),
             ),
             const SizedBox(height: 24),
             Card(
               elevation: 4,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               child: ListTile(
                 leading: const Icon(Icons.calendar_today, color: Colors.blue),
                 title: const Text("Bir Sonraki Dersin"),
@@ -186,25 +177,73 @@ class _UyeHomePageState extends State<UyeHomePage> {
     );
   }
 
-  Widget _dayCard(String day, String activity) => Container(
-        width: 90,
-        margin: const EdgeInsets.only(right: 8),
-        decoration: BoxDecoration(
-          color: day ==
-                  DateFormat('E', 'tr_TR')
-                      .format(DateTime.now())
-                      .substring(0, 3)
-              ? Colors.orange[100]
-              : Colors.blue[50],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(day, style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(activity, textAlign: TextAlign.center),
-          ],
+  /* --------------------- Görsel iyileştirmeler --------------------- */
+  Widget _buildMenuButton(Map<String, dynamic> item) => Padding(
+        padding: const EdgeInsets.all(6),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => Navigator.pushNamed(context, item['name']),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4,
+                    offset: const Offset(0, 2))
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(item['icon'], size: 34, color: Colors.blueAccent),
+                const SizedBox(height: 6),
+                Text(item['text'],
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
         ),
       );
+
+  Widget _dayCard(String day, String activity) {
+    final todayCode =
+        DateFormat('E', 'tr_TR').format(DateTime.now()).substring(0, 3);
+    final isToday = day == todayCode;
+
+    final gradientColors = isToday
+        ? [Colors.orange[100]!, Colors.orange[200]!]
+        : [Colors.blue[50]!, Colors.blue[100]!];
+
+    return Container(
+      width: 90,
+      margin: const EdgeInsets.only(right: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black12, blurRadius: 4, offset: const Offset(0, 2))
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(day,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 8),
+          Text(activity,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 13)),
+        ],
+      ),
+    );
+  }
 }

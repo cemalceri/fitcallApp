@@ -1,4 +1,7 @@
 // lib/screens/1_common/1_notification/notification_page.dart
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/1_common/notification_model.dart';
 import 'package:fitcall/services/notification_service.dart';
 import 'package:flutter/material.dart';
@@ -191,19 +194,46 @@ class _NotificationPageState extends State<NotificationPage> {
                 ),
               )
             : null,
-        onTap: () async {
-          await showModalBottomSheet(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            builder: (_) => _NotificationDetailSheet(notification: notif),
-          );
-          _markNotificationRead(notif);
-        },
+        onTap: () => _onNotificationTap(notif),
       ),
     );
   }
+
+  /* -------------------- TAP LOGIC -------------------- */
+  Future<void> _onNotificationTap(NotificationModel notif) async {
+    // Ders teyit mi?
+    if (_isDersTeyit(notif)) {
+      await Navigator.pushNamed(
+        context,
+        routeEnums[SayfaAdi.dersTeyit]!,
+        arguments: {
+          'notification_id': notif.id,
+          'generic_id': notif.genericId, // uye_id
+          'model_own_id': notif.modelOwnId // etkinlik_id
+        },
+      );
+      _markNotificationRead(notif);
+      return;
+    }
+
+    // Normal bildirim → detay sheet
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => _NotificationDetailSheet(notification: notif),
+    );
+    _markNotificationRead(notif);
+  }
+
+  bool _isDersTeyit(NotificationModel n) {
+    return n.type == NotificationType.DO &&
+        n.modelName == 'EtkinlikModel' &&
+        n.modelOwnId != null;
+  }
+
+  /* -------------------- No Notifications -------------------- */
 
   Widget _buildNoNotifications() {
     return Center(
