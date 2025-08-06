@@ -97,7 +97,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
       final dateRange = _getUpcomingDateRange(upcomingFilter);
       try {
         var response = await http.post(
-          Uri.parse(getAntrenorDersProgrami),
+          Uri.parse(getAntrenorHaftalikEtkilikler),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',
@@ -135,7 +135,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
       final dateRange = _getPastDateRange(pastFilter);
       try {
         var response = await http.post(
-          Uri.parse(getAntrenorDersProgrami),
+          Uri.parse(getAntrenorHaftalikEtkilikler),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer $token',

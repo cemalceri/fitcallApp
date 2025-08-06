@@ -228,7 +228,7 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   bool _isDersTeyit(NotificationModel n) {
-    return n.type == NotificationType.DO &&
+    return n.type == NotificationType.DI &&
         n.modelName == 'EtkinlikModel' &&
         n.modelOwnId != null;
   }
