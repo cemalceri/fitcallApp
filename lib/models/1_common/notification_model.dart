@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 /// Django’daki `NotificationType` enum’unun Dart eşleniği.
 enum NotificationType {
-  DO, // Ders Onayı
+  DT, // Ders Teyidi
   GO, // Geciken Ödeme
   PB, // Paket Bitiyor
   PS, // Paket Süresi Doluyor
@@ -21,8 +21,8 @@ enum NotificationType {
 extension _NotificationTypeExt on NotificationType {
   String get code {
     switch (this) {
-      case NotificationType.DO:
-        return 'DO';
+      case NotificationType.DT:
+        return 'DT';
       case NotificationType.GO:
         return 'GO';
       case NotificationType.PB:
@@ -48,8 +48,8 @@ extension _NotificationTypeExt on NotificationType {
 
   static NotificationType fromCode(String code) {
     switch (code) {
-      case 'DO':
-        return NotificationType.DO;
+      case 'DT':
+        return NotificationType.DT;
       case 'GO':
         return NotificationType.GO;
       case 'PB':
