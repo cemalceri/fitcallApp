@@ -14,7 +14,6 @@ class ApiParsing {
     return fromJson((json as Map).cast<String, dynamic>());
   }
 
-  /// Liste parse: json(list) -> List<T>
   static List<T> parseList<T>(dynamic json, FromJsonObj<T> itemFromJson) {
     final list = (json as List);
     return list

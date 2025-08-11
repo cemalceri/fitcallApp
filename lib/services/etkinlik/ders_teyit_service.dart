@@ -4,7 +4,6 @@ import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
 class DersTeyitService {
-  /// Bildirimi ID ile getirir (ApiResult<NotificationModel>)
   static Future<ApiResult<NotificationModel>> getBildirim(String bildirimId) {
     return ApiClient.postParsed<NotificationModel>(
       getBildirimById,

@@ -1,88 +1,57 @@
 // ignore_for_file: use_build_context_synchronously
+import 'package:fitcall/services/navigation_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:fitcall/common/constants.dart';
-import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
-import 'package:fitcall/screens/1_common/1_notification/pending_action.dart';
-import 'package:fitcall/screens/1_common/1_notification/pending_action_store.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
-import 'package:fitcall/services/local/secure_storage_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
+import 'package:fitcall/services/local/secure_storage_service.dart';
 
-class ProfilSecPage extends StatelessWidget {
+class ProfilSecPage extends StatefulWidget {
   final List<KullaniciProfilModel> kullaniciProfilList;
   const ProfilSecPage(this.kullaniciProfilList, {super.key});
 
-  /* -------- Profil seçildi -------- */
-  Future<void> _onTap(BuildContext ctx, KullaniciProfilModel p) async {
-    Roller role;
+  @override
+  State<ProfilSecPage> createState() => _ProfilSecPageState();
+}
+
+class _ProfilSecPageState extends State<ProfilSecPage> {
+  bool _yonlendirildi = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_yonlendirildi && widget.kullaniciProfilList.length == 1) {
+      _yonlendirildi = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _profilSecildi(widget.kullaniciProfilList.first);
+      });
+    }
+  }
+
+  Future<void> _profilSecildi(KullaniciProfilModel p) async {
     try {
-      LoadingSpinner.show(ctx, message: 'Giriş yapılıyor...');
-      role = await AuthService.loginUser(p);
-    } on ApiException catch (e) {
-      ShowMessage.error(ctx, e.message);
-      return;
-    } finally {
-      LoadingSpinner.hide(ctx);
-    }
+      LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
+      final rol = await AuthService.loginUser(p);
 
-    final tkn = await SecureStorageService.getValue<String>('token');
-    if (tkn != null) await sendFCMDevice(tkn, isMainAccount: p.anaHesap);
-
-    await _redirect(ctx, role);
-  }
-
-  /* -------- Yönlendirme -------- */
-  Future<void> _redirect(BuildContext ctx, Roller role) async {
-    final pending = await PendingActionStore.instance.take();
-    if (pending != null) {
-      switch (pending.type) {
-        case PendingActionType.dersTeyit:
-          Navigator.pushNamedAndRemoveUntil(
-            ctx,
-            routeEnums[SayfaAdi.dersTeyit]!,
-            (_) => false,
-            arguments: pending.data,
-          );
-          return;
-        case PendingActionType.bildirimListe:
-          Navigator.pushNamedAndRemoveUntil(
-            ctx,
-            routeEnums[SayfaAdi.bildirimler]!,
-            (_) => false,
-          );
-          return;
+      final tkn = await SecureStorageService.getValue<String>('token');
+      if (tkn != null && tkn.isNotEmpty) {
+        await sendFCMDevice(tkn, isMainAccount: p.anaHesap);
       }
-    }
 
-    switch (role) {
-      case Roller.antrenor:
-        Navigator.pushNamedAndRemoveUntil(
-            ctx, routeEnums[SayfaAdi.antrenorAnasayfa]!, (_) => false);
-        break;
-      case Roller.yonetici:
-        Navigator.pushNamedAndRemoveUntil(
-            ctx, routeEnums[SayfaAdi.yoneticiAnasayfa]!, (_) => false);
-        break;
-      default:
-        Navigator.pushNamedAndRemoveUntil(
-            ctx, routeEnums[SayfaAdi.uyeAnasayfa]!, (_) => false);
+      if (!mounted) return;
+      await NavigationHelper.redirectAfterLogin(context, rol);
+    } on ApiException catch (e) {
+      ShowMessage.error(context, e.message);
+    } finally {
+      LoadingSpinner.hide(context);
     }
   }
 
-  /* ------------------- UI ------------------- */
   @override
   Widget build(BuildContext context) {
-    // Otomatik seç: tek profil varsa liste yerine direkt _onTap çağır
-    if (kullaniciProfilList.length == 1) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _onTap(context, kullaniciProfilList.first),
-      );
-    }
-
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
@@ -92,7 +61,7 @@ class ProfilSecPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: GridView.builder(
-          itemCount: kullaniciProfilList.length,
+          itemCount: widget.kullaniciProfilList.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             mainAxisSpacing: 24,
@@ -100,34 +69,30 @@ class ProfilSecPage extends StatelessWidget {
             childAspectRatio: 0.8,
           ),
           itemBuilder: (_, i) {
-            final p = kullaniciProfilList[i];
+            final p = widget.kullaniciProfilList[i];
             final ad = p.uye?.adi ?? p.antrenor?.adi ?? p.user.firstName;
             final soy = p.uye?.soyadi ?? p.antrenor?.soyadi ?? p.user.lastName;
             final tamAd = '$ad $soy';
 
             return InkWell(
               borderRadius: BorderRadius.circular(16),
-              onTap: () => _onTap(context, p),
+              onTap: () => _profilSecildi(p),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  /* -------- Avatar -------- */
                   Container(
                     width: 110,
                     height: 110,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFF4e54c8),
-                          Color(0xFF8f94fb),
-                        ],
+                        colors: [Color(0xFF4e54c8), Color(0xFF8f94fb)],
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(3), // Gradient çerçeve
+                      padding: const EdgeInsets.all(3),
                       child: CircleAvatar(
                         backgroundColor: Colors.white,
                         backgroundImage: p.uye?.profilFotografi != null
@@ -150,8 +115,6 @@ class ProfilSecPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-
-                  /* -------- İsim -------- */
                   Text(
                     tamAd,
                     textAlign: TextAlign.center,
@@ -160,8 +123,6 @@ class ProfilSecPage extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-
-                  /* -------- Profil Tipi Etiketi / Yer Tutucu -------- */
                   p.anaHesap
                       ? Container(
                           margin: const EdgeInsets.only(top: 6),
@@ -180,9 +141,7 @@ class ProfilSecPage extends StatelessWidget {
                             ),
                           ),
                         )
-                      : const SizedBox(
-                          height: 24, // Etiket yüksekliği kadar boşluk
-                        ),
+                      : const SizedBox(height: 24),
                 ],
               ),
             );

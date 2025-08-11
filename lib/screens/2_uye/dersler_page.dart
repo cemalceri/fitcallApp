@@ -2,23 +2,24 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
-import 'package:fitcall/common/api_urls.dart';
+import 'package:fitcall/models/dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_onay_model.dart';
 import 'package:fitcall/screens/2_uye/ders_talep_page.dart';
+import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 /* -------------------------------------------------------------------------- */
 /*                            Renk Sabitleri                                   */
 /* -------------------------------------------------------------------------- */
-const Color dersDoluRenk = Colors.grey; // Takvimdeki dolu ders
-const Color uygunSaatRenk = Colors.green; // Rezervasyon yapılabilir saat
+const Color dersDoluRenk = Colors.grey; // Dolu ders
+const Color uygunSaatRenk = Colors.green; // Rezervasyon yapılabilir
 const Color uygunOlmayanRenk = Colors.white; // Meşgul slot
 
 class DersListesiPage extends StatefulWidget {
@@ -28,16 +29,26 @@ class DersListesiPage extends StatefulWidget {
 }
 
 class _DersListesiPageState extends State<DersListesiPage> {
-  /* -------------------------------------------------------------------------- */
-  /*                             State değişkenleri                             */
-  /* -------------------------------------------------------------------------- */
-  EtkinlikDataSource _dataSource = EtkinlikDataSource(const []);
+  EtkinlikDataSource _dataSource =
+      EtkinlikDataSource(appts: const [], res: const []);
+  final List<Appointment> _tumRandevular = [];
   bool _isLoading = false;
 
   UyeModel? currentUye;
   final Map<int, EtkinlikOnayModel> _userOnaylari = {};
-  final Map<String, List<dynamic>> _slotAlternatifleri = {}; // cache
-  final Set<DateTime> _yuklenenHaftalar = {}; // aynı haftaya tekrar api atmasın
+  final Map<String, List<Map<String, dynamic>>> _slotAlternatifleri = {};
+  final Set<DateTime> _yuklenenHaftalar = {};
+
+  // ---- Filtre state ----
+  final Map<int, String> _hocaAdlari = {};
+  final Map<int, String> _kortAdlari = {};
+  int? _seciliHocaId;
+  int? _seciliKortId;
+  RangeValues _saatAralik = const RangeValues(7, 23);
+
+  // ---- Resource (Kort) yönetimi ----
+  final Map<String, CalendarResource> _resourceMap = {}; // id -> resource
+  List<CalendarResource> get _resources => _resourceMap.values.toList();
 
   @override
   void initState() {
@@ -50,6 +61,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
     currentUye = await AuthService.uyeBilgileriniGetir();
     final now = DateTime.now();
     await _loadWeek(_haftaBaslangic(now));
+    _applyFilters();
     setState(() => _isLoading = false);
   }
 
@@ -57,60 +69,80 @@ class _DersListesiPageState extends State<DersListesiPage> {
   /*                                API çağrısı                                 */
   /* -------------------------------------------------------------------------- */
   Future<void> _loadWeek(DateTime weekStart) async {
-    if (_yuklenenHaftalar.contains(weekStart)) return; // cache
+    if (_yuklenenHaftalar.contains(weekStart)) return;
     _yuklenenHaftalar.add(weekStart);
-
-    final token = await AuthService.getToken();
-    if (token == null) return;
 
     final weekEnd = weekStart.add(const Duration(days: 7));
     final nowPlus3h = DateTime.now().add(const Duration(hours: 3));
 
     try {
-      /* Dersler */
-      final dersRes = await http.post(Uri.parse(getDersProgrami),
-          headers: {'Authorization': 'Bearer $token'},
-          body: jsonEncode({
-            'start': weekStart.toIso8601String(),
-            'end': weekEnd.toIso8601String(),
-          }));
+      final r = await TakvimService.loadWeek(start: weekStart, end: weekEnd);
+      final WeekTakvimDataDto data =
+          r.data ?? WeekTakvimDataDto(dersler: [], mesgul: [], uygun: []);
 
-      final List<Appointment> appts = [..._dataSource.appointments ?? []];
+      // Dersler
+      final dersAppts = data.dersler.map(_dersToAppt).toList();
 
-      if (dersRes.statusCode == 200) {
-        final dersler = EtkinlikModel.fromJson(dersRes);
-        appts.addAll(dersler.map(_dersToAppt));
-      }
+      // Meşgul slotlar
+      final busyAppts = data.mesgul.map((s) {
+        final resId = _ensureKortResource(s.kortId, s.kortAdi);
+        return Appointment(
+          id: 'busy-${s.baslangic.toIso8601String()}',
+          startTime: s.baslangic,
+          endTime: s.bitis,
+          subject: 'Müsait değil',
+          resourceIds: [resId],
+          notes: jsonEncode({
+            'tip': 'busy',
+            'antrenor_id': s.antrenorId,
+            'antrenor_adi': s.antrenorAdi,
+            'kort_id': s.kortId,
+            'kort_adi': s.kortAdi,
+          }),
+          color: uygunOlmayanRenk,
+        );
+      });
 
-      /* Uygun / dolu slotlar */
-      final slotRes = await http.post(Uri.parse(getUygunSaatler),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'start': weekStart.toIso8601String(),
-            'end': weekEnd.toIso8601String(),
-          }));
+      // Uygun slotlar
+      final availableAppts =
+          data.uygun.where((s) => s.baslangic.isAfter(nowPlus3h)).map((s) {
+        final key = s.baslangic.toIso8601String();
+        final m = {
+          'baslangic_tarih_saat': s.baslangic.toIso8601String(),
+          'bitis_tarih_saat': s.bitis.toIso8601String(),
+          'antrenor_id': s.antrenorId,
+          'antrenor_adi': s.antrenorAdi,
+          'kort_id': s.kortId,
+          'kort_adi': s.kortAdi,
+        };
+        _slotAlternatifleri.putIfAbsent(key, () => []);
+        _slotAlternatifleri[key]!.add(m);
 
-      if (slotRes.statusCode == 200) {
-        final Map data = jsonDecode(slotRes.body);
+        final resId = _ensureKortResource(s.kortId, s.kortAdi);
+        return Appointment(
+          id: 'available-${s.baslangic.toIso8601String()}',
+          startTime: s.baslangic,
+          endTime: s.bitis,
+          subject: s.antrenorAdi != null && s.antrenorAdi!.isNotEmpty
+              ? 'Uygun • ${s.antrenorAdi}'
+              : 'Uygun',
+          resourceIds: [resId],
+          notes: jsonEncode({
+            'tip': 'available',
+            ...m,
+          }),
+          color: uygunSaatRenk.withAlpha((0.28 * 255).toInt()),
+        );
+      });
 
-        for (final s in data['busy']) {
-          appts.add(_busyToAppt(s));
-        }
+      _tumRandevular.addAll(dersAppts);
+      _tumRandevular.addAll(busyAppts);
+      _tumRandevular.addAll(availableAppts);
 
-        for (final s in data['available']) {
-          final bas = DateTime.parse(s['baslangic_tarih_saat']).toLocal();
-          if (bas.isBefore(nowPlus3h)) continue; // 3 saat kuralı
-          appts.add(_availableToAppt(s));
-          _slotAlternatifleri
-              .putIfAbsent(s['baslangic_tarih_saat'], () => [])
-              .add(s);
-        }
-      }
-
-      setState(() => _dataSource = EtkinlikDataSource(appts));
+      _yenileFiltreOpsiyonlari();
+      _applyFilters();
+    } on ApiException catch (e) {
+      ShowMessage.error(context, e.message);
     } catch (e) {
       ShowMessage.error(context, 'Takvim alınamadı: $e');
     }
@@ -123,33 +155,148 @@ class _DersListesiPageState extends State<DersListesiPage> {
       .subtract(Duration(days: d.weekday - 1))
       .copyWith(hour: 7, minute: 0, second: 0, millisecond: 0);
 
-  Appointment _dersToAppt(EtkinlikModel d) => Appointment(
-        id: d.id,
-        startTime: d.baslangicTarihSaat,
-        endTime: d.bitisTarihSaat,
-        subject: d.kortAdi,
-        notes: jsonEncode({...d.toJson(), 'tip': 'ders'}),
-        color: d.iptalMi ? uygunOlmayanRenk : dersDoluRenk,
+  // Kort için resource ID üret & kaydet
+  String _ensureKortResource(int? id, String? adi) {
+    final rid = 'k_${id ?? (adi ?? 'kort')}';
+    if (!_resourceMap.containsKey(rid)) {
+      final display = (adi?.trim().isNotEmpty ?? false)
+          ? adi!.trim()
+          : (id != null ? 'Kort #$id' : 'Kort');
+      _resourceMap[rid] = CalendarResource(
+        id: rid,
+        displayName: display,
       );
+    }
+    return rid;
+  }
 
-  Appointment _busyToAppt(dynamic s) => Appointment(
-        id: 'busy-${s['baslangic_tarih_saat']}',
-        startTime: DateTime.parse(s['baslangic_tarih_saat']).toLocal(),
-        endTime: DateTime.parse(s['bitis_tarih_saat']).toLocal(),
-        subject: '',
-        notes: jsonEncode({'tip': 'busy'}),
-        color: uygunOlmayanRenk,
-      );
+  Appointment _dersToAppt(EtkinlikModel d) {
+    final m = d.toJson();
+    final antrenorId = m['antrenor_id'] ?? m['antrenorId'] ?? m['coach_id'];
+    final kortId = m['kort_id'] ?? m['kortId'] ?? m['court_id'];
+    final antrenorAdi =
+        m['antrenor_adi'] ?? m['antrenorAdi'] ?? m['coach_name'];
+    final kortAdi =
+        m['kort_adi'] ?? m['kortAdi'] ?? m['court_name'] ?? d.kortAdi;
 
-  Appointment _availableToAppt(dynamic s) => Appointment(
-        id: 'available-${s['baslangic_tarih_saat']}',
-        startTime: DateTime.parse(s['baslangic_tarih_saat']).toLocal(),
-        endTime: DateTime.parse(s['bitis_tarih_saat']).toLocal(),
-        subject: '',
-        notes: jsonEncode(
-            {'tip': 'available', 'baslangic': s['baslangic_tarih_saat']}),
-        color: uygunSaatRenk.withAlpha((0.3 * 255).toInt()),
-      );
+    final resId = _ensureKortResource(
+      (kortId is int) ? kortId : int.tryParse('${kortId ?? ''}'),
+      (kortAdi is String) ? kortAdi : d.kortAdi,
+    );
+
+    return Appointment(
+      id: d.id,
+      startTime: d.baslangicTarihSaat,
+      endTime: d.bitisTarihSaat,
+      subject: (antrenorAdi?.toString().isNotEmpty ?? false)
+          ? 'Ders • ${antrenorAdi.toString()}'
+          : 'Ders',
+      resourceIds: [resId],
+      notes: jsonEncode({
+        ...m,
+        'tip': 'ders',
+        'antrenor_id': (antrenorId is int)
+            ? antrenorId
+            : int.tryParse('${antrenorId ?? ''}'),
+        'antrenor_adi': antrenorAdi,
+        'kort_id': (kortId is int) ? kortId : int.tryParse('${kortId ?? ''}'),
+        'kort_adi': kortAdi,
+      }),
+      color: d.iptalMi ? uygunOlmayanRenk : dersDoluRenk,
+    );
+  }
+
+  Map<String, dynamic> _safeNotes(Appointment a) {
+    try {
+      return (jsonDecode(a.notes ?? '{}') as Map).cast<String, dynamic>();
+    } catch (_) {
+      return const {};
+    }
+  }
+
+  int? _toInt(dynamic v) => (v is int) ? v : int.tryParse('$v');
+
+  /* ----------------------- Filtre yardımcıları ----------------------------- */
+  void _yenileFiltreOpsiyonlari() {
+    _hocaAdlari.clear();
+    _kortAdlari.clear();
+
+    for (final a in _tumRandevular) {
+      final n = _safeNotes(a);
+
+      final hId = _toInt(n['antrenor_id']);
+      final hAdRaw = (n['antrenor_adi']?.toString() ?? '').trim();
+      final hAd =
+          hAdRaw.isNotEmpty ? hAdRaw : (hId != null ? 'Hoca #$hId' : null);
+
+      final kId = _toInt(n['kort_id']);
+      final kAdRaw = (n['kort_adi']?.toString() ?? '').trim();
+      final kAd = kAdRaw.isNotEmpty ? kAdRaw : (a.subject.toString());
+
+      if (hId != null && (hAd?.isNotEmpty ?? false)) _hocaAdlari[hId] = hAd!;
+      if (kId != null && kAd.isNotEmpty) _kortAdlari[kId] = kAd;
+    }
+
+    if (_seciliHocaId != null && !_hocaAdlari.containsKey(_seciliHocaId!)) {
+      _seciliHocaId = null;
+    }
+    if (_seciliKortId != null && !_kortAdlari.containsKey(_seciliKortId!)) {
+      _seciliKortId = null;
+    }
+  }
+
+  void _applyFilters() {
+    final startH = _saatAralik.start.floor();
+    final endH = _saatAralik.end.ceil();
+
+    bool pass(Appointment a) {
+      final n = _safeNotes(a);
+      final hId = _toInt(n['antrenor_id']);
+      final kId = _toInt(n['kort_id']);
+
+      if (_seciliHocaId != null && hId != _seciliHocaId) return false;
+      if (_seciliKortId != null && kId != _seciliKortId) return false;
+
+      final sh = a.startTime.hour;
+      final eh = a.endTime.hour == 0 ? 24 : a.endTime.hour;
+      if (sh < startH || eh > endH) return false;
+
+      return true;
+    }
+
+    final filteredAppts = _tumRandevular.where(pass).toList();
+
+    // Görünür resource’ları da filtrele (sadece kullanılan kortlar)
+    final usedResIds = <String>{
+      for (final a in filteredAppts)
+        ...((a.resourceIds ?? []).map((e) => e.toString()))
+    };
+
+    final filteredResources =
+        _resources.where((r) => usedResIds.contains(r.id)).toList();
+
+    setState(() {
+      _dataSource =
+          EtkinlikDataSource(appts: filteredAppts, res: filteredResources);
+    });
+  }
+
+  void _temizleFiltre() {
+    setState(() {
+      _seciliHocaId = null;
+      _seciliKortId = null;
+      _saatAralik = const RangeValues(7, 23);
+    });
+    _applyFilters();
+  }
+
+  int _aktifFiltreSayisi() {
+    int c = 0;
+    if (_seciliHocaId != null) c++;
+    if (_seciliKortId != null) c++;
+    if (!(_saatAralik.start == 7 && _saatAralik.end == 23)) c++;
+    return c;
+  }
 
   /* -------------------------------------------------------------------------- */
   /*                                   UI                                       */
@@ -157,29 +304,198 @@ class _DersListesiPageState extends State<DersListesiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ders Takvimi')),
+      appBar: AppBar(
+        title: const Text('Ders Takvimi'),
+        actions: [
+          IconButton(
+            tooltip: 'Filtreleri Göster',
+            icon: const Icon(Icons.filter_alt_rounded),
+            onPressed: _openFilterSheet,
+          ),
+        ],
+      ),
+      floatingActionButton: _isLoading
+          ? null
+          : _FilterFab(
+              count: _aktifFiltreSayisi(),
+              onPressed: _openFilterSheet,
+            ),
       body: _isLoading
           ? const LoadingSpinnerWidget(message: 'Takvim yükleniyor...')
-          : Stack(
-              children: [
-                SfCalendar(
-                  view: CalendarView.week,
-                  dataSource: _dataSource,
-                  firstDayOfWeek: 1,
-                  timeSlotViewSettings: const TimeSlotViewSettings(
-                      startHour: 7,
-                      endHour: 23,
-                      timeInterval: Duration(minutes: 60)),
-                  onTap: _onTap,
-                  onViewChanged: (ViewChangedDetails d) async {
-                    if (d.visibleDates.isEmpty) return;
-                    final wkStart = _haftaBaslangic(d.visibleDates.first);
-                    await _loadWeek(wkStart);
-                  },
-                ),
-                const Positioned(right: 16, bottom: 16, child: _Legend()),
-              ],
+          : SfCalendar(
+              view: CalendarView.timelineWeek,
+              dataSource: _dataSource,
+              firstDayOfWeek: 1,
+              timeSlotViewSettings: const TimeSlotViewSettings(
+                startHour: 7,
+                endHour: 23,
+                timeInterval: Duration(minutes: 60),
+              ),
+              resourceViewSettings: const ResourceViewSettings(
+                showAvatar: false,
+                size: 84, // resource (kort) satır yüksekliği
+              ),
+              onTap: _onTap,
+              onViewChanged: (ViewChangedDetails d) async {
+                if (d.visibleDates.isEmpty) return;
+                final wkStart = _haftaBaslangic(d.visibleDates.first);
+                await _loadWeek(wkStart);
+              },
             ),
+    );
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                          Filtre Bottom Sheet (M3)                           */
+  /* -------------------------------------------------------------------------- */
+  Future<void> _openFilterSheet() async {
+    int? tempHoca = _seciliHocaId;
+    int? tempKort = _seciliKortId;
+    RangeValues tempSaat = _saatAralik;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setMState) {
+            final hocaItems = <DropdownMenuItem<int?>>[
+              const DropdownMenuItem(value: null, child: Text('Tüm Hocalar')),
+              ..._hocaAdlari.entries.map(
+                  (e) => DropdownMenuItem(value: e.key, child: Text(e.value))),
+            ];
+            final kortItems = <DropdownMenuItem<int?>>[
+              const DropdownMenuItem(value: null, child: Text('Tüm Kortlar')),
+              ..._kortAdlari.entries.map(
+                  (e) => DropdownMenuItem(value: e.key, child: Text(e.value))),
+            ];
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 8,
+                bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text('Filtreler',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w600)),
+                      ),
+                      TextButton.icon(
+                        onPressed: () {
+                          setMState(() {
+                            tempHoca = null;
+                            tempKort = null;
+                            tempSaat = const RangeValues(7, 23);
+                          });
+                        },
+                        icon: const Icon(Icons.restart_alt),
+                        label: const Text('Temizle'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<int?>(
+                          value: tempHoca,
+                          items: hocaItems,
+                          onChanged: (v) => setMState(() => tempHoca = v),
+                          decoration: const InputDecoration(
+                            labelText: 'Hoca',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: DropdownButtonFormField<int?>(
+                          value: tempKort,
+                          items: kortItems,
+                          onChanged: (v) => setMState(() => tempKort = v),
+                          decoration: const InputDecoration(
+                            labelText: 'Kort',
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Saat Aralığı',
+                        style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant)),
+                  ),
+                  RangeSlider(
+                    values: tempSaat,
+                    onChanged: (r) => setMState(() => tempSaat = r),
+                    min: 7,
+                    max: 23,
+                    divisions: 16,
+                    labels: RangeLabels(
+                      '${tempSaat.start.round()}:00',
+                      '${tempSaat.end.round()}:00',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Vazgeç'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _seciliHocaId = tempHoca;
+                              _seciliKortId = tempKort;
+                              _saatAralik = tempSaat;
+                            });
+                            _applyFilters();
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.check_circle),
+                          label: const Text('Uygula'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -187,37 +503,29 @@ class _DersListesiPageState extends State<DersListesiPage> {
   /*                                Tap handler                                 */
   /* -------------------------------------------------------------------------- */
   void _onTap(CalendarTapDetails d) async {
-    /* Hücre boş ise */
     if (d.targetElement == CalendarElement.calendarCell &&
         (d.appointments?.isEmpty ?? true)) {
+      // timeline boş slot – alternatifleri göster
       await _showBosSaatPopup(d.date!);
       return;
     }
 
     if (d.appointments?.isEmpty ?? true) return;
     final Appointment appt = d.appointments!.first;
-    Map note;
-    try {
-      note = jsonDecode(appt.notes ?? '{}');
-    } catch (_) {
-      return;
-    }
+    final note = _safeNotes(appt);
     final tip = note['tip'];
 
-    /* Uygun olmayan */
     if (tip == 'busy') {
       ShowMessage.error(context, 'Bu saat uygun değil.');
       return;
     }
 
-    /* Uygun saat tıklandıysa */
     if (tip == 'available') {
       final bas = DateTime.parse(note['baslangic']).toLocal();
       await _showBosSaatPopup(bas);
       return;
     }
 
-    /* Ders */
     if (tip != 'ders') return;
 
     final EtkinlikModel ders =
@@ -266,29 +574,33 @@ class _DersListesiPageState extends State<DersListesiPage> {
       return;
     }
 
-    final token = await AuthService.getToken();
-    if (token == null) return;
-
-    final key = slotStart.toUtc().toIso8601String();
-    List<dynamic> alternatifler = _slotAlternatifleri[key] ?? [];
+    final key = slotStart.toIso8601String();
+    List<Map<String, dynamic>> alternatifler = _slotAlternatifleri[key] ?? [];
 
     if (alternatifler.isEmpty) {
-      final res = await http.post(Uri.parse(getUygunSaatler),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json'
-          },
-          body: jsonEncode({
-            'start': slotStart.toIso8601String(),
-            'end': slotStart.add(const Duration(hours: 1)).toIso8601String(),
-          }));
-      if (res.statusCode == 200) {
-        final Map data = jsonDecode(utf8.decode(res.bodyBytes));
-        alternatifler = data['available']
-            .where((a) => DateTime.parse(a['baslangic_tarih_saat'])
-                .toLocal()
-                .isAfter(nowPlus3h))
+      try {
+        final rr = await TakvimService.getUygunSaatlerAralik(
+          start: slotStart,
+          end: slotStart.add(const Duration(hours: 1)),
+        );
+        final list = rr.data ?? [];
+        alternatifler = list
+            .where((a) => a.baslangic.isAfter(nowPlus3h))
+            .map((s) => {
+                  'baslangic_tarih_saat': s.baslangic.toIso8601String(),
+                  'bitis_tarih_saat': s.bitis.toIso8601String(),
+                  'antrenor_id': s.antrenorId,
+                  'antrenor_adi': s.antrenorAdi,
+                  'kort_id': s.kortId,
+                  'kort_adi': s.kortAdi,
+                })
             .toList();
+      } on ApiException catch (e) {
+        ShowMessage.error(context, e.message);
+        return;
+      } catch (e) {
+        ShowMessage.error(context, 'Hata: $e');
+        return;
       }
     }
 
@@ -310,7 +622,8 @@ class _DersListesiPageState extends State<DersListesiPage> {
           return ListTile(
             title: Text('${a['kort_adi']} – ${a['antrenor_adi']}'),
             subtitle: Text(
-                '${bas.hour.toString().padLeft(2, "0")}:00 – ${bit.hour.toString().padLeft(2, "0")}:00'),
+              '${bas.hour.toString().padLeft(2, "0")}:00 – ${bit.hour.toString().padLeft(2, "0")}:00',
+            ),
             onTap: () => Navigator.pop(context, a),
           );
         },
@@ -369,25 +682,16 @@ class _DersListesiPageState extends State<DersListesiPage> {
           ElevatedButton(
               child: const Text('Kaydet'),
               onPressed: () async {
-                final token = await AuthService.getToken();
-                if (token == null) return;
                 try {
-                  final r = await http.post(Uri.parse(setDersYapildiBilgisi),
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer $token'
-                      },
-                      body: jsonEncode({
-                        'ders_id': ders.id,
-                        'aciklama': ctrl.text,
-                        'tamamlandi': tamamlandi
-                      }));
-                  if (r.statusCode == 200) {
-                    onSaved(tamamlandi, ctrl.text);
-                    ShowMessage.success(context, 'Kaydedildi');
-                  } else {
-                    ShowMessage.error(context, 'Kaydedilemedi');
-                  }
+                  final r = await TakvimService.dersYapildiBilgisi(
+                    dersId: ders.id,
+                    tamamlandi: tamamlandi,
+                    aciklama: ctrl.text,
+                  );
+                  onSaved(tamamlandi, ctrl.text);
+                  ShowMessage.success(context, r.mesaj);
+                } on ApiException catch (e) {
+                  ShowMessage.error(context, e.message);
                 } catch (e) {
                   ShowMessage.error(context, 'Hata: $e');
                 }
@@ -429,30 +733,15 @@ class _DersListesiPageState extends State<DersListesiPage> {
           ElevatedButton(
             child: const Text('İptal Et'),
             onPressed: () async {
-              final token = await AuthService.getToken();
-              if (token == null) return;
-
               try {
-                final res = await http.post(Uri.parse(setUyeDersIptal),
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': 'Bearer $token'
-                    },
-                    body: jsonEncode(
-                        {'etkinlik_id': ders.id, 'aciklama': ctrl.text}));
-
-                if (res.statusCode == 200) {
-                  onCancelled();
-                  ShowMessage.success(
-                      context,
-                      jsonDecode(utf8.decode(res.bodyBytes))['message'] ??
-                          'İptal edildi');
-                } else {
-                  ShowMessage.error(
-                      context,
-                      jsonDecode(utf8.decode(res.bodyBytes))['message'] ??
-                          'İşlem yapılamadı');
-                }
+                final res = await TakvimService.uyeDersIptal(
+                  etkinlikId: ders.id,
+                  aciklama: ctrl.text,
+                );
+                onCancelled();
+                ShowMessage.success(context, res.mesaj);
+              } on ApiException catch (e) {
+                ShowMessage.error(context, e.message);
               } catch (e) {
                 ShowMessage.error(context, 'Hata: $e');
               }
@@ -466,16 +755,18 @@ class _DersListesiPageState extends State<DersListesiPage> {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                       CalendarDataSource Wrapper                           */
+/*                       CalendarDataSource Wrapper                            */
 /* -------------------------------------------------------------------------- */
 class EtkinlikDataSource extends CalendarDataSource {
-  EtkinlikDataSource(List<Appointment> src) {
-    appointments = src;
+  EtkinlikDataSource(
+      {required List<Appointment> appts, required List<CalendarResource> res}) {
+    appointments = appts;
+    resources = res;
   }
 }
 
 /* -------------------------------------------------------------------------- */
-/*                               Legend Widget                                */
+/*                               Legend Widget                                 */
 /* -------------------------------------------------------------------------- */
 class _Legend extends StatelessWidget {
   const _Legend();
@@ -507,4 +798,46 @@ class _Legend extends StatelessWidget {
           ]),
         ),
       );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Filtre FAB                                     */
+/* -------------------------------------------------------------------------- */
+class _FilterFab extends StatelessWidget {
+  const _FilterFab({required this.count, required this.onPressed});
+  final int count;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final fab = FloatingActionButton.extended(
+      onPressed: onPressed,
+      icon: const Icon(Icons.filter_alt),
+      label: const Text('Filtreleri Göster'),
+    );
+
+    if (count <= 0) return fab;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        fab,
+        Positioned(
+          right: -2,
+          top: -2,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.error,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '$count',
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

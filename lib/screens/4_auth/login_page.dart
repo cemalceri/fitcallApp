@@ -1,49 +1,72 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
+import 'package:fitcall/screens/4_auth/profil_sec.dart';
+import 'package:fitcall/services/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/common/constants.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
-import 'package:fitcall/screens/1_common/1_notification/pending_action.dart';
-import 'package:fitcall/screens/1_common/1_notification/pending_action_store.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
-import 'package:fitcall/services/local/secure_storage_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
-import 'profil_sec.dart';
+import 'package:fitcall/services/local/secure_storage_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _username = TextEditingController();
-  final _password = TextEditingController();
+  final _kullaniciAdiCtrl = TextEditingController();
+  final _sifreCtrl = TextEditingController();
   bool _beniHatirla = false;
+  bool _yukleniyor = false;
 
   @override
   void initState() {
     super.initState();
-    _loadRememberFlag();
-    _checkAutoLogin();
+    _beniHatirlaYukle();
+    _otomatikGirisKontrol();
   }
 
-  Future<void> _loadRememberFlag() async {
+  @override
+  void dispose() {
+    _kullaniciAdiCtrl.dispose();
+    _sifreCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _beniHatirlaYukle() async {
     final r = await SecureStorageService.getValue<bool>('beni_hatirla');
-    if (r != null) setState(() => _beniHatirla = r);
+    if (mounted) setState(() => _beniHatirla = r ?? false);
   }
 
-  /* ====================== OTOMATİK GİRİŞ ====================== */
-  Future<void> _checkAutoLogin() async {
-    if (await SecureStorageService.getValue<bool>('beni_hatirla') != true) {
+  Future<void> _otomatikGirisKontrol() async {
+    final hatirla = await AuthService.beniHatirlaIsaretlenmisMi();
+    if (hatirla != true) return;
+
+    // Geçerli token varsa direkt yönlendir
+    if (await AuthService.tokenGecerliMi()) {
+      final s = await SecureStorageService.getValue<String>('gruplar');
+      List<dynamic> gruplar = [];
+      if (s != null) gruplar = jsonDecode(s);
+
+      Roller role = Roller.uye;
+      if (gruplar.contains(Roller.antrenor.name))
+        role = Roller.antrenor;
+      else if (gruplar.contains(Roller.yonetici.name))
+        role = Roller.yonetici;
+      else if (gruplar.contains(Roller.cafe.name)) role = Roller.cafe;
+
+      if (!mounted) return;
+      await NavigationHelper.redirectAfterLogin(context, role);
       return;
     }
 
+    // Token yoksa profil üzerinden devam
     final jsonStr =
         await SecureStorageService.getValue<String>('kullanici_profiller');
     if (jsonStr == null) return;
@@ -54,114 +77,76 @@ class _LoginPageState extends State<LoginPage> {
         .toList();
 
     if (profiles.length > 1) {
-      // Çoklu profil --> seçim ekranı
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-            builder: (_) => ProfilSecPage(
-                  profiles,
-                )),
+        MaterialPageRoute(builder: (_) => ProfilSecPage(profiles)),
       );
       return;
     }
 
-    // Tek profil --> doğrudan login
-    await _loginAndNavigate(profiles.first);
+    await _profilIleGiris(profiles.first);
   }
 
-  /* ====================== MANUEL GİRİŞ ====================== */
-  Future<void> _onLoginPressed() async {
-    final u = _username.text.trim();
-    final p = _password.text;
+  Future<void> _girisButonunaBasildi() async {
+    if (_yukleniyor) return;
+    final u = _kullaniciAdiCtrl.text.trim();
+    final p = _sifreCtrl.text;
     if (u.isEmpty || p.isEmpty) {
       ShowMessage.error(context, 'Kullanıcı adı / şifre boş olamaz');
       return;
     }
 
-    final profiles =
-        await AuthService.fetchMyMembers(u, p).catchError((err) async {
-      ShowMessage.error(
-          context, err is ApiException ? err.message : 'Bilinmeyen hata: $err');
-      return null;
-    });
-    if (profiles == null || profiles.isEmpty) {
-      ShowMessage.error(context, 'Profil bulunamadı.');
-      return;
-    }
+    setState(() => _yukleniyor = true);
+    try {
+      final profiller = await AuthService.fetchMyMembers(u, p);
+      if (profiller.isEmpty) {
+        ShowMessage.error(context, 'Profil bulunamadı.');
+        return;
+      }
 
-    await SecureStorageService.setValue<String>(
-      'kullanici_profiller',
-      jsonEncode(
-        profiles.map((e) => e.toJson()).toList(), // ← .toList() eklendi
-      ),
-    );
-    if (profiles.length == 1) {
-      await _loginAndNavigate(profiles.first);
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (_) => ProfilSecPage(
-                  profiles,
-                )),
+      await SecureStorageService.setValue<String>(
+        'kullanici_profiller',
+        jsonEncode(profiller.map((e) => e.toJson()).toList()),
       );
+
+      if (profiller.length == 1) {
+        await _profilIleGiris(profiller.first);
+      } else {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
+        );
+      }
+    } on ApiException catch (e) {
+      ShowMessage.error(context, e.message);
+    } catch (e) {
+      ShowMessage.error(context, 'Bilinmeyen hata: $e');
+    } finally {
+      if (mounted) setState(() => _yukleniyor = false);
     }
   }
 
-  /* ====================== PROFİL İLE LOGIN ====================== */
-  Future<void> _loginAndNavigate(KullaniciProfilModel profil) async {
-    Roller role;
+  Future<void> _profilIleGiris(KullaniciProfilModel profil) async {
     try {
       LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
-      role = await AuthService.loginUser(profil); // token yazar
+      final rol = await AuthService.loginUser(profil);
+
+      final tkn = await SecureStorageService.getValue<String>('token');
+      if (tkn != null && tkn.isNotEmpty) {
+        await sendFCMDevice(tkn, isMainAccount: profil.anaHesap);
+      }
+
+      if (!mounted) return;
+      await NavigationHelper.redirectAfterLogin(context, rol);
     } on ApiException catch (e) {
       ShowMessage.error(context, e.message);
-      return;
     } finally {
       LoadingSpinner.hide(context);
     }
-
-    final tkn = await SecureStorageService.getValue<String>('token');
-    if (tkn != null) await sendFCMDevice(tkn, isMainAccount: profil.anaHesap);
-
-    await _navigateAfterLogin(role);
   }
 
-  /* ====================== ORTAK YÖNLENDİRME ====================== */
-  Future<void> _navigateAfterLogin(Roller role) async {
-    // a) pendingAction
-    final p = await PendingActionStore.instance.take();
-    if (p != null) {
-      switch (p.type) {
-        case PendingActionType.dersTeyit:
-          Navigator.pushNamedAndRemoveUntil(
-              context, routeEnums[SayfaAdi.dersTeyit]!, (_) => false,
-              arguments: p.data);
-          return;
-        case PendingActionType.bildirimListe:
-          Navigator.pushNamedAndRemoveUntil(
-              context, routeEnums[SayfaAdi.bildirimler]!, (_) => false);
-          return;
-      }
-    }
-
-    // b) rol ana sayfası
-    switch (role) {
-      case Roller.antrenor:
-        Navigator.pushNamedAndRemoveUntil(
-            context, routeEnums[SayfaAdi.antrenorAnasayfa]!, (_) => false);
-        break;
-      case Roller.yonetici:
-        Navigator.pushNamedAndRemoveUntil(
-            context, routeEnums[SayfaAdi.yoneticiAnasayfa]!, (_) => false);
-        break;
-      default:
-        Navigator.pushNamedAndRemoveUntil(
-            context, routeEnums[SayfaAdi.uyeAnasayfa]!, (_) => false);
-    }
-  }
-
-  /* ------------------ UI (değişmedi) ------------------ */
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -172,11 +157,11 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _header(),
-                _inputField(),
-                _rememberMeCheckbox(),
-                _forgotPassword(),
-                _signup(),
+                _baslik(),
+                _girdiAlani(),
+                _beniHatirlaKutusu(),
+                _sifremiUnuttum(),
+                _kayitOl(),
               ],
             ),
           ),
@@ -185,8 +170,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  /* ----- UI bileşenleri (AYNEN KALDI) ----- */
-  Widget _header() => Column(
+  Widget _baslik() => Column(
         children: [
           Image.asset('assets/images/logo.png', width: 200, height: 200),
           const Text("Hoşgeldiniz",
@@ -195,11 +179,11 @@ class _LoginPageState extends State<LoginPage> {
         ],
       );
 
-  Widget _inputField() => Column(
+  Widget _girdiAlani() => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextField(
-            controller: _username,
+            controller: _kullaniciAdiCtrl,
             decoration: InputDecoration(
               hintText: "Kullanıcı Adı",
               border: OutlineInputBorder(
@@ -214,7 +198,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const SizedBox(height: 10),
           TextField(
-            controller: _password,
+            controller: _sifreCtrl,
             decoration: InputDecoration(
               hintText: "Şifre",
               border: OutlineInputBorder(
@@ -230,38 +214,38 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const SizedBox(height: 10),
           ElevatedButton(
-            onPressed: _onLoginPressed,
+            onPressed: _yukleniyor ? null : _girisButonunaBasildi,
             style: ElevatedButton.styleFrom(
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            child: const Text("Giriş", style: TextStyle(fontSize: 20)),
+            child: Text(
+              _yukleniyor ? "Bekleyin..." : "Giriş",
+              style: const TextStyle(fontSize: 20),
+            ),
           ),
         ],
       );
 
-  Widget _rememberMeCheckbox() => Row(
+  Widget _beniHatirlaKutusu() => Row(
         children: [
           Checkbox(
             value: _beniHatirla,
-            onChanged: (value) {
-              setState(() {
-                _beniHatirla = value ?? false;
-                SecureStorageService.setValue<bool>(
-                    'beni_hatirla', _beniHatirla);
-              });
+            onChanged: (v) {
+              setState(() => _beniHatirla = v ?? false);
+              SecureStorageService.setValue<bool>('beni_hatirla', _beniHatirla);
             },
           ),
           const Text("Beni Hatırla"),
         ],
       );
 
-  Widget _forgotPassword() => TextButton(
+  Widget _sifremiUnuttum() => TextButton(
         onPressed: () {},
         child: const Text("Şifremi unuttum!"),
       );
 
-  Widget _signup() => Row(
+  Widget _kayitOl() => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text("Hesabın yok mu? "),

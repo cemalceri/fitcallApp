@@ -10,16 +10,22 @@ class ApiClient {
   static const _defaultTimeout = Duration(seconds: 15);
 
   /* ---------------- Low-level JSON (varsa eski çağrılar için) ---------------- */
-  static Future<dynamic> postJson(String url, Map<String, dynamic> body,
-      {Map<String, String>? headers, Duration? timeout}) async {
+  static Future<dynamic> postJson(
+    String url,
+    Map<String, dynamic> body, {
+    Map<String, String>? headers,
+    Duration? timeout,
+  }) async {
     try {
       final res = await http
-          .post(Uri.parse(url),
-              headers: {
-                'Content-Type': 'application/json',
-                if (headers != null) ...headers,
-              },
-              body: jsonEncode(body))
+          .post(
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/json',
+              if (headers != null) ...headers,
+            },
+            body: jsonEncode(body),
+          )
           .timeout(timeout ?? _defaultTimeout);
 
       final status = res.statusCode;
@@ -54,8 +60,11 @@ class ApiClient {
     }
   }
 
-  static Future<dynamic> getJson(String url,
-      {Map<String, String>? headers, Duration? timeout}) async {
+  static Future<dynamic> getJson(
+    String url, {
+    Map<String, String>? headers,
+    Duration? timeout,
+  }) async {
     try {
       final res = await http
           .get(Uri.parse(url), headers: headers)
@@ -98,20 +107,50 @@ class ApiClient {
     dynamic data = j;
 
     if (j is Map) {
-      if (j['message'] is String)
+      if (j['message'] is String) {
         mesaj = j['message'] as String;
-      else if (j['detail'] is String) mesaj = j['detail'] as String;
-
-      // data sargısı varsa onu esas al
+      } else if (j['detail'] is String) {
+        mesaj = j['detail'] as String;
+      }
       if (j.containsKey('data')) data = j['data'];
     }
     return (mesaj, data);
   }
 
+  /// Gelen json’u parser’a uygun hale getirir:
+  /// - Map => Map<String, dynamic>
+  /// - List<Map> => List<Map<String, dynamic>>
+  /// - Diğer türler => olduğu gibi
+  static dynamic _normalizeJson(dynamic dataJson) {
+    if (dataJson is Map) {
+      return Map<String, dynamic>.from(dataJson);
+    }
+    if (dataJson is List) {
+      return dataJson
+          .map((e) => e is Map ? Map<String, dynamic>.from(e) : e)
+          .toList();
+    }
+    return dataJson; // primitive / null
+  }
+
   static ApiResult<T> _okResult<T>(String text, FromJsonAny<T> parser) {
-    final decoded = text.isEmpty ? null : jsonDecode(text);
+    if (text.isEmpty) {
+      return ApiResult<T>(mesaj: 'Boş yanıt döndü', data: null);
+    }
+
+    final decoded = jsonDecode(text);
     final (mesaj, dataJson) = _extractMsgAndData(decoded);
-    final T? parsed = (dataJson == null) ? null : parser(dataJson);
+    final safeData = _normalizeJson(dataJson);
+
+    T? parsed;
+    try {
+      parsed = (safeData == null) ? null : parser(safeData);
+    } catch (e) {
+      // Parser tarafında tip uyuşmazlığı olursa buraya düşer
+      throw ApiException(
+          'PARSE_ERROR', 'Veri çözümleme sırasında hata oluştu: $e');
+    }
+
     return ApiResult<T>(mesaj: mesaj, data: parsed);
   }
 
@@ -141,12 +180,14 @@ class ApiClient {
   }) async {
     try {
       final res = await http
-          .post(Uri.parse(url),
-              headers: {
-                'Content-Type': 'application/json',
-                if (headers != null) ...headers,
-              },
-              body: jsonEncode(body))
+          .post(
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/json',
+              if (headers != null) ...headers,
+            },
+            body: jsonEncode(body),
+          )
           .timeout(timeout ?? _defaultTimeout);
 
       final status = res.statusCode;
