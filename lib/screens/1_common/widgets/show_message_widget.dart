@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-enum NotificationType { success, error }
+enum NotificationType { success, error, warning }
 
 class ShowMessage {
   /// Başarı bildirimi (yeşil, başparmak ikonu)
@@ -36,6 +36,22 @@ class ShowMessage {
     );
   }
 
+  /// Uyarı bildirimi (sarı, ünlem ikonu)
+  static Future<void> warning(
+    BuildContext context,
+    String message, {
+    Duration duration = const Duration(seconds: 3),
+  }) async {
+    if (!Navigator.of(context).mounted) return;
+    return _showOverlay(
+      context: context,
+      message: message,
+      backgroundColor: Colors.orange.shade800,
+      icon: Icons.warning_amber_rounded,
+      duration: duration,
+    );
+  }
+
   /// Ortak Overlay fonksiyonu
   static Future<void> _showOverlay({
     required BuildContext context,
@@ -44,11 +60,9 @@ class ShowMessage {
     required IconData icon,
     required Duration duration,
   }) async {
-    // Eğer context artık geçerli değilse çık
     if (!context.mounted) return;
     final overlay = Overlay.of(context, rootOverlay: true);
 
-    // Positioned kullanarak overlay'i ekranın üstünde sabit bir konuma yerleştiriyoruz.
     final overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
         top: MediaQuery.of(context).padding.top + 16,
@@ -87,13 +101,8 @@ class ShowMessage {
       ),
     );
 
-    // Overlay'e ekle (bu işlem sayfanın layout'unu değiştirmez)
     overlay.insert(overlayEntry);
-
-    // Belirli süre bekle
     await Future.delayed(duration);
-
-    // Süre dolduktan sonra context hala geçerliyse overlay'i kaldır
     overlayEntry.remove();
   }
 }

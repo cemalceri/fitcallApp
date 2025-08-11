@@ -1,41 +1,45 @@
-String loginUrl = "https://binay.fit/api/getToken";
-String createToken = "https://binay.fit/api/createToken";
-String getOdemeBilgileri = "https://binay.fit/api/getAidatOdemeGecmisi";
-String getDersProgrami = "https://binay.fit/api/getUyeDersProgrami";
-String uyeKaydet = 'https://binay.fit/api/uyeKaydet';
-String setDersYapildiBilgisi = 'https://binay.fit/api/setDersYapildiBilgisi';
-String qrInOrOut = 'https://binay.fit/api/qrInOrOut';
+String loginUrl = "https://www.binay.fit/api/getToken";
+String createToken = "https://www.binay.fit/api/createToken";
+String getOdemeBilgileri = "https://www.binay.fit/api/getAidatOdemeGecmisi";
+String getDersProgrami = "https://www.binay.fit/api/getUyeDersProgrami";
+String uyeKaydet = 'https://www.binay.fit/api/uyeKaydet';
+String setDersYapildiBilgisi =
+    'https://www.binay.fit/api/setDersYapildiBilgisi';
+String qrInOrOut = 'https://www.binay.fit/api/qrInOrOut';
 String getAntrenorHaftalikEtkilikler =
-    'https://binay.fit/api/getAntrenorHaftalikEtkilikler';
+    'https://www.binay.fit/api/getAntrenorHaftalikEtkilikler';
 String antrenorDersYapildiDurumu =
-    'https://binay.fit/api/antrenorDersYapildiDurumu';
-String getAntrenorOgrenciler = 'https://binay.fit/api/getAntrenorOgrenciler';
-String cihazKaydetGuncelle = 'https://binay.fit/api/cihazKaydetGuncelle';
-String getGaleriImages = 'https://binay.fit/api/getGaleriImages';
-String getDuyurular = 'https://binay.fit/api/getDuyurular';
-String dersTalebiOlustur = 'https://binay.fit/api/dersTalebiOlustur';
-String getUyedersTalepListesi = 'https://binay.fit/api/getUyedersTalepListesi';
-String silUyedersTalebi = 'https://binay.fit/api/silUyedersTalebi';
-String getUygunSaatler = 'https://binay.fit/api/getUygunSaatler';
-String setQRKodBilgisi = 'https://binay.fit/api/setQRKodBilgisi';
-String getQRKodBilgisi = 'https://binay.fit/api/getQRKodBilgisi';
-String getNotifications = 'https://binay.fit/api/getNotifications';
-String getMyMembers = 'https://binay.fit/api/getMyMembers';
-String setUyeDersIptal = 'https://binay.fit/api/setUyeDersIptal';
-String getMuhasebeOzet = 'https://binay.fit/api/getMuhasebeOzet';
-String getParaHareketi = 'https://binay.fit/api/getParaHareketi';
-String getAidatOdemeGecmisi = 'https://binay.fit/api/getAidatOdemeGecmisi';
-String setDersTeyit = 'https://binay.fit/api/setDersTeyit';
-String getBildirimById = 'https://binay.fit/api/getBildirimById';
-String setDersTalep = 'https://binay.fit/api/setDersTalep';
-String setGenelDersTalep = 'https://binay.fit/api/setGenelDersTalep';
-String getKortveAntrenorList = 'https://binay.fit/api/getKortveAntrenorList';
-String setNotificationsRead = 'https://binay.fit/api/setNotificationsRead';
+    'https://www.binay.fit/api/antrenorDersYapildiDurumu';
+String getAntrenorOgrenciler =
+    'https://www.binay.fit/api/getAntrenorOgrenciler';
+String cihazKaydetGuncelle = 'https://www.binay.fit/api/cihazKaydetGuncelle';
+String getGaleriImages = 'https://www.binay.fit/api/getGaleriImages';
+String getDuyurular = 'https://www.binay.fit/api/getDuyurular';
+String dersTalebiOlustur = 'https://www.binay.fit/api/dersTalebiOlustur';
+String getUyedersTalepListesi =
+    'https://www.binay.fit/api/getUyedersTalepListesi';
+String silUyedersTalebi = 'https://www.binay.fit/api/silUyedersTalebi';
+String getUygunSaatler = 'https://www.binay.fit/api/getUygunSaatler';
+String setQRKodBilgisi = 'https://www.binay.fit/api/setQRKodBilgisi';
+String getQRKodBilgisi = 'https://www.binay.fit/api/getQRKodBilgisi';
+String getNotifications = 'https://www.binay.fit/api/getNotifications';
+String getMyMembers = 'https://www.binay.fit/api/getMyMembers';
+String setUyeDersIptal = 'https://www.binay.fit/api/setUyeDersIptal';
+String getMuhasebeOzet = 'https://www.binay.fit/api/getMuhasebeOzet';
+String getParaHareketi = 'https://www.binay.fit/api/getParaHareketi';
+String getAidatOdemeGecmisi = 'https://www.binay.fit/api/getAidatOdemeGecmisi';
+String setDersTeyit = 'https://www.binay.fit/api/setDersTeyit';
+String getBildirimById = 'https://www.binay.fit/api/getBildirimById';
+String setDersTalep = 'https://www.binay.fit/api/setDersTalep';
+String setGenelDersTalep = 'https://www.binay.fit/api/setGenelDersTalep';
+String getKortveAntrenorList =
+    'https://www.binay.fit/api/getKortveAntrenorList';
+String setNotificationsRead = 'https://www.binay.fit/api/setNotificationsRead';
 String getUnreadNotificationCount =
-    'https://binay.fit/api/getUnreadNotificationCount';
-String getUyeUrunList = 'https://binay.fit/api/getUyeUrunList';
+    'https://www.binay.fit/api/getUnreadNotificationCount';
+String getUyeUrunList = 'https://www.binay.fit/api/getUyeUrunList';
 String getHaftalikDersBilgilerim =
-    'https://binay.fit/api/getHaftalikDersBilgilerim';
+    'https://www.binay.fit/api/getHaftalikDersBilgilerim';
 
 // String getMyMembers = 'http://10.0.2.2:8000/api/getMyMembers';
 // String createToken = 'http://10.0.2.2:8000/api/createToken'; // (bearer token)

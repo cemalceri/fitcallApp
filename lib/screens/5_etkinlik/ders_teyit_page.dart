@@ -1,19 +1,17 @@
 // ignore_for_file: use_build_context_synchronously
-import 'dart:convert';
-import 'package:fitcall/models/1_common/notification_model.dart';
+import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-
-import 'package:fitcall/common/api_urls.dart'; // setDersTeyit, getBildirimById
+import 'package:fitcall/models/1_common/notification_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 
 class DersTeyitPage extends StatefulWidget {
-  /// Route ile `arguments` olarak gönderilen map alınır.
-  ///   {
-  ///     "notification_id": 123,
-  ///     "generic_id": "45",     // uye_id
-  ///     "model_own_id": "78"    // etkinlik_id
-  ///   }
+  /// Route ile `arguments` olarak gönderilen map:
+  /// {
+  ///   "notification_id": 123,
+  ///   "generic_id": "45",     // uye_id
+  ///   "model_own_id": "78"    // etkinlik_id
+  /// }
   const DersTeyitPage({super.key, this.data});
   final Map<String, dynamic>? data;
 
@@ -31,7 +29,6 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
   bool _posting = false; // evet/hayır gönderiliyor
   bool _cevapVerildi = false;
 
-  /* -------- arguments hem ctor’dan hem ModalRoute’tan alınabilir -------- */
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -45,64 +42,59 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
     _fetchBildirim();
   }
 
-  /* ---------------- Bildirimi getir ---------------- */
   Future<void> _fetchBildirim() async {
     if (_bildirimId.isEmpty) {
       ShowMessage.error(context, 'Bildirim bilgisi eksik.');
       Navigator.pop(context);
       return;
     }
-
     try {
-      final res = await http
-          .post(Uri.parse(getBildirimById),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({'bildirim_id': _bildirimId}))
-          .timeout(const Duration(seconds: 15));
-
-      if (res.statusCode == 200) {
-        final j = jsonDecode(utf8.decode(res.bodyBytes));
-        _bildirim = NotificationModel.fromJson(j);
-      } else {
-        ShowMessage.error(context, 'Bildirim alınamadı (${res.statusCode}).');
-      }
+      final r = await DersTeyitService.getBildirim(_bildirimId);
+      setState(() => _bildirim = r.data);
+    } on ApiException catch (e) {
+      ShowMessage.error(context, e.message);
+      Navigator.pop(context);
     } catch (e) {
       ShowMessage.error(context, 'Sunucu hatası: $e');
+      Navigator.pop(context);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
-  /* ---------------- Cevap gönder ---------------- */
   Future<void> _submit(bool durum) async {
     if (_posting) return;
     setState(() => _posting = true);
 
     try {
-      final res = await http
-          .post(Uri.parse(setDersTeyit),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({
-                'uye_id': _uyeId,
-                'etkinlik_id': _etkinlikId,
-                'durum': durum,
-              }))
-          .timeout(const Duration(seconds: 15));
-
-      if (res.statusCode == 200) {
-        setState(() => _cevapVerildi = true);
-        ShowMessage.success(context, 'Cevabınız kaydedildi');
+      final r = await DersTeyitService.setDersTeyitBilgisi(
+        uyeId: _uyeId,
+        etkinlikId: _etkinlikId,
+        durum: durum,
+      );
+      setState(() => _cevapVerildi = true);
+      ShowMessage.success(context, r.mesaj); // backend mesajı öncelikli
+    } on ApiException catch (e) {
+      if (e.code == 'TEYIT_DEGISTIRME_YASAK' || e.statusCode == 409) {
+        ShowMessage.warning(
+          context,
+          e.message.isNotEmpty
+              ? e.message
+              : 'Daha önce verdiğiniz karar değiştirilemez. Lütfen kulüp ile iletişime geçiniz.',
+        );
+      } else if (e.code == 'TIMEOUT') {
+        ShowMessage.error(context, 'Zaman aşımı. Lütfen tekrar deneyiniz.');
       } else {
-        ShowMessage.error(context, 'İşlem başarısız (${res.statusCode})');
+        ShowMessage.error(
+            context, e.message.isNotEmpty ? e.message : 'İşlem başarısız.');
       }
-    } catch (_) {
-      ShowMessage.error(context, 'İşlem sırasında hata oluştu');
+    } catch (e) {
+      ShowMessage.error(context, 'İşlem sırasında hata oluştu: $e');
     } finally {
       if (mounted) setState(() => _posting = false);
     }
   }
 
-  /* ---------------- UI ---------------- */
   @override
   Widget build(BuildContext context) {
     final soru = _bildirim?.body ?? 'Derse katılacak mısınız?';
@@ -139,7 +131,13 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
                             ],
                           )
                   else
-                    const Icon(Icons.done, size: 48, color: Colors.green),
+                    const Column(
+                      children: [
+                        Icon(Icons.done, size: 48, color: Colors.green),
+                        SizedBox(height: 8),
+                        Text('Cevabınız alındı. Teşekkürler.'),
+                      ],
+                    ),
                 ],
               ),
       ),

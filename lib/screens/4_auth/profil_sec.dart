@@ -8,9 +8,9 @@ import 'package:fitcall/screens/1_common/1_notification/pending_action_store.dar
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
-import 'package:fitcall/services/auth_service.dart';
-import 'package:fitcall/services/secure_storage_service.dart';
-import 'package:fitcall/services/fcm_service.dart';
+import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/local/secure_storage_service.dart';
+import 'package:fitcall/services/core/fcm_service.dart';
 
 class ProfilSecPage extends StatelessWidget {
   final List<KullaniciProfilModel> kullaniciProfilList;

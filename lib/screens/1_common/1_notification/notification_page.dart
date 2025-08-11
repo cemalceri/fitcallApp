@@ -3,7 +3,7 @@
 
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/1_common/notification_model.dart';
-import 'package:fitcall/services/notification_service.dart';
+import 'package:fitcall/services/core/notification_service.dart';
 import 'package:flutter/material.dart';
 
 /// ─────────────────────────────────────────────────────────────────────────

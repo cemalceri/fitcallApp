@@ -1,7 +1,7 @@
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/2_uye/uye_urun_list_page.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
-import 'package:fitcall/services/auth_service.dart';
+import 'package:fitcall/services/core/auth_service.dart';
 import 'package:flutter/material.dart';
 
 /// Ana “Profil” ekranı – ayarlar menüsü stili (deep-link)

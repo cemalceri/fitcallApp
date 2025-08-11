@@ -15,7 +15,7 @@ import 'package:fitcall/models/4_auth/group_model.dart';
 import 'package:fitcall/models/4_auth/user_model.dart';
 import 'package:fitcall/models/4_auth/token_model.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
-import 'package:fitcall/services/secure_storage_service.dart';
+import 'package:fitcall/services/local/secure_storage_service.dart';
 
 class AuthService {
   /// Token hâlâ geçerli mi?

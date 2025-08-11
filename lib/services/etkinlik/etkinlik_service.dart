@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
-import 'package:fitcall/services/auth_service.dart';
+import 'package:fitcall/services/core/auth_service.dart';
 import 'package:http/http.dart' as http;
 
 class EtkinlikService {

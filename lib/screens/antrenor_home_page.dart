@@ -2,9 +2,9 @@ import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
-import 'package:fitcall/services/auth_service.dart';
+import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/etkinlik/etkinlik_service.dart';
-import 'package:fitcall/services/notification_service.dart';
+import 'package:fitcall/services/core/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 

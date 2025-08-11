@@ -2,7 +2,7 @@ import 'package:fitcall/screens/1_common/yardim_page.dart';
 import 'package:fitcall/screens/2_uye/genel_ders_talep.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
 import 'package:flutter/material.dart';
-import 'package:fitcall/services/auth_service.dart';
+import 'package:fitcall/services/core/auth_service.dart';
 
 /* ------------------ Ekranlar ------------------ */
 import 'package:fitcall/screens/4_auth/login_page.dart';

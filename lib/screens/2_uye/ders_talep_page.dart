@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
-import 'package:fitcall/services/auth_service.dart';
+import 'package:fitcall/services/core/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 

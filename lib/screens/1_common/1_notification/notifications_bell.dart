@@ -1,6 +1,6 @@
 import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
 import 'package:flutter/material.dart';
-import 'package:fitcall/services/notification_service.dart';
+import 'package:fitcall/services/core/notification_service.dart';
 
 class NotificationsBell extends StatelessWidget {
   const NotificationsBell({super.key});
