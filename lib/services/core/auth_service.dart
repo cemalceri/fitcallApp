@@ -27,6 +27,7 @@ class AuthService {
         j,
         (m) => KullaniciProfilModel.fromJson(m),
       ),
+      auth: false,
     );
     return res.data ?? <KullaniciProfilModel>[];
   }
@@ -54,6 +55,7 @@ class AuthService {
       createToken,
       payload,
       (j) => TokenModel.fromMap(j),
+      auth: false,
     );
 
     final token = res.data;

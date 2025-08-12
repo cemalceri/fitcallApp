@@ -135,10 +135,7 @@ class _LoginPageState extends State<LoginPage> {
       LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
       final rol = await AuthService.loginUser(profil);
 
-      final tkn = await SecureStorageService.getValue<String>('token');
-      if (tkn != null && tkn.isNotEmpty) {
-        await sendFCMDevice(tkn, isMainAccount: profil.anaHesap);
-      }
+      await sendFCMDevice(isMainAccount: profil.anaHesap);
 
       if (!mounted) return;
       await NavigationHelper.redirectAfterLogin(context, rol);

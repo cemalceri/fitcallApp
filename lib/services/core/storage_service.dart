@@ -33,6 +33,7 @@ class StorageService {
   static Future<GroupModel?> groupBilgileriniGetir() async {
     final s = await SecureStorageService.getValue<String>('gruplar');
     if (s == null) return null;
+
     final parsed = json.decode(s);
     if (parsed is List && parsed.isNotEmpty) {
       return GroupModel.fromJson(parsed.first);

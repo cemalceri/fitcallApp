@@ -8,10 +8,8 @@ import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_exception.dart';
 
 /// Cihazı kaydeder/günceller.
-/// [bearerToken]: Yetkilendirme token’ı.
 /// [isMainAccount]: Giriş yapan kullanıcının bu üyenin ana hesabı olup olmadığı.
-Future<void> sendFCMDevice(String bearerToken,
-    {required bool isMainAccount}) async {
+Future<void> sendFCMDevice({required bool isMainAccount}) async {
   // 1) FCM token’ı al
   String? fcmToken = await FirebaseMessaging.instance.getToken();
   if (fcmToken == null) {

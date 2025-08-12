@@ -241,15 +241,6 @@ class _DersListesiPageState extends State<DersListesiPage> {
     setState(() => _dataSource = EtkinlikDataSource(filtered));
   }
 
-  void _temizleFiltre() {
-    setState(() {
-      _seciliHocaId = null;
-      _seciliKortId = null;
-      _saatAralik = const RangeValues(7, 23);
-    });
-    _applyFilters();
-  }
-
   int _aktifFiltreSayisi() {
     int c = 0;
     if (_seciliHocaId != null) c++;

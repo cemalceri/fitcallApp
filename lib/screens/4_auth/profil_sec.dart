@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
@@ -35,11 +34,7 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     try {
       LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
       final rol = await AuthService.loginUser(p);
-
-      final tkn = await SecureStorageService.getValue<String>('token');
-      if (tkn != null && tkn.isNotEmpty) {
-        await sendFCMDevice(tkn, isMainAccount: p.anaHesap);
-      }
+      await sendFCMDevice(isMainAccount: p.anaHesap);
 
       if (!mounted) return;
       await NavigationHelper.redirectAfterLogin(context, rol);

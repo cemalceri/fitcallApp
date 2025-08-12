@@ -29,9 +29,6 @@ class _MuhasebePageState extends State<MuhasebePage> {
     try {
       final res = await MuhasebeService.fetch();
       _rows = res.data ?? [];
-      if (res.mesaj.isNotEmpty && mounted) {
-        ShowMessage.warning(context, res.mesaj);
-      }
     } on ApiException catch (e) {
       if (mounted) {
         ShowMessage.error(context, e.message);

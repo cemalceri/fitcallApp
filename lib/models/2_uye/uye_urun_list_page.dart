@@ -1,14 +1,9 @@
-import 'dart:convert';
-
-import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/1_common/uye_urun_model.dart';
-import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/services/urun/urun_api_service.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-
-/// API endpoint sabiti – mevcut `getKortveAntrenorList` tanımının yapıldığı
-/// dosyayla aynı dosyaya eklediğinizden emin olun.
+import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 
 class UyeUrunListPage extends StatefulWidget {
   const UyeUrunListPage({super.key});
@@ -27,20 +22,17 @@ class _UyeUrunListPageState extends State<UyeUrunListPage> {
   }
 
   Future<List<UyeUrunModel>> _fetchUrunler() async {
-    final token = await StorageService.getToken();
-    final res = await http.post(
-      Uri.parse(getUyeUrunList),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({}), // filtre yok
-    );
-
-    if (res.statusCode == 200) {
-      return UyeUrunModel.fromJsonResponse(utf8.decode(res.bodyBytes));
-    } else {
-      throw Exception('Liste alınamadı (${res.statusCode})');
+    try {
+      final res = await UyeUrunApiService.fetchList();
+      return res.data ?? [];
+    } on ApiException catch (e) {
+      if (mounted) {
+        ShowMessage.error(context, e.message);
+      }
+      if (mounted) {
+        ShowMessage.error(context, 'Ürün listesi alınamadı: $e');
+      }
+      return [];
     }
   }
 

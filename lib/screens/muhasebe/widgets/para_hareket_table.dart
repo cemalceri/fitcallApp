@@ -1,5 +1,4 @@
 // lib/screens/muhasebe/widgets/para_hareket_table.dart
-// Kart tabanlı, açıklama tamamen görünen liste.
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

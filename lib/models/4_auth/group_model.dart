@@ -11,20 +11,24 @@ class GroupModel {
     required this.permissions,
   });
 
-  factory GroupModel.fromJson(Map<String, dynamic> json) {
+  factory GroupModel.fromJson(dynamic json) {
+    if (json is String) {
+      try {
+        return GroupModel(id: 0, name: json, permissions: []);
+      } catch (_) {
+        throw ArgumentError('Geçersiz JSON formatı: $json');
+      }
+    }
+    if (json is! Map) {
+      throw ArgumentError(
+          'GroupModel.fromJson Map veya String bekler, ${json.runtimeType} geldi');
+    }
+
     return GroupModel(
-      id: json['id'],
-      name: json['name'],
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
       permissions: List<String>.from(json['permissions'] ?? []),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'permissions': permissions,
-    };
   }
 
   /// Gelen JSON string doğrudan bir liste (array) içeriyorsa:

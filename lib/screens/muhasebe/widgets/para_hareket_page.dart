@@ -1,35 +1,7 @@
-// lib/screens/muhasebe/para_hareket_page.dart
-
-import 'dart:convert';
-import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/services/muhasebe/para_hareket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/6_muhasebe/para_hareket_model.dart';
 import 'package:fitcall/screens/muhasebe/widgets/para_hareket_table.dart';
-import 'package:http/http.dart' as http;
-import 'package:fitcall/common/api_urls.dart';
-
-/* -------------------------------------------------------------------------- */
-/*                       SERVICE – tek period para hareketi                   */
-/* -------------------------------------------------------------------------- */
-class ParaHareketService {
-  static Future<List<ParaHareketModel>> fetchForPeriod(int yil, int ay) async {
-    final token = await StorageService.getToken();
-    final res = await http.post(
-      Uri.parse(getParaHareketi),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'yil': yil, 'ay': ay}),
-    );
-    if (res.statusCode == 200) {
-      return ParaHareketModel.listFromResponse(
-        utf8.decode(res.bodyBytes),
-      );
-    }
-    throw Exception('Bakiye hareketleri alınamadı');
-  }
-}
 
 /* -------------------------------------------------------------------------- */
 /*                              PAGE                                          */
@@ -49,7 +21,8 @@ class _ParaHareketPageState extends State<ParaHareketPage> {
   @override
   void initState() {
     super.initState();
-    _future = ParaHareketService.fetchForPeriod(widget.yil, widget.ay);
+    _future = ParaHareketService.fetchForPeriod(widget.yil, widget.ay)
+        .then((result) => result.data ?? []);
   }
 
   @override

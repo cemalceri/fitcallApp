@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 /// ÜyeUrunModel – Django ‹UyeUrunModel› eşlemesi
 class UyeUrunModel {
   /* -------------------------------------------------------------------------- */
@@ -37,7 +35,7 @@ class UyeUrunModel {
   /* -------------------------------------------------------------------------- */
   /*                              JSON → Model                                  */
   /* -------------------------------------------------------------------------- */
-  factory UyeUrunModel.fromMap(Map<String, dynamic> j) {
+  factory UyeUrunModel.fromJson(Map<String, dynamic> j) {
     DateTime? d(String? v) =>
         (v == null || v.isEmpty) ? null : DateTime.parse(v);
 
@@ -52,11 +50,5 @@ class UyeUrunModel {
       bitis: d(j['bitis']),
       aktifMi: j['aktif_mi'] ?? true,
     );
-  }
-
-  /* ----------------------- HTTP cevabından liste üretir --------------------- */
-  static List<UyeUrunModel> fromJsonResponse(String bodyBytes) {
-    final raw = json.decode(bodyBytes) as List<dynamic>;
-    return raw.map((e) => UyeUrunModel.fromMap(e)).toList();
   }
 }

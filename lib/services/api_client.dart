@@ -16,8 +16,10 @@ class ApiClient {
     final base = <String, String>{'Content-Type': 'application/json'};
     if (auth) {
       final token = await StorageService.getToken();
-      if (token != null && headers != null) {
+      if (token != null) {
         base['Authorization'] = 'Bearer $token';
+      }
+      if (headers != null) {
         base.addAll(headers);
       }
     }
@@ -202,7 +204,7 @@ class ApiClient {
 
       final status = res.statusCode;
       final text = utf8.decode(res.bodyBytes);
-      if (status >= 200 && status < 300) {
+      if (status == 200) {
         return _okResult<T>(text, parser);
       }
       _throwWithBody(status, text);
