@@ -3,6 +3,8 @@
 
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/1_common/notification_model.dart';
+import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
+import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/notification_service.dart';
 import 'package:flutter/material.dart';
 
@@ -27,26 +29,44 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   /* -------------------- API -------------------- */
-
   Future<List<NotificationModel>> _fetchNotifications() async {
     setState(() => _isLoading = true);
-    final list = await NotificationService.fetchNotifications(context);
-    setState(() {
-      _notifications = list;
-      _isLoading = false;
-    });
-    return list;
+    try {
+      final res = await NotificationService.fetchNotifications(
+          context); // ApiResult<List<NotificationModel>>
+      final list = res.data ?? <NotificationModel>[];
+      setState(() {
+        _notifications = list;
+        _isLoading = false;
+      });
+      return list;
+    } on ApiException catch (e) {
+      setState(() => _isLoading = false);
+      ShowMessage.error(context, e.message);
+      return <NotificationModel>[];
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ShowMessage.error(context, 'Bildirimler alınamadı: $e');
+      return <NotificationModel>[];
+    }
   }
 
   Future<void> _markNotificationRead(NotificationModel notif) async {
     if (!notif.isUnread) return;
-    final ok =
-        await NotificationService.markNotificationsRead(context, [notif.id]);
-    if (ok) {
-      setState(() {
-        final idx = _notifications.indexWhere((n) => n.id == notif.id);
-        if (idx != -1) _notifications[idx] = notif.copyWith(read: true);
-      });
+    try {
+      final res = await NotificationService.markNotificationsRead(
+          context, [notif.id]); // ApiResult<bool>
+      final ok = res.data == true;
+      if (ok) {
+        setState(() {
+          final idx = _notifications.indexWhere((n) => n.id == notif.id);
+          if (idx != -1) _notifications[idx] = notif.copyWith(read: true);
+        });
+      }
+    } on ApiException catch (e) {
+      ShowMessage.error(context, e.message);
+    } catch (e) {
+      ShowMessage.error(context, 'Bildirim güncellenemedi: $e');
     }
   }
 
@@ -55,15 +75,23 @@ class _NotificationPageState extends State<NotificationPage> {
         _notifications.where((n) => n.isUnread).map((e) => e.id).toList();
     if (ids.isEmpty) return;
     setState(() => _isLoading = true);
-    final ok = await NotificationService.markNotificationsRead(context, ids);
-    if (ok) {
+    try {
+      final res = await NotificationService.markNotificationsRead(
+          context, ids); // ApiResult<bool>
+      final ok = res.data == true;
       setState(() {
-        _notifications =
-            _notifications.map((e) => e.copyWith(read: true)).toList();
+        if (ok) {
+          _notifications =
+              _notifications.map((e) => e.copyWith(read: true)).toList();
+        }
         _isLoading = false;
       });
-    } else {
+    } on ApiException catch (e) {
       setState(() => _isLoading = false);
+      ShowMessage.error(context, e.message);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ShowMessage.error(context, 'Bildirim durumu güncellenemedi: $e');
     }
   }
 

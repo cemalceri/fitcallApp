@@ -60,7 +60,9 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
 
   Future<void> _fetchWeek() async {
     try {
-      final list = await EtkinlikService.getirAntrenorHaftalikDersBilgilerim();
+      final result =
+          await EtkinlikService.getirAntrenorHaftalikDersBilgilerim();
+      final list = result.data ?? [];
 
       final tmp = {for (var k = 1; k <= 7; k++) k: <EtkinlikModel>[]};
       for (final e in list) {

@@ -4,9 +4,7 @@ import 'package:fitcall/models/dtos/mesgul_slot_dto.dart';
 import 'package:fitcall/models/dtos/uygun_slot_dto.dart';
 import 'package:fitcall/models/dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/services/api_client.dart';
-import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/api_result.dart';
-import 'package:fitcall/services/core/auth_service.dart';
 
 class TakvimService {
   /// Haftalık takvim verileri: dersler + uygun/meşgul slotlar
@@ -14,26 +12,21 @@ class TakvimService {
     required DateTime start,
     required DateTime end,
   }) async {
-    final token = await AuthService.getToken();
-    if (token == null) throw ApiException('TOKEN_ERROR', 'Oturum bulunamadı.');
-    final headers = {'Authorization': 'Bearer $token'};
-
     // 1) Dersler
     final dersRes = await ApiClient.postParsed<List<EtkinlikModel>>(
       getDersProgrami,
       {'start': start.toIso8601String(), 'end': end.toIso8601String()},
-      (json) => (json as List)
-          .map((e) => EtkinlikModel.fromMap((e as Map).cast<String, dynamic>()))
-          .toList(),
-      headers: headers,
+      (json) => ApiParsing.parseList<EtkinlikModel>(
+        json,
+        (m) => EtkinlikModel.fromMap(m),
+      ),
     );
 
-    // 2) Uygun / meşgul
+    // 2) Uygun / meşgul slotlar
     final slotRes = await ApiClient.postParsed<Map<String, dynamic>>(
       getUygunSaatler,
       {'start': start.toIso8601String(), 'end': end.toIso8601String()},
       (json) => (json as Map).cast<String, dynamic>(),
-      headers: headers,
     );
 
     final busy = ((slotRes.data?['busy'] ?? []) as List)
@@ -50,24 +43,21 @@ class TakvimService {
       uygun: available,
     );
 
-    final mesaj = (dersRes.mesaj.isNotEmpty ? dersRes.mesaj : slotRes.mesaj);
+    final mesaj = dersRes.mesaj.isNotEmpty ? dersRes.mesaj : slotRes.mesaj;
     return ApiResult<WeekTakvimDataDto>(mesaj: mesaj, data: dto);
   }
 
+  /// Belirli tarih aralığında uygun saatleri döner
   static Future<ApiResult<List<UygunSlotDto>>> getUygunSaatlerAralik({
     required DateTime start,
     required DateTime end,
   }) async {
-    final token = await AuthService.getToken();
-    if (token == null) throw ApiException('TOKEN_ERROR', 'Oturum bulunamadı.');
-    final headers = {'Authorization': 'Bearer $token'};
-
     final r = await ApiClient.postParsed<Map<String, dynamic>>(
       getUygunSaatler,
       {'start': start.toIso8601String(), 'end': end.toIso8601String()},
       (json) => (json as Map).cast<String, dynamic>(),
-      headers: headers,
     );
+
     final list = (r.data?['available'] ?? []) as List;
     final parsed = list
         .map((e) => UygunSlotDto.fromJson((e as Map).cast<String, dynamic>()))
@@ -80,14 +70,11 @@ class TakvimService {
   static Future<ApiResult<Map<String, dynamic>>> uyeDersIptal({
     required int etkinlikId,
     String? aciklama,
-  }) async {
-    final token = await AuthService.getToken();
-    if (token == null) throw ApiException('TOKEN_ERROR', 'Oturum bulunamadı.');
+  }) {
     return ApiClient.postParsed<Map<String, dynamic>>(
       setUyeDersIptal,
       {'etkinlik_id': etkinlikId, 'aciklama': aciklama ?? ''},
       (json) => (json as Map).cast<String, dynamic>(),
-      headers: {'Authorization': 'Bearer $token'},
     );
   }
 
@@ -96,14 +83,11 @@ class TakvimService {
     required int dersId,
     required bool tamamlandi,
     required String aciklama,
-  }) async {
-    final token = await AuthService.getToken();
-    if (token == null) throw ApiException('TOKEN_ERROR', 'Oturum bulunamadı.');
+  }) {
     return ApiClient.postParsed<Map<String, dynamic>>(
       setDersYapildiBilgisi,
       {'ders_id': dersId, 'aciklama': aciklama, 'tamamlandi': tamamlandi},
       (json) => (json as Map).cast<String, dynamic>(),
-      headers: {'Authorization': 'Bearer $token'},
     );
   }
 }

@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
-import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -32,7 +32,7 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
       isLoading = true;
     });
 
-    var token = await AuthService.getToken();
+    var token = await StorageService.getToken();
     try {
       var response = await http.post(
         Uri.parse(getAntrenorOgrenciler),

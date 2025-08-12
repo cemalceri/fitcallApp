@@ -1,13 +1,28 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:async';
 import 'dart:convert';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:http/http.dart' as http;
-
 import 'api_exception.dart';
 import 'api_result.dart';
 
 class ApiClient {
   static const _defaultTimeout = Duration(seconds: 15);
+
+  static Future<Map<String, String>> _buildHeaders({
+    Map<String, String>? headers,
+    bool auth = false,
+  }) async {
+    final base = <String, String>{'Content-Type': 'application/json'};
+    if (auth) {
+      final token = await StorageService.getToken();
+      if (token != null && headers != null) {
+        base['Authorization'] = 'Bearer $token';
+        base.addAll(headers);
+      }
+    }
+    return base;
+  }
 
   /* ---------------- Low-level JSON (varsa eski çağrılar için) ---------------- */
   static Future<dynamic> postJson(
@@ -117,10 +132,6 @@ class ApiClient {
     return (mesaj, data);
   }
 
-  /// Gelen json’u parser’a uygun hale getirir:
-  /// - Map => Map<String, dynamic>
-  /// - List<Map> => List<Map<String, dynamic>>
-  /// - Diğer türler => olduğu gibi
   static dynamic _normalizeJson(dynamic dataJson) {
     if (dataJson is Map) {
       return Map<String, dynamic>.from(dataJson);
@@ -177,15 +188,14 @@ class ApiClient {
     FromJsonAny<T> parser, {
     Map<String, String>? headers,
     Duration? timeout,
+    bool auth = true,
   }) async {
     try {
+      final effHeaders = await _buildHeaders(headers: headers, auth: auth);
       final res = await http
           .post(
             Uri.parse(url),
-            headers: {
-              'Content-Type': 'application/json',
-              if (headers != null) ...headers,
-            },
+            headers: effHeaders,
             body: jsonEncode(body),
           )
           .timeout(timeout ?? _defaultTimeout);
@@ -210,10 +220,12 @@ class ApiClient {
     FromJsonAny<T> parser, {
     Map<String, String>? headers,
     Duration? timeout,
+    bool auth = false,
   }) async {
     try {
+      final effHeaders = await _buildHeaders(headers: headers, auth: auth);
       final res = await http
-          .get(Uri.parse(url), headers: headers)
+          .get(Uri.parse(url), headers: effHeaders)
           .timeout(timeout ?? _defaultTimeout);
       final status = res.statusCode;
       final text = utf8.decode(res.bodyBytes);

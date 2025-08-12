@@ -1,6 +1,6 @@
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
-import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 
 class AntrenorProfilPage extends StatelessWidget {
@@ -9,7 +9,7 @@ class AntrenorProfilPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<AntrenorModel?>(
-      future: AuthService.antrenorBilgileriniGetir(),
+      future: StorageService.antrenorBilgileriniGetir(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());

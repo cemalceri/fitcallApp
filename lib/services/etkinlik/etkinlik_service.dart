@@ -1,45 +1,30 @@
-import 'dart:convert';
+// services/etkinlik/etkinlik_service.dart
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
-import 'package:fitcall/services/core/auth_service.dart';
-import 'package:http/http.dart' as http;
+import 'package:fitcall/services/api_client.dart';
+import 'package:fitcall/services/api_result.dart';
 
 class EtkinlikService {
-  /// Aktif üyenin içinde bulunduğu haftadaki dersleri döner.
-  static Future<List<EtkinlikModel>> getirHaftalikDersBilgilerim() async {
-    final token = await AuthService.getToken();
-    final res = await http.post(
-      Uri.parse(getHaftalikDersBilgilerim),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({}), // parametre yok
+  static Future<ApiResult<List<EtkinlikModel>>> getirHaftalikDersBilgilerim() {
+    return ApiClient.postParsed<List<EtkinlikModel>>(
+      getHaftalikDersBilgilerim,
+      const {},
+      (json) => ApiParsing.parseList<EtkinlikModel>(
+        json,
+        (m) => EtkinlikModel.fromMap(m),
+      ),
     );
-
-    if (res.statusCode == 200) {
-      return EtkinlikModel.fromJson(res);
-    } else {
-      throw Exception('Haftalık ders listesi alınamadı (${res.statusCode})');
-    }
   }
 
-  static Future<List<EtkinlikModel>>
-      getirAntrenorHaftalikDersBilgilerim() async {
-    final token = await AuthService.getToken();
-    final res = await http.post(
-      Uri.parse(getAntrenorHaftalikEtkilikler),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({}), // parametre yok
+  static Future<ApiResult<List<EtkinlikModel>>>
+      getirAntrenorHaftalikDersBilgilerim() {
+    return ApiClient.postParsed<List<EtkinlikModel>>(
+      getAntrenorHaftalikEtkilikler,
+      const {},
+      (json) => ApiParsing.parseList<EtkinlikModel>(
+        json,
+        (m) => EtkinlikModel.fromMap(m),
+      ),
     );
-
-    if (res.statusCode == 200) {
-      return EtkinlikModel.fromJson(res);
-    } else {
-      throw Exception('Haftalık ders listesi alınamadı (${res.statusCode})');
-    }
   }
 }

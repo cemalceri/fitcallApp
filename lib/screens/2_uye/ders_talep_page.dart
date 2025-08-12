@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
-import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -119,7 +119,7 @@ class _DersTalepPageState extends State<DersTalepPage> {
   /* ------------------ Talep gönder ------------------ */
   Future<void> _gonder() async {
     setState(() => _sending = true);
-    final token = await AuthService.getToken();
+    final token = await StorageService.getToken();
     if (token == null) {
       if (!mounted) return;
       setState(() => _sending = false);

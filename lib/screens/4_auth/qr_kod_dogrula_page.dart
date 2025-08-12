@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
@@ -36,7 +36,7 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
   /// Tarana QR kodu, API'ye POST eder ve cevabı uygun formatta döndürür.
   Future<String> _postScannedQR(String code) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await StorageService.getToken();
       final response = await http.post(
         Uri.parse(getQRKodBilgisi),
         headers: {

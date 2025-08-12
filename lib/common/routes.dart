@@ -1,8 +1,8 @@
 import 'package:fitcall/screens/1_common/yardim_page.dart';
 import 'package:fitcall/screens/2_uye/genel_ders_talep.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
-import 'package:fitcall/services/core/auth_service.dart';
 
 /* ------------------ Ekranlar ------------------ */
 import 'package:fitcall/screens/4_auth/login_page.dart';
@@ -128,7 +128,7 @@ Route<dynamic>? myRouteGenerator(RouteSettings settings) {
   return MaterialPageRoute(
     builder: (context) {
       return FutureBuilder<bool>(
-        future: AuthService.tokenGecerliMi(),
+        future: StorageService.tokenGecerliMi(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(

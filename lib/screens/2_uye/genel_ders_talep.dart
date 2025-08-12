@@ -3,7 +3,7 @@ import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/models/7_kort/kort_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
-import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -46,7 +46,7 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
   /* -------------------------------------------------------------------------- */
   Future<void> _loadList() async {
     setState(() => _loading = true);
-    final token = await AuthService.getToken();
+    final token = await StorageService.getToken();
     if (token == null) {
       if (!mounted) return;
       setState(() => _loading = false);
@@ -227,7 +227,7 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
     }
 
     setState(() => _sending = true);
-    final token = await AuthService.getToken();
+    final token = await StorageService.getToken();
     if (token == null) {
       if (!mounted) return;
       setState(() => _sending = false);

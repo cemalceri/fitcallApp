@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/common/constants.dart';
@@ -11,7 +12,6 @@ import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
-import 'package:fitcall/services/local/secure_storage_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -45,21 +45,23 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _otomatikGirisKontrol() async {
-    final hatirla = await AuthService.beniHatirlaIsaretlenmisMi();
+    final hatirla = await StorageService.beniHatirlaIsaretlenmisMi();
     if (hatirla != true) return;
 
     // Geçerli token varsa direkt yönlendir
-    if (await AuthService.tokenGecerliMi()) {
+    if (await StorageService.tokenGecerliMi()) {
       final s = await SecureStorageService.getValue<String>('gruplar');
       List<dynamic> gruplar = [];
       if (s != null) gruplar = jsonDecode(s);
 
       Roller role = Roller.uye;
-      if (gruplar.contains(Roller.antrenor.name))
+      if (gruplar.contains(Roller.antrenor.name)) {
         role = Roller.antrenor;
-      else if (gruplar.contains(Roller.yonetici.name))
+      } else if (gruplar.contains(Roller.yonetici.name)) {
         role = Roller.yonetici;
-      else if (gruplar.contains(Roller.cafe.name)) role = Roller.cafe;
+      } else if (gruplar.contains(Roller.cafe.name)) {
+        role = Roller.cafe;
+      }
 
       if (!mounted) return;
       await NavigationHelper.redirectAfterLogin(context, role);

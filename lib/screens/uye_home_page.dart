@@ -65,8 +65,8 @@ class _UyeHomePageState extends State<UyeHomePage> {
 
   Future<void> _fetchWeek() async {
     try {
-      final list = await EtkinlikService.getirHaftalikDersBilgilerim();
-
+      final result = await EtkinlikService.getirHaftalikDersBilgilerim();
+      final list = result.data ?? [];
       final tmp = {for (var k = 1; k <= 7; k++) k: <EtkinlikModel>[]};
       for (final e in list) {
         tmp[e.baslangicTarihSaat.weekday]!.add(e);

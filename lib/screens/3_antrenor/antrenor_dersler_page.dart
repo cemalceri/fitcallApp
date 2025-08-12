@@ -6,7 +6,7 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
-import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -44,7 +44,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
   }
 
   Future<void> _loadCurrentAntrenor() async {
-    currentAntrenor = await AuthService.antrenorBilgileriniGetir();
+    currentAntrenor = await StorageService.antrenorBilgileriniGetir();
     setState(() {});
   }
 
@@ -92,7 +92,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
     setState(() {
       _isUpcomingLoading = true;
     });
-    var token = await AuthService.getToken();
+    var token = await StorageService.getToken();
     if (token != null) {
       final dateRange = _getUpcomingDateRange(upcomingFilter);
       try {
@@ -130,7 +130,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
     setState(() {
       _isPastLoading = true;
     });
-    var token = await AuthService.getToken();
+    var token = await StorageService.getToken();
     if (token != null) {
       final dateRange = _getPastDateRange(pastFilter);
       try {
@@ -459,7 +459,7 @@ class _AntrenorDerslerPageState extends State<AntrenorDerslerPage> {
               onPressed: () async {
                 final dersId = ders.id;
                 final notValue = notController.text;
-                var token = await AuthService.getToken();
+                var token = await StorageService.getToken();
                 if (token != null) {
                   try {
                     // Payload'da, hangi rolün güncelleneceğini belirtmek için 'is_yardimci' alanı ekleniyor.

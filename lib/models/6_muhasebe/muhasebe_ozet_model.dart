@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class MuhasebeOzetModel {
   final int yil;
   final int ay;
@@ -24,8 +22,10 @@ class MuhasebeOzetModel {
     );
   }
 
-  static List<MuhasebeOzetModel> listFromResponse(String body) =>
-      (jsonDecode(body) as List)
-          .map((e) => MuhasebeOzetModel.fromJson(e))
-          .toList();
+  static List<MuhasebeOzetModel> listFromJson(dynamic json) {
+    return (json as List)
+        .map((e) =>
+            MuhasebeOzetModel.fromJson((e as Map).cast<String, dynamic>()))
+        .toList();
+  }
 }

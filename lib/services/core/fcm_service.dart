@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fitcall/common/api_urls.dart';
-import 'package:http/http.dart' as http;
+import 'package:fitcall/services/api_client.dart';
+import 'package:fitcall/services/api_exception.dart';
 
 /// Cihazı kaydeder/günceller.
 /// [bearerToken]: Yetkilendirme token’ı.
@@ -50,14 +50,14 @@ Future<void> sendFCMDevice(String bearerToken,
 
   // 4) HTTP isteğini yap
   try {
-    await http.post(
-      Uri.parse(cihazKaydetGuncelle),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $bearerToken',
-      },
-      body: jsonEncode(bodyData),
+    await ApiClient.postParsed<Map<String, dynamic>>(
+      cihazKaydetGuncelle,
+      bodyData,
+      (json) => (json as Map).cast<String, dynamic>(),
+      auth: true,
     );
+  } on ApiException catch (e) {
+    print("FCM cihaz bilgileri gönderilirken API hatası: ${e.message}");
   } catch (e) {
     print("FCM cihaz bilgileri gönderilirken hata oluştu: $e");
   }

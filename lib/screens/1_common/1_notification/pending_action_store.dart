@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:fitcall/screens/1_common/1_notification/pending_action.dart';
-import 'package:fitcall/services/local/secure_storage_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 
 /// Terminated senaryosu için pending action’u hem bellekte hem SecureStorage’ta saklar.
 class PendingActionStore {

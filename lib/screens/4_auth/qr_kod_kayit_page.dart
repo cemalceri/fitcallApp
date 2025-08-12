@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
-import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -47,7 +47,7 @@ class _QRKodKayitState extends State<QRKodKayitPage> {
   }
 
   Future<void> _initGroup() async {
-    _currentGroup = await AuthService.groupBilgileriniGetir();
+    _currentGroup = await StorageService.groupBilgileriniGetir();
     setState(() {
       _isLoadingGroup = false;
     });
@@ -264,7 +264,7 @@ class _QRKodKayitState extends State<QRKodKayitPage> {
   /// QR Oluşturma & Sunucuya Gönderme
   Future<void> _generateQrCode() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await StorageService.getToken();
       final newCode = _generateUuid();
 
       // Geçerlilik süresi (dakika)

@@ -10,7 +10,7 @@ import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_onay_model.dart';
 import 'package:fitcall/screens/2_uye/ders_talep_page.dart';
 import 'package:fitcall/services/api_exception.dart';
-import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -18,8 +18,8 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 /* -------------------------------------------------------------------------- */
 /*                            Renk Sabitleri                                   */
 /* -------------------------------------------------------------------------- */
-const Color dersDoluRenk = Colors.grey; // Dolu ders
-const Color uygunSaatRenk = Colors.green; // Rezervasyon yapılabilir
+const Color dersDoluRenk = Colors.grey; // Takvimdeki dolu ders
+const Color uygunSaatRenk = Colors.green; // Rezervasyon yapılabilir saat
 const Color uygunOlmayanRenk = Colors.white; // Meşgul slot
 
 class DersListesiPage extends StatefulWidget {
@@ -29,8 +29,7 @@ class DersListesiPage extends StatefulWidget {
 }
 
 class _DersListesiPageState extends State<DersListesiPage> {
-  EtkinlikDataSource _dataSource =
-      EtkinlikDataSource(appts: const [], res: const []);
+  EtkinlikDataSource _dataSource = EtkinlikDataSource(const []);
   final List<Appointment> _tumRandevular = [];
   bool _isLoading = false;
 
@@ -46,10 +45,6 @@ class _DersListesiPageState extends State<DersListesiPage> {
   int? _seciliKortId;
   RangeValues _saatAralik = const RangeValues(7, 23);
 
-  // ---- Resource (Kort) yönetimi ----
-  final Map<String, CalendarResource> _resourceMap = {}; // id -> resource
-  List<CalendarResource> get _resources => _resourceMap.values.toList();
-
   @override
   void initState() {
     super.initState();
@@ -58,7 +53,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
 
   Future<void> _prepare() async {
     setState(() => _isLoading = true);
-    currentUye = await AuthService.uyeBilgileriniGetir();
+    currentUye = await StorageService.uyeBilgileriniGetir();
     final now = DateTime.now();
     await _loadWeek(_haftaBaslangic(now));
     _applyFilters();
@@ -80,36 +75,29 @@ class _DersListesiPageState extends State<DersListesiPage> {
       final WeekTakvimDataDto data =
           r.data ?? WeekTakvimDataDto(dersler: [], mesgul: [], uygun: []);
 
-      // Dersler
       final dersAppts = data.dersler.map(_dersToAppt).toList();
 
-      // Meşgul slotlar
-      final busyAppts = data.mesgul.map((s) {
-        final resId = _ensureKortResource(s.kortId, s.kortAdi);
-        return Appointment(
-          id: 'busy-${s.baslangic.toIso8601String()}',
-          startTime: s.baslangic,
-          endTime: s.bitis,
-          subject: 'Müsait değil',
-          resourceIds: [resId],
-          notes: jsonEncode({
-            'tip': 'busy',
-            'antrenor_id': s.antrenorId,
-            'antrenor_adi': s.antrenorAdi,
-            'kort_id': s.kortId,
-            'kort_adi': s.kortAdi,
-          }),
-          color: uygunOlmayanRenk,
-        );
-      });
+      final busyAppts = data.mesgul.map((s) => Appointment(
+            id: 'busy-${s.baslangic.toIso8601String()}',
+            startTime: s.baslangic,
+            endTime: s.bitis,
+            subject: '', // busy slotlar için subject boş
+            notes: jsonEncode({
+              'tip': 'busy',
+              'antrenor_id': s.antrenorId,
+              'antrenor_adi': s.antrenorAdi,
+              'kort_id': s.kortId,
+              'kort_adi': s.kortAdi,
+            }),
+            color: uygunOlmayanRenk,
+          ));
 
-      // Uygun slotlar
       final availableAppts =
           data.uygun.where((s) => s.baslangic.isAfter(nowPlus3h)).map((s) {
-        final key = s.baslangic.toIso8601String();
+        final key = s.baslangic.toUtc().toIso8601String();
         final m = {
-          'baslangic_tarih_saat': s.baslangic.toIso8601String(),
-          'bitis_tarih_saat': s.bitis.toIso8601String(),
+          'baslangic_tarih_saat': s.baslangic.toUtc().toIso8601String(),
+          'bitis_tarih_saat': s.bitis.toUtc().toIso8601String(),
           'antrenor_id': s.antrenorId,
           'antrenor_adi': s.antrenorAdi,
           'kort_id': s.kortId,
@@ -117,22 +105,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
         };
         _slotAlternatifleri.putIfAbsent(key, () => []);
         _slotAlternatifleri[key]!.add(m);
-
-        final resId = _ensureKortResource(s.kortId, s.kortAdi);
-        return Appointment(
-          id: 'available-${s.baslangic.toIso8601String()}',
-          startTime: s.baslangic,
-          endTime: s.bitis,
-          subject: s.antrenorAdi != null && s.antrenorAdi!.isNotEmpty
-              ? 'Uygun • ${s.antrenorAdi}'
-              : 'Uygun',
-          resourceIds: [resId],
-          notes: jsonEncode({
-            'tip': 'available',
-            ...m,
-          }),
-          color: uygunSaatRenk.withAlpha((0.28 * 255).toInt()),
-        );
+        return _availableToAppt(m);
       });
 
       _tumRandevular.addAll(dersAppts);
@@ -155,21 +128,6 @@ class _DersListesiPageState extends State<DersListesiPage> {
       .subtract(Duration(days: d.weekday - 1))
       .copyWith(hour: 7, minute: 0, second: 0, millisecond: 0);
 
-  // Kort için resource ID üret & kaydet
-  String _ensureKortResource(int? id, String? adi) {
-    final rid = 'k_${id ?? (adi ?? 'kort')}';
-    if (!_resourceMap.containsKey(rid)) {
-      final display = (adi?.trim().isNotEmpty ?? false)
-          ? adi!.trim()
-          : (id != null ? 'Kort #$id' : 'Kort');
-      _resourceMap[rid] = CalendarResource(
-        id: rid,
-        displayName: display,
-      );
-    }
-    return rid;
-  }
-
   Appointment _dersToAppt(EtkinlikModel d) {
     final m = d.toJson();
     final antrenorId = m['antrenor_id'] ?? m['antrenorId'] ?? m['coach_id'];
@@ -179,19 +137,11 @@ class _DersListesiPageState extends State<DersListesiPage> {
     final kortAdi =
         m['kort_adi'] ?? m['kortAdi'] ?? m['court_name'] ?? d.kortAdi;
 
-    final resId = _ensureKortResource(
-      (kortId is int) ? kortId : int.tryParse('${kortId ?? ''}'),
-      (kortAdi is String) ? kortAdi : d.kortAdi,
-    );
-
     return Appointment(
       id: d.id,
       startTime: d.baslangicTarihSaat,
       endTime: d.bitisTarihSaat,
-      subject: (antrenorAdi?.toString().isNotEmpty ?? false)
-          ? 'Ders • ${antrenorAdi.toString()}'
-          : 'Ders',
-      resourceIds: [resId],
+      subject: kortAdi?.toString() ?? d.kortAdi,
       notes: jsonEncode({
         ...m,
         'tip': 'ders',
@@ -206,15 +156,22 @@ class _DersListesiPageState extends State<DersListesiPage> {
     );
   }
 
-  Map<String, dynamic> _safeNotes(Appointment a) {
-    try {
-      return (jsonDecode(a.notes ?? '{}') as Map).cast<String, dynamic>();
-    } catch (_) {
-      return const {};
-    }
-  }
-
-  int? _toInt(dynamic v) => (v is int) ? v : int.tryParse('$v');
+  Appointment _availableToAppt(Map<String, dynamic> s) => Appointment(
+        id: 'available-${s['baslangic_tarih_saat']}',
+        startTime: DateTime.parse(s['baslangic_tarih_saat']).toLocal(),
+        endTime: DateTime.parse(s['bitis_tarih_saat']).toLocal(),
+        subject: s['kort_adi']?.toString() ?? '',
+        notes: jsonEncode({
+          'tip': 'available',
+          'baslangic': s['baslangic_tarih_saat'],
+          'bitis': s['bitis_tarih_saat'],
+          'antrenor_id': s['antrenor_id'],
+          'antrenor_adi': s['antrenor_adi'],
+          'kort_id': s['kort_id'],
+          'kort_adi': s['kort_adi'],
+        }),
+        color: uygunSaatRenk.withAlpha((0.3 * 255).toInt()),
+      );
 
   /* ----------------------- Filtre yardımcıları ----------------------------- */
   void _yenileFiltreOpsiyonlari() {
@@ -225,16 +182,22 @@ class _DersListesiPageState extends State<DersListesiPage> {
       final n = _safeNotes(a);
 
       final hId = _toInt(n['antrenor_id']);
-      final hAdRaw = (n['antrenor_adi']?.toString() ?? '').trim();
-      final hAd =
-          hAdRaw.isNotEmpty ? hAdRaw : (hId != null ? 'Hoca #$hId' : null);
+      // API bazı slotlarda hoca adı dönmeyebilir — ID’den fallback üret.
+      final hAd = (n['antrenor_adi']?.toString() ?? '').trim();
+      final hocaAdFinal =
+          (hAd.isNotEmpty) ? hAd : (hId != null ? 'Hoca #$hId' : null);
 
       final kId = _toInt(n['kort_id']);
+      // Kort adı yoksa appointment.subject’ten al (derslerde subject kort adı).
       final kAdRaw = (n['kort_adi']?.toString() ?? '').trim();
       final kAd = kAdRaw.isNotEmpty ? kAdRaw : (a.subject.toString());
 
-      if (hId != null && (hAd?.isNotEmpty ?? false)) _hocaAdlari[hId] = hAd!;
-      if (kId != null && kAd.isNotEmpty) _kortAdlari[kId] = kAd;
+      if (hId != null && (hocaAdFinal?.isNotEmpty ?? false)) {
+        _hocaAdlari[hId] = hocaAdFinal!;
+      }
+      if (kId != null && kAd.isNotEmpty) {
+        _kortAdlari[kId] = kAd;
+      }
     }
 
     if (_seciliHocaId != null && !_hocaAdlari.containsKey(_seciliHocaId!)) {
@@ -244,6 +207,16 @@ class _DersListesiPageState extends State<DersListesiPage> {
       _seciliKortId = null;
     }
   }
+
+  Map<String, dynamic> _safeNotes(Appointment a) {
+    try {
+      return (jsonDecode(a.notes ?? '{}') as Map).cast<String, dynamic>();
+    } catch (_) {
+      return const {};
+    }
+  }
+
+  int? _toInt(dynamic v) => (v is int) ? v : int.tryParse('$v');
 
   void _applyFilters() {
     final startH = _saatAralik.start.floor();
@@ -264,21 +237,8 @@ class _DersListesiPageState extends State<DersListesiPage> {
       return true;
     }
 
-    final filteredAppts = _tumRandevular.where(pass).toList();
-
-    // Görünür resource’ları da filtrele (sadece kullanılan kortlar)
-    final usedResIds = <String>{
-      for (final a in filteredAppts)
-        ...((a.resourceIds ?? []).map((e) => e.toString()))
-    };
-
-    final filteredResources =
-        _resources.where((r) => usedResIds.contains(r.id)).toList();
-
-    setState(() {
-      _dataSource =
-          EtkinlikDataSource(appts: filteredAppts, res: filteredResources);
-    });
+    final filtered = _tumRandevular.where(pass).toList();
+    setState(() => _dataSource = EtkinlikDataSource(filtered));
   }
 
   void _temizleFiltre() {
@@ -322,25 +282,33 @@ class _DersListesiPageState extends State<DersListesiPage> {
             ),
       body: _isLoading
           ? const LoadingSpinnerWidget(message: 'Takvim yükleniyor...')
-          : SfCalendar(
-              view: CalendarView.timelineWeek,
-              dataSource: _dataSource,
-              firstDayOfWeek: 1,
-              timeSlotViewSettings: const TimeSlotViewSettings(
-                startHour: 7,
-                endHour: 23,
-                timeInterval: Duration(minutes: 60),
-              ),
-              resourceViewSettings: const ResourceViewSettings(
-                showAvatar: false,
-                size: 84, // resource (kort) satır yüksekliği
-              ),
-              onTap: _onTap,
-              onViewChanged: (ViewChangedDetails d) async {
-                if (d.visibleDates.isEmpty) return;
-                final wkStart = _haftaBaslangic(d.visibleDates.first);
-                await _loadWeek(wkStart);
-              },
+          : Column(
+              children: [
+                // Artık üstte sabit filtre bar yok; modern bottom sheet kullanılacak.
+                Expanded(
+                  child: Stack(
+                    children: [
+                      SfCalendar(
+                        view: CalendarView.week,
+                        dataSource: _dataSource,
+                        firstDayOfWeek: 1,
+                        timeSlotViewSettings: const TimeSlotViewSettings(
+                          startHour: 7,
+                          endHour: 23,
+                          timeInterval: Duration(minutes: 60),
+                        ),
+                        onTap: _onTap,
+                        onViewChanged: (ViewChangedDetails d) async {
+                          if (d.visibleDates.isEmpty) return;
+                          final wkStart = _haftaBaslangic(d.visibleDates.first);
+                          await _loadWeek(wkStart);
+                        },
+                      ),
+                      const Positioned(right: 16, bottom: 16, child: _Legend()),
+                    ],
+                  ),
+                ),
+              ],
             ),
     );
   }
@@ -505,7 +473,6 @@ class _DersListesiPageState extends State<DersListesiPage> {
   void _onTap(CalendarTapDetails d) async {
     if (d.targetElement == CalendarElement.calendarCell &&
         (d.appointments?.isEmpty ?? true)) {
-      // timeline boş slot – alternatifleri göster
       await _showBosSaatPopup(d.date!);
       return;
     }
@@ -574,7 +541,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
       return;
     }
 
-    final key = slotStart.toIso8601String();
+    final key = slotStart.toUtc().toIso8601String();
     List<Map<String, dynamic>> alternatifler = _slotAlternatifleri[key] ?? [];
 
     if (alternatifler.isEmpty) {
@@ -587,8 +554,8 @@ class _DersListesiPageState extends State<DersListesiPage> {
         alternatifler = list
             .where((a) => a.baslangic.isAfter(nowPlus3h))
             .map((s) => {
-                  'baslangic_tarih_saat': s.baslangic.toIso8601String(),
-                  'bitis_tarih_saat': s.bitis.toIso8601String(),
+                  'baslangic_tarih_saat': s.baslangic.toUtc().toIso8601String(),
+                  'bitis_tarih_saat': s.bitis.toUtc().toIso8601String(),
                   'antrenor_id': s.antrenorId,
                   'antrenor_adi': s.antrenorAdi,
                   'kort_id': s.kortId,
@@ -738,6 +705,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
                   etkinlikId: ders.id,
                   aciklama: ctrl.text,
                 );
+
                 onCancelled();
                 ShowMessage.success(context, res.mesaj);
               } on ApiException catch (e) {
@@ -758,10 +726,8 @@ class _DersListesiPageState extends State<DersListesiPage> {
 /*                       CalendarDataSource Wrapper                            */
 /* -------------------------------------------------------------------------- */
 class EtkinlikDataSource extends CalendarDataSource {
-  EtkinlikDataSource(
-      {required List<Appointment> appts, required List<CalendarResource> res}) {
-    appointments = appts;
-    resources = res;
+  EtkinlikDataSource(List<Appointment> src) {
+    appointments = src;
   }
 }
 

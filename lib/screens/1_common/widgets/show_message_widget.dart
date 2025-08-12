@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-enum NotificationType { success, error, warning }
+// enum MessageType { success, error, warning }
 
 class ShowMessage {
   /// Başarı bildirimi (yeşil, başparmak ikonu)

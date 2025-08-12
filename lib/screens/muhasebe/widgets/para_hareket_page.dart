@@ -1,11 +1,11 @@
 // lib/screens/muhasebe/para_hareket_page.dart
 
 import 'dart:convert';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/6_muhasebe/para_hareket_model.dart';
 import 'package:fitcall/screens/muhasebe/widgets/para_hareket_table.dart';
 import 'package:http/http.dart' as http;
-import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/common/api_urls.dart';
 
 /* -------------------------------------------------------------------------- */
@@ -13,7 +13,7 @@ import 'package:fitcall/common/api_urls.dart';
 /* -------------------------------------------------------------------------- */
 class ParaHareketService {
   static Future<List<ParaHareketModel>> fetchForPeriod(int yil, int ay) async {
-    final token = await AuthService.getToken();
+    final token = await StorageService.getToken();
     final res = await http.post(
       Uri.parse(getParaHareketi),
       headers: {

@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
@@ -7,7 +8,6 @@ import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
-import 'package:fitcall/services/local/secure_storage_service.dart';
 
 class ProfilSecPage extends StatefulWidget {
   final List<KullaniciProfilModel> kullaniciProfilList;

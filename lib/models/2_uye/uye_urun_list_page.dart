@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/1_common/uye_urun_model.dart';
-import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -27,7 +27,7 @@ class _UyeUrunListPageState extends State<UyeUrunListPage> {
   }
 
   Future<List<UyeUrunModel>> _fetchUrunler() async {
-    final token = await AuthService.getToken();
+    final token = await StorageService.getToken();
     final res = await http.post(
       Uri.parse(getUyeUrunList),
       headers: {
