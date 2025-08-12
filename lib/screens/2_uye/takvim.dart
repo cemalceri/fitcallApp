@@ -2,7 +2,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
-import 'dart:ui' show FontFeature;
 import 'package:fitcall/models/dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
