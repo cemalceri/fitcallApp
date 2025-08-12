@@ -16,6 +16,7 @@ enum NotificationType {
   PSA, // Paket Satın Alındı
   PHG, // Paket Hak Güncelleme
   UT, // Üyelik Tanımlandı
+  AD, // Antrenör Değişikliği
 }
 
 extension _NotificationTypeExt on NotificationType {
@@ -43,6 +44,8 @@ extension _NotificationTypeExt on NotificationType {
         return 'PHG';
       case NotificationType.UT:
         return 'UT';
+      case NotificationType.AD:
+        return 'AD';
     }
   }
 
@@ -70,6 +73,8 @@ extension _NotificationTypeExt on NotificationType {
         return NotificationType.PHG;
       case 'UT':
         return NotificationType.UT;
+      case 'AD':
+        return NotificationType.AD;
       default:
         throw ArgumentError('Unknown notification type code: $code');
     }

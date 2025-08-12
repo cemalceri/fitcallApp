@@ -1,4 +1,4 @@
-import 'package:fitcall/models/1_common/uye_urun_model.dart';
+import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/services/urun/urun_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

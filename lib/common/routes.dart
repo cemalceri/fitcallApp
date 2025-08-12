@@ -1,5 +1,6 @@
 import 'package:fitcall/screens/1_common/yardim_page.dart';
 import 'package:fitcall/screens/2_uye/genel_ders_talep.dart';
+import 'package:fitcall/screens/2_uye/takvim.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,6 @@ import 'package:fitcall/screens/4_auth/qr_kod_dogrula_page.dart';
 import 'package:fitcall/screens/uye_home_page.dart';
 import 'package:fitcall/screens/2_uye/profil_page.dart';
 import 'package:fitcall/screens/muhasebe/muhasebe_page.dart';
-import 'package:fitcall/screens/2_uye/dersler_page.dart';
 import 'package:fitcall/screens/2_uye/ders_talep_page.dart';
 
 import 'package:fitcall/screens/antrenor_home_page.dart';

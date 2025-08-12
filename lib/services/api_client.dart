@@ -169,18 +169,32 @@ class ApiClient {
 
   static Never _throwWithBody(int status, String text) {
     try {
-      final j = text.isNotEmpty ? jsonDecode(text) : {};
-      final code = (j is Map && j['code'] is String)
-          ? j['code'] as String
-          : 'HTTP_ERROR';
-      final msg = (j is Map && j['message'] is String)
-          ? j['message'] as String
-          : (j is Map && j['detail'] is String)
-              ? j['detail'] as String
-              : 'İşlem başarısız.';
-      throw ApiException(code, msg, statusCode: status);
+      if (text.isNotEmpty) {
+        final j = jsonDecode(text);
+        final code = (j is Map && j['code'] is String)
+            ? j['code'] as String
+            : 'HTTP_ERROR';
+
+        // Öncelikle backend'den gelen 'message' veya 'detail'
+        final msg = (j is Map &&
+                j['message'] is String &&
+                j['message']!.trim().isNotEmpty)
+            ? j['message'] as String
+            : (j is Map &&
+                    j['detail'] is String &&
+                    j['detail']!.trim().isNotEmpty)
+                ? j['detail'] as String
+                : 'İşlem başarısız.';
+
+        throw ApiException(code, msg, statusCode: status);
+      } else {
+        throw ApiException('HTTP_ERROR', 'İşlem başarısız.',
+            statusCode: status);
+      }
     } catch (_) {
-      throw ApiException('HTTP_ERROR', 'İşlem başarısız.', statusCode: status);
+      // JSON parse patlarsa bile backend text varsa onu göster
+      final fallbackMsg = text.isNotEmpty ? text : 'İşlem başarısız.';
+      throw ApiException('HTTP_ERROR', fallbackMsg, statusCode: status);
     }
   }
 

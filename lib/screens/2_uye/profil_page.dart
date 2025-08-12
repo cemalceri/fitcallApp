@@ -1,5 +1,5 @@
 import 'package:fitcall/models/2_uye/uye_model.dart';
-import 'package:fitcall/models/2_uye/uye_urun_list_page.dart';
+import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_page.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
