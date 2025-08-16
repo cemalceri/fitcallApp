@@ -19,7 +19,7 @@ import 'package:fitcall/screens/5_etkinlik/ders_talep_page.dart';
 
 import 'package:fitcall/screens/antrenor_home_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
-import 'package:fitcall/screens/3_antrenor/antrenor_dersler_page.dart';
+import 'package:fitcall/screens/3_antrenor/tavim_antrenor.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_ogrenciler_page.dart';
 
 import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
@@ -85,7 +85,7 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.dersler]!: (c) => const DersListesiPage(),
   routeEnums[SayfaAdi.antrenorAnasayfa]!: (c) => AntrenorHomePage(),
   routeEnums[SayfaAdi.antrenorProfil]!: (c) => AntrenorProfilPage(),
-  routeEnums[SayfaAdi.antrenorDersler]!: (c) => AntrenorDerslerPage(),
+  routeEnums[SayfaAdi.antrenorDersler]!: (c) => AntrenorTakvimPage(),
   routeEnums[SayfaAdi.antrenorOgrenciler]!: (c) => AntrenorOgrencilerPage(),
   routeEnums[SayfaAdi.uyeDersTalepleri]!: (context) => DersTalepPage(
         secimJson: const {

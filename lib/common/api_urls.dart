@@ -13,8 +13,10 @@ String getDersProgrami = "$baseUrl/getUyeDersProgrami";
 String uyeKaydet = "$baseUrl/uyeKaydet";
 String setDersYapildiBilgisi = "$baseUrl/setDersYapildiBilgisi";
 String qrInOrOut = "$baseUrl/qrInOrOut";
-String getAntrenorHaftalikEtkilikler = "$baseUrl/getAntrenorHaftalikEtkilikler";
-String antrenorDersYapildiDurumu = "$baseUrl/antrenorDersYapildiDurumu";
+String getAntrenorGunlukEtkinlikler = "$baseUrl/getAntrenorGunlukEtkinlikler";
+String getAntrenorHaftalikEtkinlikler =
+    "$baseUrl/getAntrenorHaftalikEtkinlikler";
+String antrenorDersYapildiBilgisi = "$baseUrl/antrenorDersYapildiBilgisi";
 String getAntrenorOgrenciler = "$baseUrl/getAntrenorOgrenciler";
 String cihazKaydetGuncelle = "$baseUrl/cihazKaydetGuncelle";
 String getGaleriImages = "$baseUrl/getGaleriImages";
@@ -40,3 +42,4 @@ String getUyeUrunList = "$baseUrl/getUyeUrunList";
 String getHaftalikDersBilgilerim = "$baseUrl/getHaftalikDersBilgilerim";
 String getMyMembers = "$baseUrl/getMyMembers";
 String getUrunListesiVeUyePaketleri = "$baseUrl/getUrunListesiVeUyePaketleri";
+String setAntrenorDersIptal = "$baseUrl/setAntrenorDersIptal";

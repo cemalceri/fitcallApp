@@ -3,8 +3,9 @@ import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/core/auth_service.dart';
-import 'package:fitcall/services/etkinlik/etkinlik_service.dart';
 import 'package:fitcall/services/core/notification_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -16,31 +17,32 @@ class AntrenorHomePage extends StatefulWidget {
 }
 
 class _AntrenorHomePageState extends State<AntrenorHomePage> {
+  /* ---------------- Üst Menü ---------------- */
   final List<Map<String, dynamic>> menuItems = [
     {
       'name': routeEnums[SayfaAdi.antrenorProfil]!,
       'icon': Icons.person,
-      'text': 'Bilgilerim'
-    },
-    {
-      'name': routeEnums[SayfaAdi.antrenorDersler]!,
-      'icon': Icons.sports_tennis,
-      'text': 'Derslerim'
+      'text': 'Bilgilerim',
     },
     {
       'name': routeEnums[SayfaAdi.antrenorOgrenciler]!,
       'icon': Icons.group,
-      'text': 'Öğrencilerim'
+      'text': 'Öğrencilerim',
+    },
+    {
+      'name': routeEnums[SayfaAdi.antrenorDersler]!,
+      'icon': Icons.sports_tennis,
+      'text': 'Derslerim',
     },
     {
       'name': routeEnums[SayfaAdi.qrKodKayit]!,
       'icon': Icons.qr_code,
-      'text': 'QR Kod İle Giriş'
+      'text': 'QR Kod İle Giriş',
     },
     {
-      'name': routeEnums[SayfaAdi.qrKodDogrula]!,
-      'icon': Icons.qr_code_2,
-      'text': 'QR Kod Doğrula'
+      'name': routeEnums[SayfaAdi.yardim]!,
+      'icon': Icons.help,
+      'text': 'Yardım',
     },
   ];
 
@@ -51,24 +53,40 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
   bool _loadingWeek = true;
   EtkinlikModel? _nextLesson;
 
+  // İleride isim göstermek istersek doldururuz (örn. StorageService vs.)
+  String _antrenorAdi = "";
+
   @override
   void initState() {
     super.initState();
     NotificationService.refreshUnreadCount();
     _fetchWeek();
+    _loadAntrenorAdi();
+  }
+
+  Future<void> _loadAntrenorAdi() async {
+    var antrenorModel = await StorageService.antrenorBilgileriniGetir();
+    setState(() {
+      if (antrenorModel != null) {
+        _antrenorAdi = antrenorModel.adi;
+      } else {
+        _antrenorAdi = "";
+      }
+    });
   }
 
   Future<void> _fetchWeek() async {
     try {
-      final result =
-          await EtkinlikService.getirAntrenorHaftalikDersBilgilerim();
+      final result = await TakvimService.getirAntrenorHaftalikDersBilgileri();
       final list = result.data ?? [];
 
+      // Günlere grupla
       final tmp = {for (var k = 1; k <= 7; k++) k: <EtkinlikModel>[]};
       for (final e in list) {
         tmp[e.baslangicTarihSaat.weekday]!.add(e);
       }
 
+      // Şimdiden sonraki ilk dersi bul
       final now = DateTime.now();
       final filtered =
           list.where((e) => e.baslangicTarihSaat.isAfter(now)).toList();
@@ -97,6 +115,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
     const gunler = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
     final tf = DateFormat('HH:mm');
     final df = DateFormat('d MMMM', 'tr_TR');
+    final hosgeldinText = "Hoşgeldin $_antrenorAdi 🎾 ";
 
     String nextLessonText;
     if (_nextLesson == null) {
@@ -112,8 +131,9 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
         actions: [
           NotificationsBell(),
           IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () => AuthService.logout(context)),
+            icon: const Icon(Icons.logout),
+            onPressed: () => AuthService.logout(context),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -121,32 +141,47 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Hoşgeldin! 🎾",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              hosgeldinText,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
+
+            // Üst menü (Üye sayfasıyla aynı grid)
             GridView.count(
               crossAxisCount: 3,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: menuItems.map(_buildMenuButton).toList(),
             ),
+
             const SizedBox(height: 24),
+
+            // Bir sonraki ders kartı (Üye sayfasıyla aynı)
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: ListTile(
                 leading: const Icon(Icons.calendar_today, color: Colors.blue),
                 title: const Text("Bir Sonraki Dersin"),
                 subtitle: Text(nextLessonText),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.pushNamed(
-                    context, routeEnums[SayfaAdi.antrenorDersler]!),
+                  context,
+                  routeEnums[SayfaAdi.antrenorDersler]!,
+                ),
               ),
             ),
+
             const SizedBox(height: 24),
-            const Text('Haftalık Programım',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+
+            // Haftalık Program (Üye sayfasıyla aynı)
+            const Text(
+              'Haftalık Programım',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
             SizedBox(
               height: 120,
@@ -174,7 +209,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
     );
   }
 
-  /* -------- Görsel iyileştirmeler (Üye sayfası ile aynı) -------- */
+  /* --------------------- Görsel iyileştirmeler --------------------- */
   Widget _buildMenuButton(Map<String, dynamic> item) => Padding(
         padding: const EdgeInsets.all(6),
         child: InkWell(
@@ -184,11 +219,12 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 4,
-                    offset: const Offset(0, 2))
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                )
               ],
             ),
             child: Column(
@@ -196,9 +232,11 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
               children: [
                 Icon(item['icon'], size: 34, color: Colors.blueAccent),
                 const SizedBox(height: 6),
-                Text(item['text'],
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text(
+                  item['text'],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
               ],
             ),
           ),
@@ -224,22 +262,32 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
           end: Alignment.bottomCenter,
         ),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black12, blurRadius: 4, offset: const Offset(0, 2))
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))
         ],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(day,
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          const SizedBox(height: 8),
-          Text(activity,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13)),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              day,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Text(
+                  activity,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

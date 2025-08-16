@@ -15,16 +15,4 @@ class EtkinlikService {
       ),
     );
   }
-
-  static Future<ApiResult<List<EtkinlikModel>>>
-      getirAntrenorHaftalikDersBilgilerim() {
-    return ApiClient.postParsed<List<EtkinlikModel>>(
-      getAntrenorHaftalikEtkilikler,
-      const {},
-      (json) => ApiParsing.parseList<EtkinlikModel>(
-        json,
-        (m) => EtkinlikModel.fromMap(m),
-      ),
-    );
-  }
 }
