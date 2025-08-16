@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
+import 'package:fitcall/services/core/app_update_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/navigation_helper.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +31,9 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     _beniHatirlaYukle();
     _otomatikGirisKontrol();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppUpdateService.instance.checkAndForceUpdate(context);
+    });
   }
 
   @override
@@ -68,26 +72,33 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // Token yoksa profil üzerinden devam
-    final jsonStr =
-        await SecureStorageService.getValue<String>('kullanici_profiller');
-    if (jsonStr == null) return;
+    // Token yoksa profilleri API’den tekrar çek
+    try {
+      final u = await SecureStorageService.getValue<String>('kullanici_adi');
+      final p = await SecureStorageService.getValue<String>('sifre');
+      if (u == null || p == null) return;
 
-    final profiles = (jsonDecode(jsonStr) as List)
-        .map<KullaniciProfilModel>(
-            (e) => KullaniciProfilModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+      final profiller = await AuthService.fetchMyMembers(u, p);
+      if (profiller.isEmpty) return;
 
-    if (profiles.length > 1) {
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => ProfilSecPage(profiles)),
+      await SecureStorageService.setValue<String>(
+        'kullanici_profiller',
+        jsonEncode(profiller.map((e) => e.toJson()).toList()),
       );
-      return;
-    }
 
-    await _profilIleGiris(profiles.first);
+      if (profiller.length > 1) {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
+        );
+        return;
+      }
+
+      await _profilIleGiris(profiller.first);
+    } catch (e) {
+      // Sessiz geç, login ekranında kalır
+    }
   }
 
   Future<void> _girisButonunaBasildi() async {
@@ -111,6 +122,8 @@ class _LoginPageState extends State<LoginPage> {
         'kullanici_profiller',
         jsonEncode(profiller.map((e) => e.toJson()).toList()),
       );
+      await SecureStorageService.setValue<String>('kullanici_adi', u);
+      await SecureStorageService.setValue<String>('sifre', p);
 
       if (profiller.length == 1) {
         await _profilIleGiris(profiller.first);

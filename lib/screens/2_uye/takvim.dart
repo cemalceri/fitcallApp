@@ -8,7 +8,7 @@ import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_onay_model.dart';
-import 'package:fitcall/screens/2_uye/ders_talep_page.dart';
+import 'package:fitcall/screens/5_etkinlik/ders_talep_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';

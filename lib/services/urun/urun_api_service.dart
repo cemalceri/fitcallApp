@@ -4,7 +4,7 @@ import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
 class UyeUrunApiService {
-  static Future<ApiResult<List<UyeUrunModel>>> fetchList() {
+  static Future<ApiResult<List<UyeUrunModel>>> fetchUrunList() {
     return ApiClient.postParsed<List<UyeUrunModel>>(
       getUyeUrunList,
       const {},

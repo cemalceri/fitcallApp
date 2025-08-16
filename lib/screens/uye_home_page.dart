@@ -1,8 +1,14 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:convert';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
+import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/etkinlik_service.dart';
 import 'package:fitcall/services/core/notification_service.dart';
 import 'package:flutter/material.dart';
@@ -55,12 +61,43 @@ class _UyeHomePageState extends State<UyeHomePage> {
   };
   bool _loadingWeek = true;
   EtkinlikModel? _nextLesson;
+  bool _hasMultipleProfiles = false;
+  String? _uyeAdi = "";
 
   @override
   void initState() {
     super.initState();
     NotificationService.refreshUnreadCount();
+    _checkProfiles();
     _fetchWeek();
+    _loadUyeAdi();
+  }
+
+  Future<void> _loadUyeAdi() async {
+    var uyeModel = await StorageService.uyeBilgileriniGetir();
+    if (uyeModel != null) {
+      setState(() {
+        _uyeAdi = uyeModel.adi;
+      });
+    } else {
+      setState(() {
+        _uyeAdi = "";
+      });
+    }
+  }
+
+  Future<void> _checkProfiles() async {
+    final jsonStr =
+        await SecureStorageService.getValue<String>('kullanici_profiller');
+    if (jsonStr != null) {
+      final profiles = (jsonDecode(jsonStr) as List)
+          .map((e) => KullaniciProfilModel.fromJson(e))
+          .toList();
+      if (profiles.length > 1) {
+        if (!mounted) return;
+        setState(() => _hasMultipleProfiles = true);
+      }
+    }
   }
 
   Future<void> _fetchWeek() async {
@@ -114,9 +151,28 @@ class _UyeHomePageState extends State<UyeHomePage> {
       appBar: AppBar(
         actions: [
           NotificationsBell(),
+          if (_hasMultipleProfiles)
+            IconButton(
+              icon: const Icon(Icons.switch_account_sharp),
+              tooltip: "Profil Değiştir",
+              onPressed: () async {
+                final jsonStr = await SecureStorageService.getValue<String>(
+                    'kullanici_profiller');
+                if (jsonStr == null) return;
+                final profiles = (jsonDecode(jsonStr) as List)
+                    .map((e) => KullaniciProfilModel.fromJson(e))
+                    .toList();
+                if (!mounted) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => ProfilSecPage(profiles)),
+                );
+              },
+            ),
           IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () => AuthService.logout(context)),
+            icon: const Icon(Icons.logout),
+            onPressed: () => AuthService.logout(context),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -124,8 +180,9 @@ class _UyeHomePageState extends State<UyeHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Hoşgeldin! 🎾",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text("Hoşgeldin $_uyeAdi 🎾 ",
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             GridView.count(
               crossAxisCount: 3,

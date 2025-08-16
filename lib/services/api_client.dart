@@ -192,9 +192,27 @@ class ApiClient {
             statusCode: status);
       }
     } catch (_) {
-      // JSON parse patlarsa bile backend text varsa onu göster
-      final fallbackMsg = text.isNotEmpty ? text : 'İşlem başarısız.';
-      throw ApiException('HTTP_ERROR', fallbackMsg, statusCode: status);
+      // JSON parse veya diğer hatalarda
+      final fallbackMsg =
+          text.trim().isNotEmpty ? text.trim() : 'İşlem başarısız.';
+
+      String parsedMsg = fallbackMsg;
+      try {
+        final parsed = jsonDecode(fallbackMsg);
+        if (parsed is Map) {
+          if (parsed['message'] is String &&
+              parsed['message'].trim().isNotEmpty) {
+            parsedMsg = parsed['message'];
+          } else if (parsed['detail'] is String &&
+              parsed['detail'].trim().isNotEmpty) {
+            parsedMsg = parsed['detail'];
+          }
+        }
+      } catch (_) {
+        // fallbackMsg JSON değilse olduğu gibi kullan
+      }
+
+      throw ApiException('HTTP_ERROR', parsedMsg, statusCode: status);
     }
   }
 

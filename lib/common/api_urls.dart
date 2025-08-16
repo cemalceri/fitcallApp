@@ -3,18 +3,17 @@ const String baseUrlProd = "https://www.binay.fit/api";
 const String baseUrlDev = "http://10.0.2.2:8000/api";
 
 const String baseUrl = baseUrlDev;
-// const String baseUrl = baseUrlProd;
+//const String baseUrl = baseUrlProd;
 
 // =================== ENDPOINTLER ===================
 String loginUrl = "$baseUrl/getToken";
-String createToken = "$baseUrl/createToken"; // (bearer token)
-String getOdemeBilgileri = "$baseUrl/getAidatOdemeGecmisi"; // (bearer token)
-String getDersProgrami = "$baseUrl/getUyeDersProgrami"; // (bearer token)
-String uyeKaydet = "$baseUrl/uyeKaydet"; // (bearer token)
+String createToken = "$baseUrl/createToken";
+String getOdemeBilgileri = "$baseUrl/getAidatOdemeGecmisi";
+String getDersProgrami = "$baseUrl/getUyeDersProgrami";
+String uyeKaydet = "$baseUrl/uyeKaydet";
 String setDersYapildiBilgisi = "$baseUrl/setDersYapildiBilgisi";
 String qrInOrOut = "$baseUrl/qrInOrOut";
-String getAntrenorHaftalikEtkilikler =
-    "$baseUrl/getAntrenorHaftalikEtkilikler"; // (bearer token)
+String getAntrenorHaftalikEtkilikler = "$baseUrl/getAntrenorHaftalikEtkilikler";
 String antrenorDersYapildiDurumu = "$baseUrl/antrenorDersYapildiDurumu";
 String getAntrenorOgrenciler = "$baseUrl/getAntrenorOgrenciler";
 String cihazKaydetGuncelle = "$baseUrl/cihazKaydetGuncelle";

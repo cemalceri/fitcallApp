@@ -50,7 +50,7 @@ class _DersTalepPageState extends State<DersTalepPage> {
         antrenorId: widget.secimJson['antrenor_id'],
       );
 
-      final data = res.data; // PaketVeriResponse?
+      final data = res.data; // PaketVeriResponse
       if (data == null) {
         ShowMessage.error(context, res.mesaj);
         return;
@@ -365,7 +365,6 @@ class _DersTalepPageState extends State<DersTalepPage> {
       );
 
       if (!mounted) return;
-      // Projenizde ApiResult'ta mesaj alanı 'message' ya da 'mesaj' olabilir:
       final msg = res.mesaj;
       ShowMessage.success(context, msg);
       Navigator.pop(context, true);

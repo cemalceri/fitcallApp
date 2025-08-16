@@ -23,7 +23,7 @@ class _UyeUrunListPageState extends State<UyeUrunListPage> {
 
   Future<List<UyeUrunModel>> _fetchUrunler() async {
     try {
-      final res = await UyeUrunApiService.fetchList();
+      final res = await UyeUrunApiService.fetchUrunList();
       return res.data ?? [];
     } on ApiException catch (e) {
       if (mounted) {
