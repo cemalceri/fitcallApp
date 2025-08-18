@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
+import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
-import 'package:fitcall/services/core/app_update_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/navigation_helper.dart';
 import 'package:flutter/material.dart';
@@ -31,9 +31,7 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     _beniHatirlaYukle();
     _otomatikGirisKontrol();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppUpdateService.instance.checkAndForceUpdate(context);
-    });
+    GuncellemeKoordinatoru.kontrolVeUygula(context);
   }
 
   @override

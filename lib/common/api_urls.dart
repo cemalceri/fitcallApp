@@ -43,3 +43,4 @@ String getHaftalikDersBilgilerim = "$baseUrl/getHaftalikDersBilgilerim";
 String getMyMembers = "$baseUrl/getMyMembers";
 String getUrunListesiVeUyePaketleri = "$baseUrl/getUrunListesiVeUyePaketleri";
 String setAntrenorDersIptal = "$baseUrl/setAntrenorDersIptal";
+String getMobilConfigs = "$baseUrl/getMobilConfigs";

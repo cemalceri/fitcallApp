@@ -1,6 +1,6 @@
 import 'package:fitcall/models/6_muhasebe/muhasebe_ozet_model.dart';
-import 'package:fitcall/screens/muhasebe/widgets/muhasebe_table.dart';
-import 'package:fitcall/screens/muhasebe/widgets/para_hareket_page.dart';
+import 'package:fitcall/screens/6_muhasebe/widgets/muhasebe_table.dart';
+import 'package:fitcall/screens/6_muhasebe/widgets/para_hareket_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/muhasebe/muhasebe_service.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';

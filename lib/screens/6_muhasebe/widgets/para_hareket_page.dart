@@ -1,7 +1,7 @@
 import 'package:fitcall/services/muhasebe/para_hareket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/6_muhasebe/para_hareket_model.dart';
-import 'package:fitcall/screens/muhasebe/widgets/para_hareket_table.dart';
+import 'package:fitcall/screens/6_muhasebe/widgets/para_hareket_table.dart';
 
 /* -------------------------------------------------------------------------- */
 /*                              PAGE                                          */

@@ -14,7 +14,7 @@ import 'package:fitcall/screens/4_auth/qr_kod_dogrula_page.dart';
 
 import 'package:fitcall/screens/uye_home_page.dart';
 import 'package:fitcall/screens/2_uye/profil_page.dart';
-import 'package:fitcall/screens/muhasebe/muhasebe_page.dart';
+import 'package:fitcall/screens/6_muhasebe/muhasebe_page.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_talep_page.dart';
 
 import 'package:fitcall/screens/antrenor_home_page.dart';
