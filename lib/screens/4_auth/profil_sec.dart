@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
+import 'package:fitcall/screens/1_common/event_qr_page.dart';
 import 'package:fitcall/services/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
@@ -7,6 +8,9 @@ import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
+import 'package:fitcall/services/core/qr_code_api_service.dart';
+import 'package:fitcall/services/api_result.dart';
+import 'package:fitcall/models/1_common/event/event_model.dart';
 
 class ProfilSecPage extends StatefulWidget {
   final List<KullaniciProfilModel> kullaniciProfilList;
@@ -18,6 +22,34 @@ class ProfilSecPage extends StatefulWidget {
 
 class _ProfilSecPageState extends State<ProfilSecPage> {
   bool _yonlendirildi = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _kontrolVeYonlendirEvent(); // görseli bozmadan, varsa direkt Event QR'a gider
+  }
+
+  Future<void> _kontrolVeYonlendirEvent() async {
+    if (widget.kullaniciProfilList.isEmpty) return;
+    try {
+      final int uid = widget.kullaniciProfilList.first.user.id;
+      final ApiResult<EventModel?> res =
+          await QrEventApiService.getirEventAktifApi(userId: uid);
+      if (res.data != null) {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => EventQrPage(userId: uid)),
+        );
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ShowMessage.error(context, e.message);
+    } catch (e) {
+      if (!mounted) return;
+      ShowMessage.error(context, 'Hata: $e');
+    }
+  }
 
   @override
   void didChangeDependencies() {

@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
 import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
+import 'package:fitcall/screens/1_common/event_qr_page.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/navigation_helper.dart';
@@ -13,6 +14,11 @@ import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
+
+// 👇 EKLENDİ: Event kontrolü için
+import 'package:fitcall/services/core/qr_code_api_service.dart';
+import 'package:fitcall/services/api_result.dart';
+import 'package:fitcall/models/1_common/event/event_model.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -84,6 +90,28 @@ class _LoginPageState extends State<LoginPage> {
         jsonEncode(profiller.map((e) => e.toJson()).toList()),
       );
 
+      // 👇 AKTİF EVENT KONTROLÜ: varsa direkt Event QR sayfasına
+      try {
+        final int uid = profiller.first.user.id;
+        final ApiResult<EventModel?> evRes =
+            await QrEventApiService.getirEventAktifApi(userId: uid);
+        final aktifEvent = evRes.data; // null => yok
+        if (aktifEvent != null) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => EventQrPage(userId: uid)),
+          );
+          return;
+        }
+      } on ApiException catch (e) {
+        if (!mounted) return;
+        ShowMessage.error(context, e.message);
+      } catch (e) {
+        if (!mounted) return;
+        ShowMessage.error(context, 'Hata: $e');
+      }
+
       if (profiller.length > 1) {
         if (!mounted) return;
         Navigator.pushReplacement(
@@ -122,6 +150,22 @@ class _LoginPageState extends State<LoginPage> {
       );
       await SecureStorageService.setValue<String>('kullanici_adi', u);
       await SecureStorageService.setValue<String>('sifre', p);
+
+      // 👇 AKTİF EVENT KONTROLÜ: varsa direkt Event QR sayfasına
+      try {
+        final int uid = profiller.first.user.id;
+        final ApiResult<EventModel?> evRes =
+            await QrEventApiService.getirEventAktifApi(userId: uid);
+        final aktifEvent = evRes.data;
+        if (aktifEvent != null) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => EventQrPage(userId: uid)),
+          );
+          return;
+        }
+      } catch (_) {}
 
       if (profiller.length == 1) {
         await _profilIleGiris(profiller.first);

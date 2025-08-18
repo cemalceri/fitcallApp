@@ -44,3 +44,17 @@ String getMyMembers = "$baseUrl/getMyMembers";
 String getUrunListesiVeUyePaketleri = "$baseUrl/getUrunListesiVeUyePaketleri";
 String setAntrenorDersIptal = "$baseUrl/setAntrenorDersIptal";
 String getMobilConfigs = "$baseUrl/getMobilConfigs";
+// Event QR
+String getirEventAktif = "$baseUrl/getirEventAktif";
+String getirEventSelfPass = "$baseUrl/getirEventSelfPass";
+String listeleEventMisafirPass = "$baseUrl/listeleEventMisafirPass";
+String olusturEventMisafirPass = "$baseUrl/olusturEventMisafirPass";
+String silEventMisafirPass = "$baseUrl/silEventMisafirPass";
+
+// Tesis (içerideki) QR
+String getirTesisSelfPass = "$baseUrl/getirTesisSelfPass";
+String listeleTesisMisafirPass = "$baseUrl/listeleTesisMisafirPass";
+String olusturTesisMisafirPass = "$baseUrl/olusturTesisMisafirPass";
+String silTesisMisafirPass = "$baseUrl/silTesisMisafirPass";
+// Tarama
+String taraPass = "$baseUrl/taraPass";
