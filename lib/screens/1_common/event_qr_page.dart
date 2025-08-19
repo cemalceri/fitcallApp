@@ -1,8 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'dart:convert';
+import 'dart:math' as math;
 import 'package:fitcall/models/1_common/event/event_model.dart';
 import 'package:fitcall/models/1_common/event/gecis_model.dart';
+import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
+import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/api_result.dart';
 import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +14,14 @@ import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
+
+// KAPAT akışı için importlar (mevcut düzen bozulmadı)
+import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
+import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/fcm_service.dart';
+import 'package:fitcall/services/navigation_helper.dart';
+import 'package:fitcall/screens/4_auth/profil_sec.dart';
 
 class EventQrPage extends StatefulWidget {
   final int userId;
@@ -26,10 +38,71 @@ class _EventQrPageState extends State<EventQrPage> {
   bool _yukleniyor = true;
   String? _hata;
 
+  // Davetli listesi için controller (Scrollbar assert fix)
+  final ScrollController _guestCtrl = ScrollController();
+
   @override
   void initState() {
     super.initState();
     _yukle();
+  }
+
+  @override
+  void dispose() {
+    _guestCtrl.dispose();
+    super.dispose();
+  }
+
+  PreferredSizeWidget _appBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      title: const SizedBox.shrink(),
+      actions: [
+        IconButton(
+          tooltip: 'Kapat',
+          icon: const Icon(Icons.close),
+          onPressed: _kapat,
+        ),
+      ],
+    );
+  }
+
+  // Kapat akışı (aynı)
+  Future<void> _kapat() async {
+    try {
+      final s =
+          await SecureStorageService.getValue<String>('kullanici_profiller');
+      if (s == null) {
+        if (!mounted) return;
+        Navigator.maybePop(context);
+        return;
+      }
+      final arr = (jsonDecode(s) as List);
+      final profiller = arr
+          .map((e) =>
+              KullaniciProfilModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+
+      if (!mounted) return;
+      if (profiller.isEmpty) {
+        Navigator.maybePop(context);
+        return;
+      }
+      if (profiller.length > 1) {
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)));
+        return;
+      }
+
+      final p = profiller.first;
+      final rol = await AuthService.loginUser(p);
+      await sendFCMDevice(isMainAccount: p.anaHesap);
+      await NavigationHelper.redirectAfterLogin(context, rol);
+    } catch (_) {
+      if (!mounted) return;
+      Navigator.maybePop(context);
+    }
   }
 
   Future<void> _yukle() async {
@@ -45,21 +118,21 @@ class _EventQrPageState extends State<EventQrPage> {
       if (ev == null) {
         setState(() {
           _event = null;
+          _selfPass = null;
+          _davetliler = [];
           _yukleniyor = false;
         });
         return;
       }
 
-      // 2) Self pass
-      final spRes =
-          await QrEventApiService.getirEventSelfPassApi(userId: widget.userId);
-      final sp = spRes.data;
-      if (sp == null) {
-        setState(() {
-          _hata = spRes.mesaj;
-          _yukleniyor = false;
-        });
-        return;
+      // 2) Self pass (opsiyonel)
+      GecisModel? sp;
+      try {
+        final spRes = await QrEventApiService.getirEventSelfPassApi(
+            userId: widget.userId);
+        sp = spRes.data;
+      } catch (_) {
+        sp = null;
       }
 
       // 3) Davetliler
@@ -86,11 +159,8 @@ class _EventQrPageState extends State<EventQrPage> {
 
   Future<void> _paylasQrKodu(String code, {String? mesaj}) async {
     try {
-      final painter = QrPainter(
-        data: code,
-        version: QrVersions.auto,
-        gapless: true,
-      );
+      final painter =
+          QrPainter(data: code, version: QrVersions.auto, gapless: true);
       final uiBytes =
           await painter.toImageData(1024, format: ui.ImageByteFormat.png);
       if (uiBytes == null) throw Exception('QR üretilemedi');
@@ -123,6 +193,8 @@ class _EventQrPageState extends State<EventQrPage> {
               labelText: 'Davetli adı soyadı',
               border: OutlineInputBorder(),
             ),
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => Navigator.pop(ctx, c.text.trim()),
           ),
           actions: [
             TextButton(
@@ -150,34 +222,19 @@ class _EventQrPageState extends State<EventQrPage> {
         return;
       }
 
-      // Listeyi yenile
-      final lstRes = await QrEventApiService.listeleEventMisafirPassApi(
-          userId: widget.userId);
-      var liste = lstRes.data ?? <GecisModel>[];
+      setState(() => _davetliler = [created, ..._davetliler]);
 
-      // Backend label döndürmüyorsa: yeni oluşturulan code için label'ı yerelde set et
-      liste = liste.map((e) {
-        if (e.code == created.code &&
-            (e.label == null || e.label!.trim().isEmpty)) {
-          return GecisModel(
-            kapsam: e.kapsam,
-            gecisTipi: e.gecisTipi,
-            eventId: e.eventId,
-            code: e.code,
-            expiresAt: e.expiresAt,
-            iptalMi: e.iptalMi,
-            label: label,
-          );
-        }
-        return e;
-      }).toList();
+      // Sunucu ile senkron
+      try {
+        final lstRes = await QrEventApiService.listeleEventMisafirPassApi(
+            userId: widget.userId);
+        if (lstRes.data != null) setState(() => _davetliler = lstRes.data!);
+      } catch (_) {}
 
-      setState(() => _davetliler = liste);
-
-      // İsteğe bağlı: direkt paylaş
       await _paylasQrKodu(
         created.code,
-        mesaj: 'Merhaba $label, bu QR kod etkinlik boyunca geçerlidir.',
+        mesaj:
+            'Merhaba ${created.label ?? label}, bu QR kod etkinlik boyunca geçerlidir.',
       );
     } catch (e) {
       if (!mounted) return;
@@ -205,27 +262,19 @@ class _EventQrPageState extends State<EventQrPage> {
     if (onay != true) return;
 
     try {
-      final ApiResult<bool> res =
-          await QrEventApiService.silEventMisafirPassApi(
-              userId: widget.userId, code: code);
+      await QrEventApiService.silEventMisafirPassApi(code: code);
 
-      if (res.data == true) {
-        final lstRes = await QrEventApiService.listeleEventMisafirPassApi(
-            userId: widget.userId);
-        if (lstRes.data != null) setState(() => _davetliler = lstRes.data!);
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Silindi. Kota iade edildi.')),
-        );
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(res.mesaj)));
-      }
-    } catch (e) {
+      final lstRes = await QrEventApiService.listeleEventMisafirPassApi(
+          userId: widget.userId);
+      if (lstRes.data != null) setState(() => _davetliler = lstRes.data!);
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Hata: $e')));
+      ShowMessage.success(context, "Davet silindi.");
+    } on ApiException catch (e) {
+      ShowMessage.error(context, e.message);
+      return;
+    } catch (e) {
+      ShowMessage.error(context, 'Hata: $e');
+      return;
     }
   }
 
@@ -235,20 +284,38 @@ class _EventQrPageState extends State<EventQrPage> {
   }
 
   Widget _qrKutu(String code) => Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: Colors.black12),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
-                color: Colors.black12.withOpacity(.06),
-                blurRadius: 8,
-                offset: const Offset(0, 3))
+              color: Color(0x14000000), // ~%8 siyah
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
           ],
         ),
         child: QrImageView(data: code, version: QrVersions.auto, size: 220),
       );
+
+  Widget _bolumBasligi(String text, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: Colors.black54),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            letterSpacing: .2,
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -256,53 +323,51 @@ class _EventQrPageState extends State<EventQrPage> {
 
     if (_yukleniyor) {
       return Scaffold(
-          appBar: AppBar(title: const Text('Etkinlik Girişi')),
+          appBar: _appBar(),
           body: const Center(child: CircularProgressIndicator()));
     }
     if (_hata != null) {
-      return Scaffold(
-          appBar: AppBar(title: const Text('Etkinlik Girişi')),
-          body: Center(child: Text(_hata!)));
+      return Scaffold(appBar: _appBar(), body: Center(child: Text(_hata!)));
     }
     if (_event == null) {
       return Scaffold(
-          appBar: AppBar(title: const Text('Etkinlik Girişi')),
+          appBar: _appBar(),
           body: const Center(child: Text('Şu anda aktif bir event yok.')));
     }
 
     final ev = _event!;
     final sp = _selfPass;
 
+    final bool kotaVar = ev.maxMisafirKisiBasi != null;
+    final int davetSayisi = _davetliler.length;
+    final bool kotaDoldu =
+        kotaVar && (davetSayisi >= (ev.maxMisafirKisiBasi ?? 0));
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Etkinlik Girişi'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.maybePop(context),
-            child:
-                const Text('Ana Sayfam', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+      appBar: _appBar(),
+      backgroundColor: const Color(0xFFF7F6F5),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _davetEt,
-        label: const Text('Davet Et'),
+        onPressed: kotaDoldu ? null : _davetEt,
         icon: const Icon(Icons.person_add_alt_1),
+        label: Text(kotaDoldu ? 'Kota doldu' : 'Davet Et'),
       ),
       body: RefreshIndicator(
         onRefresh: _yukle,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
           children: [
-            // Event header
+            // HEADER: Ad büyük, tarih/mekan küçük, kota dipnot
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  theme.colorScheme.primary,
-                  theme.colorScheme.secondary
-                ]),
+                color: const Color(0xFF6EC1A6),
                 borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Color(0x14000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 3))
+                ],
               ),
               child: DefaultTextStyle(
                 style: const TextStyle(color: Colors.white),
@@ -311,22 +376,31 @@ class _EventQrPageState extends State<EventQrPage> {
                     children: [
                       Text(ev.ad,
                           style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 6),
-                      // SADECE BAŞLANGIÇ TARİHİ
+                              fontSize: 24, fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 4),
                       Text(
-                          '${_f(ev.baslangic)}${ev.mekan != null ? '  •  ${ev.mekan}' : ''}'),
-                      if (_event!.maxMisafirKisiBasi != null) ...[
-                        const SizedBox(height: 8),
+                        '${_f(ev.baslangic)}${ev.mekan != null ? '  •  ${ev.mekan}' : ''}',
+                        style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFFEFFAF6)),
+                      ),
+                      if (ev.maxMisafirKisiBasi != null) ...[
+                        const SizedBox(height: 10),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
+                              horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(.15),
-                              borderRadius: BorderRadius.circular(24)),
-                          child: Text(_kotaMetni(),
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w600)),
+                            color: const Color(0x2EFFFFFF), // ~%18 beyaz
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Text(
+                            _kotaMetni(),
+                            style: const TextStyle(
+                                fontSize: 12.5,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ],
                     ]),
@@ -335,10 +409,9 @@ class _EventQrPageState extends State<EventQrPage> {
 
             const SizedBox(height: 16),
 
-            // Kullanıcının QR'ı
+            // QR alanı
             if (sp != null) ...[
-              Text('Girişi için QR kodu okutunuz',
-                  style: theme.textTheme.titleMedium),
+              _bolumBasligi('Giriş için QR kodu okutunuz', Icons.qr_code_2),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -346,22 +419,30 @@ class _EventQrPageState extends State<EventQrPage> {
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.black12),
+                  boxShadow: const [
+                    BoxShadow(
+                        color: Color(0x10000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 3))
+                  ],
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _qrKutu(sp.code),
-                    const SizedBox(height: 12),
-                    // Paylaş kaldırıldı; sadece bilgi notu kalsın
-                    const Text('• Parlaklığı artırın, kodu tamamen gösterin.',
-                        style: TextStyle(color: Colors.black54)),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Parlaklığı artırın ve kodu tamamen gösterin.',
+                      style: TextStyle(color: Colors.black54, fontSize: 12),
+                    ),
                   ],
                 ),
               ),
             ],
 
-            const SizedBox(height: 16),
-            Text('Davet Ettiklerim', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 18),
+
+            // Davetliler (kendi içinde kaydırılır)
+            _bolumBasligi('Davetli Listem', Icons.people_alt),
             const SizedBox(height: 8),
 
             if (_davetliler.isEmpty)
@@ -375,54 +456,81 @@ class _EventQrPageState extends State<EventQrPage> {
                 child: const Text('Henüz davet oluşturmadınız.'),
               )
             else
-              ..._davetliler.map((p) {
-                final adSoyad = (p.label == null || p.label!.trim().isEmpty)
-                    ? 'Davetli'
-                    : p.label!;
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.black12),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(adSoyad,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 16)),
-                              const SizedBox(height: 4),
-                              const Text(
-                                  'Bu davet kodu etkinlik boyunca geçerlidir.',
-                                  style: TextStyle(color: Colors.black54)),
-                            ]),
-                      ),
-                      IconButton(
-                        tooltip: 'Paylaş',
-                        onPressed: () => _paylasQrKodu(
-                          p.code,
-                          mesaj:
-                              'Merhaba $adSoyad, bu QR kod etkinlik boyunca geçerlidir.',
+              Container(
+                constraints: BoxConstraints(
+                  maxHeight:
+                      math.min(360, MediaQuery.of(context).size.height * 0.45),
+                ),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.black12),
+                ),
+                child: Scrollbar(
+                  controller: _guestCtrl,
+                  thumbVisibility: true,
+                  radius: const Radius.circular(12),
+                  child: ListView.builder(
+                    controller: _guestCtrl,
+                    padding: const EdgeInsets.all(8),
+                    itemCount: _davetliler.length,
+                    shrinkWrap: true,
+                    primary: false,
+                    itemBuilder: (context, index) {
+                      final p = _davetliler[index];
+                      final adSoyad =
+                          (p.label == null || p.label!.trim().isEmpty)
+                              ? 'Davetli'
+                              : p.label!;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.black12),
                         ),
-                        icon: const Icon(Icons.share),
-                      ),
-                      IconButton(
-                        tooltip: 'Sil',
-                        onPressed: () => _silDavetli(p.code),
-                        icon: const Icon(Icons.delete_outline),
-                      ),
-                    ],
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(adSoyad,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                          color: Colors.black)),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Bu davet kodu etkinlik boyunca geçerlidir.',
+                                    style: TextStyle(
+                                        color: Colors.black54, fontSize: 12.5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Paylaş',
+                              onPressed: () => _paylasQrKodu(
+                                p.code,
+                                mesaj:
+                                    'Merhaba $adSoyad, bu QR kod etkinlik boyunca geçerlidir.',
+                              ),
+                              icon: const Icon(Icons.share),
+                            ),
+                            IconButton(
+                              tooltip: 'Sil',
+                              onPressed: () => _silDavetli(p.code),
+                              icon: const Icon(Icons.delete_outline),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              }),
-
-            // ALTTAKİ KOTA METNİ KALDIRILDI (üstte gösteriliyor)
+                ),
+              ),
           ],
         ),
       ),

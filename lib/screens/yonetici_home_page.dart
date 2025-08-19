@@ -1,16 +1,11 @@
+// lib/screens/yonetici/yonetici_home_page.dart
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:convert';
-import 'package:fitcall/common/api_urls.dart'; // getAnnouncements, getNotifications, getGaleriImages tanımlı olsun
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
-import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
-import 'package:fitcall/models/1_common/duyuru_model.dart';
-import 'package:fitcall/screens/1_common/2_fotograf/full_screen_image_page.dart';
 import 'package:fitcall/services/core/auth_service.dart';
-import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/services/core/notification_service.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class YoneticiHomePage extends StatefulWidget {
   const YoneticiHomePage({super.key});
@@ -20,322 +15,174 @@ class YoneticiHomePage extends StatefulWidget {
 }
 
 class _YoneticiHomePageState extends State<YoneticiHomePage> {
-  // Menü elemanları
+  /* ---------------- Üst Menü (AntrenorHomePage ile aynı grid yapısı) ---------------- */
   final List<Map<String, dynamic>> menuItems = [
     {
       'name': routeEnums[SayfaAdi.qrKodKayit]!,
       'icon': Icons.qr_code,
-      'text': 'QR Kod Oluştur'
+      'text': 'QR Kod Oluştur',
     },
     {
       'name': routeEnums[SayfaAdi.qrKodDogrula]!,
       'icon': Icons.qr_code_2,
-      'text': 'QR Kod Doğrula'
+      'text': 'QR Kod Doğrula',
     },
   ];
 
-  // Django backend'den gelen duyuruları tutacak Future
-  late Future<List<AnnouncementModel>> _announcementsFuture;
-  // Django backend'den gelen bildirimleri tutacak Future
-  // Galeri resimlerini tutacak Future
-  late Future<List<String>> _galleryImagesFuture;
+  // İleride isim göstermek istersek doldururuz (örn. StorageService/Profil servisi).
+  String _yoneticiAdi = "";
 
   @override
   void initState() {
     super.initState();
-    _announcementsFuture = fetchAnnouncements();
-    _galleryImagesFuture = fetchGalleryImages();
+    NotificationService.refreshUnreadCount();
+    _loadYoneticiAdi();
   }
 
-  // Django API'den duyuruları çekiyoruz
-  Future<List<AnnouncementModel>> fetchAnnouncements() async {
-    try {
-      String? token = await StorageService.getToken();
-      final response = await http.post(
-        Uri.parse(getDuyurular),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        var decoded = jsonDecode(utf8.decode(response.bodyBytes));
-        return List<AnnouncementModel>.from(
-            decoded.map((e) => AnnouncementModel.fromJson(e)));
-      } else {
-        ShowMessage.error(
-            context, 'Duyurular alınamadı ${response.statusCode}');
-        return [];
-      }
-    } catch (e) {
-      ShowMessage.error(context, 'Duyurular alınamadı.');
-      return [];
-    }
-  }
-
-  // Django /gallery/ endpoint'ine POST isteği atarak resim URL'lerini çekiyoruz
-  Future<List<String>> fetchGalleryImages() async {
-    try {
-      String? token = await StorageService.getToken();
-      final response = await http.post(
-        Uri.parse(getGaleriImages),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(const Duration(seconds: 15));
-
-      if (response.statusCode == 200) {
-        var decoded = jsonDecode(utf8.decode(response.bodyBytes));
-        return List<String>.from(decoded.map((e) => e["url"]));
-      } else {
-        ShowMessage.error(
-            context, 'Hata: Galeri resimleri alınamadı ${response.statusCode}');
-        return [];
-      }
-    } catch (e) {
-      ShowMessage.error(context, 'Hata: Galeri resimleri alınamadı.');
-      return [];
-    }
+  Future<void> _loadYoneticiAdi() async {
+    // Not: Projede yöneticinin adı için net bir Storage/Service metodu verilmedi.
+    // İlerde eklenince burada set edilecek. Şimdilik boş string kalsın.
+    setState(() => _yoneticiAdi = "");
   }
 
   @override
   Widget build(BuildContext context) {
+    final hosgeldinText = _yoneticiAdi.isEmpty
+        ? "Hoşgeldiniz 🎾"
+        : "Hoşgeldiniz $_yoneticiAdi 🎾";
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Yönetici Ana Sayfası'),
         actions: [
-          // Bildirimleri FutureBuilder ile çekip NotificationIcon widget'ına gönderiyoruz
           const NotificationsBell(),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              AuthService.logout(context);
-            },
+            onPressed: () => AuthService.logout(context),
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Theme.of(context).primaryColor, Colors.blueAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: const Text(
-                'Menü',
-                style: TextStyle(color: Colors.white, fontSize: 28),
-              ),
-            ),
-            // Menü elemanları
-            ...menuItems.map((item) {
-              return ListTile(
-                leading: Icon(item['icon']),
-                title: Text(item['text']),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, item['name']);
-                },
-              );
-            }),
-          ],
-        ),
-      ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Üst Banner / Hoş Geldiniz Mesajı
-            Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue, Colors.lightBlueAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Hoş Geldiniz!',
-                    style: TextStyle(
-                      fontSize: 28,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Güncel duyuruları ve galeriyi inceleyin.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
+            Text(
+              hosgeldinText,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            // Duyurular Bölümü
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: const [
-                  Icon(Icons.announcement, color: Colors.blue),
-                  SizedBox(width: 8),
-                  Text(
-                    'Duyurular',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
+
+            // Üst menü (AntrenorHomePage ile aynı grid)
+            GridView.count(
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: menuItems.map(_buildMenuButton).toList(),
             ),
-            const SizedBox(height: 8),
-            FutureBuilder<List<AnnouncementModel>>(
-              future: _announcementsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Hata: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('Hiç duyuru bulunamadı'));
-                }
-                final announcements = snapshot.data!;
-                return SizedBox(
-                  height: 200,
-                  child: PageView.builder(
-                    controller: PageController(viewportFraction: 0.9),
-                    itemCount: announcements.length,
-                    itemBuilder: (context, index) {
-                      final announcement = announcements[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: GestureDetector(
-                          onTap: () {
-                            // Duyuruya tıklandığında yapılacak işlemler
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 4,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    announcement.title,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    announcement.subtitle,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    announcement.content,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
+
             const SizedBox(height: 24),
-            // Resim Galerisi Bölümü
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: const [
-                  Icon(Icons.photo_album, color: Colors.blue),
-                  SizedBox(width: 8),
-                  Text(
-                    'Resim Galerisi',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            FutureBuilder<List<String>>(
-              future: _galleryImagesFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Hata: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('Hiç resim bulunamadı'));
-                }
-                final galleryImages = snapshot.data!;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: GridView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: galleryImages.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
+
+            // Hızlı QR İşlemleri kartı (AntrenorHomePage "Bir Sonraki Ders" kartına benzer yapı)
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading:
+                          const Icon(Icons.qr_code_scanner, color: Colors.blue),
+                      title: const Text("Hızlı QR İşlemleri"),
+                      subtitle: const Text(
+                          "Etkinlik/içeri giriş için hızlıca QR üretin veya okutun."),
                     ),
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          showFullScreenImage(context, galleryImages[index]);
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            galleryImages[index],
-                            fit: BoxFit.cover,
-                            errorBuilder: (ctx, error, stackTrace) {
-                              return const Center(
-                                  child: Text("Resim yüklenemedi"));
-                            },
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => Navigator.pushNamed(
+                                context, routeEnums[SayfaAdi.qrKodKayit]!),
+                            icon: const Icon(Icons.qr_code),
+                            label: const Text("QR Oluştur"),
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
                           ),
                         ),
-                      );
-                    },
-                  ),
-                );
-              },
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => Navigator.pushNamed(
+                                context, routeEnums[SayfaAdi.qrKodDogrula]!),
+                            icon: const Icon(Icons.qr_code_2),
+                            label: const Text("QR Doğrula"),
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
+
             const SizedBox(height: 24),
+
+            // Bilgi kartı: süreç/akış açıklaması (kısa)
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              child: const ListTile(
+                leading: Icon(Icons.info_outline, color: Colors.blueGrey),
+                title: Text("İpucu"),
+                subtitle: Text(
+                    "Oluşturduğunuz QR’ı girişte okutun. Doğrulama ekranı, kodun geçerliliğini anında gösterir."),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+
+  /* --------------------- Görsel iyileştirmeler (AntrenorHomePage ile aynı stil) --------------------- */
+  Widget _buildMenuButton(Map<String, dynamic> item) => Padding(
+        padding: const EdgeInsets.all(6),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => Navigator.pushNamed(context, item['name']),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                    color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(item['icon'], size: 34, color: Colors.blueAccent),
+                const SizedBox(height: 6),
+                Text(
+                  item['text'],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
 }

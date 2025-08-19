@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-import 'package:fitcall/screens/1_common/event_qr_page.dart';
 import 'package:fitcall/services/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
@@ -8,9 +7,6 @@ import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
-import 'package:fitcall/services/core/qr_code_api_service.dart';
-import 'package:fitcall/services/api_result.dart';
-import 'package:fitcall/models/1_common/event/event_model.dart';
 
 class ProfilSecPage extends StatefulWidget {
   final List<KullaniciProfilModel> kullaniciProfilList;
@@ -22,34 +18,6 @@ class ProfilSecPage extends StatefulWidget {
 
 class _ProfilSecPageState extends State<ProfilSecPage> {
   bool _yonlendirildi = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _kontrolVeYonlendirEvent(); // görseli bozmadan, varsa direkt Event QR'a gider
-  }
-
-  Future<void> _kontrolVeYonlendirEvent() async {
-    if (widget.kullaniciProfilList.isEmpty) return;
-    try {
-      final int uid = widget.kullaniciProfilList.first.user.id;
-      final ApiResult<EventModel?> res =
-          await QrEventApiService.getirEventAktifApi(userId: uid);
-      if (res.data != null) {
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => EventQrPage(userId: uid)),
-        );
-      }
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      ShowMessage.error(context, e.message);
-    } catch (e) {
-      if (!mounted) return;
-      ShowMessage.error(context, 'Hata: $e');
-    }
-  }
 
   @override
   void didChangeDependencies() {
@@ -118,57 +86,40 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                         colors: [Color(0xFF4e54c8), Color(0xFF8f94fb)],
                       ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(3),
-                      child: CircleAvatar(
-                        backgroundColor: Colors.white,
-                        backgroundImage: p.uye?.profilFotografi != null
-                            ? NetworkImage(p.uye!.profilFotografi!)
-                            : p.antrenor?.profileImageUrl != null
-                                ? NetworkImage(p.antrenor!.profileImageUrl!)
-                                : null,
-                        child: (p.uye?.profilFotografi == null &&
-                                p.antrenor?.profileImageUrl == null)
-                            ? Text(
-                                ad.characters.first.toUpperCase(),
-                                style: const TextStyle(
-                                  fontSize: 40,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black54,
-                                ),
-                              )
-                            : null,
-                      ),
-                    ),
+                    alignment: Alignment.center,
+                    child:
+                        const Icon(Icons.person, size: 48, color: Colors.white),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     tamAd,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  p.anaHesap
-                      ? Container(
-                          margin: const EdgeInsets.only(top: 6),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.shade600,
-                            borderRadius: BorderRadius.circular(12),
+                  if (p.anaHesap == true)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'Ana Hesap',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
                           ),
-                          child: const Text(
-                            'Ana Hesap',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        )
-                      : const SizedBox(height: 24),
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox(height: 24),
                 ],
               ),
             );

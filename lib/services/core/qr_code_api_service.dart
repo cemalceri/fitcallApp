@@ -16,12 +16,14 @@ class QrEventApiService {
     );
   }
 
-  static Future<ApiResult<GecisModel>> getirEventSelfPassApi(
+  static Future<ApiResult<GecisModel?>> getirEventSelfPassApi(
       {required int userId}) {
-    return ApiClient.postParsed<GecisModel>(
+    return ApiClient.postParsed<GecisModel?>(
       getirEventSelfPass,
       {'user_id': userId},
-      (json) => GecisModel.fromJson(Map<String, dynamic>.from(json)),
+      (json) => json == null
+          ? null
+          : GecisModel.fromJson(Map<String, dynamic>.from(json)),
     );
   }
 
@@ -30,9 +32,23 @@ class QrEventApiService {
     return ApiClient.postParsed<List<GecisModel>>(
       listeleEventMisafirPass,
       {'user_id': userId},
-      (json) => (json as List)
-          .map((e) => GecisModel.fromJson(Map<String, dynamic>.from(e as Map)))
-          .toList(),
+      (json) {
+        // Güçlü parse: list/dict(results)/dict(items)
+        if (json is List) {
+          return json
+              .map((e) => GecisModel.fromJson(Map<String, dynamic>.from(e)))
+              .toList();
+        } else if (json is Map<String, dynamic>) {
+          final dynamic raw =
+              json['results'] ?? json['items'] ?? json['data'] ?? [];
+          if (raw is List) {
+            return raw
+                .map((e) => GecisModel.fromJson(Map<String, dynamic>.from(e)))
+                .toList();
+          }
+        }
+        return <GecisModel>[];
+      },
     );
   }
 
@@ -46,10 +62,10 @@ class QrEventApiService {
   }
 
   static Future<ApiResult<bool>> silEventMisafirPassApi(
-      {required int userId, required String code}) {
+      {required String code}) {
     return ApiClient.postParsed<bool>(
       silEventMisafirPass,
-      {'user_id': userId, 'code': code},
+      {'code': code},
       (json) => (json is bool) ? json : false,
     );
   }

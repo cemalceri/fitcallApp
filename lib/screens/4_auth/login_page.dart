@@ -15,7 +15,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
 
-// 👇 EKLENDİ: Event kontrolü için
+// 👇 Aktif event kontrolü
 import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:fitcall/services/api_result.dart';
 import 'package:fitcall/models/1_common/event/event_model.dart';
@@ -52,15 +52,50 @@ class _LoginPageState extends State<LoginPage> {
     if (mounted) setState(() => _beniHatirla = r ?? false);
   }
 
+  /// Profiller listesi içinden veya storage’dan mantıklı bir userId üret.
+  Future<int?> _tahminiUserIdAl({List<KullaniciProfilModel>? profiller}) async {
+    if (profiller != null && profiller.isNotEmpty) {
+      return profiller.first.user.id;
+    }
+    // Olası fallback anahtarları (proje tarafında varsa)
+    final candidates = ['user_id', 'kullanici_id', 'uid'];
+    for (final k in candidates) {
+      final v = await SecureStorageService.getValue<int>(k);
+      if (v != null && v > 0) return v;
+    }
+    return null;
+  }
+
+  /// Aktif event varsa QR sayfasına gider, true döner.
+  Future<bool> _aktifEventVarmiGit(int? uid) async {
+    if (uid == null) return false;
+    try {
+      final ApiResult<EventModel?> evRes =
+          await QrEventApiService.getirEventAktifApi(userId: uid);
+      final aktifEvent = evRes.data;
+      if (aktifEvent != null) {
+        if (!mounted) return true;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => EventQrPage(userId: uid)),
+        );
+        return true;
+      }
+    } catch (_) {
+      // sessiz geç
+    }
+    return false;
+  }
+
   Future<void> _otomatikGirisKontrol() async {
     final hatirla = await StorageService.beniHatirlaIsaretlenmisMi();
     if (hatirla != true) return;
 
-    // Geçerli token varsa direkt yönlendir
+    // Token geçerliyse: rolü belirle
     if (await StorageService.tokenGecerliMi()) {
-      final s = await SecureStorageService.getValue<String>('gruplar');
+      final sGruplar = await SecureStorageService.getValue<String>('gruplar');
       List<dynamic> gruplar = [];
-      if (s != null) gruplar = jsonDecode(s);
+      if (sGruplar != null) gruplar = jsonDecode(sGruplar);
 
       Roller role = Roller.uye;
       if (gruplar.contains(Roller.antrenor.name)) {
@@ -71,47 +106,74 @@ class _LoginPageState extends State<LoginPage> {
         role = Roller.cafe;
       }
 
+      // --- PROFİLLERİ HER ZAMAN API'DEN ÇEKMEYE ÇALIŞ ---
+      List<KullaniciProfilModel> profiller = [];
+      try {
+        final u = await SecureStorageService.getValue<String>('kullanici_adi');
+        final p = await SecureStorageService.getValue<String>('sifre');
+        if (u != null && p != null) {
+          profiller = await AuthService.fetchMyMembers(u, p);
+          await SecureStorageService.setValue<String>(
+            'kullanici_profiller',
+            jsonEncode(profiller.map((e) => e.toJson()).toList()),
+          );
+        } else {
+          // Son çare: eldeki cache
+          final s = await SecureStorageService.getValue<String>(
+              'kullanici_profiller');
+          if (s != null) {
+            final arr = (jsonDecode(s) as List);
+            profiller = arr
+                .map((e) =>
+                    KullaniciProfilModel.fromJson(Map<String, dynamic>.from(e)))
+                .toList();
+          }
+        }
+      } catch (_) {/* ignore */}
+
+      // 1) Aktif event varsa direkt QR
+      final uid = await _tahminiUserIdAl(profiller: profiller);
+      if (await _aktifEventVarmiGit(uid)) return;
+
+      // 2) Event yoksa: profil akışı
+      if (profiller.isNotEmpty) {
+        if (profiller.length > 1) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
+          );
+          return;
+        } else {
+          await _profilIleGiris(profiller.first);
+          return;
+        }
+      }
+
+      // 3) Hâlâ profil yoksa mevcut eski davranış
       if (!mounted) return;
       await NavigationHelper.redirectAfterLogin(context, role);
       return;
     }
 
-    // Token yoksa profilleri API’den tekrar çek
+    // Token yoksa profilleri API’den tekrar çek ve aynı akışı uygula
     try {
       final u = await SecureStorageService.getValue<String>('kullanici_adi');
       final p = await SecureStorageService.getValue<String>('sifre');
       if (u == null || p == null) return;
 
       final profiller = await AuthService.fetchMyMembers(u, p);
-      if (profiller.isEmpty) return;
-
       await SecureStorageService.setValue<String>(
         'kullanici_profiller',
         jsonEncode(profiller.map((e) => e.toJson()).toList()),
       );
 
-      // 👇 AKTİF EVENT KONTROLÜ: varsa direkt Event QR sayfasına
-      try {
-        final int uid = profiller.first.user.id;
-        final ApiResult<EventModel?> evRes =
-            await QrEventApiService.getirEventAktifApi(userId: uid);
-        final aktifEvent = evRes.data; // null => yok
-        if (aktifEvent != null) {
-          if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => EventQrPage(userId: uid)),
-          );
-          return;
-        }
-      } on ApiException catch (e) {
-        if (!mounted) return;
-        ShowMessage.error(context, e.message);
-      } catch (e) {
-        if (!mounted) return;
-        ShowMessage.error(context, 'Hata: $e');
-      }
+      // Aktif event varsa QR
+      final uid = await _tahminiUserIdAl(profiller: profiller);
+      if (await _aktifEventVarmiGit(uid)) return;
 
+      // Event yoksa profil akışı
+      if (profiller.isEmpty) return;
       if (profiller.length > 1) {
         if (!mounted) return;
         Navigator.pushReplacement(
@@ -120,9 +182,8 @@ class _LoginPageState extends State<LoginPage> {
         );
         return;
       }
-
       await _profilIleGiris(profiller.first);
-    } catch (e) {
+    } catch (_) {
       // Sessiz geç, login ekranında kalır
     }
   }
@@ -138,12 +199,8 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _yukleniyor = true);
     try {
+      // HER ZAMAN API'DEN ÇEK
       final profiller = await AuthService.fetchMyMembers(u, p);
-      if (profiller.isEmpty) {
-        ShowMessage.error(context, 'Profil bulunamadı.');
-        return;
-      }
-
       await SecureStorageService.setValue<String>(
         'kullanici_profiller',
         jsonEncode(profiller.map((e) => e.toJson()).toList()),
@@ -151,35 +208,25 @@ class _LoginPageState extends State<LoginPage> {
       await SecureStorageService.setValue<String>('kullanici_adi', u);
       await SecureStorageService.setValue<String>('sifre', p);
 
-      // 👇 AKTİF EVENT KONTROLÜ: varsa direkt Event QR sayfasına
-      try {
-        final int uid = profiller.first.user.id;
-        final ApiResult<EventModel?> evRes =
-            await QrEventApiService.getirEventAktifApi(userId: uid);
-        final aktifEvent = evRes.data;
-        if (aktifEvent != null) {
-          if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => EventQrPage(userId: uid)),
-          );
-          return;
-        }
-      } catch (_) {}
+      // 1) Aktif event kontrolü (profil yoksa da userId tahmin etmeye çalış)
+      final uid = await _tahminiUserIdAl(profiller: profiller);
+      if (await _aktifEventVarmiGit(uid)) return;
 
-      if (profiller.length == 1) {
-        await _profilIleGiris(profiller.first);
-      } else {
+      // 2) Event yoksa profil akışı
+      if (profiller.isEmpty) {
+        ShowMessage.error(context, 'Profil bulunamadı.');
+        return;
+      }
+      if (profiller.length > 1) {
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
         );
+        return;
       }
-    } on ApiException catch (e) {
-      ShowMessage.error(context, e.message);
-    } catch (e) {
-      ShowMessage.error(context, 'Bilinmeyen hata: $e');
+
+      await _profilIleGiris(profiller.first);
     } finally {
       if (mounted) setState(() => _yukleniyor = false);
     }
@@ -189,7 +236,6 @@ class _LoginPageState extends State<LoginPage> {
     try {
       LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
       final rol = await AuthService.loginUser(profil);
-
       await sendFCMDevice(isMainAccount: profil.anaHesap);
 
       if (!mounted) return;
