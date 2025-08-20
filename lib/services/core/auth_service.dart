@@ -19,17 +19,45 @@ class AuthService {
   ) async {
     final body = {'username': username, 'password': password};
 
-    final ApiResult<List<KullaniciProfilModel>> res =
-        await ApiClient.postParsed<List<KullaniciProfilModel>>(
+    // Hem eski (List) hem yeni ({user_id, profiller}) formatı destekle
+    final ApiResult<dynamic> res = await ApiClient.postParsed<dynamic>(
       getMyMembers,
       body,
-      (j) => ApiParsing.parseList<KullaniciProfilModel>(
-        j,
-        (m) => KullaniciProfilModel.fromJson(m),
-      ),
+      (j) => j, // geleni olduğu gibi geçir
       auth: false,
     );
-    return res.data ?? <KullaniciProfilModel>[];
+
+    final data = res.data;
+
+    // 1) Eski: direkt liste dönüyor
+    if (data is List) {
+      return data
+          .map((e) => KullaniciProfilModel.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ))
+          .toList();
+    }
+
+    // 2) Yeni: { user_id, profiller: [...] }
+    if (data is Map<String, dynamic>) {
+      final uid = data['user_id'];
+      if (uid is int && uid > 0) {
+        // user_id'yi cache'e yaz (LoginPage aktif event çağrısında kullanacağız)
+        try {
+          await SecureStorageService.setValue<int>('user_id', uid);
+        } catch (_) {}
+      }
+
+      final listJson = (data['profiller'] as List?) ?? const [];
+      return listJson
+          .map((e) => KullaniciProfilModel.fromJson(
+                Map<String, dynamic>.from(e as Map),
+              ))
+          .toList();
+    }
+
+    // Beklenmeyen durum
+    return <KullaniciProfilModel>[];
   }
 
   /* ============== API: Login (Token üret) ============== */

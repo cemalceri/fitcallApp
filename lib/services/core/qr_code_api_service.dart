@@ -1,6 +1,7 @@
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/1_common/event/event_model.dart';
 import 'package:fitcall/models/1_common/event/gecis_model.dart';
+import 'package:fitcall/models/1_common/qr_kod_models.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
@@ -67,6 +68,18 @@ class QrEventApiService {
       silEventMisafirPass,
       {'code': code},
       (json) => (json is bool) ? json : false,
+    );
+  }
+}
+
+class QrKodApiService {
+  /// QR kod doğrulama – token’lı istek (ApiClient default olarak auth header ekler)
+  static Future<ApiResult<QrKodVerifyResponse>> qrKodDogrulaApi(
+      {required String kod}) {
+    return ApiClient.postParsed<QrKodVerifyResponse>(
+      qrKodDogrula,
+      {'kod': kod},
+      (json) => QrKodVerifyResponse.fromAny(json, defaultSuccess: true),
     );
   }
 }

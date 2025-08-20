@@ -14,14 +14,17 @@ import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
+// PendingAction entegrasyonu
+import 'package:fitcall/screens/1_common/1_notification/pending_action.dart';
+import 'package:fitcall/screens/1_common/1_notification/pending_action_store.dart';
 
-// 👇 Aktif event kontrolü
-import 'package:fitcall/services/core/qr_code_api_service.dart';
-import 'package:fitcall/services/api_result.dart';
 import 'package:fitcall/models/1_common/event/event_model.dart';
+import 'package:fitcall/services/api_result.dart';
+import 'package:fitcall/services/core/qr_code_api_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
@@ -36,8 +39,14 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _beniHatirlaYukle();
-    _otomatikGirisKontrol();
-    GuncellemeKoordinatoru.kontrolVeUygula(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 1) Zorunlu güncelleme kontrolü (gerekirse sayfa açılır ve akış burada bitmeli)
+      await GuncellemeKoordinatoru.kontrolVeUygula(context);
+      if (!mounted) return;
+
+      // 2) Güncelleme kapısı geçildiyse otomatik giriş akışı
+      await _otomatikGirisKontrol();
+    });
   }
 
   @override
@@ -66,21 +75,44 @@ class _LoginPageState extends State<LoginPage> {
     return null;
   }
 
+  /// PendingAction varsa önce onu aç.
+  Future<bool> _handlePendingAction() async {
+    try {
+      final action = await PendingActionStore.instance.take();
+      if (action == null) return false;
+      if (!mounted) return true;
+      switch (action.type) {
+        case PendingActionType.dersTeyit:
+          await Navigator.pushNamed(context, routeEnums[SayfaAdi.dersTeyit]!,
+              arguments: action.data);
+          break;
+        case PendingActionType.bildirimListe:
+          await Navigator.pushNamed(context, routeEnums[SayfaAdi.bildirimler]!);
+          break;
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Aktif event varsa QR sayfasına gider, true döner.
   Future<bool> _aktifEventVarmiGit(int? uid) async {
-    if (uid == null) return false;
+    final stored = await SecureStorageService.getValue<int>('user_id');
+    final userId = uid ?? stored;
+    if (userId == null || userId <= 0) return false;
     try {
       final ApiResult<EventModel?> evRes =
-          await QrEventApiService.getirEventAktifApi(userId: uid);
+          await QrEventApiService.getirEventAktifApi(userId: userId);
       final aktifEvent = evRes.data;
-      if (aktifEvent != null) {
-        if (!mounted) return true;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => EventQrPage(userId: uid)),
-        );
-        return true;
-      }
+      if (aktifEvent == null) return false;
+
+      if (!mounted) return false;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => EventQrPage(userId: userId)),
+      );
+      return true;
     } catch (_) {
       // sessiz geç
     }
@@ -91,21 +123,8 @@ class _LoginPageState extends State<LoginPage> {
     final hatirla = await StorageService.beniHatirlaIsaretlenmisMi();
     if (hatirla != true) return;
 
-    // Token geçerliyse: rolü belirle
+    // Token geçerliyse: rolü belirle (rol boş olabilir → rolsüz)
     if (await StorageService.tokenGecerliMi()) {
-      final sGruplar = await SecureStorageService.getValue<String>('gruplar');
-      List<dynamic> gruplar = [];
-      if (sGruplar != null) gruplar = jsonDecode(sGruplar);
-
-      Roller role = Roller.uye;
-      if (gruplar.contains(Roller.antrenor.name)) {
-        role = Roller.antrenor;
-      } else if (gruplar.contains(Roller.yonetici.name)) {
-        role = Roller.yonetici;
-      } else if (gruplar.contains(Roller.cafe.name)) {
-        role = Roller.cafe;
-      }
-
       // --- PROFİLLERİ HER ZAMAN API'DEN ÇEKMEYE ÇALIŞ ---
       List<KullaniciProfilModel> profiller = [];
       try {
@@ -131,6 +150,9 @@ class _LoginPageState extends State<LoginPage> {
         }
       } catch (_) {/* ignore */}
 
+      // 0) PendingAction varsa önce onu aç
+      await _handlePendingAction();
+
       // 1) Aktif event varsa direkt QR
       final uid = await _tahminiUserIdAl(profiller: profiller);
       if (await _aktifEventVarmiGit(uid)) return;
@@ -144,15 +166,27 @@ class _LoginPageState extends State<LoginPage> {
             MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
           );
           return;
-        } else {
-          await _profilIleGiris(profiller.first);
+        }
+
+        // Tek profil: rolsüz ise anasayfaya geçmeyelim
+        final p = profiller.first;
+        final gr = p.gruplar;
+        if (gr.isEmpty ||
+            (!gr.contains(Roller.antrenor.name) &&
+                !gr.contains(Roller.uye.name) &&
+                !gr.contains(Roller.yonetici.name) &&
+                !gr.contains(Roller.cafe.name))) {
+          if (!mounted) return;
+          ShowMessage.error(context, 'Aktif etkinlik bulunamadı.');
           return;
         }
+        await _profilIleGiris(p);
+        return;
       }
 
-      // 3) Hâlâ profil yoksa mevcut eski davranış
+      // 3) Hâlâ profil yoksa: rolsüz ve aktif event de yok → hata göster
       if (!mounted) return;
-      await NavigationHelper.redirectAfterLogin(context, role);
+      ShowMessage.error(context, 'Aktif etkinlik bulunamadı.');
       return;
     }
 
@@ -162,29 +196,67 @@ class _LoginPageState extends State<LoginPage> {
       final p = await SecureStorageService.getValue<String>('sifre');
       if (u == null || p == null) return;
 
-      final profiller = await AuthService.fetchMyMembers(u, p);
-      await SecureStorageService.setValue<String>(
-        'kullanici_profiller',
-        jsonEncode(profiller.map((e) => e.toJson()).toList()),
-      );
-
-      // Aktif event varsa QR
-      final uid = await _tahminiUserIdAl(profiller: profiller);
-      if (await _aktifEventVarmiGit(uid)) return;
-
-      // Event yoksa profil akışı
-      if (profiller.isEmpty) return;
-      if (profiller.length > 1) {
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
+      setState(() => _yukleniyor = true);
+      try {
+        // HER ZAMAN API'DEN ÇEK
+        final profiller = await AuthService.fetchMyMembers(u, p);
+        await SecureStorageService.setValue<String>(
+          'kullanici_profiller',
+          jsonEncode(profiller.map((e) => e.toJson()).toList()),
         );
+        await SecureStorageService.setValue<String>('kullanici_adi', u);
+        await SecureStorageService.setValue<String>('sifre', p);
+
+        // 0) PendingAction varsa önce onu aç
+        await _handlePendingAction();
+
+        // 1) Aktif event kontrolü (profil yoksa da userId tahmin etmeye çalış)
+        final uid = await _tahminiUserIdAl(profiller: profiller);
+        if (await _aktifEventVarmiGit(uid)) return;
+
+        // 2) Event yoksa profil akışı
+        if (profiller.isEmpty) {
+          ShowMessage.error(context, 'Profil bulunamadı.');
+          return;
+        }
+        if (profiller.length > 1) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
+          );
+          return;
+        }
+        final pModel = profiller.first;
+        final gr = pModel.gruplar;
+        if (gr.isEmpty ||
+            (!gr.contains(Roller.antrenor.name) &&
+                !gr.contains(Roller.uye.name) &&
+                !gr.contains(Roller.yonetici.name) &&
+                !gr.contains(Roller.cafe.name))) {
+          ShowMessage.error(context, 'Aktif etkinlik bulunamadı.');
+          return;
+        }
+        await _profilIleGiris(pModel);
         return;
+      } finally {
+        if (mounted) setState(() => _yukleniyor = false);
       }
-      await _profilIleGiris(profiller.first);
-    } catch (_) {
-      // Sessiz geç, login ekranında kalır
+    } catch (_) {/* ignore */}
+  }
+
+  Future<void> _profilIleGiris(KullaniciProfilModel profil) async {
+    try {
+      LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
+      final rol = await AuthService.loginUser(profil);
+      await sendFCMDevice(isMainAccount: profil.anaHesap);
+
+      if (!mounted) return;
+      await NavigationHelper.redirectAfterLogin(context, rol);
+    } on ApiException catch (e) {
+      ShowMessage.error(context, e.message);
+    } finally {
+      LoadingSpinner.hide(context);
     }
   }
 
@@ -208,6 +280,9 @@ class _LoginPageState extends State<LoginPage> {
       await SecureStorageService.setValue<String>('kullanici_adi', u);
       await SecureStorageService.setValue<String>('sifre', p);
 
+      // 0) PendingAction varsa önce onu aç
+      await _handlePendingAction();
+
       // 1) Aktif event kontrolü (profil yoksa da userId tahmin etmeye çalış)
       final uid = await _tahminiUserIdAl(profiller: profiller);
       if (await _aktifEventVarmiGit(uid)) return;
@@ -225,45 +300,37 @@ class _LoginPageState extends State<LoginPage> {
         );
         return;
       }
-
-      await _profilIleGiris(profiller.first);
+      final pModel = profiller.first;
+      final gr = pModel.gruplar;
+      if (gr.isEmpty ||
+          (!gr.contains(Roller.antrenor.name) &&
+              !gr.contains(Roller.uye.name) &&
+              !gr.contains(Roller.yonetici.name) &&
+              !gr.contains(Roller.cafe.name))) {
+        ShowMessage.error(context, 'Aktif etkinlik bulunamadı.');
+        return;
+      }
+      await _profilIleGiris(pModel);
     } finally {
       if (mounted) setState(() => _yukleniyor = false);
     }
   }
 
-  Future<void> _profilIleGiris(KullaniciProfilModel profil) async {
-    try {
-      LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
-      final rol = await AuthService.loginUser(profil);
-      await sendFCMDevice(isMainAccount: profil.anaHesap);
-
-      if (!mounted) return;
-      await NavigationHelper.redirectAfterLogin(context, rol);
-    } on ApiException catch (e) {
-      ShowMessage.error(context, e.message);
-    } finally {
-      LoadingSpinner.hide(context);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        body: Container(
-          margin: const EdgeInsets.all(24),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _baslik(),
-                _girdiAlani(),
-                _beniHatirlaKutusu(),
-                _sifremiUnuttum(),
-                _kayitOl(),
-              ],
-            ),
+    return Scaffold(
+      body: Container(
+        margin: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _baslik(),
+              _girdiAlani(),
+              _beniHatirlaKutusu(),
+              _sifremiUnuttum(),
+              _kayitOl(),
+            ],
           ),
         ),
       ),
@@ -331,9 +398,9 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           Checkbox(
             value: _beniHatirla,
-            onChanged: (v) {
-              setState(() => _beniHatirla = v ?? false);
-              SecureStorageService.setValue<bool>('beni_hatirla', _beniHatirla);
+            onChanged: (value) async {
+              setState(() => _beniHatirla = value ?? false);
+              await StorageService.setBeniHatirla(_beniHatirla);
             },
           ),
           const Text("Beni Hatırla"),
@@ -342,7 +409,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _sifremiUnuttum() => TextButton(
         onPressed: () {},
-        child: const Text("Şifremi unuttum!"),
+        child: const Text("Şifremi Unuttum"),
       );
 
   Widget _kayitOl() => Row(

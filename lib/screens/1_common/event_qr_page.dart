@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:math' as math;
+import 'package:fitcall/common/constants.dart';
 import 'package:fitcall/models/1_common/event/event_model.dart';
 import 'package:fitcall/models/1_common/event/gecis_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -22,6 +23,7 @@ import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
 import 'package:fitcall/services/navigation_helper.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
+import 'package:flutter/services.dart';
 
 class EventQrPage extends StatefulWidget {
   final int userId;
@@ -68,7 +70,17 @@ class _EventQrPageState extends State<EventQrPage> {
     );
   }
 
-  // Kapat akışı (aynı)
+  Future<void> _closeApp() async {
+    // Platform-önerilen kapatma: root'a dön ve view'ı kapat
+    if (mounted) {
+      Navigator.of(context).popUntil((r) => r.isFirst);
+    }
+    try {
+      await SystemNavigator.pop();
+    } catch (_) {}
+  }
+
+  // Kapat akışı (rol kontrolü eklendi)
   Future<void> _kapat() async {
     try {
       final s =
@@ -90,15 +102,32 @@ class _EventQrPageState extends State<EventQrPage> {
         return;
       }
       if (profiller.length > 1) {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
+        );
         return;
       }
 
       final p = profiller.first;
+      final grps = p.gruplar;
+
+      // ROLSÜZ kullanıcı → uygulamayı kapat
+      if (grps.isEmpty ||
+          (!grps.contains(Roller.antrenor.name) &&
+              !grps.contains(Roller.uye.name) &&
+              !grps.contains(Roller.yonetici.name) &&
+              !grps.contains(Roller.cafe.name))) {
+        await _closeApp();
+        return;
+      }
+
+      // ROL VAR → mevcut akış
       final rol = await AuthService.loginUser(p);
       await sendFCMDevice(isMainAccount: p.anaHesap);
       await NavigationHelper.redirectAfterLogin(context, rol);
+    } on ApiException catch (e) {
+      ShowMessage.error(context, e.message);
     } catch (_) {
       if (!mounted) return;
       Navigator.maybePop(context);
@@ -159,13 +188,39 @@ class _EventQrPageState extends State<EventQrPage> {
 
   Future<void> _paylasQrKodu(String code, {String? mesaj}) async {
     try {
-      final painter =
-          QrPainter(data: code, version: QrVersions.auto, gapless: true);
-      final uiBytes =
-          await painter.toImageData(1024, format: ui.ImageByteFormat.png);
-      if (uiBytes == null) throw Exception('QR üretilemedi');
+      // Yeni API: renkler eye/data module stilinden, arka planı biz çiziyoruz (beyaz)
+      final painter = QrPainter(
+        data: code,
+        version: QrVersions.auto,
+        gapless: true,
+        eyeStyle: const QrEyeStyle(
+          eyeShape: QrEyeShape.square,
+          color: Colors.black,
+        ),
+        dataModuleStyle: const QrDataModuleStyle(
+          dataModuleShape: QrDataModuleShape.square,
+          color: Colors.black,
+        ),
+      );
 
-      final bytes = uiBytes.buffer.asUint8List();
+      const double sizePx = 1024;
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+
+      // Beyaz arka plan
+      final bg = Paint()..color = Colors.white;
+      canvas.drawRect(const Rect.fromLTWH(0, 0, sizePx, sizePx), bg);
+
+      // QR'yi çiz
+      painter.paint(canvas, const Size.square(sizePx));
+
+      // PNG üret
+      final img =
+          await recorder.endRecording().toImage(sizePx.toInt(), sizePx.toInt());
+      final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) throw Exception('QR üretilemedi');
+
+      final bytes = byteData.buffer.asUint8List();
       final dir = await getTemporaryDirectory();
       final f =
           File('${dir.path}/qr_${DateTime.now().millisecondsSinceEpoch}.png');
@@ -356,7 +411,7 @@ class _EventQrPageState extends State<EventQrPage> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
           children: [
-            // HEADER: Ad büyük, tarih/mekan küçük, kota dipnot
+            // HEADER
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -372,38 +427,39 @@ class _EventQrPageState extends State<EventQrPage> {
               child: DefaultTextStyle(
                 style: const TextStyle(color: Colors.white),
                 child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(ev.ad,
-                          style: const TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.w800)),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${_f(ev.baslangic)}${ev.mekan != null ? '  •  ${ev.mekan}' : ''}',
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(ev.ad,
                         style: const TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFFEFFAF6)),
-                      ),
-                      if (ev.maxMisafirKisiBasi != null) ...[
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0x2EFFFFFF), // ~%18 beyaz
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: Text(
-                            _kotaMetni(),
-                            style: const TextStyle(
-                                fontSize: 12.5,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.w600),
-                          ),
+                            fontSize: 24, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_f(ev.baslangic)}${ev.mekan != null ? '  •  ${ev.mekan}' : ''}',
+                      style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFFEFFAF6)),
+                    ),
+                    if (ev.maxMisafirKisiBasi != null) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0x2EFFFFFF), // ~%18 beyaz
+                          borderRadius: BorderRadius.circular(24),
                         ),
-                      ],
-                    ]),
+                        child: Text(
+                          _kotaMetni(),
+                          style: const TextStyle(
+                              fontSize: 12.5,
+                              fontStyle: FontStyle.italic,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
 
@@ -441,7 +497,7 @@ class _EventQrPageState extends State<EventQrPage> {
 
             const SizedBox(height: 18),
 
-            // Davetliler (kendi içinde kaydırılır)
+            // Davetliler
             _bolumBasligi('Davetli Listem', Icons.people_alt),
             const SizedBox(height: 8),
 
@@ -503,10 +559,10 @@ class _EventQrPageState extends State<EventQrPage> {
                                           color: Colors.black)),
                                   const SizedBox(height: 4),
                                   const Text(
-                                    'Bu davet kodu etkinlik boyunca geçerlidir.',
-                                    style: TextStyle(
-                                        color: Colors.black54, fontSize: 12.5),
-                                  ),
+                                      'Bu davet kodu etkinlik boyunca geçerlidir.',
+                                      style: TextStyle(
+                                          color: Colors.black54,
+                                          fontSize: 12.5)),
                                 ],
                               ),
                             ),

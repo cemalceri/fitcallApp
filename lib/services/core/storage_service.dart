@@ -75,6 +75,10 @@ class StorageService {
     await SecureStorageService.setValue<String>(
         'token_exp', expireDate.toIso8601String());
   }
+
+  static setBeniHatirla(bool beniHatirla) {
+    SecureStorageService.setValue<bool>('beni_hatirla', beniHatirla);
+  }
 }
 
 class SecureStorageService {

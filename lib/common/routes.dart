@@ -10,7 +10,7 @@ import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/screens/4_auth/register_page.dart';
 import 'package:fitcall/screens/4_auth/qr_kod_kayit_page.dart';
-import 'package:fitcall/screens/4_auth/qr_kod_dogrula_page.dart';
+import 'package:fitcall/screens/1_common/qr_kod_dogrula_page.dart';
 
 import 'package:fitcall/screens/uye_home_page.dart';
 import 'package:fitcall/screens/2_uye/profil_page.dart';

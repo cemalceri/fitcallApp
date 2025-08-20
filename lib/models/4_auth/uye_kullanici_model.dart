@@ -32,7 +32,10 @@ class KullaniciProfilModel {
           ? AntrenorModel.fromJson(json['antrenor'] as Map<String, dynamic>)
           : null,
       user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
-      anaHesap: json['ana_hesap_mi'] as bool? ?? false,
+      // Her iki anahtar adı da desteklenir (geriye dönük uyum)
+      anaHesap: (json['ana_hesap_mi'] as bool?) ??
+          (json['ana_hesap'] as bool?) ??
+          false,
       gruplar: (json['gruplar'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
@@ -46,7 +49,7 @@ class KullaniciProfilModel {
       'uye': uye?.toJson(),
       'antrenor': antrenor?.toJson(),
       'user': user.toJson(),
-      'ana_hesap': anaHesap,
+      'ana_hesap_mi': anaHesap, // doğru anahtar adı
       'gruplar': gruplar,
     };
   }
