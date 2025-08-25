@@ -1,11 +1,16 @@
-// lib/screens/yonetici/yonetici_home_page.dart
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/notification_service.dart';
 import 'package:flutter/material.dart';
+
+// EKLENEN importlar
+import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
+import 'package:fitcall/screens/4_auth/profil_sec.dart';
 
 class YoneticiHomePage extends StatefulWidget {
   const YoneticiHomePage({super.key});
@@ -15,7 +20,7 @@ class YoneticiHomePage extends StatefulWidget {
 }
 
 class _YoneticiHomePageState extends State<YoneticiHomePage> {
-  /* ---------------- Üst Menü (AntrenorHomePage ile aynı grid yapısı) ---------------- */
+  /* ---------------- Üst Menü ---------------- */
   final List<Map<String, dynamic>> menuItems = [
     {
       'name': routeEnums[SayfaAdi.qrKodKayit]!,
@@ -29,20 +34,38 @@ class _YoneticiHomePageState extends State<YoneticiHomePage> {
     },
   ];
 
-  // İleride isim göstermek istersek doldururuz (örn. StorageService/Profil servisi).
   String _yoneticiAdi = "";
+
+  // EKLENDİ: Çoklu profil kontrolü
+  bool _hasMultipleProfiles = false;
 
   @override
   void initState() {
     super.initState();
     NotificationService.refreshUnreadCount();
     _loadYoneticiAdi();
+    _checkProfiles(); // EKLENDİ
   }
 
   Future<void> _loadYoneticiAdi() async {
-    // Not: Projede yöneticinin adı için net bir Storage/Service metodu verilmedi.
-    // İlerde eklenince burada set edilecek. Şimdilik boş string kalsın.
+    // Şimdilik boş; ileride storage/servis eklersen doldurursun.
     setState(() => _yoneticiAdi = "");
+  }
+
+  // EKLENDİ: Çoklu profil var mı?
+  Future<void> _checkProfiles() async {
+    final jsonStr =
+        await SecureStorageService.getValue<String>('kullanici_profiller');
+    if (jsonStr != null) {
+      final profiles = (jsonDecode(jsonStr) as List)
+          .map((e) =>
+              KullaniciProfilModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      if (profiles.length > 1) {
+        if (!mounted) return;
+        setState(() => _hasMultipleProfiles = true);
+      }
+    }
   }
 
   @override
@@ -55,6 +78,25 @@ class _YoneticiHomePageState extends State<YoneticiHomePage> {
       appBar: AppBar(
         actions: [
           const NotificationsBell(),
+          if (_hasMultipleProfiles) // EKLENDİ
+            IconButton(
+              icon: const Icon(Icons.switch_account_sharp),
+              tooltip: "Profil Değiştir",
+              onPressed: () async {
+                final jsonStr = await SecureStorageService.getValue<String>(
+                    'kullanici_profiller');
+                if (jsonStr == null) return;
+                final profiles = (jsonDecode(jsonStr) as List)
+                    .map((e) => KullaniciProfilModel.fromJson(
+                        Map<String, dynamic>.from(e)))
+                    .toList();
+                if (!mounted) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => ProfilSecPage(profiles)),
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => AuthService.logout(context),
@@ -72,7 +114,7 @@ class _YoneticiHomePageState extends State<YoneticiHomePage> {
             ),
             const SizedBox(height: 16),
 
-            // Üst menü (AntrenorHomePage ile aynı grid)
+            // Üst menü (grid)
             GridView.count(
               crossAxisCount: 3,
               shrinkWrap: true,
@@ -82,7 +124,7 @@ class _YoneticiHomePageState extends State<YoneticiHomePage> {
 
             const SizedBox(height: 24),
 
-            // Hızlı QR İşlemleri kartı (AntrenorHomePage "Bir Sonraki Ders" kartına benzer yapı)
+            // Hızlı QR İşlemleri kartı
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -91,11 +133,10 @@ class _YoneticiHomePageState extends State<YoneticiHomePage> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    ListTile(
-                      leading:
-                          const Icon(Icons.qr_code_scanner, color: Colors.blue),
-                      title: const Text("Hızlı QR İşlemleri"),
-                      subtitle: const Text(
+                    const ListTile(
+                      leading: Icon(Icons.qr_code_scanner, color: Colors.blue),
+                      title: Text("Hızlı QR İşlemleri"),
+                      subtitle: Text(
                           "Etkinlik/içeri giriş için hızlıca QR üretin veya okutun."),
                     ),
                     const SizedBox(height: 8),
@@ -137,7 +178,7 @@ class _YoneticiHomePageState extends State<YoneticiHomePage> {
 
             const SizedBox(height: 24),
 
-            // Bilgi kartı: süreç/akış açıklaması (kısa)
+            // Bilgi kartı
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(
@@ -155,7 +196,7 @@ class _YoneticiHomePageState extends State<YoneticiHomePage> {
     );
   }
 
-  /* --------------------- Görsel iyileştirmeler (AntrenorHomePage ile aynı stil) --------------------- */
+  /* --------------------- Görsel (grid) --------------------- */
   Widget _buildMenuButton(Map<String, dynamic> item) => Padding(
         padding: const EdgeInsets.all(6),
         child: InkWell(

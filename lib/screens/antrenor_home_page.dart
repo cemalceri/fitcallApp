@@ -1,13 +1,21 @@
+// ignore_for_file: use_build_context_synchronously
+import 'dart:convert';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/notification_service.dart';
-import 'package:fitcall/services/core/storage_service.dart';
-import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+// EKLENEN importlar
+import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
+import 'package:fitcall/screens/4_auth/profil_sec.dart';
+
+// Mevcut servis
+import 'package:fitcall/services/etkinlik/takvim_service.dart';
 
 class AntrenorHomePage extends StatefulWidget {
   const AntrenorHomePage({super.key});
@@ -53,8 +61,11 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
   bool _loadingWeek = true;
   EtkinlikModel? _nextLesson;
 
-  // İleride isim göstermek istersek doldururuz (örn. StorageService vs.)
+  // İsim
   String _antrenorAdi = "";
+
+  // EKLENDİ: Çoklu profil kontrolü
+  bool _hasMultipleProfiles = false;
 
   @override
   void initState() {
@@ -62,6 +73,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
     NotificationService.refreshUnreadCount();
     _fetchWeek();
     _loadAntrenorAdi();
+    _checkProfiles(); // EKLENDİ
   }
 
   Future<void> _loadAntrenorAdi() async {
@@ -73,6 +85,22 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
         _antrenorAdi = "";
       }
     });
+  }
+
+  // EKLENDİ: Çoklu profil var mı?
+  Future<void> _checkProfiles() async {
+    final jsonStr =
+        await SecureStorageService.getValue<String>('kullanici_profiller');
+    if (jsonStr != null) {
+      final profiles = (jsonDecode(jsonStr) as List)
+          .map((e) =>
+              KullaniciProfilModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      if (profiles.length > 1) {
+        if (!mounted) return;
+        setState(() => _hasMultipleProfiles = true);
+      }
+    }
   }
 
   Future<void> _fetchWeek() async {
@@ -130,6 +158,25 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
       appBar: AppBar(
         actions: [
           NotificationsBell(),
+          if (_hasMultipleProfiles) // EKLENDİ
+            IconButton(
+              icon: const Icon(Icons.switch_account_sharp),
+              tooltip: "Profil Değiştir",
+              onPressed: () async {
+                final jsonStr = await SecureStorageService.getValue<String>(
+                    'kullanici_profiller');
+                if (jsonStr == null) return;
+                final profiles = (jsonDecode(jsonStr) as List)
+                    .map((e) => KullaniciProfilModel.fromJson(
+                        Map<String, dynamic>.from(e)))
+                    .toList();
+                if (!mounted) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => ProfilSecPage(profiles)),
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => AuthService.logout(context),
@@ -157,7 +204,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
 
             const SizedBox(height: 24),
 
-            // Bir sonraki ders kartı (Üye sayfasıyla aynı)
+            // Bir sonraki ders kartı
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -177,7 +224,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
 
             const SizedBox(height: 24),
 
-            // Haftalık Program (Üye sayfasıyla aynı)
+            // Haftalık Program
             const Text(
               'Haftalık Programım',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -209,7 +256,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
     );
   }
 
-  /* --------------------- Görsel iyileştirmeler --------------------- */
+  /* --------------------- Görsel --------------------- */
   Widget _buildMenuButton(Map<String, dynamic> item) => Padding(
         padding: const EdgeInsets.all(6),
         child: InkWell(
