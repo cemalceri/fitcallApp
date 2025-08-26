@@ -79,14 +79,40 @@ class TakvimService {
   }
 
   /// Geçmiş ders için tamamlama bilgisi
-  static Future<ApiResult<Map<String, dynamic>>> dersYapildiBilgisi({
+  static Future<ApiResult<Map<String, dynamic>>> getDersYapildiBilgisiApi({
     required int dersId,
+    required int userId,
+  }) {
+    final body = {'ders_id': dersId, 'user_id': userId};
+    return ApiClient.postParsed<Map<String, dynamic>>(
+      getDersYapildiBilgisi,
+      body,
+      (json) => (json as Map).cast<String, dynamic>(),
+    );
+  }
+
+  /// (POST) Kaydet: ders_id + user_id + rol + tamamlandi + aciklama [+ onay_red_iptal_nedeni]
+  static Future<ApiResult<Map<String, dynamic>>> setDersYapildiBilgisiApi({
+    required int dersId,
+    required int userId,
+    required String rol, // "UYE" | "ANTRENOR" | "YONETICI"
     required bool tamamlandi,
     required String aciklama,
+    String?
+        onayRedIptalNedeni, // enum code: "YPL_PLAN", "YMD_OGRENCI", "IPT_PROG", ...
   }) {
+    final body = {
+      'ders_id': dersId,
+      'user_id': userId,
+      'rol': rol,
+      'tamamlandi': tamamlandi,
+      'aciklama': aciklama,
+      if (onayRedIptalNedeni != null)
+        'onay_red_iptal_nedeni': onayRedIptalNedeni,
+    };
     return ApiClient.postParsed<Map<String, dynamic>>(
       setDersYapildiBilgisi,
-      {'ders_id': dersId, 'aciklama': aciklama, 'tamamlandi': tamamlandi},
+      body,
       (json) => (json as Map).cast<String, dynamic>(),
     );
   }

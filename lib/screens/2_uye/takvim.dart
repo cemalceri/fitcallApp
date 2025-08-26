@@ -41,6 +41,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
   final Map<int, EtkinlikOnayModel> _userOnaylari = {};
   final Map<String, List<Map<String, dynamic>>> _slotAlternatifleri = {};
   final Set<DateTime> _yuklenenHaftalar = {};
+  String userId = '';
 
   // ---- Filtre state ----
   final Map<int, String> _hocaAdlari = {};
@@ -63,6 +64,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
   Future<void> _prepare() async {
     setState(() => _isLoading = true);
     currentUye = await StorageService.uyeBilgileriniGetir();
+    userId = await SecureStorageService.getValue('user_id');
     final now = DateTime.now();
     final ws = _haftaBaslangic(now);
     await _loadWeek(ws);
@@ -365,6 +367,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
                 Expanded(
                   child: SfCalendar(
                     view: CalendarView.week,
+                    timeZone: 'Europe/Istanbul',
                     dataSource: _dataSource,
                     firstDayOfWeek: 1,
                     timeSlotViewSettings: const TimeSlotViewSettings(
@@ -737,11 +740,12 @@ class _DersListesiPageState extends State<DersListesiPage> {
               child: const Text('Kaydet'),
               onPressed: () async {
                 try {
-                  final r = await TakvimService.dersYapildiBilgisi(
-                    dersId: ders.id,
-                    tamamlandi: tamamlandi,
-                    aciklama: ctrl.text,
-                  );
+                  final r = await TakvimService.setDersYapildiBilgisiApi(
+                      dersId: ders.id,
+                      tamamlandi: tamamlandi,
+                      aciklama: ctrl.text,
+                      rol: 'UYE',
+                      userId: int.tryParse(userId) ?? 0);
                   onSaved(tamamlandi, ctrl.text);
                   ShowMessage.success(context, r.mesaj);
                 } on ApiException catch (e) {

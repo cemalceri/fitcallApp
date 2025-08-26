@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
 import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
+import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/common/routes.dart';
@@ -61,7 +62,6 @@ class _LoginPageState extends State<LoginPage> {
         'kullanici_profiller',
         jsonEncode(profiller.map((e) => e.toJson()).toList()),
       );
-// (user_id cache; fetchMyMembers zaten yazıyor ama garanti olsun diye:)
       if (result.user != null) {
         await SecureStorageService.setValue<int>('user_id', result.user!.id);
       }
@@ -70,6 +70,10 @@ class _LoginPageState extends State<LoginPage> {
         context,
         MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
       );
+    } on ApiException catch (e) {
+      ShowMessage.error(context, e.message);
+    } catch (e) {
+      ShowMessage.error(context, 'Giriş işlemi başarısız: $e');
     } finally {
       if (mounted) setState(() => _yukleniyor = false);
     }

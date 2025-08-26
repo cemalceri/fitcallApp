@@ -2,8 +2,8 @@
 const String baseUrlProd = "https://www.binay.fit/api";
 const String baseUrlDev = "http://10.0.2.2:8000/api";
 
-const String baseUrl = baseUrlDev;
-//const String baseUrl = baseUrlProd;
+//const String baseUrl = baseUrlDev;
+const String baseUrl = baseUrlProd;
 
 // =================== ENDPOINTLER ===================
 String loginUrl = "$baseUrl/getToken";
@@ -12,6 +12,7 @@ String getOdemeBilgileri = "$baseUrl/getAidatOdemeGecmisi";
 String getDersProgrami = "$baseUrl/getUyeDersProgrami";
 String uyeKaydet = "$baseUrl/uyeKaydet";
 String setDersYapildiBilgisi = "$baseUrl/setDersYapildiBilgisi";
+String getDersYapildiBilgisi = "$baseUrl/getDersYapildiBilgisi";
 String qrInOrOut = "$baseUrl/qrInOrOut";
 String getAntrenorGunlukEtkinlikler = "$baseUrl/getAntrenorGunlukEtkinlikler";
 String getAntrenorHaftalikEtkinlikler =
