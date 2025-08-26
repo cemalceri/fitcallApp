@@ -70,7 +70,7 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
 
     try {
       final ApiResult<QrKodVerifyResponse> res =
-          await QrKodApiService.qrKodDogrulaApi(kod: code);
+          await QrCodeApiService.qrKodDogrulaApi(kod: code);
 
       setState(() {
         _result = res.data;

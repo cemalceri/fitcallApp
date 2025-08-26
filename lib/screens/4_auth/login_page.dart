@@ -8,6 +8,7 @@ import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/core/auth_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,10 +23,13 @@ class _LoginPageState extends State<LoginPage> {
   bool _beniHatirla = false;
   bool _yukleniyor = false;
 
+  String? _surumYazi; // vX.Y.Z (build)
+
   @override
   void initState() {
     super.initState();
     _beniHatirlaYukle();
+    _surumYukle();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Sadece zorunlu güncelleme kontrolü
       await GuncellemeKoordinatoru.kontrolVeUygula(context);
@@ -37,6 +41,16 @@ class _LoginPageState extends State<LoginPage> {
     _kullaniciAdiCtrl.dispose();
     _sifreCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _surumYukle() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      final yazi = 'v${info.version} (${info.buildNumber})';
+      if (mounted) setState(() => _surumYazi = yazi);
+    } catch (_) {
+      // Sessiz geç: sürüm okunamazsa gösterme
+    }
   }
 
   Future<void> _beniHatirlaYukle() async {
@@ -82,18 +96,22 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        margin: const EdgeInsets.all(24),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _baslik(),
-              _girdiAlani(),
-              _beniHatirlaKutusu(),
-              _sifremiUnuttum(),
-              _kayitOl(),
-            ],
+      body: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _baslik(),
+                _girdiAlani(),
+                _beniHatirlaKutusu(),
+                _sifremiUnuttum(),
+                _kayitOl(),
+                const SizedBox(height: 8),
+                _versiyonBilgisi(),
+              ],
+            ),
           ),
         ),
       ),
@@ -186,5 +204,17 @@ class _LoginPageState extends State<LoginPage> {
             child: const Text("Kayıt ol"),
           ),
         ],
+      );
+
+  Widget _versiyonBilgisi() => Opacity(
+        opacity: 0.7,
+        child: Text(
+          _surumYazi ?? '',
+          textAlign: TextAlign.center,
+          style: Theme.of(context)
+              .textTheme
+              .bodySmall
+              ?.copyWith(color: Colors.grey),
+        ),
       );
 }

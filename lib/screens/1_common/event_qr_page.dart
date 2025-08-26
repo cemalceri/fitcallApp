@@ -86,7 +86,7 @@ class _EventQrPageState extends State<EventQrPage> {
     try {
       // 1) Event
       final ApiResult<EventModel?> evRes =
-          await QrEventApiService.getirEventAktifApi(userId: widget.userId);
+          await QrCodeApiService.getirEventAktifApi(userId: widget.userId);
       final ev = evRes.data;
       if (ev == null) {
         setState(() {
@@ -101,15 +101,15 @@ class _EventQrPageState extends State<EventQrPage> {
       // 2) Self pass (opsiyonel)
       GecisModel? sp;
       try {
-        final spRes = await QrEventApiService.getirEventSelfPassApi(
-            userId: widget.userId);
+        final spRes =
+            await QrCodeApiService.getirEventSelfPassApi(userId: widget.userId);
         sp = spRes.data;
       } catch (_) {
         sp = null;
       }
 
       // 3) Davetliler
-      final lstRes = await QrEventApiService.listeleEventMisafirPassApi(
+      final lstRes = await QrCodeApiService.listeleEventMisafirPassApi(
           userId: widget.userId);
       final liste = lstRes.data ?? <GecisModel>[];
 
@@ -209,7 +209,7 @@ class _EventQrPageState extends State<EventQrPage> {
 
     try {
       final ApiResult<GecisModel> res =
-          await QrEventApiService.olusturEventMisafirPassApi(
+          await QrCodeApiService.olusturEventMisafirPassApi(
               userId: widget.userId, label: label);
 
       final created = res.data;
@@ -224,7 +224,7 @@ class _EventQrPageState extends State<EventQrPage> {
 
       // Sunucu ile senkron
       try {
-        final lstRes = await QrEventApiService.listeleEventMisafirPassApi(
+        final lstRes = await QrCodeApiService.listeleEventMisafirPassApi(
             userId: widget.userId);
         if (lstRes.data != null) setState(() => _davetliler = lstRes.data!);
       } catch (_) {}
@@ -260,9 +260,9 @@ class _EventQrPageState extends State<EventQrPage> {
     if (onay != true) return;
 
     try {
-      await QrEventApiService.silEventMisafirPassApi(code: code);
+      await QrCodeApiService.silEventMisafirPassApi(code: code);
 
-      final lstRes = await QrEventApiService.listeleEventMisafirPassApi(
+      final lstRes = await QrCodeApiService.listeleEventMisafirPassApi(
           userId: widget.userId);
       if (lstRes.data != null) setState(() => _davetliler = lstRes.data!);
       if (!mounted) return;
