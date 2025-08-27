@@ -25,6 +25,10 @@ class _LoginPageState extends State<LoginPage> {
 
   String? _surumYazi; // vX.Y.Z (build)
 
+  // Güvenli depoda saklanacak anahtarlar
+  static const _kRememberUser = 'remember_username';
+  static const _kRememberPass = 'remember_password';
+
   @override
   void initState() {
     super.initState();
@@ -33,6 +37,8 @@ class _LoginPageState extends State<LoginPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // Sadece zorunlu güncelleme kontrolü
       await GuncellemeKoordinatoru.kontrolVeUygula(context);
+      // Güncelleme sonrası otomatik login dene (API'den profil çek)
+      await _tryAutoLoginFromApi();
     });
   }
 
@@ -54,8 +60,35 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _beniHatirlaYukle() async {
-    final r = await SecureStorageService.getValue<bool>('beni_hatirla');
-    if (mounted) setState(() => _beniHatirla = r ?? false);
+    // ❗️Tek yerden oku
+    final r = await StorageService.beniHatirlaIsaretlenmisMi();
+    if (mounted) setState(() => _beniHatirla = r);
+  }
+
+  /// Beni hatırla açık ve kayıtlı krediler varsa profilleri **API'den** çeker ve yönlendirir.
+  Future<void> _tryAutoLoginFromApi() async {
+    final remember = await StorageService.beniHatirlaIsaretlenmisMi();
+    if (remember != true) return;
+
+    final u = await SecureStorageService.getValue<String>(_kRememberUser);
+    final p = await SecureStorageService.getValue<String>(_kRememberPass);
+    if (u == null || u.isEmpty || p == null || p.isEmpty) return;
+
+    setState(() => _yukleniyor = true);
+    try {
+      final result = await AuthService.fetchMyMembers(u, p);
+      final profiller = result.profiller;
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
+      );
+    } catch (_) {
+      // oto login sessiz düşsün; kullanıcı manuel giriş yapabilir
+    } finally {
+      if (mounted) setState(() => _yukleniyor = false);
+    }
   }
 
   Future<void> _girisButonunaBasildi() async {
@@ -72,14 +105,23 @@ class _LoginPageState extends State<LoginPage> {
       final result = await AuthService.fetchMyMembers(u, p);
       final profiller = result.profiller;
 
+      // Profilleri lokal saklamak zorunlu değil; istersen referans için tut
       await SecureStorageService.setValue<String>(
         'kullanici_profiller',
         jsonEncode(profiller.map((e) => e.toJson()).toList()),
       );
-      if (result.user != null) {
-        await SecureStorageService.setValue<int>('user_id', result.user!.id);
+
+      // Beni hatırla tercihini ve kredileri yönet
+      await StorageService.setBeniHatirla(_beniHatirla);
+      if (_beniHatirla) {
+        await SecureStorageService.setValue<String>(_kRememberUser, u);
+        await SecureStorageService.setValue<String>(_kRememberPass, p);
+      } else {
+        await SecureStorageService.remove(_kRememberUser);
+        await SecureStorageService.remove(_kRememberPass);
       }
 
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
@@ -180,8 +222,14 @@ class _LoginPageState extends State<LoginPage> {
           Checkbox(
             value: _beniHatirla,
             onChanged: (value) async {
-              setState(() => _beniHatirla = value ?? false);
-              await StorageService.setBeniHatirla(_beniHatirla);
+              final v = value ?? false;
+              setState(() => _beniHatirla = v);
+              await StorageService.setBeniHatirla(v);
+              if (!v) {
+                // kapatılırsa kredileri temizle
+                await SecureStorageService.remove(_kRememberUser);
+                await SecureStorageService.remove(_kRememberPass);
+              }
             },
           ),
           const Text("Beni Hatırla"),
