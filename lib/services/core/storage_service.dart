@@ -79,6 +79,11 @@ class StorageService {
   static setBeniHatirla(bool beniHatirla) {
     SecureStorageService.setValue<bool>('beni_hatirla', beniHatirla);
   }
+
+  static Future<int?> getUserId() async {
+    final value = await SecureStorageService.getValue<int>('user_id');
+    return value is int ? value : null;
+  }
 }
 
 class SecureStorageService {

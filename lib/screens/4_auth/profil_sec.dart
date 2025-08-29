@@ -8,10 +8,14 @@ import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
-
-// Yeni eklenen importlar (akış gereği)
 import 'package:fitcall/screens/1_common/1_notification/pending_action.dart';
 import 'package:fitcall/screens/1_common/1_notification/pending_action_store.dart';
+
+import 'package:fitcall/services/api_result.dart';
+import 'package:fitcall/services/core/qr_code_api_service.dart';
+import 'package:fitcall/models/1_common/event/event_model.dart';
+import 'package:fitcall/screens/1_common/event_qr_page.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 
 class ProfilSecPage extends StatefulWidget {
   final List<KullaniciProfilModel> kullaniciProfilList;
@@ -22,38 +26,73 @@ class ProfilSecPage extends StatefulWidget {
 }
 
 class _ProfilSecPageState extends State<ProfilSecPage> {
-  bool _yonlendirildi = false;
+  bool _routing = false; // eşzamanlı yönlendirme kilidi
+  bool _suppressEventOnce =
+      false; // Event’ten X/geri ile dönüldüğünde tek sefer atla
 
   @override
   void initState() {
     super.initState();
-    // Tüm akış bu sayfada: PendingAction → (tek profil ise) otomatik giriş
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _handlePendingAction();
-
-      if (!_yonlendirildi && widget.kullaniciProfilList.length == 1) {
-        _yonlendirildi = true;
-        await _profilSecildi(widget.kullaniciProfilList.first);
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _runFlow());
   }
 
-  // PendingAction varsa önce onu aç
-  Future<void> _handlePendingAction() async {
+  Future<void> _runFlow() async {
+    if (!mounted || _routing) return;
+    _routing = true;
+
+    // 1) PendingAction
     try {
       final action = await PendingActionStore.instance.take();
-      if (action == null) return;
-      if (!mounted) return;
-      switch (action.type) {
-        case PendingActionType.dersTeyit:
-          await Navigator.pushNamed(context, routeEnums[SayfaAdi.dersTeyit]!,
-              arguments: action.data);
-          break;
-        case PendingActionType.bildirimListe:
-          await Navigator.pushNamed(context, routeEnums[SayfaAdi.bildirimler]!);
-          break;
+      if (action != null && mounted) {
+        switch (action.type) {
+          case PendingActionType.dersTeyit:
+            await Navigator.pushNamed(context, routeEnums[SayfaAdi.dersTeyit]!,
+                arguments: action.data);
+            break;
+          case PendingActionType.bildirimListe:
+            await Navigator.pushNamed(
+                context, routeEnums[SayfaAdi.bildirimler]!);
+            break;
+        }
+        _routing = false;
+        Future.microtask(_runFlow); // geri dönünce akışı tekrar çalıştır
+        return;
       }
-    } catch (_) {/* ignore */}
+    } catch (_) {/* sessiz geç */}
+
+    // 2) Aktif Event (kullanıcı geri döndüyse bir kez bastır)
+    if (!_suppressEventOnce) {
+      final userId = await StorageService.getUserId();
+      if (userId != null && userId > 0) {
+        try {
+          final ApiResult<EventModel?> evRes =
+              await QrCodeApiService.getirEventAktifApi(userId: userId);
+          if (evRes.data != null && mounted) {
+            final closedByUser = await Navigator.push<bool>(
+              context,
+              MaterialPageRoute(builder: (_) => EventQrPage(userId: userId)),
+            );
+            if (closedByUser == true) {
+              _suppressEventOnce = true; // 🔑 geri/X ile döndü
+            }
+            _routing = false;
+            Future.microtask(_runFlow);
+            return;
+          }
+        } catch (_) {/* sessiz geç */}
+      }
+    }
+
+    // 3) Tek profil ise otomatik giriş
+    if (mounted && widget.kullaniciProfilList.length == 1) {
+      await _profilSecildi(widget.kullaniciProfilList.first);
+      _routing = false;
+      return;
+    }
+
+    // Profil listesi gösterilecek
+    _routing = false;
+    _suppressEventOnce = false; // ekran görüldü; bastırmayı sıfırla
   }
 
   Future<void> _profilSecildi(KullaniciProfilModel p) async {
@@ -61,18 +100,16 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
       LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
       final rol = await AuthService.loginUser(p);
       await sendFCMDevice(isMainAccount: p.anaHesap);
-
       if (!mounted) return;
       await NavigationHelper.redirectAfterLogin(context, rol);
     } on ApiException catch (e) {
-      ShowMessage.error(context, e.message);
+      if (mounted) ShowMessage.error(context, e.message);
     } finally {
       LoadingSpinner.hide(context);
     }
   }
 
   // ---------- Rol yardımcıları ----------
-
   IconData _rolIkon(String rol) {
     switch (rol) {
       case 'yonetici':
@@ -104,17 +141,14 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
       padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: color.withAlpha(217)), // ~0.85
+          Icon(icon, size: 18, color: color.withAlpha(217)),
           const SizedBox(width: 8),
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 15.5,
-              color: color.withAlpha(242), // ~0.95
-              letterSpacing: .2,
-            ),
-          ),
+          Text(title,
+              style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15.5,
+                  color: color.withAlpha(242),
+                  letterSpacing: .2)),
           const SizedBox(width: 6),
           Expanded(child: Container(height: 1, color: Colors.black12)),
         ],
@@ -122,7 +156,6 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     );
   }
 
-// Profil kartı: alt satırda "Ana Hesap" / "Alt Hesap" göster
   Widget _profilKart(KullaniciProfilModel p) {
     final ad = p.uye?.adi ?? p.antrenor?.adi ?? p.user.firstName;
     final soy = p.uye?.soyadi ?? p.antrenor?.soyadi ?? p.user.lastName;
@@ -138,53 +171,39 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Avatar
           Container(
             width: 110,
             height: 110,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF4e54c8), Color(0xFF8f94fb)],
-              ),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF4e54c8), Color(0xFF8f94fb)]),
             ),
             alignment: Alignment.center,
             child: const Icon(Icons.person, size: 48, color: Colors.white),
           ),
-
           const SizedBox(height: 12),
-
-          // İsim
-          Text(
-            tamAd.isEmpty ? p.user.username : tamAd,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-
+          Text(tamAd.isEmpty ? p.user.username : tamAd,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
-
-          // Durum çipi: Ana Hesap / Alt Hesap
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: chipColor.withAlpha(20), // ~0.08
+              color: chipColor.withAlpha(20),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: chipColor.withAlpha(51)), // ~0.20
+              border: Border.all(color: chipColor.withAlpha(51)),
             ),
-            child: Text(
-              chipText,
-              style: TextStyle(
-                color: chipColor,
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: Text(chipText,
+                style: TextStyle(
+                    color: chipColor,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600)),
           ),
-
           const SizedBox(height: 24),
         ],
       ),
@@ -214,10 +233,7 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        title: const Text('Profil Seç'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Profil Seç'), centerTitle: true),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
@@ -241,9 +257,8 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
               ],
               if (yoneticiler.isEmpty && antrenorler.isEmpty && uyeler.isEmpty)
                 const Padding(
-                  padding: EdgeInsets.only(top: 24),
-                  child: Text('Listelenecek profil bulunamadı.'),
-                ),
+                    padding: EdgeInsets.only(top: 24),
+                    child: Text('Listelenecek profil bulunamadı.')),
             ],
           ),
         ),

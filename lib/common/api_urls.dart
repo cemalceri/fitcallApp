@@ -12,6 +12,7 @@ String getOdemeBilgileri = "$baseUrl/getAidatOdemeGecmisi";
 String getDersProgrami = "$baseUrl/getUyeDersProgrami";
 String uyeKaydet = "$baseUrl/uyeKaydet";
 String setDersYapildiBilgisi = "$baseUrl/setDersYapildiBilgisi";
+String getDersYapildiBilgisi = "$baseUrl/getDersYapildiBilgisi";
 String qrInOrOut = "$baseUrl/qrInOrOut";
 String getAntrenorGunlukEtkinlikler = "$baseUrl/getAntrenorGunlukEtkinlikler";
 String getAntrenorHaftalikEtkinlikler =

@@ -5,20 +5,43 @@ import 'package:fitcall/models/1_common/qr_kod_models.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
-class QrEventApiService {
-  static Future<ApiResult<EventModel?>> getirEventAktifApi(
-      {required int userId}) {
+class QrCodeApiService {
+  // ---------- Ortak yardımcı ----------
+
+  static List<GecisModel> _parseGecisList(dynamic json) {
+    if (json is List) {
+      return json
+          .map((e) => GecisModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    } else if (json is Map<String, dynamic>) {
+      final dynamic raw =
+          json['results'] ?? json['items'] ?? json['data'] ?? [];
+      if (raw is List) {
+        return raw
+            .map((e) => GecisModel.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+    }
+    return <GecisModel>[];
+  }
+
+  // ---------- EVENT ----------
+
+  /// Aktif event’i getirir. (userId opsiyoneldir; backend vermeseniz de çalışır)
+  static Future<ApiResult<EventModel?>> getirEventAktifApi({int? userId}) {
+    final body = userId == null ? <String, dynamic>{} : {'user_id': userId};
     return ApiClient.postParsed<EventModel?>(
       getirEventAktif,
-      {'user_id': userId},
+      body,
       (json) => json == null
           ? null
           : EventModel.fromJson(Map<String, dynamic>.from(json)),
     );
   }
 
-  static Future<ApiResult<GecisModel?>> getirEventSelfPassApi(
-      {required int userId}) {
+  static Future<ApiResult<GecisModel?>> getirEventSelfPassApi({
+    required int userId,
+  }) {
     return ApiClient.postParsed<GecisModel?>(
       getirEventSelfPass,
       {'user_id': userId},
@@ -28,33 +51,20 @@ class QrEventApiService {
     );
   }
 
-  static Future<ApiResult<List<GecisModel>>> listeleEventMisafirPassApi(
-      {required int userId}) {
+  static Future<ApiResult<List<GecisModel>>> listeleEventMisafirPassApi({
+    required int userId,
+  }) {
     return ApiClient.postParsed<List<GecisModel>>(
       listeleEventMisafirPass,
       {'user_id': userId},
-      (json) {
-        // Güçlü parse: list/dict(results)/dict(items)
-        if (json is List) {
-          return json
-              .map((e) => GecisModel.fromJson(Map<String, dynamic>.from(e)))
-              .toList();
-        } else if (json is Map<String, dynamic>) {
-          final dynamic raw =
-              json['results'] ?? json['items'] ?? json['data'] ?? [];
-          if (raw is List) {
-            return raw
-                .map((e) => GecisModel.fromJson(Map<String, dynamic>.from(e)))
-                .toList();
-          }
-        }
-        return <GecisModel>[];
-      },
+      _parseGecisList,
     );
   }
 
-  static Future<ApiResult<GecisModel>> olusturEventMisafirPassApi(
-      {required int userId, required String label}) {
+  static Future<ApiResult<GecisModel>> olusturEventMisafirPassApi({
+    required int userId,
+    required String label,
+  }) {
     return ApiClient.postParsed<GecisModel>(
       olusturEventMisafirPass,
       {'user_id': userId, 'label': label},
@@ -62,20 +72,71 @@ class QrEventApiService {
     );
   }
 
-  static Future<ApiResult<bool>> silEventMisafirPassApi(
-      {required String code}) {
+  static Future<ApiResult<bool>> silEventMisafirPassApi({
+    required String code,
+  }) {
     return ApiClient.postParsed<bool>(
       silEventMisafirPass,
       {'code': code},
       (json) => (json is bool) ? json : false,
     );
   }
-}
 
-class QrKodApiService {
-  /// QR kod doğrulama – token’lı istek (ApiClient default olarak auth header ekler)
-  static Future<ApiResult<QrKodVerifyResponse>> qrKodDogrulaApi(
-      {required String kod}) {
+  // ---------- TESİS (Günlük giriş) ----------
+
+  /// Kullanıcının TESİS self-pass’ını getirir/uzatır (minutes kadar).
+  static Future<ApiResult<GecisModel>> getirTesisSelfPassApi({
+    required int userId,
+    required int minutes,
+  }) {
+    return ApiClient.postParsed<GecisModel>(
+      getirTesisSelfPass,
+      {'user_id': userId, 'minutes': minutes},
+      (json) => GecisModel.fromJson(Map<String, dynamic>.from(json)),
+    );
+  }
+
+  /// Aktif TESİS misafir pass listesini döner (sadece expires_at >= now).
+  static Future<ApiResult<List<GecisModel>>> listeleTesisMisafirPassApi({
+    required int userId,
+  }) {
+    return ApiClient.postParsed<List<GecisModel>>(
+      listeleTesisMisafirPass,
+      {'user_id': userId},
+      _parseGecisList,
+    );
+  }
+
+  /// TESİS misafir pass oluşturur (label set edilir; minutes kadar geçerli).
+  static Future<ApiResult<GecisModel>> olusturTesisMisafirPassApi({
+    required int userId,
+    required String label,
+    required int minutes,
+  }) {
+    return ApiClient.postParsed<GecisModel>(
+      olusturTesisMisafirPass,
+      {'user_id': userId, 'label': label, 'minutes': minutes},
+      (json) => GecisModel.fromJson(Map<String, dynamic>.from(json)),
+    );
+  }
+
+  /// TESİS misafir pass siler (iptal eder).
+  static Future<ApiResult<bool>> silTesisMisafirPassApi({
+    required int userId,
+    required String code,
+  }) {
+    return ApiClient.postParsed<bool>(
+      silTesisMisafirPass,
+      {'user_id': userId, 'code': code},
+      (json) => (json is bool) ? json : false,
+    );
+  }
+
+  // ---------- QR Kod doğrulama (scanner/gate) ----------
+
+  static Future<ApiResult<QrKodVerifyResponse>> qrKodDogrulaApi({
+    required String kod,
+  }) {
     return ApiClient.postParsed<QrKodVerifyResponse>(
       qrKodDogrula,
       {'kod': kod},
