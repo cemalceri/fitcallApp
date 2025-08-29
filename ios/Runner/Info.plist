@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Binay Akademi</string>
+	<string>Fitcall</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Binay Akademi</string>
+	<string>fitcall</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -45,18 +45,5 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-    	<string>whatsapp</string>
-	</array>
-	<key>CFBundleIconName</key>
-	<string>AppIcon</string>
-	<key>UIBackgroundModes</key>
- 	<array>  
- 	<string>fetch</string> 
- 	<string>remote-notification</string>
- 	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>Bu uygulama QR kodları taramak için kameranızı kullanır.</string>
 </dict>
 </plist>
