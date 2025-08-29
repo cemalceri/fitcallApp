@@ -41,7 +41,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
   final Map<int, EtkinlikOnayModel> _userOnaylari = {};
   final Map<String, List<Map<String, dynamic>>> _slotAlternatifleri = {};
   final Set<DateTime> _yuklenenHaftalar = {};
-  String userId = '';
+  int userId = 0;
 
   // ---- Filtre state ----
   final Map<int, String> _hocaAdlari = {};
@@ -745,7 +745,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
                       tamamlandi: tamamlandi,
                       aciklama: ctrl.text,
                       rol: 'UYE',
-                      userId: int.tryParse(userId) ?? 0);
+                      userId: userId);
                   onSaved(tamamlandi, ctrl.text);
                   ShowMessage.success(context, r.mesaj);
                 } on ApiException catch (e) {

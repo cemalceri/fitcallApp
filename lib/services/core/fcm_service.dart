@@ -22,7 +22,10 @@ Future<void> sendFCMDevice({required bool isMainAccount}) async {
   if (Platform.isIOS) {
     // Bildirim izni iste (kullanıcı reddederse çık)
     final perm = await messaging.requestPermission(
-      alert: true, badge: true, sound: true, provisional: false,
+      alert: true,
+      badge: true,
+      sound: true,
+      provisional: false,
     );
     if (perm.authorizationStatus == AuthorizationStatus.denied) {
       print('[FCM] iOS: bildirim izni reddedildi, kayıt atlandı.');
@@ -31,7 +34,7 @@ Future<void> sendFCMDevice({required bool isMainAccount}) async {
 
     // Simülatörde APNs token gelmez -> hatayı önlemek için atla
     final iosInfo = await DeviceInfoPlugin().iosInfo;
-    final isPhysical = iosInfo.isPhysicalDevice ?? false;
+    final isPhysical = iosInfo.isPhysicalDevice;
     if (!isPhysical) {
       print('[FCM] iOS Simulator: APNs token yok, kayıt atlandı.');
       return;
@@ -48,7 +51,8 @@ Future<void> sendFCMDevice({required bool isMainAccount}) async {
   // --- FCM token al ---
   String? fcmToken;
   try {
-    fcmToken = await messaging.getToken(); // iOS'ta APNs hazır değilse hata atıyordu; yukarıda önledik.
+    fcmToken = await messaging
+        .getToken(); // iOS'ta APNs hazır değilse hata atıyordu; yukarıda önledik.
   } catch (e) {
     print('[FCM] getToken hata: $e');
     return;
