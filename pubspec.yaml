@@ -1,7 +1,7 @@
 name: fitcall
 description: "Binay Akademi Mobil Uygulama"
 publish_to: 'none' 
-version: 2.4.3+12
+version: 2.4.3+13
 environment:
   sdk: '>=3.3.4 <4.0.0'
 dependencies:
@@ -20,11 +20,12 @@ dependencies:
   path_provider: ^2.1.5
   share_plus: ^10.1.4
   flutter_secure_storage: ^9.2.4
-  mobile_scanner: ^6.0.5
+  mobile_scanner: ^7.0.1
   syncfusion_flutter_calendar: ^29.1.38
   data_table_2: ^2.6.0
   in_app_update: ^4.2.3
   package_info_plus: ^8.3.1
+  flutter_native_splash: ^2.4.6
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -42,3 +43,9 @@ flutter_icons:
   remove_alpha_ios: true
   # adaptive_icon_foreground: "assets/adaptive_foreground.png"
   # adaptive_icon_background: "assets/adaptive_background.png"
+
+flutter_native_splash:
+  ios: true
+  android: false
+  color: "#FFFFFF"   # arka plan
+  image: "assets/images/logo.png"

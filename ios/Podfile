@@ -41,9 +41,20 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |t|
     flutter_additional_ios_build_settings(t)
-    # 👇 Tüm Pod target'larına da 15.5 dayat
+    # 👇 Tüm Pod target'larına da 15.5 dayat + ek temizlikler
     t.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
+      config.build_settings['ENABLE_BITCODE'] = 'NO'   # Bitcode deprecated → kapat
+      config.build_settings['SWIFT_VERSION'] = '5.0'   # Swift uyarılarını sabitle
     end
   end
+
+  # --- mobile_scanner uyarı fix: '__weak' → '__unsafe_unretained' ---
+  pods_root = installer.sandbox.root
+  Dir["#{pods_root}/**/mobile_scanner-Swift.h"].each do |header|
+    content = File.read(header)
+    patched = content.gsub('__weak', '__unsafe_unretained')
+    File.write(header, patched) if content != patched
+  end
+  # --- /fix ---
 end
