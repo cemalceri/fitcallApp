@@ -354,7 +354,7 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: seciliKod,
+                    initialValue: seciliKod,
                     items: aktifListe
                         .map((o) => DropdownMenuItem(
                             value: o.kod, child: Text(o.etiket)))
@@ -415,7 +415,7 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
                 title: const Text('Dersi İptal Et'),
                 content: Column(mainAxisSize: MainAxisSize.min, children: [
                   DropdownButtonFormField<String>(
-                    value: seciliKod,
+                    initialValue: seciliKod,
                     items: OnayRedIptalNedeniEnums.iptal
                         .map((o) => DropdownMenuItem(
                             value: o.kod, child: Text(o.etiket)))

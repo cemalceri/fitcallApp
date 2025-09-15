@@ -23,7 +23,7 @@ class YardimPage extends StatelessWidget {
     _FAQ(
       question: 'Ders iptal politikası nedir?',
       answer:
-          'Ders saatinden en az 6 saat önce iptal ederseniz hak düşmez. Daha geç'
+          'Ders saatinden en az 24 saat önce iptal ederseniz hak düşmez. Daha geç'
           ' iptallerde ders hakkınız kullanılmış sayılır.',
     ),
     _FAQ(
@@ -68,7 +68,7 @@ class YardimPage extends StatelessWidget {
               leading: const Icon(Icons.email, color: Colors.blueAccent),
               title: const Text('Destek & İletişim'),
               subtitle: const Text('Her türlü sorunuz için bize yazın'),
-              trailing: const Text('destek@teniskulubu.com',
+              trailing: const Text('binayakademi@gmail.com',
                   style: TextStyle(fontWeight: FontWeight.w600)),
               onTap: () {
                 // mailto linki açmak istiyorsanız url_launcher ekleyip açabilirsiniz

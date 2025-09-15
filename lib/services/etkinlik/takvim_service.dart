@@ -14,7 +14,7 @@ class TakvimService {
   }) async {
     // 1) Dersler
     final dersRes = await ApiClient.postParsed<List<EtkinlikModel>>(
-      getDersProgrami,
+      getUyeDersProgrami,
       {'start': start.toIso8601String(), 'end': end.toIso8601String()},
       (json) => ApiParsing.parseList<EtkinlikModel>(
         json,

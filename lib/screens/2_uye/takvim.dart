@@ -466,7 +466,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<int?>(
-                          value: tempHoca,
+                          initialValue: tempHoca,
                           items: hocaItems,
                           onChanged: (v) => setMState(() => tempHoca = v),
                           decoration: const InputDecoration(
@@ -479,7 +479,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: DropdownButtonFormField<int?>(
-                          value: tempKort,
+                          initialValue: tempKort,
                           items: kortItems,
                           onChanged: (v) => setMState(() => tempKort = v),
                           decoration: const InputDecoration(

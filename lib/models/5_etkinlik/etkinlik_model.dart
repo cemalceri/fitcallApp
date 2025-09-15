@@ -1,16 +1,58 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-/// Etkinlik DTO – Django ‹EtkinlikModel› eşlemesi
+/// UyeModel'in hafif DTO'su – backend'in "uyeler" listesindeki öğelerle uyumlu
+class UyeLiteModel {
+  final int id;
+  final String ad;
+  final String soyad;
+  final String? telefon;
+  final String? email;
+
+  UyeLiteModel({
+    required this.id,
+    required this.ad,
+    required this.soyad,
+    this.telefon,
+    this.email,
+  });
+
+  String get adSoyad => '$ad $soyad'.trim();
+
+  factory UyeLiteModel.fromMap(Map<String, dynamic> j) {
+    int asInt(dynamic v) =>
+        v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
+    String asStr(dynamic v) => (v ?? '').toString();
+
+    return UyeLiteModel(
+      id: asInt(j['id']),
+      // Backend bazen 'adi/soyadi', bazen 'ad/soyad', bazen first/last_name döndürebilir
+      ad: asStr(j['ad'] ?? j['adi'] ?? j['first_name']),
+      soyad: asStr(j['soyad'] ?? j['soyadi'] ?? j['last_name']),
+      telefon: j['telefon']?.toString(),
+      email: j['email']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'ad': ad,
+        'soyad': soyad,
+        if (telefon != null) 'telefon': telefon,
+        if (email != null) 'email': email,
+      };
+}
+
+/// Etkinlik DTO – Django ‹EtkinlikModel› ile uyumlu
 class EtkinlikModel {
   /* -------------------------------------------------------------------------- */
   /*                              ZORUNLU alanlar                               */
   /* -------------------------------------------------------------------------- */
   final int id;
 
-  // Grup FK zorunlu
-  final int grupId;
-  final String grupAdi;
+  /// UI geriye uyumluluk için alan adı `uyeList` bırakıldı.
+  /// JSON'dan 'uyeler' (tercih edilen), yoksa 'uye_list'/'participants' -> `uyeList`
+  final List<UyeLiteModel> uyeList;
 
   // Kort FK zorunlu
   final int kortId;
@@ -22,7 +64,7 @@ class EtkinlikModel {
   final String seviye; // default'u var ama null olamaz
   final bool iptalMi;
 
-  // BaseAbstract alanları da her kayıtta bulunur
+  // BaseAbstract alanları
   final bool isActive;
   final bool isDeleted;
   final DateTime createdAt;
@@ -52,13 +94,12 @@ class EtkinlikModel {
   final int? isletme;
 
   /* -------------------------------------------------------------------------- */
-  /*                                 CTOR                                       */
+  /*                                   CTOR                                     */
   /* -------------------------------------------------------------------------- */
   EtkinlikModel({
     /* zorunlular */
     required this.id,
-    required this.grupId,
-    required this.grupAdi,
+    required this.uyeList,
     required this.kortId,
     required this.kortAdi,
     required this.baslangicTarihSaat,
@@ -89,46 +130,65 @@ class EtkinlikModel {
   /*                              JSON → Model                                  */
   /* -------------------------------------------------------------------------- */
   factory EtkinlikModel.fromMap(Map<String, dynamic> j) {
-    DateTime? d(String? v) =>
+    DateTime? date(String? v) =>
         (v == null || v.isEmpty) ? null : DateTime.parse(v);
     double? dbl(dynamic v) => v == null ? null : double.tryParse(v.toString());
+    int? asIntN(dynamic v) =>
+        (v == null) ? null : (v is int ? v : int.tryParse(v.toString()));
+
+    // Katılımcı listesi: öncelik 'uyeler' (SerializerMethodField), geri uyumluluk için 'uye_list'/'participants'
+    final dynamic katilimciHam =
+        j['uyeler'] ?? j['uye_list'] ?? j['participants'];
+    final List<UyeLiteModel> uyeler = (katilimciHam is List)
+        ? katilimciHam
+            .map((e) => UyeLiteModel.fromMap(e as Map<String, dynamic>))
+            .toList()
+        : <UyeLiteModel>[];
 
     return EtkinlikModel(
       /* zorunlu */
       id: j['id'],
-      grupId: j['grup'],
-      grupAdi: j['grup_adi'] ?? '',
+      uyeList: uyeler,
       kortId: j['kort'],
-      kortAdi: j['kort_adi'] ?? '',
+      kortAdi: j['kort_adi']?.toString() ?? '',
       baslangicTarihSaat: DateTime.parse(j['baslangic_tarih_saat']),
       bitisTarihSaat: DateTime.parse(j['bitis_tarih_saat']),
-      seviye: j['seviye'] ?? '',
-      iptalMi: j['iptal_mi'] ?? false,
-      isActive: j['is_active'] ?? true,
-      isDeleted: j['is_deleted'] ?? false,
+      seviye: j['seviye']?.toString() ?? '',
+      iptalMi: (j['iptal_mi'] ?? false) == true,
+      isActive: (j['is_active'] ?? true) == true,
+      isDeleted: (j['is_deleted'] ?? false) == true,
       createdAt: DateTime.parse(j['olusturulma_zamani']),
       updatedAt: DateTime.parse(j['guncellenme_zamani']),
       /* opsiyonel */
-      haftalikPlanKodu: j['haftalik_plan_kodu'],
-      urunId: j['urun'],
-      urunAdi: j['urun_adi'],
-      antrenorId: j['antrenor'],
-      antrenorAdi: j['antrenor_adi'],
-      yardimciAntrenorId: j['yardimci_antrenor'],
-      yardimciAntrenorAdi: j['yardimci_antrenor_adi'],
-      iptalEden: j['iptal_eden'],
-      iptalTarihSaat: d(j['iptal_tarih_saat']),
+      haftalikPlanKodu: j['haftalik_plan_kodu']?.toString(),
+      urunId: asIntN(j['urun']),
+      urunAdi: j['urun_adi']?.toString(),
+      antrenorId: asIntN(j['antrenor']),
+      antrenorAdi: j['antrenor_adi']?.toString(),
+      yardimciAntrenorId: asIntN(j['yardimci_antrenor']),
+      yardimciAntrenorAdi: j['yardimci_antrenor_adi']?.toString(),
+      iptalEden: j['iptal_eden']?.toString(),
+      iptalTarihSaat: date(j['iptal_tarih_saat']),
       ucret: dbl(j['ucret']),
-      ekleyen: j['ekleyen'],
-      guncelleyen: j['guncelleyen'],
-      isletme: j['isletme'],
+      ekleyen: asIntN(j['ekleyen']),
+      guncelleyen: asIntN(j['guncelleyen']),
+      isletme: asIntN(j['isletme']),
     );
   }
 
   /* ----------------------- HTTP cevabından liste üretir --------------------- */
   static List<EtkinlikModel> fromJson(http.Response res) {
-    final raw = json.decode(utf8.decode(res.bodyBytes)) as List<dynamic>;
-    return raw.map((e) => EtkinlikModel.fromMap(e)).toList();
+    final raw = json.decode(utf8.decode(res.bodyBytes));
+    if (raw is List) {
+      return raw
+          .map((e) => EtkinlikModel.fromMap(e as Map<String, dynamic>))
+          .toList();
+    } else if (raw is Map<String, dynamic>) {
+      // Bazı endpointler tek obje döndürebilir
+      return [EtkinlikModel.fromMap(raw)];
+    } else {
+      return <EtkinlikModel>[];
+    }
   }
 
   /* -------------------------------------------------------------------------- */
@@ -137,8 +197,6 @@ class EtkinlikModel {
   Map<String, dynamic> toJson() => {
         'id': id,
         'haftalik_plan_kodu': haftalikPlanKodu,
-        'grup': grupId,
-        'grup_adi': grupAdi,
         'urun': urunId,
         'urun_adi': urunAdi,
         'baslangic_tarih_saat': baslangicTarihSaat.toIso8601String(),
@@ -161,5 +219,8 @@ class EtkinlikModel {
         'ekleyen': ekleyen,
         'guncelleyen': guncelleyen,
         'isletme': isletme,
+
+        // Backend uyumu: katılımcılar "uyeler" altında dönsün
+        'uyeler': uyeList.map((e) => e.toJson()).toList(),
       };
 }

@@ -107,7 +107,7 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
           labelText: 'Kort (opsiyonel)',
           border: OutlineInputBorder(),
         ),
-        value: _selectedKortId,
+        initialValue: _selectedKortId,
         items: [
           const DropdownMenuItem<int>(value: null, child: Text('Herhangi')),
           ..._kortlar.map(
@@ -122,7 +122,7 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
           labelText: 'Antrenör (opsiyonel)',
           border: OutlineInputBorder(),
         ),
-        value: _selectedAntrenorId,
+        initialValue: _selectedAntrenorId,
         items: [
           const DropdownMenuItem<int>(value: null, child: Text('Herhangi')),
           ..._antrenorler.map((h) => DropdownMenuItem<int>(

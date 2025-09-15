@@ -112,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       // Beni hatırla tercihini ve kredileri yönet
-      await StorageService.setBeniHatirla(_beniHatirla);
+      StorageService.setBeniHatirla(_beniHatirla);
       if (_beniHatirla) {
         await SecureStorageService.setValue<String>(_kRememberUser, u);
         await SecureStorageService.setValue<String>(_kRememberPass, p);
@@ -224,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
             onChanged: (value) async {
               final v = value ?? false;
               setState(() => _beniHatirla = v);
-              await StorageService.setBeniHatirla(v);
+              StorageService.setBeniHatirla(v);
               if (!v) {
                 // kapatılırsa kredileri temizle
                 await SecureStorageService.remove(_kRememberUser);

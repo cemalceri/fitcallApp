@@ -45,7 +45,7 @@ class RegisterPage extends StatelessWidget {
                   Icon(Icons.email),
                   SizedBox(width: 8),
                   SelectableText(
-                    'xxx@gmail.com',
+                    'binayakademi@gmail.com',
                     style: TextStyle(fontSize: 16),
                   ),
                 ],
@@ -57,7 +57,7 @@ class RegisterPage extends StatelessWidget {
                   Icon(Icons.phone),
                   SizedBox(width: 8),
                   SelectableText(
-                    '+90 545 555 5555',
+                    '+90 542 246 29 82',
                     style: TextStyle(fontSize: 16),
                   ),
                 ],

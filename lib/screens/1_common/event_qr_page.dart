@@ -134,17 +134,21 @@ class _EventQrPageState extends State<EventQrPage> {
 
   String _f(DateTime dt) =>
       DateFormat("dd MMMM yyyy EEEE HH:mm", "tr_TR").format(dt);
-
   Future<void> _paylasQrKodu(String code, {String? mesaj}) async {
     try {
+      // 1) QR painter ayarı
       final painter = QrPainter(
         data: '',
         version: QrVersions.auto,
         gapless: true,
-        eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: Colors.black),
-        dataModuleStyle: QrDataModuleStyle(
-            dataModuleShape: QrDataModuleShape.square, color: Colors.black),
+        eyeStyle:
+            const QrEyeStyle(eyeShape: QrEyeShape.square, color: Colors.black),
+        dataModuleStyle: const QrDataModuleStyle(
+          dataModuleShape: QrDataModuleShape.square,
+          color: Colors.black,
+        ),
       );
+
       final qr = QrPainter(
         data: code,
         version: painter.version,
@@ -153,6 +157,7 @@ class _EventQrPageState extends State<EventQrPage> {
         dataModuleStyle: painter.dataModuleStyle,
       );
 
+      // 2) Canvas üzerine çiz
       const double sizePx = 1024;
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
@@ -160,21 +165,40 @@ class _EventQrPageState extends State<EventQrPage> {
       canvas.drawRect(const Rect.fromLTWH(0, 0, sizePx, sizePx), bg);
       qr.paint(canvas, const Size.square(sizePx));
 
+      // 3) Görüntüyü PNG baytlarına çevir
       final img =
           await recorder.endRecording().toImage(sizePx.toInt(), sizePx.toInt());
       final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) throw Exception('QR üretilemedi');
-
       final bytes = byteData.buffer.asUint8List();
+
+      // 4) Geçici dosyaya yaz (çoğu paylaşım hedefi dosya ister)
       final dir = await getTemporaryDirectory();
-      final f =
-          File('${dir.path}/qr_${DateTime.now().millisecondsSinceEpoch}.png');
-      await f.writeAsBytes(bytes);
-      await Share.shareXFiles([XFile(f.path)], text: mesaj);
+      final fileName = 'qr_${DateTime.now().millisecondsSinceEpoch}.png';
+      final f = File('${dir.path}/$fileName');
+      await f.writeAsBytes(bytes, flush: true);
+
+      // 5) iPad için share sheet konumu (gerekli)
+      final box = context.findRenderObject() as RenderBox?;
+      final origin = box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : const Rect.fromLTWH(0, 0, 0, 0);
+
+      // 6) Yeni API ile paylaş
+      await SharePlus.instance.share(
+        ShareParams(
+          text: mesaj,
+          files: [XFile(f.path)],
+          sharePositionOrigin: origin, // iPad'de önemli
+          // subject: 'QR Kod',      // (opsiyonel)
+          // title: 'Paylaş',        // (opsiyonel)
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Paylaşım başarısız: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Paylaşım başarısız: $e')),
+      );
     }
   }
 
