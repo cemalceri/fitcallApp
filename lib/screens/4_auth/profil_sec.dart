@@ -222,6 +222,95 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     );
   }
 
+  // ----------- Boş durum bileşeni (yalnızca EMPTY CASE için) -----------
+  Widget _emptyState(BuildContext context) {
+    final canPop = Navigator.of(context).canPop();
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 520),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.black12),
+          boxShadow: const [
+            BoxShadow(
+              blurRadius: 18,
+              spreadRadius: 0,
+              offset: Offset(0, 6),
+              color: Color(0x14000000),
+            )
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Hafif modern ikonlu başlık
+            Container(
+              width: 84,
+              height: 84,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withAlpha((.15 * 255).toInt()),
+                    Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withAlpha((.05 * 255).toInt()),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.person_search_rounded,
+                size: 40,
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withAlpha((.9 * 255).toInt()),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Kullanıcınıza ait herhangi bir üye profili bulunmuyor',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Bir yanlışlık olduğunu düşünüyorsanız lütfen iletişime geçin.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13.5,
+                color: Colors.black.withAlpha((.55 * 255).toInt()),
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (canPop)
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                label: const Text('Geri'),
+                style: OutlinedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final yoneticiler =
@@ -255,10 +344,13 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                 _rolBaslik('Üye', _rolIkon('uye'), _rolRenk('uye', context)),
                 _rolGrupGrid(uyeler),
               ],
+
+              // ----------- Güncellenen boş durum -----------
               if (yoneticiler.isEmpty && antrenorler.isEmpty && uyeler.isEmpty)
-                const Padding(
-                    padding: EdgeInsets.only(top: 24),
-                    child: Text('Listelenecek profil bulunamadı.')),
+                Padding(
+                  padding: const EdgeInsets.only(top: 24),
+                  child: _emptyState(context),
+                ),
             ],
           ),
         ),
