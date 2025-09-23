@@ -1,4 +1,5 @@
 import 'package:fitcall/screens/1_common/yardim_page.dart';
+import 'package:fitcall/screens/4_auth/forgot_password_page.dart';
 import 'package:fitcall/screens/5_etkinlik/genel_ders_talep.dart';
 import 'package:fitcall/screens/2_uye/takvim.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
@@ -30,6 +31,7 @@ enum SayfaAdi {
   login,
   profilSec,
   kayitol,
+  sifremiUnuttum,
   qrKodKayit,
   qrKodDogrula,
   uyeAnasayfa,
@@ -53,6 +55,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.login: '/',
   SayfaAdi.profilSec: '/profilSec',
   SayfaAdi.kayitol: '/kayitol',
+  SayfaAdi.sifremiUnuttum: '/sifremiUnuttum',
   SayfaAdi.qrKodKayit: '/qrKodKayit',
   SayfaAdi.qrKodDogrula: '/qrKodDogrula',
   SayfaAdi.uyeAnasayfa: '/uyeAnasayfa',
@@ -74,9 +77,9 @@ final Map<SayfaAdi, String> routeEnums = {
 /* ------------------ 2) String -> Widget ------------------ */
 final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.login]!: (c) => const LoginPage(),
-  routeEnums[SayfaAdi.profilSec]!: (c) =>
-      const ProfilSecPage([]), // Profil seçimi için boş liste
+  routeEnums[SayfaAdi.profilSec]!: (c) => const ProfilSecPage([]),
   routeEnums[SayfaAdi.kayitol]!: (c) => const RegisterPage(),
+  routeEnums[SayfaAdi.sifremiUnuttum]!: (c) => const ForgotPasswordPage(),
   routeEnums[SayfaAdi.qrKodKayit]!: (c) => const QRKodKayitPage(),
   routeEnums[SayfaAdi.qrKodDogrula]!: (c) => const QRKodDogrulaPage(),
   routeEnums[SayfaAdi.uyeAnasayfa]!: (c) => UyeHomePage(),
@@ -107,6 +110,8 @@ final Map<String, WidgetBuilder> routes = {
 final Set<String> publicRoutes = {
   routeEnums[SayfaAdi.login]!,
   routeEnums[SayfaAdi.kayitol]!,
+  routeEnums[SayfaAdi.sifremiUnuttum]!,
+  routeEnums[SayfaAdi.profilSec]!,
 };
 
 /* ------------------ 4) onGenerateRoute ------------------ */

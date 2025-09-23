@@ -237,7 +237,9 @@ class _LoginPageState extends State<LoginPage> {
       );
 
   Widget _sifremiUnuttum() => TextButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, routeEnums[SayfaAdi.sifremiUnuttum]!);
+        },
         child: const Text("Şifremi Unuttum"),
       );
 
