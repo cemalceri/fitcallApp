@@ -125,10 +125,12 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
         initialValue: _selectedAntrenorId,
         items: [
           const DropdownMenuItem<int>(value: null, child: Text('Herhangi')),
-          ..._antrenorler.map((h) => DropdownMenuItem<int>(
-                value: h.id,
-                child: Text('${h.adi} ${h.soyadi}'),
-              ))
+          ..._antrenorler.map(
+            (h) => DropdownMenuItem<int>(
+              value: h.id,
+              child: Text('${h.adi} ${h.soyadi}'),
+            ),
+          )
         ],
         onChanged: (v) => setState(() => _selectedAntrenorId = v),
       );
@@ -148,9 +150,7 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
                       Text(
                         _gunAdi(gun),
                         style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                            fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       IconButton(
                         icon: const Icon(Icons.add),
@@ -158,9 +158,29 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
                           final TimeOfDay? secim = await showTimePicker(
                             context: context,
                             initialTime: const TimeOfDay(hour: 9, minute: 0),
+                            builder: (ctx, child) => MediaQuery(
+                              data: MediaQuery.of(ctx)
+                                  .copyWith(alwaysUse24HourFormat: true),
+                              child: child!,
+                            ),
                           );
                           if (secim == null) return;
-                          setState(() => saatList.add(secim));
+
+                          // Yalnızca tam ve buçuk saat: dakikayı 00/30'a sabitle
+                          final snapped = _snapToHalfHour(secim);
+
+                          setState(() {
+                            final exists = saatList.any(
+                              (t) =>
+                                  t.hour == snapped.hour &&
+                                  t.minute == snapped.minute,
+                            );
+                            if (!exists) {
+                              saatList.add(snapped);
+                              saatList.sort((a, b) => (a.hour * 60 + a.minute)
+                                  .compareTo(b.hour * 60 + b.minute));
+                            }
+                          });
                         },
                       )
                     ],
@@ -170,9 +190,7 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
                     children: saatList
                         .map(
                           (t) => Chip(
-                            label: Text(
-                              '${t.hour.toString().padLeft(2, '0')}:00',
-                            ),
+                            label: Text(_formatTime(t)), // HH:mm olarak göster
                             onDeleted: () => setState(() => saatList.remove(t)),
                           ),
                         )
@@ -195,16 +213,24 @@ class _GenelDersTalepPageState extends State<GenelDersTalepPage> {
         _ => 'Pazar',
       };
 
+  // Dakikayı 00 veya 30'a sabitle (floor mantığı)
+  TimeOfDay _snapToHalfHour(TimeOfDay t) =>
+      TimeOfDay(hour: t.hour, minute: t.minute < 30 ? 0 : 30);
+
+  String _formatTime(TimeOfDay t) =>
+      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+
   Future<void> _gonder() async {
     final Map<String, List<String>> saatJson = {};
     _secilenSaatler.forEach((gun, list) {
       if (list.isNotEmpty) {
         saatJson[gun] =
-            list.map((t) => '${t.hour.toString().padLeft(2, '0')}:00').toList();
+            list.map((t) => _formatTime(t)).toList(); // HH:mm gönder
       }
     });
 
     if (saatJson.isEmpty) {
+      if (!mounted) return;
       ShowMessage.error(context, 'En az bir saat seçin');
       return;
     }

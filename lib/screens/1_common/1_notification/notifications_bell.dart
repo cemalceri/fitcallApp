@@ -1,4 +1,4 @@
-import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
+import 'package:fitcall/common/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/services/core/notification_service.dart';
 
@@ -6,9 +6,9 @@ class NotificationsBell extends StatelessWidget {
   const NotificationsBell({super.key});
 
   Future<void> _openPage(BuildContext ctx) async {
-    await Navigator.push(
+    await Navigator.pushNamed(
       ctx,
-      MaterialPageRoute(builder: (_) => const NotificationPage()),
+      routeEnums[SayfaAdi.bildirimler]!,
     );
     // ➜ Sayfa kapandıktan sonra gerçek unread sayısını tekrar çek
     NotificationService.refreshUnreadCount();

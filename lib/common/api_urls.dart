@@ -63,3 +63,6 @@ String olusturTesisMisafirPass = "$baseUrl/olusturTesisMisafirPass";
 String silTesisMisafirPass = "$baseUrl/silTesisMisafirPass";
 // Tarama
 String taraPass = "$baseUrl/taraPass";
+//auths
+String uyeSifreDegistir = "$baseUrl/uyeSifreDegistir";
+String uyeKullaniciSil = "$baseUrl/uyeKullaniciSil";

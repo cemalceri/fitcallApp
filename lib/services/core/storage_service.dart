@@ -3,6 +3,7 @@ import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/models/4_auth/group_model.dart';
 import 'package:fitcall/models/4_auth/user_model.dart';
+import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class StorageService {
@@ -23,6 +24,11 @@ class StorageService {
   static Future<UyeModel?> uyeBilgileriniGetir() async {
     final s = await SecureStorageService.getValue<String>('uye');
     return s == null ? null : UyeModel.fromJson(json.decode(s));
+  }
+
+  static Future<KullaniciProfilModel?> uyeProfilBilgileriniGetir() async {
+    final s = await SecureStorageService.getValue<String>('uye_profil');
+    return s == null ? null : KullaniciProfilModel.fromJson(json.decode(s));
   }
 
   static Future<AntrenorModel?> antrenorBilgileriniGetir() async {
