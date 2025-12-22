@@ -6,7 +6,6 @@ import 'package:fitcall/services/api_result.dart';
 class DersTalepApiService {
   /// Üyenin mevcut paketleri + mobil alıma uygun ürünleri getirir.
   /// Django: GetUrunListesiVeUyePaketleri (POST) – `request.uye` kullanıyor, `uye_id` gereksiz.
-  /// Opsiyonel: antrenor_id (katsayı TODO)
   static Future<ApiResult<PaketVeriResponse>> getirtUrunListesiVeUyePaketleri({
     int? antrenorId,
   }) {

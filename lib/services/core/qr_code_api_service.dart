@@ -85,13 +85,12 @@ class QrCodeApiService {
   // ---------- TESİS (Günlük giriş) ----------
 
   /// Kullanıcının TESİS self-pass’ını getirir/uzatır (minutes kadar).
-  static Future<ApiResult<GecisModel>> getirTesisSelfPassApi({
+  static Future<ApiResult<GecisModel>> kullaniciIcinQROlustursApi({
     required int userId,
-    required int minutes,
   }) {
     return ApiClient.postParsed<GecisModel>(
       getirTesisSelfPass,
-      {'user_id': userId, 'minutes': minutes},
+      {'user_id': userId},
       (json) => GecisModel.fromJson(Map<String, dynamic>.from(json)),
     );
   }

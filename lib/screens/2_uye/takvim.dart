@@ -13,7 +13,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 /* -------------------------------------------------------------------------- */
 /*                            Renk Sabitleri                                   */
@@ -21,7 +21,8 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 const Color dersDoluRenk = Colors.grey; // Takvimdeki dolu ders
 const Color uygunSaatRenk = Colors.white; // Rezervasyon yapılabilir saat
 const Color uygunOlmayanRenk =
-    Color.fromARGB(255, 233, 240, 255); // Uygun olmayan slot (arka plan)
+    Color.fromARGB(255, 233, 240, 255); // Uygun olmayan
+const Color uiPrimaryBlue = Color(0xFF2F6FED); // İstenen mavi
 
 /* -------------------------------------------------------------------------- */
 /*                                Sayfa                                        */
@@ -33,7 +34,6 @@ class DersListesiPage extends StatefulWidget {
 }
 
 class _DersListesiPageState extends State<DersListesiPage> {
-  EtkinlikDataSource _dataSource = EtkinlikDataSource(const []);
   final List<Appointment> _tumRandevular = [];
   bool _isLoading = false;
 
@@ -50,14 +50,26 @@ class _DersListesiPageState extends State<DersListesiPage> {
   int? _seciliKortId;
   RangeValues _saatAralik = const RangeValues(7, 23);
 
-  // Arka plan bölgeleri (tamamen geçmiş günler + meşgul slotlar)
-  List<TimeRegion> _regions = [];
-  // Haftaya göre busy bölgelerini saklayalım (görüntü değişiminde tekrar eklemek için)
-  final Map<DateTime, List<TimeRegion>> _weekBusyRegions = {};
+  // ---- UI state ----
+  late DateTime _visibleWeekStart;
+  late DateTime _selectedDate;
+  DateTime? _selectedSlotStart;
+
+  // UI cache
+  Map<DateTime, int> _weekUygunSayilari = {};
+  List<DateTime> _selectedDayUygunSlotlar = [];
+  List<Appointment> _selectedDayDersler = [];
+
+  // Table Calendar state
+  DateTime _focusedDay = DateTime.now();
+  final CalendarFormat _calendarFormat = CalendarFormat.week;
 
   @override
   void initState() {
     super.initState();
+    _visibleWeekStart = _haftaBaslangic(DateTime.now());
+    _selectedDate = _normalizeDate(DateTime.now());
+    _focusedDay = DateTime.now();
     _prepare();
   }
 
@@ -65,11 +77,11 @@ class _DersListesiPageState extends State<DersListesiPage> {
     setState(() => _isLoading = true);
     currentUye = await StorageService.uyeBilgileriniGetir();
     userId = await SecureStorageService.getValue('user_id');
-    final now = DateTime.now();
-    final ws = _haftaBaslangic(now);
-    await _loadWeek(ws);
-    _rebuildRegionsForVisible(visibleDates: _weekDates(ws));
-    _applyFilters();
+
+    await _loadWeek(_visibleWeekStart);
+    _yenileFiltreOpsiyonlari();
+    _recomputeUiCaches();
+
     setState(() => _isLoading = false);
   }
 
@@ -112,45 +124,54 @@ class _DersListesiPageState extends State<DersListesiPage> {
             id: 'available-$key',
             startTime: s.baslangic,
             endTime: s.bitis,
-            subject: '', // metin yok
+            subject: '',
             notes: jsonEncode({
               'tip': 'available',
               'baslangic': key,
               'bitis': s.bitis.toUtc().toIso8601String(),
             }),
-            color: uygunSaatRenk.withAlpha((0.3 * 255).toInt()),
+            color: uygunSaatRenk.withValues(alpha: 0.3),
           ));
         }
       }
 
-      // --- BUSY → Appointment yerine TimeRegion olarak sakla (bölünmeyi önler) ---
-      final List<TimeRegion> busyRegions = [];
-      final Set<String> busyKeys = {};
-      for (final s in data.mesgul) {
-        // aynı zaman aralığını tekilleştir
-        final key =
-            '${s.baslangic.toUtc().toIso8601String()}_${s.bitis.toUtc().toIso8601String()}';
-        if (!busyKeys.add(key)) continue;
-
-        busyRegions.add(TimeRegion(
-          startTime: s.baslangic,
-          endTime: s.bitis,
-          enablePointerInteraction: false,
-          color: uygunOlmayanRenk,
-        ));
-      }
-      _weekBusyRegions[weekStart] = busyRegions;
-
       _tumRandevular.addAll(dersAppts);
       _tumRandevular.addAll(availableAppts);
-
-      _yenileFiltreOpsiyonlari();
-      _applyFilters();
     } on ApiException catch (e) {
       ShowMessage.error(context, e.message);
     } catch (e) {
       ShowMessage.error(context, 'Takvim alınamadı: $e');
     }
+  }
+
+  Future<void> _forceReloadVisibleWeek() async {
+    setState(() => _isLoading = true);
+    _removeWeekFromCaches(_visibleWeekStart);
+    await _loadWeek(_visibleWeekStart);
+    _yenileFiltreOpsiyonlari();
+    _recomputeUiCaches();
+    setState(() => _isLoading = false);
+  }
+
+  void _removeWeekFromCaches(DateTime weekStart) {
+    final weekEnd = weekStart.add(const Duration(days: 7));
+
+    _tumRandevular.removeWhere((a) =>
+        !a.startTime.isBefore(weekStart) && a.startTime.isBefore(weekEnd));
+
+    final wsUtc = weekStart.toUtc();
+    final weUtc = weekEnd.toUtc();
+    final keysToRemove = <String>[];
+    for (final k in _slotAlternatifleri.keys) {
+      final dt = DateTime.tryParse(k);
+      if (dt == null) continue;
+      if (!dt.isBefore(wsUtc) && dt.isBefore(weUtc)) keysToRemove.add(k);
+    }
+    for (final k in keysToRemove) {
+      _slotAlternatifleri.remove(k);
+    }
+
+    _yuklenenHaftalar.remove(weekStart);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -160,8 +181,12 @@ class _DersListesiPageState extends State<DersListesiPage> {
       .subtract(Duration(days: d.weekday - 1))
       .copyWith(hour: 7, minute: 0, second: 0, millisecond: 0);
 
-  List<DateTime> _weekDates(DateTime ws) =>
-      List.generate(7, (i) => ws.add(Duration(days: i)));
+  DateTime _normalizeDate(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  List<DateTime> _visibleWeekDays() {
+    final ws = _normalizeDate(_visibleWeekStart);
+    return List.generate(7, (i) => ws.add(Duration(days: i)));
+  }
 
   Appointment _dersToAppt(EtkinlikModel d) {
     final m = d.toJson();
@@ -251,49 +276,71 @@ class _DersListesiPageState extends State<DersListesiPage> {
     });
   }
 
-  void _applyFilters() {
+  bool _withinHourRange(DateTime dt) {
     final startH = _saatAralik.start.floor();
     final endH = _saatAralik.end.ceil(); // [startH, endH)
-    final now = DateTime.now();
+    final sh = dt.hour + dt.minute / 60.0;
+    return (sh >= startH && sh < endH);
+  }
+
+  void _recomputeUiCaches() {
+    final ws = _visibleWeekStart;
+    final weekEnd = ws.add(const Duration(days: 7));
+    final nowPlus3h = DateTime.now().add(const Duration(hours: 3));
+    final selectedDay = _normalizeDate(_selectedDate);
+
+    final counts = <DateTime, int>{};
+    final slots = <DateTime>[];
+    final dersler = <Appointment>[];
+
+    final seenAvailKeys = <String>{};
 
     for (final a in _tumRandevular) {
-      final n = _safeNotes(a);
-      final tip = n['tip'];
+      if (a.startTime.isBefore(ws) || !a.startTime.isBefore(weekEnd)) continue;
 
-      final sh = a.startTime.hour + a.startTime.minute / 60.0;
-      final withinHours = (sh >= startH && sh < endH);
-      final isPast = a.endTime.isBefore(now);
+      final note = _safeNotes(a);
+      final tip = note['tip'];
 
-      Color newColor = a.color;
+      if (tip == 'available') {
+        final key = (note['baslangic'] ?? '').toString();
+        if (key.isEmpty) continue;
+        if (!seenAvailKeys.add(key)) continue;
 
-      if (isPast) {
-        newColor = uygunOlmayanRenk;
-      } else if (!withinHours) {
-        newColor = uygunOlmayanRenk;
-      } else if (tip == 'available') {
-        final key = (n['baslangic'] ?? '').toString();
-        final matches = _availableMatchesFilters(key);
-        newColor = matches
-            ? uygunSaatRenk.withAlpha((0.3 * 255).toInt())
-            : uygunOlmayanRenk;
+        final st = a.startTime;
+        if (st.isBefore(nowPlus3h)) continue;
+        if (!_withinHourRange(st)) continue;
+        if (!_availableMatchesFilters(key)) continue;
+
+        final day = _normalizeDate(st);
+        counts[day] = (counts[day] ?? 0) + 1;
+
+        if (day == selectedDay) slots.add(st);
       } else if (tip == 'ders') {
-        final hId = _toInt(n['antrenor_id']);
-        final kId = _toInt(n['kort_id']);
-        final coachOk = (_seciliHocaId == null) || (hId == _seciliHocaId);
-        final courtOk = (_seciliKortId == null) || (kId == _seciliKortId);
-        if (!(coachOk && courtOk)) {
-          newColor = dersDoluRenk;
-        } else {
-          final iptalMi = n['iptal_mi'] == true || n['iptalMi'] == true;
-          newColor = iptalMi ? uygunOlmayanRenk : dersDoluRenk;
-        }
+        final day = _normalizeDate(a.startTime);
+        if (day == selectedDay) dersler.add(a);
       }
-
-      a.color = newColor;
     }
 
-    setState(() => _dataSource =
-        EtkinlikDataSource(List<Appointment>.from(_tumRandevular)));
+    slots.sort();
+    dersler.sort((a, b) => a.startTime.compareTo(b.startTime));
+
+    for (final d in _visibleWeekDays()) {
+      final nd = _normalizeDate(d);
+      counts.putIfAbsent(nd, () => 0);
+    }
+
+    setState(() {
+      _weekUygunSayilari = counts;
+      _selectedDayUygunSlotlar = slots;
+      _selectedDayDersler = dersler;
+
+      if (_selectedSlotStart != null &&
+          !_selectedDayUygunSlotlar.any((x) =>
+              x.isAtSameMomentAs(_selectedSlotStart!) ||
+              x == _selectedSlotStart)) {
+        _selectedSlotStart = null;
+      }
+    });
   }
 
   int _aktifFiltreSayisi() {
@@ -304,28 +351,35 @@ class _DersListesiPageState extends State<DersListesiPage> {
     return c;
   }
 
-  void _rebuildRegionsForVisible({required List<DateTime> visibleDates}) {
-    // 1) Tamamen geçmiş günler (bölünme olmasın diye kısmi gölge yok)
-    final now = DateTime.now();
-    final List<TimeRegion> pastDayRegions = [];
-    for (final d in visibleDates) {
-      final dayStart = DateTime(d.year, d.month, d.day, 7);
-      final dayEnd = DateTime(d.year, d.month, d.day, 23);
-      if (dayEnd.isBefore(now)) {
-        pastDayRegions.add(TimeRegion(
-          startTime: dayStart,
-          endTime: dayEnd,
-          enablePointerInteraction: false,
-          color: uygunOlmayanRenk,
-        ));
-      }
-    }
+  Future<void> _changeWeek(int deltaWeeks) async {
+    final newWs = _visibleWeekStart.add(Duration(days: 7 * deltaWeeks));
+    setState(() => _isLoading = true);
 
-    // 2) Bu haftanın meşgul bölgeleri
-    final ws = _haftaBaslangic(visibleDates.first);
-    final busy = _weekBusyRegions[ws] ?? const [];
+    await _loadWeek(newWs);
 
-    setState(() => _regions = [...pastDayRegions, ...busy]);
+    final prevWeekday = _selectedDate.weekday;
+    final newSelected = _normalizeDate(
+        _normalizeDate(newWs).add(Duration(days: prevWeekday - 1)));
+
+    setState(() {
+      _visibleWeekStart = newWs;
+      _selectedDate = newSelected;
+      _selectedSlotStart = null;
+      _focusedDay = newSelected;
+    });
+
+    _yenileFiltreOpsiyonlari();
+    _recomputeUiCaches();
+
+    setState(() => _isLoading = false);
+  }
+
+  void _selectDay(DateTime day) {
+    setState(() {
+      _selectedDate = _normalizeDate(day);
+      _selectedSlotStart = null;
+    });
+    _recomputeUiCaches();
   }
 
   /* -------------------------------------------------------------------------- */
@@ -334,26 +388,39 @@ class _DersListesiPageState extends State<DersListesiPage> {
   @override
   Widget build(BuildContext context) {
     final filtreCount = _aktifFiltreSayisi();
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ders Takvimi')),
+      appBar: AppBar(
+        title: const Text('Takvim'),
+        actions: [
+          _BadgeIconButton(
+            count: filtreCount,
+            icon: Icons.filter_alt_rounded,
+            onPressed: _openFilterSheet,
+          ),
+        ],
+      ),
       bottomNavigationBar: SafeArea(
         top: false,
-        child: BottomAppBar(
-          elevation: 3,
-          color: Theme.of(context).colorScheme.surface,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-            child: SizedBox(
-              height: 44,
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: _openFilterSheet,
-                icon: const Icon(Icons.filter_alt_rounded),
-                label: Text(
-                  filtreCount > 0
-                      ? 'Filtreleri Aç ($filtreCount)'
-                      : 'Filtreleri Aç',
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: SizedBox(
+            height: 56,
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _openFilterSheet,
+              icon: const Icon(Icons.filter_alt_rounded),
+              label: Text(
+                filtreCount > 0 ? 'Filtreler ($filtreCount)' : 'Filtreler',
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: uiPrimaryBlue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
                 ),
               ),
             ),
@@ -364,28 +431,226 @@ class _DersListesiPageState extends State<DersListesiPage> {
           ? const LoadingSpinnerWidget(message: 'Takvim yükleniyor...')
           : Column(
               children: [
-                Expanded(
-                  child: SfCalendar(
-                    view: CalendarView.week,
-                    timeZone: 'Europe/Istanbul',
-                    dataSource: _dataSource,
-                    firstDayOfWeek: 1,
-                    timeSlotViewSettings: const TimeSlotViewSettings(
-                      startHour: 7,
-                      endHour: 23,
-                      timeInterval: Duration(minutes: 60),
-                    ),
-                    specialRegions: _regions, // busy + geçmiş günler arka plan
-                    onTap: _onTap,
-                    onViewChanged: (ViewChangedDetails d) async {
-                      if (d.visibleDates.isEmpty) return;
-                      final wkStart = _haftaBaslangic(d.visibleDates.first);
-                      await _loadWeek(wkStart);
-                      _rebuildRegionsForVisible(visibleDates: d.visibleDates);
+                // Table Calendar (Kompakt)
+                Container(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: TableCalendar(
+                    locale: 'tr_TR',
+                    firstDay:
+                        DateTime.now().subtract(const Duration(days: 365)),
+                    lastDay: DateTime.now().add(const Duration(days: 365)),
+                    focusedDay: _focusedDay,
+                    selectedDayPredicate: (day) =>
+                        isSameDay(_selectedDate, day),
+                    calendarFormat: _calendarFormat,
+                    availableCalendarFormats: const {
+                      CalendarFormat.week: 'Hafta',
                     },
+                    startingDayOfWeek: StartingDayOfWeek.monday,
+                    headerStyle: HeaderStyle(
+                      formatButtonVisible: false,
+                      titleCentered: true,
+                      titleTextStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    daysOfWeekStyle: DaysOfWeekStyle(
+                      weekdayStyle: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                      weekendStyle: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                    calendarStyle: CalendarStyle(
+                      cellMargin: const EdgeInsets.all(4),
+                      selectedDecoration: BoxDecoration(
+                        color: uiPrimaryBlue,
+                        shape: BoxShape.circle,
+                      ),
+                      todayDecoration: BoxDecoration(
+                        color: uiPrimaryBlue.withValues(alpha: 0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      defaultTextStyle: const TextStyle(fontSize: 15),
+                      weekendTextStyle: const TextStyle(fontSize: 15),
+                      outsideTextStyle: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.3),
+                      ),
+                    ),
+                    onDaySelected: (selectedDay, focusedDay) async {
+                      final newWeekStart = _haftaBaslangic(selectedDay);
+
+                      if (newWeekStart != _visibleWeekStart) {
+                        // Yeni haftaya geçiş
+                        setState(() => _isLoading = true);
+                        await _loadWeek(newWeekStart);
+                        setState(() {
+                          _visibleWeekStart = newWeekStart;
+                          _selectedDate = _normalizeDate(selectedDay);
+                          _focusedDay = focusedDay;
+                          _selectedSlotStart = null;
+                        });
+                        _yenileFiltreOpsiyonlari();
+                        _recomputeUiCaches();
+                        setState(() => _isLoading = false);
+                      } else {
+                        // Aynı hafta içinde gün değişimi
+                        _selectDay(selectedDay);
+                        setState(() => _focusedDay = focusedDay);
+                      }
+                    },
+                    onPageChanged: (focusedDay) async {
+                      final newWeekStart = _haftaBaslangic(focusedDay);
+                      if (newWeekStart != _visibleWeekStart) {
+                        await _changeWeek(
+                            (newWeekStart.difference(_visibleWeekStart).inDays /
+                                    7)
+                                .round());
+                      }
+                    },
+                    calendarBuilders: CalendarBuilders(
+                      markerBuilder: (context, date, events) {
+                        final dayKey = _normalizeDate(date);
+                        final uygunCount = _weekUygunSayilari[dayKey] ?? 0;
+
+                        // Bu günde ders var mı?
+                        final hasDers = _tumRandevular.any((a) {
+                          final note = _safeNotes(a);
+                          return note['tip'] == 'ders' &&
+                              _normalizeDate(a.startTime) == dayKey;
+                        });
+
+                        if (uygunCount == 0 && !hasDers) return null;
+
+                        return Positioned(
+                          bottom: 2,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (hasDers)
+                                Container(
+                                  width: 5,
+                                  height: 5,
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 1),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.orange,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              if (uygunCount > 0)
+                                Container(
+                                  width: 5,
+                                  height: 5,
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 1),
+                                  decoration: BoxDecoration(
+                                    color: uiPrimaryBlue,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-                const _LegendBar(),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                          onLongPress: _openSelectedDayDerslerSheet,
+                          child: Column(
+                            children: [
+                              Text(
+                                _formatGunBaslik(_selectedDate),
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Divider(
+                                height: 1,
+                                color: theme.colorScheme.outlineVariant,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        Text(
+                          'Uygun Saatler',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        if (_selectedDayUygunSlotlar.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Text(
+                              'Seçili gün için uygun saat bulunamadı.',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                        else
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _selectedDayUygunSlotlar.length,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: 2.7,
+                            ),
+                            itemBuilder: (_, i) {
+                              final slot = _selectedDayUygunSlotlar[i];
+                              final selected = _selectedSlotStart != null &&
+                                  (_selectedSlotStart!.isAtSameMomentAs(slot) ||
+                                      _selectedSlotStart == slot);
+
+                              return _TimeTile(
+                                timeText: _formatSaatTek(slot),
+                                selected: selected,
+                                onTap: () async {
+                                  setState(() => _selectedSlotStart = slot);
+                                  await _showBosSaatPopup(slot);
+                                  if (!mounted) return;
+                                  setState(() => _selectedSlotStart = null);
+                                },
+                              );
+                            },
+                          ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
     );
@@ -528,8 +793,9 @@ class _DersListesiPageState extends State<DersListesiPage> {
                               _seciliHocaId = tempHoca;
                               _seciliKortId = tempKort;
                               _saatAralik = tempSaat;
+                              _selectedSlotStart = null;
                             });
-                            _applyFilters();
+                            _recomputeUiCaches();
                             Navigator.pop(context);
                           },
                           icon: const Icon(Icons.check_circle),
@@ -548,54 +814,103 @@ class _DersListesiPageState extends State<DersListesiPage> {
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                                Tap handler                                 */
+  /*                       Seçili gün derslerini göster                          */
   /* -------------------------------------------------------------------------- */
-  void _onTap(CalendarTapDetails d) async {
-    // Boş hücre: temel kontroller
-    if (d.targetElement == CalendarElement.calendarCell &&
-        (d.appointments?.isEmpty ?? true)) {
-      final nowPlus3h = DateTime.now().add(const Duration(hours: 3));
-      final cellStart = d.date!;
-      if (cellStart.isBefore(nowPlus3h)) {
-        ShowMessage.error(context, 'Bu saat uygun değil.');
-        return;
-      }
-      final sh = cellStart.hour + cellStart.minute / 60.0;
-      final withinHours = (sh >= _saatAralik.start && sh < _saatAralik.end);
-      if (!withinHours) {
-        ShowMessage.error(context, 'Saat aralığı filtre dışında.');
-        return;
-      }
-      await _showBosSaatPopup(cellStart);
+  void _openSelectedDayDerslerSheet() {
+    if (_selectedDayDersler.isEmpty) {
+      ShowMessage.error(context, 'Seçili günde ders bulunamadı.');
       return;
     }
 
-    if (d.appointments?.isEmpty ?? true) return;
-    final Appointment appt = d.appointments!.first;
-    final note = _safeNotes(appt);
-    final tip = note['tip'];
+    showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Dersler',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  Text(
+                    _formatGunBaslik(_selectedDate),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: _selectedDayDersler.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (_, i) {
+                    final appt = _selectedDayDersler[i];
+                    final note = _safeNotes(appt);
+                    final ders =
+                        EtkinlikModel.fromMap(note.cast<String, dynamic>());
 
-    if (tip == 'available') {
-      final nowPlus3h = DateTime.now().add(const Duration(hours: 3));
-      final bas = DateTime.parse(note['baslangic']).toLocal();
-      final isPastOrTooSoon = bas.isBefore(nowPlus3h);
-      final sh = appt.startTime.hour + appt.startTime.minute / 60.0;
-      final withinHours = (sh >= _saatAralik.start && sh < _saatAralik.end);
-      final key = (note['baslangic'] ?? '').toString();
-      final matches = _availableMatchesFilters(key);
+                    final bas = appt.startTime;
+                    final bit = appt.endTime;
 
-      if (!withinHours || isPastOrTooSoon || !matches) {
-        ShowMessage.error(context, 'Bu saat uygun değil.');
-        return;
-      }
-      await _showBosSaatPopup(bas);
-      return;
-    }
+                    final kort =
+                        (note['kort_adi']?.toString().trim().isNotEmpty ??
+                                false)
+                            ? note['kort_adi'].toString()
+                            : appt.subject.toString();
 
-    if (tip != 'ders') return;
+                    final hoca =
+                        (note['antrenor_adi']?.toString() ?? '').toString();
 
-    final EtkinlikModel ders =
-        EtkinlikModel.fromMap(note.cast<String, dynamic>());
+                    return ListTile(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      tileColor:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      title: Text(_formatSaat(bas, bit),
+                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                      subtitle: Text(
+                        [kort, if (hoca.trim().isNotEmpty) hoca].join(' • '),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await _handleDersTap(ders);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleDersTap(EtkinlikModel ders) async {
     final isPast = ders.bitisTarihSaat.isBefore(DateTime.now());
 
     if (ders.iptalMi) {
@@ -613,17 +928,13 @@ class _DersListesiPageState extends State<DersListesiPage> {
           _userOnaylari[ders.id] = EtkinlikOnayModel.empty()
             ..tamamlandi = tam
             ..aciklama = acik;
-          _dataSource.notifyListeners(
-              CalendarDataSourceAction.reset, _dataSource.appointments!);
         },
       );
     } else {
       _showIptalPopup(
         ders,
-        onCancelled: () {
-          appt.color = uygunOlmayanRenk;
-          _dataSource.notifyListeners(
-              CalendarDataSourceAction.reset, _dataSource.appointments!);
+        onCancelled: () async {
+          await _forceReloadVisibleWeek();
         },
       );
     }
@@ -637,6 +948,13 @@ class _DersListesiPageState extends State<DersListesiPage> {
     if (slotStart.isBefore(nowPlus3h)) {
       ShowMessage.error(
           context, 'Rezervasyon en az 3 saat önceden yapılabilir.');
+      return;
+    }
+
+    final sh = slotStart.hour + slotStart.minute / 60.0;
+    final withinHours = (sh >= _saatAralik.start && sh < _saatAralik.end);
+    if (!withinHours) {
+      ShowMessage.error(context, 'Saat aralığı filtre dışında.');
       return;
     }
 
@@ -697,6 +1015,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
       );
       if (sonuc == true) {
         ShowMessage.success(context, 'Talebiniz alındı');
+        await _forceReloadVisibleWeek();
       }
     }
   }
@@ -764,7 +1083,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
   /*                     Gelecek ders – iptal popup                             */
   /* -------------------------------------------------------------------------- */
   void _showIptalPopup(EtkinlikModel ders,
-      {required VoidCallback onCancelled}) {
+      {Future<void> Function()? onCancelled}) {
     final ctrl = TextEditingController();
 
     showDialog(
@@ -797,8 +1116,8 @@ class _DersListesiPageState extends State<DersListesiPage> {
                   aciklama: ctrl.text,
                 );
 
-                onCancelled();
                 ShowMessage.success(context, res.mesaj);
+                if (onCancelled != null) await onCancelled();
               } on ApiException catch (e) {
                 ShowMessage.error(context, e.message);
               } catch (e) {
@@ -814,58 +1133,40 @@ class _DersListesiPageState extends State<DersListesiPage> {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                       CalendarDataSource Wrapper                            */
+/*                          Saat kutucuğu                                      */
 /* -------------------------------------------------------------------------- */
-class EtkinlikDataSource extends CalendarDataSource {
-  EtkinlikDataSource(List<Appointment> src) {
-    appointments = src;
-  }
-}
+class _TimeTile extends StatelessWidget {
+  const _TimeTile({
+    required this.timeText,
+    required this.selected,
+    required this.onTap,
+  });
 
-/* -------------------------------------------------------------------------- */
-/*                         Alttaki Legend (Sabit Çubuk)                        */
-/* -------------------------------------------------------------------------- */
-class _LegendBar extends StatelessWidget {
-  const _LegendBar();
-
-  Widget _pill(BuildContext context, Color c, String t, {bool border = false}) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 14,
-          height: 14,
-          margin: const EdgeInsets.only(right: 6),
-          decoration: BoxDecoration(
-            color: c,
-            borderRadius: BorderRadius.circular(3),
-            border: border ? Border.all(color: Colors.black54) : null,
-          ),
-        ),
-        Text(t, style: Theme.of(context).textTheme.bodyMedium),
-      ],
-    );
-  }
+  final String timeText;
+  final bool selected;
+  final Future<void> Function() onTap;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Material(
-        elevation: 2,
-        color: Theme.of(context).colorScheme.surface,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Wrap(
-            spacing: 16,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: [
-              _pill(context, dersDoluRenk, 'Dolu ders', border: true),
-              _pill(context, uygunSaatRenk, 'Uygun saat'),
-              _pill(context, uygunOlmayanRenk, 'Uygun olmayan saat'),
-            ],
+    final scheme = Theme.of(context).colorScheme;
+    final borderColor = selected ? uiPrimaryBlue : scheme.outlineVariant;
+
+    return InkWell(
+      onTap: () async => onTap(),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: scheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: selected ? 2 : 1),
+        ),
+        child: Text(
+          timeText,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: scheme.onSurface,
           ),
         ),
       ),
@@ -874,7 +1175,57 @@ class _LegendBar extends StatelessWidget {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                    Uygun Slot Seçimi – Gruplanmış Sheet                    */
+/*                         AppBar filtre ikonu badge                           */
+/* -------------------------------------------------------------------------- */
+class _BadgeIconButton extends StatelessWidget {
+  const _BadgeIconButton({
+    required this.count,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final int count;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final show = count > 0;
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          IconButton(onPressed: onPressed, icon: Icon(icon)),
+          if (show)
+            Positioned(
+              right: 6,
+              top: 6,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: uiPrimaryBlue,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '$count',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                    Uygun Slot Seçimi – Gruplanmış Sheet                     */
 /* -------------------------------------------------------------------------- */
 class _SlotSecimSheet extends StatefulWidget {
   const _SlotSecimSheet({
@@ -1112,7 +1463,63 @@ class _GrupKart extends StatelessWidget {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/*                               Format helpers                                 */
+/* -------------------------------------------------------------------------- */
 String _formatSaat(DateTime bas, DateTime bit) {
   String f(int v) => v.toString().padLeft(2, '0');
   return '${f(bas.hour)}:${f(bas.minute)} – ${f(bit.hour)}:${f(bit.minute)}';
+}
+
+String _formatSaatTek(DateTime t) {
+  String f(int v) => v.toString().padLeft(2, '0');
+  return '${f(t.hour)}:${f(t.minute)}';
+}
+
+String _formatGunBaslik(DateTime d) {
+  const aylar = [
+    'Ocak',
+    'Şubat',
+    'Mart',
+    'Nisan',
+    'Mayıs',
+    'Haziran',
+    'Temmuz',
+    'Ağustos',
+    'Eylül',
+    'Ekim',
+    'Kasım',
+    'Aralık'
+  ];
+  const gunler = [
+    'Pazartesi',
+    'Salı',
+    'Çarşamba',
+    'Perşembe',
+    'Cuma',
+    'Cumartesi',
+    'Pazar'
+  ];
+  final ay = aylar[d.month - 1];
+  final gun = gunler[d.weekday - 1];
+  return '${d.day} $ay $gun';
+}
+
+// Syncfusion Appointment sınıfı (mevcut kodda kullanıldığı için korundu)
+class Appointment {
+  final dynamic id;
+  final DateTime startTime;
+  final DateTime endTime;
+  final String subject;
+  final String? notes;
+  Color color;
+
+  Appointment({
+    required this.id,
+    required this.startTime,
+    required this.endTime,
+    required this.subject,
+    this.notes,
+    required this.color,
+  });
 }

@@ -1,5 +1,3 @@
-// // ignore_for_file: use_build_context_synchronously
-
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:fitcall/common/api_urls.dart'; // registerUrl burada tanımlı olmalı

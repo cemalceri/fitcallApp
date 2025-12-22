@@ -6,7 +6,7 @@ import 'package:fitcall/services/api_result.dart';
 class UyeApiService {
   /// Şifre Değiştir
   /// Body: { "eskiSifre": "...", "yeniSifre": "..." }
-  static Future<ApiResult<Map<String, dynamic>>> sifreDegistir({
+  static Future<ApiResult<Map<String, dynamic>>> kullaniciSifreDegistir({
     required String eskiSifre,
     required String yeniSifre,
   }) {

@@ -3,8 +3,8 @@
 const String baseUrlProd = "https://www.binay.fit/api";
 const String baseUrlLocal = "http://10.0.2.2:8000/api";
 
-//const String baseUrl = baseUrlLocal;
-const String baseUrl = baseUrlProd;
+const String baseUrl = baseUrlLocal;
+//const String baseUrl = baseUrlProd;
 
 // =================== ENDPOINTLER ===================
 String loginUrl = "$baseUrl/getToken";
@@ -30,7 +30,6 @@ String dersTalebiOlustur = "$baseUrl/dersTalebiOlustur";
 String getUyedersTalepListesi = "$baseUrl/getUyedersTalepListesi";
 String silUyedersTalebi = "$baseUrl/silUyedersTalebi";
 String getUygunSaatler = "$baseUrl/getUygunSaatler";
-String setQRKodBilgisi = "$baseUrl/setQRKodBilgisi";
 String qrKodDogrula = "$baseUrl/qrKodDogrula";
 String getNotifications = "$baseUrl/getNotifications";
 String setUyeDersIptal = "$baseUrl/setUyeDersIptal";
@@ -61,8 +60,7 @@ String getirTesisSelfPass = "$baseUrl/getirTesisSelfPass";
 String listeleTesisMisafirPass = "$baseUrl/listeleTesisMisafirPass";
 String olusturTesisMisafirPass = "$baseUrl/olusturTesisMisafirPass";
 String silTesisMisafirPass = "$baseUrl/silTesisMisafirPass";
-// Tarama
-String taraPass = "$baseUrl/taraPass";
+
 //auths
 String uyeSifreDegistir = "$baseUrl/uyeSifreDegistir";
 String uyeKullaniciSil = "$baseUrl/uyeKullaniciSil";

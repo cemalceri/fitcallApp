@@ -363,7 +363,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     }
     setState(() => _isSubmitting = true);
     try {
-      final res = await UyeApiService.sifreDegistir(
+      final res = await UyeApiService.kullaniciSifreDegistir(
         eskiSifre: _eskiCtrl.text.trim(),
         yeniSifre: _yeniCtrl.text.trim(),
       );

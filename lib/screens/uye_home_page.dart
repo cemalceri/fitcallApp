@@ -35,8 +35,8 @@ class _UyeHomePageState extends State<UyeHomePage> {
     },
     {
       'name': routeEnums[SayfaAdi.dersler]!,
-      'icon': Icons.sports_tennis,
-      'text': 'Derslerim'
+      'icon': Icons.calendar_month,
+      'text': 'Takvim'
     },
     {
       'name': routeEnums[SayfaAdi.uyeGenelDersTalep]!,

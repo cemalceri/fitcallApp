@@ -40,9 +40,6 @@ class _QRKodKayitPageState extends State<QRKodKayitPage> {
   // Davetli listesi scroll
   final ScrollController _guestCtrl = ScrollController();
 
-  // Self-pass default dakika (ilk yüklemede)
-  static const int _defaultMinutes = 60;
-
   @override
   void initState() {
     super.initState();
@@ -81,10 +78,8 @@ class _QRKodKayitPageState extends State<QRKodKayitPage> {
       }
 
       // 1) TESIS self-pass (mevcut varsa döner, yetmiyorsa _defaultMinutes'a uzatır)
-      final spRes = await QrCodeApiService.getirTesisSelfPassApi(
-        userId: userId,
-        minutes: _defaultMinutes,
-      );
+      final spRes =
+          await QrCodeApiService.kullaniciIcinQROlustursApi(userId: userId);
       final sp = spRes.data;
 
       // 2) Aktif TESIS misafir listesi
