@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -8,88 +6,105 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/services/api_client.dart';
-import 'package:fitcall/services/api_exception.dart';
 
-/// Cihazı kaydeder/günceller.
-/// [isMainAccount]: Giriş yapan kullanıcının bu üyenin ana hesabı olup olmadığı.
-Future<void> sendFCMDevice({required bool isMainAccount}) async {
-  // Web'de FCM cihaz kaydı yapmıyoruz
+StreamSubscription<String>? _tokenRefreshSubscription;
+
+/// Uygulama başlangıcında bir kez çağrılır (main.dart veya app init)
+void initFCMTokenListener() {
+  if (kIsWeb) return;
+
+  // Token yenilendiğinde otomatik sunucuya gönder
+  _tokenRefreshSubscription?.cancel();
+  _tokenRefreshSubscription = FirebaseMessaging.instance.onTokenRefresh.listen(
+    (fcmToken) async {
+      await _sendTokenToServer(fcmToken);
+    },
+    onError: (err) {},
+  );
+}
+
+/// Listener'ı temizle (logout veya dispose)
+void disposeFCMTokenListener() {
+  _tokenRefreshSubscription?.cancel();
+  _tokenRefreshSubscription = null;
+}
+
+/// Login sonrası çağrılır
+Future<void> sendFCMDevice() async {
   if (kIsWeb) return;
 
   final messaging = FirebaseMessaging.instance;
 
-  // --- iOS özel akış: izin + APNs kontrolü + simülatör koruması ---
+  // iOS: izin iste
   if (Platform.isIOS) {
-    // Bildirim izni iste (kullanıcı reddederse çık)
     final perm = await messaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
-      provisional: false,
     );
     if (perm.authorizationStatus == AuthorizationStatus.denied) {
-      print('[FCM] iOS: bildirim izni reddedildi, kayıt atlandı.');
       return;
     }
 
-    // Simülatörde APNs token gelmez -> hatayı önlemek için atla
+    // Simülatör kontrolü
     final iosInfo = await DeviceInfoPlugin().iosInfo;
-    final isPhysical = iosInfo.isPhysicalDevice;
-    if (!isPhysical) {
-      print('[FCM] iOS Simulator: APNs token yok, kayıt atlandı.');
+    if (!iosInfo.isPhysicalDevice) {
       return;
     }
 
-    // Fiziksel cihazda APNs token hazır mı?
+    // APNs token kontrolü - null ise onTokenRefresh beklenecek
     final apns = await messaging.getAPNSToken();
     if (apns == null) {
-      print('[FCM] iOS: APNs token henüz hazır değil, sonra tekrar denenecek.');
-      return; // İstersen burada gecikmeli retry kurgulayabilirsin.
+      // Return etme, getToken() dene - belki hazırdır
     }
   }
 
-  // --- FCM token al ---
+  // FCM token al
   String? fcmToken;
   try {
-    fcmToken = await messaging
-        .getToken(); // iOS'ta APNs hazır değilse hata atıyordu; yukarıda önledik.
+    fcmToken = await messaging.getToken();
   } catch (e) {
-    print('[FCM] getToken hata: $e');
-    return;
-  }
-  if (fcmToken == null || fcmToken.isEmpty) {
-    print('[FCM] FCM token null/empty; sonra tekrar denenecek.');
+    // iOS'ta APNs hazır değilse hata atar, onTokenRefresh ile gelecek
     return;
   }
 
-  // --- Cihaz bilgileri ---
-  String deviceId = "unknown_device";
-  String deviceModel = "unknown_model";
-  String osVersion = "unknown_version";
+  if (fcmToken == null || fcmToken.isEmpty) {
+    return;
+  }
+
+  await _sendTokenToServer(fcmToken);
+}
+
+/// Token'ı sunucuya gönder
+Future<void> _sendTokenToServer(String fcmToken) async {
+  // Cihaz bilgileri
+  String deviceId = "unknown";
+  String deviceModel = "unknown";
+  String osVersion = "unknown";
+  String deviceType = "android";
 
   final deviceInfo = DeviceInfoPlugin();
+
   if (Platform.isAndroid) {
     final a = await deviceInfo.androidInfo;
     deviceId = a.id;
     deviceModel = a.model;
     osVersion = a.version.release;
+    deviceType = "android";
   } else if (Platform.isIOS) {
     final i = await deviceInfo.iosInfo;
-    deviceId = i.identifierForVendor ?? "unknown_ios_id";
+    deviceId = i.identifierForVendor ?? "unknown_ios";
     deviceModel = i.utsname.machine;
     osVersion = i.systemVersion;
+    deviceType = "ios";
   }
 
-  final deviceType = Platform.isAndroid ? "android" : "ios";
-
-  // --- Sunucuya gönder ---
   final bodyData = {
     "device_id": deviceId,
     "fcm_token": fcmToken,
     "device_type": deviceType,
     "device_model": deviceModel,
     "os_version": osVersion,
-    "isMainAccount": isMainAccount,
   };
 
   try {
@@ -99,9 +114,5 @@ Future<void> sendFCMDevice({required bool isMainAccount}) async {
       (json) => (json as Map).cast<String, dynamic>(),
       auth: true,
     );
-  } on ApiException catch (e) {
-    print("FCM cihaz bilgileri gönderilirken API hatası: ${e.message}");
-  } catch (e) {
-    print("FCM cihaz bilgileri gönderilirken hata oluştu: $e");
-  }
+  } catch (_) {}
 }

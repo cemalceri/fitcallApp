@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:fitcall/models/4_auth/user_model.dart';
 import 'package:fitcall/models/dtos/kullanici_profilleri_result_dto.dart';
+import 'package:fitcall/services/core/fcm_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/common/routes.dart';
@@ -112,6 +113,8 @@ class AuthService {
       expireDate: token.expireDate,
     );
 
+    await sendFCMDevice();
+
     // 4) Rol belirle (tekil rol)
     final r = kp.rol;
     if (r == Roller.antrenor.name) return Roller.antrenor;
@@ -128,6 +131,7 @@ class AuthService {
   /* ============== Logout ============== */
   static Future<void> logout(BuildContext context) async {
     await StorageService.clearAll();
+    disposeFCMTokenListener();
     if (context.mounted) {
       Navigator.pushReplacementNamed(context, routeEnums[SayfaAdi.login]!);
     }

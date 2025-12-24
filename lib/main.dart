@@ -1,4 +1,5 @@
 import 'package:fitcall/screens/1_common/1_notification/pending_action_store.dart';
+import 'package:fitcall/services/core/fcm_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -16,7 +17,7 @@ void main() async {
 
   /* → storage’taki pendingAction belleğe alınır */
   await PendingActionStore.instance.load();
-
+  initFCMTokenListener();
   runApp(const MyApp());
 }
 

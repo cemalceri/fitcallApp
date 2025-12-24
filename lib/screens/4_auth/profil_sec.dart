@@ -99,7 +99,6 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     try {
       LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
       final rol = await AuthService.loginUser(p);
-      await sendFCMDevice(isMainAccount: p.anaHesap);
       if (!mounted) return;
       await NavigationHelper.redirectAfterLogin(context, rol);
     } on ApiException catch (e) {
