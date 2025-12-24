@@ -96,7 +96,7 @@ class ProfilePage extends StatelessWidget {
               ),
               _ProfileTile(
                 icon: Icons.calendar_today,
-                title: 'Üyelik / Paket Bilgilerim',
+                title: 'Üyelik/Paket Bilgilerim',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const UyeUrunListPage()),
                 ),

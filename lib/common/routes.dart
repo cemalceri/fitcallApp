@@ -1,6 +1,5 @@
 import 'package:fitcall/screens/1_common/yardim_page.dart';
 import 'package:fitcall/screens/4_auth/forgot_password_page.dart';
-import 'package:fitcall/screens/5_etkinlik/genel_ders_talep.dart';
 import 'package:fitcall/screens/2_uye/takvim.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
@@ -47,7 +46,6 @@ enum SayfaAdi {
   bildirimler,
   yoneticiAnasayfa,
   dersTeyit,
-  uyeGenelDersTalep,
   yardim,
 }
 
@@ -71,7 +69,6 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.bildirimler: '/bildirimler',
   SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
   SayfaAdi.dersTeyit: '/dersTeyit',
-  SayfaAdi.uyeGenelDersTalep: '/uyeGenelDersTalep',
   SayfaAdi.yardim: '/yardim',
 };
 
@@ -100,7 +97,6 @@ final Map<String, WidgetBuilder> routes = {
         },
         baslangic: DateTime.now(),
       ),
-  routeEnums[SayfaAdi.uyeGenelDersTalep]!: (ctx) => const GenelDersTalepPage(),
   routeEnums[SayfaAdi.bildirimler]!: (c) => NotificationPage(),
   routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiHomePage(),
   routeEnums[SayfaAdi.dersTeyit]!: (c) => const DersTeyitPage(),
@@ -122,7 +118,6 @@ enum AccessRule { anyone, anaHesapOnly }
 final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.profil]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.muhasebe]!: AccessRule.anaHesapOnly,
-  routeEnums[SayfaAdi.uyeGenelDersTalep]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.uyeDersTalepleri]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.bildirimler]!: AccessRule.anaHesapOnly,
 

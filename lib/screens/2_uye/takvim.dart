@@ -18,11 +18,14 @@ import 'package:table_calendar/table_calendar.dart';
 /* -------------------------------------------------------------------------- */
 /*                            Renk Sabitleri                                   */
 /* -------------------------------------------------------------------------- */
-const Color dersDoluRenk = Colors.grey; // Takvimdeki dolu ders
+const Color dersDoluRenk = Color(0xFF64748B); // Slate gray - dolu ders
 const Color uygunSaatRenk = Colors.white; // Rezervasyon yapılabilir saat
-const Color uygunOlmayanRenk =
-    Color.fromARGB(255, 233, 240, 255); // Uygun olmayan
-const Color uiPrimaryBlue = Color(0xFF2F6FED); // İstenen mavi
+const Color uygunOlmayanRenk = Color(0xFFF1F5F9); // Slate 100 - Uygun olmayan
+const Color uiPrimaryBlue = Color(0xFF2563EB); // Modern blue
+const Color uiPrimaryLight = Color(0xFFDBEAFE); // Blue 100
+const Color uiAccentGreen = Color(0xFF10B981); // Emerald
+const Color uiAccentOrange = Color(0xFFF59E0B); // Amber
+const Color uiSurfaceLight = Color(0xFFFAFAFA);
 
 /* -------------------------------------------------------------------------- */
 /*                                Sayfa                                        */
@@ -33,7 +36,8 @@ class DersListesiPage extends StatefulWidget {
   State<DersListesiPage> createState() => _DersListesiPageState();
 }
 
-class _DersListesiPageState extends State<DersListesiPage> {
+class _DersListesiPageState extends State<DersListesiPage>
+    with SingleTickerProviderStateMixin {
   final List<Appointment> _tumRandevular = [];
   bool _isLoading = false;
 
@@ -64,13 +68,33 @@ class _DersListesiPageState extends State<DersListesiPage> {
   DateTime _focusedDay = DateTime.now();
   final CalendarFormat _calendarFormat = CalendarFormat.week;
 
+  // Animation controller
+  late AnimationController _animController;
+  late Animation<double> _fadeAnim;
+
   @override
   void initState() {
     super.initState();
     _visibleWeekStart = _haftaBaslangic(DateTime.now());
     _selectedDate = _normalizeDate(DateTime.now());
     _focusedDay = DateTime.now();
+
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _fadeAnim = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    );
+
     _prepare();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
   }
 
   Future<void> _prepare() async {
@@ -83,6 +107,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
     _recomputeUiCaches();
 
     setState(() => _isLoading = false);
+    _animController.forward();
   }
 
   /* -------------------------------------------------------------------------- */
@@ -389,270 +414,471 @@ class _DersListesiPageState extends State<DersListesiPage> {
   Widget build(BuildContext context) {
     final filtreCount = _aktifFiltreSayisi();
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: isDark ? theme.colorScheme.surface : uiSurfaceLight,
       appBar: AppBar(
-        title: const Text('Takvim'),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Takvim',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
         actions: [
           _BadgeIconButton(
             count: filtreCount,
-            icon: Icons.filter_alt_rounded,
+            icon: Icons.tune_rounded,
             onPressed: _openFilterSheet,
           ),
         ],
       ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: SizedBox(
-            height: 56,
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _openFilterSheet,
-              icon: const Icon(Icons.filter_alt_rounded),
-              label: Text(
-                filtreCount > 0 ? 'Filtreler ($filtreCount)' : 'Filtreler',
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-              ),
-              style: FilledButton.styleFrom(
-                backgroundColor: uiPrimaryBlue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
       body: _isLoading
           ? const LoadingSpinnerWidget(message: 'Takvim yükleniyor...')
-          : Column(
-              children: [
-                // Table Calendar (Kompakt)
-                Container(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: TableCalendar(
-                    locale: 'tr_TR',
-                    firstDay:
-                        DateTime.now().subtract(const Duration(days: 365)),
-                    lastDay: DateTime.now().add(const Duration(days: 365)),
-                    focusedDay: _focusedDay,
-                    selectedDayPredicate: (day) =>
-                        isSameDay(_selectedDate, day),
-                    calendarFormat: _calendarFormat,
-                    availableCalendarFormats: const {
-                      CalendarFormat.week: 'Hafta',
-                    },
-                    startingDayOfWeek: StartingDayOfWeek.monday,
-                    headerStyle: HeaderStyle(
-                      formatButtonVisible: false,
-                      titleCentered: true,
-                      titleTextStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+          : FadeTransition(
+              opacity: _fadeAnim,
+              child: Column(
+                children: [
+                  // Table Calendar (Modern Card Style)
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 20,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    daysOfWeekStyle: DaysOfWeekStyle(
-                      weekdayStyle: TextStyle(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                      weekendStyle: TextStyle(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                    calendarStyle: CalendarStyle(
-                      cellMargin: const EdgeInsets.all(4),
-                      selectedDecoration: BoxDecoration(
-                        color: uiPrimaryBlue,
-                        shape: BoxShape.circle,
-                      ),
-                      todayDecoration: BoxDecoration(
-                        color: uiPrimaryBlue.withValues(alpha: 0.3),
-                        shape: BoxShape.circle,
-                      ),
-                      defaultTextStyle: const TextStyle(fontSize: 15),
-                      weekendTextStyle: const TextStyle(fontSize: 15),
-                      outsideTextStyle: TextStyle(
-                        color: theme.colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.3),
-                      ),
-                    ),
-                    onDaySelected: (selectedDay, focusedDay) async {
-                      final newWeekStart = _haftaBaslangic(selectedDay);
-
-                      if (newWeekStart != _visibleWeekStart) {
-                        // Yeni haftaya geçiş
-                        setState(() => _isLoading = true);
-                        await _loadWeek(newWeekStart);
-                        setState(() {
-                          _visibleWeekStart = newWeekStart;
-                          _selectedDate = _normalizeDate(selectedDay);
-                          _focusedDay = focusedDay;
-                          _selectedSlotStart = null;
-                        });
-                        _yenileFiltreOpsiyonlari();
-                        _recomputeUiCaches();
-                        setState(() => _isLoading = false);
-                      } else {
-                        // Aynı hafta içinde gün değişimi
-                        _selectDay(selectedDay);
-                        setState(() => _focusedDay = focusedDay);
-                      }
-                    },
-                    onPageChanged: (focusedDay) async {
-                      final newWeekStart = _haftaBaslangic(focusedDay);
-                      if (newWeekStart != _visibleWeekStart) {
-                        await _changeWeek(
-                            (newWeekStart.difference(_visibleWeekStart).inDays /
-                                    7)
-                                .round());
-                      }
-                    },
-                    calendarBuilders: CalendarBuilders(
-                      markerBuilder: (context, date, events) {
-                        final dayKey = _normalizeDate(date);
-                        final uygunCount = _weekUygunSayilari[dayKey] ?? 0;
-
-                        // Bu günde ders var mı?
-                        final hasDers = _tumRandevular.any((a) {
-                          final note = _safeNotes(a);
-                          return note['tip'] == 'ders' &&
-                              _normalizeDate(a.startTime) == dayKey;
-                        });
-
-                        if (uygunCount == 0 && !hasDers) return null;
-
-                        return Positioned(
-                          bottom: 2,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (hasDers)
-                                Container(
-                                  width: 5,
-                                  height: 5,
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 1),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.orange,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              if (uygunCount > 0)
-                                Container(
-                                  width: 5,
-                                  height: 5,
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 1),
-                                  decoration: BoxDecoration(
-                                    color: uiPrimaryBlue,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: TableCalendar(
+                        locale: 'tr_TR',
+                        firstDay:
+                            DateTime.now().subtract(const Duration(days: 365)),
+                        lastDay: DateTime.now().add(const Duration(days: 365)),
+                        focusedDay: _focusedDay,
+                        selectedDayPredicate: (day) =>
+                            isSameDay(_selectedDate, day),
+                        calendarFormat: _calendarFormat,
+                        availableCalendarFormats: const {
+                          CalendarFormat.week: 'Hafta',
+                        },
+                        startingDayOfWeek: StartingDayOfWeek.monday,
+                        headerStyle: HeaderStyle(
+                          formatButtonVisible: false,
+                          titleCentered: true,
+                          leftChevronIcon: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: uiPrimaryLight.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.chevron_left_rounded,
+                              color: uiPrimaryBlue,
+                              size: 20,
+                            ),
+                          ),
+                          rightChevronIcon: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: uiPrimaryLight.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.chevron_right_rounded,
+                              color: uiPrimaryBlue,
+                              size: 20,
+                            ),
+                          ),
+                          titleTextStyle: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          headerPadding:
+                              const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        daysOfWeekStyle: DaysOfWeekStyle(
+                          weekdayStyle: TextStyle(
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                          weekendStyle: TextStyle(
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                        calendarStyle: CalendarStyle(
+                          cellMargin: const EdgeInsets.all(6),
+                          selectedDecoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [uiPrimaryBlue, Color(0xFF3B82F6)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: uiPrimaryBlue.withValues(alpha: 0.35),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
                             ],
                           ),
-                        );
-                      },
+                          todayDecoration: BoxDecoration(
+                            color: uiPrimaryLight,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          todayTextStyle: const TextStyle(
+                            color: uiPrimaryBlue,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          defaultTextStyle: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          weekendTextStyle: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          outsideTextStyle: TextStyle(
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.3),
+                          ),
+                          selectedTextStyle: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                        onDaySelected: (selectedDay, focusedDay) async {
+                          final newWeekStart = _haftaBaslangic(selectedDay);
+
+                          if (newWeekStart != _visibleWeekStart) {
+                            setState(() => _isLoading = true);
+                            await _loadWeek(newWeekStart);
+                            setState(() {
+                              _visibleWeekStart = newWeekStart;
+                              _selectedDate = _normalizeDate(selectedDay);
+                              _focusedDay = focusedDay;
+                              _selectedSlotStart = null;
+                            });
+                            _yenileFiltreOpsiyonlari();
+                            _recomputeUiCaches();
+                            setState(() => _isLoading = false);
+                          } else {
+                            _selectDay(selectedDay);
+                            setState(() => _focusedDay = focusedDay);
+                          }
+                        },
+                        onPageChanged: (focusedDay) async {
+                          final newWeekStart = _haftaBaslangic(focusedDay);
+                          if (newWeekStart != _visibleWeekStart) {
+                            await _changeWeek((newWeekStart
+                                        .difference(_visibleWeekStart)
+                                        .inDays /
+                                    7)
+                                .round());
+                          }
+                        },
+                        calendarBuilders: CalendarBuilders(
+                          markerBuilder: (context, date, events) {
+                            final dayKey = _normalizeDate(date);
+                            final uygunCount = _weekUygunSayilari[dayKey] ?? 0;
+
+                            final hasDers = _tumRandevular.any((a) {
+                              final note = _safeNotes(a);
+                              return note['tip'] == 'ders' &&
+                                  _normalizeDate(a.startTime) == dayKey;
+                            });
+
+                            if (uygunCount == 0 && !hasDers) return null;
+
+                            return Positioned(
+                              bottom: 4,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (hasDers)
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: uiAccentOrange,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: uiAccentOrange.withValues(
+                                                alpha: 0.4),
+                                            blurRadius: 4,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  if (uygunCount > 0)
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: uiAccentGreen,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: uiAccentGreen.withValues(
+                                                alpha: 0.4),
+                                            blurRadius: 4,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     ),
                   ),
-                ),
 
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                    child: Column(
-                      children: [
-                        GestureDetector(
-                          onLongPress: _openSelectedDayDerslerSheet,
-                          child: Column(
+                  const SizedBox(height: 20),
+
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Gün başlığı
+                          GestureDetector(
+                            onLongPress: _openSelectedDayDerslerSheet,
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 16),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    uiPrimaryBlue.withValues(alpha: 0.08),
+                                    uiPrimaryBlue.withValues(alpha: 0.02),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: uiPrimaryBlue.withValues(alpha: 0.12),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: uiPrimaryBlue,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.calendar_today_rounded,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _formatGunBaslik(_selectedDate),
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          _selectedDayDersler.isNotEmpty
+                                              ? '${_selectedDayDersler.length} ders • ${_selectedDayUygunSlotlar.length} uygun saat'
+                                              : '${_selectedDayUygunSlotlar.length} uygun saat mevcut',
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                            color: theme
+                                                .colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (_selectedDayDersler.isNotEmpty)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: uiAccentOrange.withValues(
+                                            alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.sports_tennis_rounded,
+                                            size: 14,
+                                            color: uiAccentOrange,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${_selectedDayDersler.length}',
+                                            style: TextStyle(
+                                              color: uiAccentOrange,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Bilgilendirme kartı
+                          _InfoCard(
+                            icon: Icons.touch_app_rounded,
+                            title: 'Ders Rezervasyonu',
+                            message:
+                                'Aşağıdaki uygun saatlerden birini seçerek, size en uygun antrenör ve kort kombinasyonu ile ders talebinde bulunabilirsiniz.',
+                            accentColor: uiAccentGreen,
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Uygun Saatler başlığı
+                          Row(
                             children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: uiAccentGreen.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  Icons.access_time_rounded,
+                                  color: uiAccentGreen,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
                               Text(
-                                _formatGunBaslik(_selectedDate),
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.headlineSmall?.copyWith(
+                                'Uygun Saatler',
+                                style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              const SizedBox(height: 10),
-                              Divider(
-                                height: 1,
-                                color: theme.colorScheme.outlineVariant,
-                              ),
+                              const Spacer(),
+                              if (_selectedDayUygunSlotlar.isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        uiAccentGreen.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    '${_selectedDayUygunSlotlar.length} saat',
+                                    style: TextStyle(
+                                      color: uiAccentGreen,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 18),
-                        Text(
-                          'Uygun Saatler',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        if (_selectedDayUygunSlotlar.isEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Text(
-                              'Seçili gün için uygun saat bulunamadı.',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          )
-                        else
-                          GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _selectedDayUygunSlotlar.length,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                              childAspectRatio: 2.7,
-                            ),
-                            itemBuilder: (_, i) {
-                              final slot = _selectedDayUygunSlotlar[i];
-                              final selected = _selectedSlotStart != null &&
-                                  (_selectedSlotStart!.isAtSameMomentAs(slot) ||
-                                      _selectedSlotStart == slot);
 
-                              return _TimeTile(
-                                timeText: _formatSaatTek(slot),
-                                selected: selected,
-                                onTap: () async {
-                                  setState(() => _selectedSlotStart = slot);
-                                  await _showBosSaatPopup(slot);
-                                  if (!mounted) return;
-                                  setState(() => _selectedSlotStart = null);
-                                },
-                              );
-                            },
-                          ),
-                        const SizedBox(height: 24),
-                      ],
+                          const SizedBox(height: 16),
+
+                          if (_selectedDayUygunSlotlar.isEmpty)
+                            _EmptyStateCard(
+                              icon: Icons.event_busy_rounded,
+                              title: 'Uygun Saat Bulunamadı',
+                              message:
+                                  'Seçili gün için müsait saat bulunmuyor. Farklı bir gün seçebilir veya filtreleri değiştirebilirsiniz.',
+                            )
+                          else
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: _selectedDayUygunSlotlar.length,
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                childAspectRatio: 2.4,
+                              ),
+                              itemBuilder: (_, i) {
+                                final slot = _selectedDayUygunSlotlar[i];
+                                final selected = _selectedSlotStart != null &&
+                                    (_selectedSlotStart!
+                                            .isAtSameMomentAs(slot) ||
+                                        _selectedSlotStart == slot);
+
+                                return _TimeTile(
+                                  timeText: _formatSaatTek(slot),
+                                  selected: selected,
+                                  onTap: () async {
+                                    setState(() => _selectedSlotStart = slot);
+                                    await _showBosSaatPopup(slot);
+                                    if (!mounted) return;
+                                    setState(() => _selectedSlotStart = null);
+                                  },
+                                );
+                              },
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+      floatingActionButton: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: FloatingActionButton.extended(
+          onPressed: _openFilterSheet,
+          elevation: 4,
+          backgroundColor: uiPrimaryBlue,
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.tune_rounded),
+          label: Text(
+            filtreCount > 0 ? 'Filtreler ($filtreCount)' : 'Filtreler',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -668,9 +894,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setMState) {
@@ -687,124 +911,224 @@ class _DersListesiPageState extends State<DersListesiPage> {
               ),
             ];
 
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 8,
-                bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      borderRadius: BorderRadius.circular(2),
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 12,
+                  bottom: 20 + MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Text('Filtreler',
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: uiPrimaryLight,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.tune_rounded,
+                            color: uiPrimaryBlue,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Filtreleri Düzenle',
                             style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600)),
-                      ),
-                      TextButton.icon(
-                        onPressed: () {
-                          setMState(() {
-                            tempHoca = null;
-                            tempKort = null;
-                            tempSaat = const RangeValues(7, 23);
-                          });
-                        },
-                        icon: const Icon(Icons.restart_alt),
-                        label: const Text('Temizle'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<int?>(
-                          initialValue: tempHoca,
-                          items: hocaItems,
-                          onChanged: (v) => setMState(() => tempHoca = v),
-                          decoration: const InputDecoration(
-                            labelText: 'Hoca',
-                            border: OutlineInputBorder(),
-                            isDense: true,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: DropdownButtonFormField<int?>(
-                          initialValue: tempKort,
-                          items: kortItems,
-                          onChanged: (v) => setMState(() => tempKort = v),
-                          decoration: const InputDecoration(
-                            labelText: 'Kort',
-                            border: OutlineInputBorder(),
-                            isDense: true,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('Saat Aralığı',
-                        style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant)),
-                  ),
-                  RangeSlider(
-                    values: tempSaat,
-                    onChanged: (r) => setMState(() => tempSaat = r),
-                    min: 7,
-                    max: 23,
-                    divisions: 16,
-                    labels: RangeLabels(
-                      '${tempSaat.start.round()}:00',
-                      '${tempSaat.end.round()}:00',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Vazgeç'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
+                        TextButton.icon(
                           onPressed: () {
-                            setState(() {
-                              _seciliHocaId = tempHoca;
-                              _seciliKortId = tempKort;
-                              _saatAralik = tempSaat;
-                              _selectedSlotStart = null;
+                            setMState(() {
+                              tempHoca = null;
+                              tempKort = null;
+                              tempSaat = const RangeValues(7, 23);
                             });
-                            _recomputeUiCaches();
-                            Navigator.pop(context);
                           },
-                          icon: const Icon(Icons.check_circle),
-                          label: const Text('Uygula'),
+                          icon: const Icon(Icons.refresh_rounded, size: 18),
+                          label: const Text('Sıfırla'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.grey.shade600,
+                          ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<int?>(
+                            initialValue: tempHoca,
+                            items: hocaItems,
+                            onChanged: (v) => setMState(() => tempHoca = v),
+                            decoration: InputDecoration(
+                              labelText: 'Antrenör',
+                              prefixIcon: const Icon(Icons.person_rounded),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButtonFormField<int?>(
+                            initialValue: tempKort,
+                            items: kortItems,
+                            onChanged: (v) => setMState(() => tempKort = v),
+                            decoration: InputDecoration(
+                              labelText: 'Kort',
+                              prefixIcon:
+                                  const Icon(Icons.sports_tennis_rounded),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.grey.shade200),
                       ),
-                    ],
-                  ),
-                ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.schedule_rounded,
+                                  size: 20, color: uiPrimaryBlue),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Saat Aralığı',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: uiPrimaryLight,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '${tempSaat.start.round()}:00 - ${tempSaat.end.round()}:00',
+                                  style: const TextStyle(
+                                    color: uiPrimaryBlue,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SliderTheme(
+                            data: SliderThemeData(
+                              activeTrackColor: uiPrimaryBlue,
+                              inactiveTrackColor: Colors.grey.shade200,
+                              thumbColor: uiPrimaryBlue,
+                              overlayColor:
+                                  uiPrimaryBlue.withValues(alpha: 0.15),
+                              trackHeight: 6,
+                            ),
+                            child: RangeSlider(
+                              values: tempSaat,
+                              onChanged: (r) => setMState(() => tempSaat = r),
+                              min: 7,
+                              max: 23,
+                              divisions: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              side: BorderSide(color: Colors.grey.shade300),
+                            ),
+                            child: const Text(
+                              'Vazgeç',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: FilledButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _seciliHocaId = tempHoca;
+                                _seciliKortId = tempKort;
+                                _saatAralik = tempSaat;
+                                _selectedSlotStart = null;
+                              });
+                              _recomputeUiCaches();
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(Icons.check_rounded),
+                            label: const Text(
+                              'Uygula',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: uiPrimaryBlue,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -826,84 +1150,139 @@ class _DersListesiPageState extends State<DersListesiPage> {
       context: context,
       useSafeArea: true,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                      color: Colors.black26,
-                      borderRadius: BorderRadius.circular(2))),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Dersler',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  Text(
-                    _formatGunBaslik(_selectedDate),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: _selectedDayDersler.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (_, i) {
-                    final appt = _selectedDayDersler[i];
-                    final note = _safeNotes(appt);
-                    final ders =
-                        EtkinlikModel.fromMap(note.cast<String, dynamic>());
-
-                    final bas = appt.startTime;
-                    final bit = appt.endTime;
-
-                    final kort =
-                        (note['kort_adi']?.toString().trim().isNotEmpty ??
-                                false)
-                            ? note['kort_adi'].toString()
-                            : appt.subject.toString();
-
-                    final hoca =
-                        (note['antrenor_adi']?.toString() ?? '').toString();
-
-                    return ListTile(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                      tileColor:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
-                      title: Text(_formatSaat(bas, bit),
-                          style: const TextStyle(fontWeight: FontWeight.w700)),
-                      subtitle: Text(
-                        [kort, if (hoca.trim().isNotEmpty) hoca].join(' • '),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () async {
-                        Navigator.pop(context);
-                        await _handleDersTap(ders);
-                      },
-                    );
-                  },
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: uiAccentOrange.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.sports_tennis_rounded,
+                        color: uiAccentOrange,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Derslerim',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          Text(
+                            _formatGunBaslik(_selectedDate),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                    ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: _selectedDayDersler.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (_, i) {
+                      final appt = _selectedDayDersler[i];
+                      final note = _safeNotes(appt);
+                      final ders =
+                          EtkinlikModel.fromMap(note.cast<String, dynamic>());
+
+                      final bas = appt.startTime;
+                      final bit = appt.endTime;
+
+                      final kort =
+                          (note['kort_adi']?.toString().trim().isNotEmpty ??
+                                  false)
+                              ? note['kort_adi'].toString()
+                              : appt.subject.toString();
+
+                      final hoca =
+                          (note['antrenor_adi']?.toString() ?? '').toString();
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          leading: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: uiPrimaryLight,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              _formatSaatTek(bas),
+                              style: const TextStyle(
+                                color: uiPrimaryBlue,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            kort,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: hoca.trim().isNotEmpty
+                              ? Text(hoca)
+                              : Text(
+                                  _formatSaat(bas, bit),
+                                  style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                                ),
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () async {
+                            Navigator.pop(context);
+                            await _handleDersTap(ders);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -997,9 +1376,7 @@ class _DersListesiPageState extends State<DersListesiPage> {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (_) => _SlotSecimSheet(
         slotStart: slotStart,
         alternatifler: alternatifler,
@@ -1033,47 +1410,85 @@ class _DersListesiPageState extends State<DersListesiPage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Ders Değerlendirme'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: uiAccentGreen.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.rate_review_rounded,
+                  color: uiAccentGreen, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Text('Ders Değerlendirme'),
+          ],
+        ),
         content: StatefulBuilder(
           builder: (_, setState) => Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CheckboxListTile(
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: CheckboxListTile(
                   title: const Text('Ders tamamlandı mı?'),
                   value: tamamlandi,
-                  onChanged: (v) => setState(() => tamamlandi = v ?? false)),
-              const SizedBox(height: 8),
+                  onChanged: (v) => setState(() => tamamlandi = v ?? false),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(height: 16),
               TextField(
-                  controller: ctrl,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                      labelText: 'Not', border: OutlineInputBorder())),
+                controller: ctrl,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Not',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                ),
+              ),
             ],
           ),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Kapat')),
-          ElevatedButton(
-              child: const Text('Kaydet'),
-              onPressed: () async {
-                try {
-                  final r = await TakvimService.setDersYapildiBilgisiApi(
-                      dersId: ders.id,
-                      tamamlandi: tamamlandi,
-                      aciklama: ctrl.text,
-                      rol: 'UYE',
-                      userId: userId);
-                  onSaved(tamamlandi, ctrl.text);
-                  ShowMessage.success(context, r.mesaj);
-                } on ApiException catch (e) {
-                  ShowMessage.error(context, e.message);
-                } catch (e) {
-                  ShowMessage.error(context, 'Hata: $e');
-                }
-                Navigator.pop(context);
-              })
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: uiPrimaryBlue,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Kaydet'),
+            onPressed: () async {
+              try {
+                final r = await TakvimService.setDersYapildiBilgisiApi(
+                    dersId: ders.id,
+                    tamamlandi: tamamlandi,
+                    aciklama: ctrl.text,
+                    rol: 'UYE',
+                    userId: userId);
+                onSaved(tamamlandi, ctrl.text);
+                ShowMessage.success(context, r.mesaj);
+              } on ApiException catch (e) {
+                ShowMessage.error(context, e.message);
+              } catch (e) {
+                ShowMessage.error(context, 'Hata: $e');
+              }
+              Navigator.pop(context);
+            },
+          ),
         ],
       ),
     );
@@ -1089,25 +1504,70 @@ class _DersListesiPageState extends State<DersListesiPage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Ders İptal Et'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.cancel_rounded, color: Colors.red, size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Text('Ders İptal Et'),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('*Bu işlem geri alınamaz.'),
-            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.amber.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_rounded, color: Colors.amber.shade700),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Bu işlem geri alınamaz.',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             TextField(
-                controller: ctrl,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                    hintText: 'Neden iptal ediyorsunuz?(isteğe bağlı)',
-                    border: OutlineInputBorder())),
+              controller: ctrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Neden iptal ediyorsunuz? (isteğe bağlı)',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+              ),
+            ),
           ],
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Vazgeç')),
-          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Vazgeç'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
             child: const Text('İptal Et'),
             onPressed: () async {
               try {
@@ -1125,7 +1585,142 @@ class _DersListesiPageState extends State<DersListesiPage> {
               }
               Navigator.pop(context);
             },
-          )
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                          Bilgi Kartı Widget                                 */
+/* -------------------------------------------------------------------------- */
+class _InfoCard extends StatelessWidget {
+  const _InfoCard({
+    required this.icon,
+    required this.title,
+    required this.message,
+    required this.accentColor,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            accentColor.withValues(alpha: 0.08),
+            accentColor.withValues(alpha: 0.03),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: accentColor.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: accentColor, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: accentColor.withValues(alpha: 0.9),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                          Boş Durum Kartı                                    */
+/* -------------------------------------------------------------------------- */
+class _EmptyStateCard extends StatelessWidget {
+  const _EmptyStateCard({
+    required this.icon,
+    required this.title,
+    required this.message,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 32, color: Colors.grey.shade400),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade500,
+              height: 1.4,
+            ),
+          ),
         ],
       ),
     );
@@ -1148,25 +1743,53 @@ class _TimeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final borderColor = selected ? uiPrimaryBlue : scheme.outlineVariant;
-
-    return InkWell(
-      onTap: () async => onTap(),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: scheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: borderColor, width: selected ? 2 : 1),
-        ),
-        child: Text(
-          timeText,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: scheme.onSurface,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () async => onTap(),
+        borderRadius: BorderRadius.circular(14),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            gradient: selected
+                ? const LinearGradient(
+                    colors: [uiPrimaryBlue, Color(0xFF3B82F6)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: selected ? null : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected ? Colors.transparent : Colors.grey.shade200,
+              width: 1.5,
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: uiPrimaryBlue.withValues(alpha: 0.35),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+          ),
+          child: Text(
+            timeText,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: selected ? Colors.white : Colors.grey.shade800,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ),
       ),
@@ -1193,26 +1816,43 @@ class _BadgeIconButton extends StatelessWidget {
     final show = count > 0;
 
     return Padding(
-      padding: const EdgeInsets.only(right: 6),
+      padding: const EdgeInsets.only(right: 8),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          IconButton(onPressed: onPressed, icon: Icon(icon)),
+          Container(
+            decoration: BoxDecoration(
+              color: uiPrimaryLight.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              onPressed: onPressed,
+              icon: Icon(icon, color: uiPrimaryBlue),
+            ),
+          ),
           if (show)
             Positioned(
-              right: 6,
-              top: 6,
+              right: 2,
+              top: 2,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: uiPrimaryBlue,
-                  borderRadius: BorderRadius.circular(999),
+                  gradient: const LinearGradient(
+                    colors: [uiPrimaryBlue, Color(0xFF3B82F6)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: uiPrimaryBlue.withValues(alpha: 0.4),
+                      blurRadius: 4,
+                    ),
+                  ],
                 ),
                 child: Text(
                   '$count',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -1254,69 +1894,125 @@ class _SlotSecimSheetState extends State<_SlotSecimSheet> {
         : _grupla(
             widget.alternatifler, (m) => (m['kort_adi'] ?? '—').toString());
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const SizedBox(height: 8),
-          Container(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                  color: Colors.black26,
-                  borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Uygun Saat Seçin',
-                    style: Theme.of(context).textTheme.titleMedium,
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: uiAccentGreen.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.event_available_rounded,
+                      color: uiAccentGreen,
+                      size: 22,
+                    ),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Seçenek Belirleyin',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        Text(
+                          _formatSaatTek(widget.slotStart),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                SegmentedButton<_GrupTuru>(
-                  segments: const [
-                    ButtonSegment(
-                        value: _GrupTuru.hoca, label: Text('Antrenör')),
-                    ButtonSegment(value: _GrupTuru.kort, label: Text('Kort')),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _SegmentButton(
+                        label: 'Antrenör',
+                        icon: Icons.person_rounded,
+                        selected: _grup == _GrupTuru.hoca,
+                        onTap: () => setState(() => _grup = _GrupTuru.hoca),
+                      ),
+                    ),
+                    Expanded(
+                      child: _SegmentButton(
+                        label: 'Kort',
+                        icon: Icons.sports_tennis_rounded,
+                        selected: _grup == _GrupTuru.kort,
+                        onTap: () => setState(() => _grup = _GrupTuru.kort),
+                      ),
+                    ),
                   ],
-                  selected: {_grup},
-                  onSelectionChanged: (s) => setState(() => _grup = s.first),
-                  showSelectedIcon: false,
                 ),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Flexible(
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemCount: gruplu.length,
-              itemBuilder: (_, i) {
-                final baslik = gruplu.keys.elementAt(i);
-                final liste = gruplu[baslik]!
-                  ..sort((a, b) => a['baslangic_tarih_saat']
-                      .compareTo(b['baslangic_tarih_saat']));
+            const SizedBox(height: 16),
+            Flexible(
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemCount: gruplu.length,
+                itemBuilder: (_, i) {
+                  final baslik = gruplu.keys.elementAt(i);
+                  final liste = gruplu[baslik]!
+                    ..sort((a, b) => a['baslangic_tarih_saat']
+                        .compareTo(b['baslangic_tarih_saat']));
 
-                return _GrupKart(
-                  baslik: baslik,
-                  altBaslik: _grup == _GrupTuru.hoca
-                      ? 'Kortlara göre alternatifler'
-                      : 'Antrenörlere göre alternatifler',
-                  slotlar: liste,
-                  onSelect: (secim) => Navigator.pop(context, secim),
-                  slotStart: widget.slotStart,
-                );
-              },
+                  return _GrupKart(
+                    baslik: baslik,
+                    altBaslik: _grup == _GrupTuru.hoca
+                        ? 'Uygun kortlar'
+                        : 'Uygun antrenörler',
+                    slotlar: liste,
+                    onSelect: (secim) => Navigator.pop(context, secim),
+                    slotStart: widget.slotStart,
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1331,6 +2027,62 @@ class _SlotSecimSheetState extends State<_SlotSecimSheet> {
       map.putIfAbsent(k, () => []).add(m);
     }
     return map;
+  }
+}
+
+class _SegmentButton extends StatelessWidget {
+  const _SegmentButton({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: selected ? uiPrimaryBlue : Colors.grey.shade500,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                color: selected ? uiPrimaryBlue : Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -1351,11 +2103,21 @@ class _GrupKart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 1.5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1364,30 +2126,39 @@ class _GrupKart extends StatelessWidget {
                 Expanded(
                   child: Text(
                     baslik,
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: uiAccentGreen.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text('${slotlar.length} seçenek',
-                      style: Theme.of(context).textTheme.labelSmall),
+                  child: Text(
+                    '${slotlar.length} seçenek',
+                    style: TextStyle(
+                      color: uiAccentGreen,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               altBaslik,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+              style: TextStyle(
+                color: Colors.grey.shade500,
+                fontSize: 13,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             ...slotlar.map((a) {
               final bas = DateTime.parse(a['baslangic_tarih_saat']).toLocal();
               final bit = DateTime.parse(a['bitis_tarih_saat']).toLocal();
@@ -1395,43 +2166,62 @@ class _GrupKart extends StatelessWidget {
               final chipSol = a['kort_adi']?.toString() ?? '';
               final chipSag = a['antrenor_adi']?.toString() ?? '';
 
-              return InkWell(
-                onTap: () => onSelect(a),
-                borderRadius: BorderRadius.circular(10),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 82,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 6),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.outlineVariant,
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: Material(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    onTap: () => onSelect(a),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: uiPrimaryLight,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              saatText,
+                              style: const TextStyle(
+                                color: uiPrimaryBlue,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                fontFeatures: [FontFeature.tabularFigures()],
+                              ),
+                            ),
                           ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          saatText,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              fontFeatures: [FontFeature.tabularFigures()]),
-                        ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 6,
+                              children: [
+                                _chip(context, chipSol),
+                                _chip(context, chipSag, outlined: true),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: uiPrimaryLight,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.arrow_forward_rounded,
+                              size: 16,
+                              color: uiPrimaryBlue,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 6,
-                          children: [
-                            _chip(context, chipSol),
-                            _chip(context, chipSag, outlined: true),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.chevron_right),
-                    ],
+                    ),
                   ),
                 ),
               );
@@ -1443,21 +2233,22 @@ class _GrupKart extends StatelessWidget {
   }
 
   Widget _chip(BuildContext context, String text, {bool outlined = false}) {
-    final scheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: outlined ? Colors.transparent : scheme.secondaryContainer,
-        border: outlined ? Border.all(color: scheme.outlineVariant) : null,
-        borderRadius: BorderRadius.circular(16),
+        color: outlined
+            ? Colors.transparent
+            : uiAccentGreen.withValues(alpha: 0.12),
+        border: outlined ? Border.all(color: Colors.grey.shade300) : null,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: outlined
-                  ? scheme.onSurfaceVariant
-                  : scheme.onSecondaryContainer,
-            ),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          color: outlined ? Colors.grey.shade600 : uiAccentGreen,
+        ),
       ),
     );
   }

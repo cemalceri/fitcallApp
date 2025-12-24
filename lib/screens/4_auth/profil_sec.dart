@@ -7,10 +7,8 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
-import 'package:fitcall/services/core/fcm_service.dart';
 import 'package:fitcall/screens/1_common/1_notification/pending_action.dart';
 import 'package:fitcall/screens/1_common/1_notification/pending_action_store.dart';
-
 import 'package:fitcall/services/api_result.dart';
 import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:fitcall/models/1_common/event/event_model.dart';

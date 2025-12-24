@@ -41,7 +41,7 @@ class _UyeUrunListPageState extends State<UyeUrunListPage> {
     final dfDate = DateFormat('dd.MM.yyyy');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Üyelik / Paket Bilgilerim')),
+      appBar: AppBar(title: const Text('Üyelik/Paket Bilgilerim')),
       body: FutureBuilder<List<UyeUrunModel>>(
         future: _future,
         builder: (context, snap) {
@@ -62,7 +62,7 @@ class _UyeUrunListPageState extends State<UyeUrunListPage> {
               final u = list[i];
               final hakBilgi = (u.toplamHak != null)
                   ? 'Kalan: ${u.kalanHak}/${u.toplamHak}'
-                  : 'Süre: ${dfDate.format(u.baslangic)}'
+                  : 'Başlangıç Tarihi: ${dfDate.format(u.baslangic)}'
                       ' - ${u.bitis != null ? dfDate.format(u.bitis!) : "-"}';
 
               return ListTile(

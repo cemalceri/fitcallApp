@@ -39,11 +39,6 @@ class _UyeHomePageState extends State<UyeHomePage> {
       'text': 'Takvim'
     },
     {
-      'name': routeEnums[SayfaAdi.uyeGenelDersTalep]!,
-      'icon': Icons.sports_baseball,
-      'text': 'Ders Taleplerim'
-    },
-    {
       'name': routeEnums[SayfaAdi.qrKodKayit]!,
       'icon': Icons.qr_code,
       'text': 'QR Kod İle Giriş'
