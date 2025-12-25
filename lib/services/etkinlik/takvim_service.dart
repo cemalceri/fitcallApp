@@ -1,8 +1,8 @@
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
-import 'package:fitcall/models/dtos/mesgul_slot_dto.dart';
-import 'package:fitcall/models/dtos/uygun_slot_dto.dart';
-import 'package:fitcall/models/dtos/week_takvim_data_dto.dart';
+import 'package:fitcall/models/dtos/takvim_dtos/mesgul_slot_dto.dart';
+import 'package:fitcall/models/dtos/takvim_dtos/uygun_slot_dto.dart';
+import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
@@ -24,7 +24,7 @@ class TakvimService {
 
     // 2) Uygun / meşgul slotlar
     final slotRes = await ApiClient.postParsed<Map<String, dynamic>>(
-      getUygunSaatler,
+      getAntrenorUygunSaatleri,
       {'start': start.toIso8601String(), 'end': end.toIso8601String()},
       (json) => (json as Map).cast<String, dynamic>(),
     );
@@ -47,14 +47,21 @@ class TakvimService {
     return ApiResult<WeekTakvimDataDto>(mesaj: mesaj, data: dto);
   }
 
-  /// Belirli tarih aralığında uygun saatleri döner
-  static Future<ApiResult<List<UygunSlotDto>>> getUygunSaatlerAralik({
+  /// Belirli tarih aralığında belirtilen ya da tüm antrenörlerin uygun saatleri döner
+  static Future<ApiResult<List<UygunSlotDto>>> getAntrenorUygunSaatleriApi({
     required DateTime start,
     required DateTime end,
+    int? antrenorId,
   }) async {
+    final body = {
+      'start': start.toIso8601String(),
+      'end': end.toIso8601String(),
+      if (antrenorId != null) 'antrenor_id': antrenorId,
+    };
+
     final r = await ApiClient.postParsed<Map<String, dynamic>>(
-      getUygunSaatler,
-      {'start': start.toIso8601String(), 'end': end.toIso8601String()},
+      getAntrenorUygunSaatleri,
+      body,
       (json) => (json as Map).cast<String, dynamic>(),
     );
 
@@ -131,6 +138,7 @@ class TakvimService {
   static Future<ApiResult<WeekTakvimDataDto>> antrenorLoadDay({
     required DateTime start,
     required DateTime end,
+    int? antrenorId,
   }) async {
     // 1) Dersler
     final dersRes = await ApiClient.postParsed<List<EtkinlikModel>>(
@@ -144,8 +152,12 @@ class TakvimService {
 
     // 2) Uygun / meşgul slotlar
     final slotRes = await ApiClient.postParsed<Map<String, dynamic>>(
-      getUygunSaatler,
-      {'start': start.toIso8601String(), 'end': end.toIso8601String()},
+      getAntrenorUygunSaatleri,
+      {
+        'start': start.toIso8601String(),
+        'end': end.toIso8601String(),
+        if (antrenorId != null) 'antrenor_id': antrenorId
+      },
       (json) => (json as Map).cast<String, dynamic>(),
     );
 

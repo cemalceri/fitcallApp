@@ -24,9 +24,8 @@ class ProfilSecPage extends StatefulWidget {
 }
 
 class _ProfilSecPageState extends State<ProfilSecPage> {
-  bool _routing = false; // eşzamanlı yönlendirme kilidi
-  bool _suppressEventOnce =
-      false; // Event’ten X/geri ile dönüldüğünde tek sefer atla
+  bool _routing = false;
+  bool _suppressEventOnce = false;
 
   @override
   void initState() {
@@ -53,12 +52,12 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
             break;
         }
         _routing = false;
-        Future.microtask(_runFlow); // geri dönünce akışı tekrar çalıştır
+        Future.microtask(_runFlow);
         return;
       }
-    } catch (_) {/* sessiz geç */}
+    } catch (_) {}
 
-    // 2) Aktif Event (kullanıcı geri döndüyse bir kez bastır)
+    // 2) Aktif Event
     if (!_suppressEventOnce) {
       final userId = await StorageService.getUserId();
       if (userId != null && userId > 0) {
@@ -71,13 +70,13 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
               MaterialPageRoute(builder: (_) => EventQrPage(userId: userId)),
             );
             if (closedByUser == true) {
-              _suppressEventOnce = true; // 🔑 geri/X ile döndü
+              _suppressEventOnce = true;
             }
             _routing = false;
             Future.microtask(_runFlow);
             return;
           }
-        } catch (_) {/* sessiz geç */}
+        } catch (_) {}
       }
     }
 
@@ -88,9 +87,8 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
       return;
     }
 
-    // Profil listesi gösterilecek
     _routing = false;
-    _suppressEventOnce = false; // ekran görüldü; bastırmayı sıfırla
+    _suppressEventOnce = false;
   }
 
   Future<void> _profilSecildi(KullaniciProfilModel p) async {
@@ -107,205 +105,37 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
   }
 
   // ---------- Rol yardımcıları ----------
-  IconData _rolIkon(String rol) {
+  _RolTheme _getRolTheme(String rol) {
     switch (rol) {
       case 'yonetici':
-        return Icons.admin_panel_settings_rounded;
+        return _RolTheme(
+          icon: Icons.shield_rounded,
+          color: const Color(0xFF6366F1),
+          gradient: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+          label: 'Yönetici',
+        );
       case 'antrenor':
-        return Icons.sports_tennis_rounded;
+        return _RolTheme(
+          icon: Icons.sports_tennis_rounded,
+          color: const Color(0xFF14B8A6),
+          gradient: const [Color(0xFF14B8A6), Color(0xFF10B981)],
+          label: 'Antrenör',
+        );
       case 'uye':
-        return Icons.person_rounded;
+        return _RolTheme(
+          icon: Icons.person_rounded,
+          color: const Color(0xFFF97316),
+          gradient: const [Color(0xFFF97316), Color(0xFFFB923C)],
+          label: 'Üye',
+        );
       default:
-        return Icons.account_circle_rounded;
+        return _RolTheme(
+          icon: Icons.account_circle_rounded,
+          color: const Color(0xFF64748B),
+          gradient: const [Color(0xFF64748B), Color(0xFF94A3B8)],
+          label: 'Kullanıcı',
+        );
     }
-  }
-
-  Color _rolRenk(String rol, BuildContext context) {
-    switch (rol) {
-      case 'yonetici':
-        return Colors.indigo;
-      case 'antrenor':
-        return Colors.teal;
-      case 'uye':
-        return Colors.deepOrange;
-      default:
-        return Theme.of(context).colorScheme.primary;
-    }
-  }
-
-  Widget _rolBaslik(String title, IconData icon, Color color) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: color.withAlpha(217)),
-          const SizedBox(width: 8),
-          Text(title,
-              style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 15.5,
-                  color: color.withAlpha(242),
-                  letterSpacing: .2)),
-          const SizedBox(width: 6),
-          Expanded(child: Container(height: 1, color: Colors.black12)),
-        ],
-      ),
-    );
-  }
-
-  Widget _profilKart(KullaniciProfilModel p) {
-    final ad = p.uye?.adi ?? p.antrenor?.adi ?? p.user.firstName;
-    final soy = p.uye?.soyadi ?? p.antrenor?.soyadi ?? p.user.lastName;
-    final tamAd = '$ad $soy'.trim();
-
-    final anaMi = p.anaHesap == true;
-    final chipColor = anaMi ? Colors.green : Colors.grey;
-    final chipText = anaMi ? 'Ana Hesap' : 'Bağlı hesap';
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: () => _profilSecildi(p),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 110,
-            height: 110,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF4e54c8), Color(0xFF8f94fb)]),
-            ),
-            alignment: Alignment.center,
-            child: const Icon(Icons.person, size: 48, color: Colors.white),
-          ),
-          const SizedBox(height: 12),
-          Text(tamAd.isEmpty ? p.user.username : tamAd,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: chipColor.withAlpha(20),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: chipColor.withAlpha(51)),
-            ),
-            child: Text(chipText,
-                style: TextStyle(
-                    color: chipColor,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600)),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-
-  Widget _rolGrupGrid(List<KullaniciProfilModel> list) {
-    return GridView.count(
-      crossAxisCount: 2,
-      mainAxisSpacing: 24,
-      crossAxisSpacing: 24,
-      childAspectRatio: 0.8,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      children: list.map(_profilKart).toList(),
-    );
-  }
-
-  // ----------- Boş durum bileşeni (yalnızca EMPTY CASE için) -----------
-  Widget _emptyState(BuildContext context) {
-    final canPop = Navigator.of(context).canPop();
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 520),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.black12),
-          boxShadow: const [
-            BoxShadow(
-              blurRadius: 18,
-              spreadRadius: 0,
-              offset: Offset(0, 6),
-              color: Color(0x14000000),
-            )
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Hafif modern ikonlu başlık
-            Container(
-              width: 84,
-              height: 84,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withAlpha((.15 * 255).toInt()),
-                    Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withAlpha((.05 * 255).toInt()),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.person_search_rounded,
-                size: 40,
-                color: Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withAlpha((.9 * 255).toInt()),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Kullanıcınıza ait herhangi bir üye profili bulunmuyor',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Bir yanlışlık olduğunu düşünüyorsanız lütfen iletişime geçin.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13.5,
-                color: Colors.black.withAlpha((.55 * 255).toInt()),
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (canPop)
-              OutlinedButton.icon(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                label: const Text('Geri'),
-                style: OutlinedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -317,41 +147,358 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     final uyeler =
         widget.kullaniciProfilList.where((p) => p.rol == 'uye').toList();
 
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(title: const Text('Profil Seç'), centerTitle: true),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              if (yoneticiler.isNotEmpty) ...[
-                _rolBaslik('Yönetici', _rolIkon('yonetici'),
-                    _rolRenk('yonetici', context)),
-                _rolGrupGrid(yoneticiler),
-                const SizedBox(height: 8),
-              ],
-              if (antrenorler.isNotEmpty) ...[
-                _rolBaslik('Antrenör', _rolIkon('antrenor'),
-                    _rolRenk('antrenor', context)),
-                _rolGrupGrid(antrenorler),
-                const SizedBox(height: 8),
-              ],
-              if (uyeler.isNotEmpty) ...[
-                _rolBaslik('Üye', _rolIkon('uye'), _rolRenk('uye', context)),
-                _rolGrupGrid(uyeler),
-              ],
+    final isEmpty =
+        yoneticiler.isEmpty && antrenorler.isEmpty && uyeler.isEmpty;
 
-              // ----------- Güncellenen boş durum -----------
-              if (yoneticiler.isEmpty && antrenorler.isEmpty && uyeler.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 24),
-                  child: _emptyState(context),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: isEmpty
+                  ? _buildEmptyState()
+                  : SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (yoneticiler.isNotEmpty)
+                            _buildRoleSection('yonetici', yoneticiler),
+                          if (antrenorler.isNotEmpty)
+                            _buildRoleSection('antrenor', antrenorler),
+                          if (uyeler.isNotEmpty)
+                            _buildRoleSection('uye', uyeler),
+                        ],
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------- HEADER ----------
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(8, 8, 20, 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (Navigator.of(context).canPop())
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 20,
+                    color: Color(0xFF1E293B),
+                  ),
                 ),
+              if (!Navigator.of(context).canPop()) const SizedBox(width: 16),
+              const Expanded(
+                child: Text(
+                  'Profil Seç',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E293B),
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ),
             ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 4),
+            child: Text(
+              'Devam etmek için bir profil seçin',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------- ROLE SECTION ----------
+  Widget _buildRoleSection(String rol, List<KullaniciProfilModel> profiles) {
+    final theme = _getRolTheme(rol);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(theme.icon, size: 18, color: theme.color),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                theme.label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  height: 1,
+                  color: Colors.grey.shade200,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Profile cards
+          ...profiles.map((p) => _buildProfileCard(p, theme)),
+        ],
+      ),
+    );
+  }
+
+  // ---------- PROFILE CARD ----------
+  Widget _buildProfileCard(KullaniciProfilModel p, _RolTheme theme) {
+    final ad = p.uye?.adi ?? p.antrenor?.adi ?? p.user.firstName;
+    final soy = p.uye?.soyadi ?? p.antrenor?.soyadi ?? p.user.lastName;
+    final tamAd = '$ad $soy'.trim();
+    final displayName = tamAd.isEmpty ? p.user.username : tamAd;
+    final isMain = p.anaHesap == true;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _profilSecildi(p),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Avatar
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: theme.gradient,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.color.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      _getInitials(displayName),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                // Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1E293B),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isMain
+                                  ? const Color(0xFF10B981)
+                                      .withValues(alpha: 0.1)
+                                  : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              isMain ? 'Ana Hesap' : 'Bağlı Hesap',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isMain
+                                    ? const Color(0xFF10B981)
+                                    : Colors.grey.shade600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Arrow
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  String _getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
+      return parts[0][0].toUpperCase();
+    }
+    return '?';
+  }
+
+  // ---------- EMPTY STATE ----------
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.person_search_rounded,
+                size: 40,
+                color: Colors.grey.shade400,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Profil bulunamadı',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Kullanıcınıza ait herhangi bir profil bulunmuyor.\nBir yanlışlık olduğunu düşünüyorsanız\nlütfen iletişime geçin.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.5,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 24),
+            if (Navigator.of(context).canPop())
+              TextButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                label: const Text('Geri Dön'),
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFFF1F5F9),
+                  foregroundColor: const Color(0xFF475569),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------- HELPER CLASS ----------
+class _RolTheme {
+  final IconData icon;
+  final Color color;
+  final List<Color> gradient;
+  final String label;
+
+  const _RolTheme({
+    required this.icon,
+    required this.color,
+    required this.gradient,
+    required this.label,
+  });
 }

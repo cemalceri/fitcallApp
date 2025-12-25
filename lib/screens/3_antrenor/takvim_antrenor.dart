@@ -2,7 +2,7 @@
 // ignore_for_file: use_build_context_synchronously, constant_identifier_names
 
 import 'package:fitcall/models/dtos/ders_onay_bilgisi_dto.dart';
-import 'package:fitcall/models/dtos/week_takvim_data_dto.dart';
+import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/models/enums.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
@@ -84,7 +84,9 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage>
     final end = start.add(const Duration(days: 1));
 
     try {
-      final r = await TakvimService.antrenorLoadDay(start: start, end: end);
+      var antrenorId = await StorageService.antrenorBilgileriniGetir();
+      final r = await TakvimService.antrenorLoadDay(
+          start: start, end: end, antrenorId: antrenorId?.id);
       final WeekTakvimDataDto data =
           r.data ?? WeekTakvimDataDto(dersler: [], mesgul: [], uygun: []);
 

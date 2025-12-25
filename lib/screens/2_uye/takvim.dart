@@ -2,7 +2,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
-import 'package:fitcall/models/dtos/week_takvim_data_dto.dart';
+import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
@@ -99,15 +99,22 @@ class _DersListesiPageState extends State<DersListesiPage>
 
   Future<void> _prepare() async {
     setState(() => _isLoading = true);
-    currentUye = await StorageService.uyeBilgileriniGetir();
-    userId = await SecureStorageService.getValue('user_id');
+    try {
+      currentUye = await StorageService.uyeBilgileriniGetir();
+      userId = await SecureStorageService.getValue('user_id');
 
-    await _loadWeek(_visibleWeekStart);
-    _yenileFiltreOpsiyonlari();
-    _recomputeUiCaches();
+      await _loadWeek(_visibleWeekStart);
+      _yenileFiltreOpsiyonlari();
+      _recomputeUiCaches();
 
-    setState(() => _isLoading = false);
-    _animController.forward();
+      setState(() => _isLoading = false);
+      _animController.forward();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ShowMessage.error(context, 'Takvim yüklenirken hata oluştu');
+      }
+    }
   }
 
   /* -------------------------------------------------------------------------- */
@@ -163,9 +170,10 @@ class _DersListesiPageState extends State<DersListesiPage>
       _tumRandevular.addAll(dersAppts);
       _tumRandevular.addAll(availableAppts);
     } on ApiException catch (e) {
-      ShowMessage.error(context, e.message);
+      // Sessiz hata - kullanıcıya gösterilmeyen arka plan hatası
+      debugPrint('API Hatası: ${e.message}');
     } catch (e) {
-      ShowMessage.error(context, 'Takvim alınamadı: $e');
+      debugPrint('Takvim yükleme hatası: $e');
     }
   }
 
@@ -400,10 +408,8 @@ class _DersListesiPageState extends State<DersListesiPage>
   }
 
   void _selectDay(DateTime day) {
-    setState(() {
-      _selectedDate = _normalizeDate(day);
-      _selectedSlotStart = null;
-    });
+    _selectedDate = _normalizeDate(day);
+    _selectedSlotStart = null;
     _recomputeUiCaches();
   }
 
@@ -580,7 +586,9 @@ class _DersListesiPageState extends State<DersListesiPage>
                             setState(() => _isLoading = false);
                           } else {
                             _selectDay(selectedDay);
-                            setState(() => _focusedDay = focusedDay);
+                            setState(() {
+                              _focusedDay = focusedDay;
+                            });
                           }
                         },
                         onPageChanged: (focusedDay) async {
@@ -1337,62 +1345,85 @@ class _DersListesiPageState extends State<DersListesiPage>
       return;
     }
 
-    final key = slotStart.toUtc().toIso8601String();
-    List<Map<String, dynamic>> alternatifler = _slotAlternatifleri[key] ?? [];
-
-    if (alternatifler.isEmpty) {
-      try {
-        final rr = await TakvimService.getUygunSaatlerAralik(
-          start: slotStart,
-          end: slotStart.add(const Duration(hours: 1)),
-        );
-        final list = rr.data ?? [];
-        alternatifler = list
-            .where((a) => a.baslangic.isAfter(nowPlus3h))
-            .map((s) => {
-                  'baslangic_tarih_saat': s.baslangic.toUtc().toIso8601String(),
-                  'bitis_tarih_saat': s.bitis.toUtc().toIso8601String(),
-                  'antrenor_id': s.antrenorId,
-                  'antrenor_adi': s.antrenorAdi,
-                  'kort_id': s.kortId,
-                  'kort_adi': s.kortAdi,
-                })
-            .toList();
-      } on ApiException catch (e) {
-        ShowMessage.error(context, e.message);
-        return;
-      } catch (e) {
-        ShowMessage.error(context, 'Hata: $e');
-        return;
-      }
-    }
-
-    if (alternatifler.isEmpty) {
-      ShowMessage.error(context, 'Bu saatte uygun kort/antrenör yok');
-      return;
-    }
-
-    final secim = await showModalBottomSheet<Map<String, dynamic>>(
+    // Loading göstermek için dialog aç
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _SlotSecimSheet(
-        slotStart: slotStart,
-        alternatifler: alternatifler,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(),
       ),
     );
 
-    if (secim != null) {
-      final bool? sonuc = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => DersTalepPage(secimJson: secim, baslangic: slotStart),
+    try {
+      final rr = await TakvimService.getAntrenorUygunSaatleriApi(
+        start: slotStart,
+        end: slotStart.add(const Duration(hours: 1)),
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Loading dialog kapat
+
+      final list = rr.data ?? [];
+
+      // API'den gelen veriyi antrenör bazlı düzenle
+      List<Map<String, dynamic>> antrenorListesi = [];
+      for (final s in list.where((a) => a.baslangic.isAfter(nowPlus3h))) {
+        antrenorListesi.add({
+          'baslangic_tarih_saat': s.baslangic.toUtc().toIso8601String(),
+          'bitis_tarih_saat': s.bitis.toUtc().toIso8601String(),
+          'antrenor_id': s.antrenorId,
+          'antrenor_adi': s.antrenorAdi,
+          'kortlar': s.kortlar
+              .map((k) => {
+                    'id': k.id,
+                    'adi': k.adi,
+                  })
+              .toList(),
+        });
+      }
+
+      if (antrenorListesi.isEmpty) {
+        if (mounted) {
+          ShowMessage.error(context, 'Bu saatte uygun antrenör yok');
+        }
+        return;
+      }
+
+      if (!mounted) return;
+
+      final secim = await showModalBottomSheet<Map<String, dynamic>>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => _AntrenorSecimSheet(
+          slotStart: slotStart,
+          antrenorListesi: antrenorListesi,
         ),
       );
-      if (sonuc == true) {
-        ShowMessage.success(context, 'Talebiniz alındı');
-        await _forceReloadVisibleWeek();
+
+      if (secim != null && mounted) {
+        final bool? sonuc = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                DersTalepPage(secimJson: secim, baslangic: slotStart),
+          ),
+        );
+        if (sonuc == true) {
+          ShowMessage.success(context, 'Talebiniz alındı');
+          await _forceReloadVisibleWeek();
+        }
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Loading dialog kapat
+        ShowMessage.error(context, e.message);
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Loading dialog kapat
+        ShowMessage.error(context, 'Hata oluştu. Lütfen tekrar deneyin.');
       }
     }
   }
@@ -1865,389 +1896,463 @@ class _BadgeIconButton extends StatelessWidget {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                    Uygun Slot Seçimi – Gruplanmış Sheet                     */
+/*                  Antrenör Seçimi – Modern ve Sade Sheet                     */
 /* -------------------------------------------------------------------------- */
-class _SlotSecimSheet extends StatefulWidget {
-  const _SlotSecimSheet({
+class _AntrenorSecimSheet extends StatefulWidget {
+  const _AntrenorSecimSheet({
     required this.slotStart,
-    required this.alternatifler,
+    required this.antrenorListesi,
   });
 
   final DateTime slotStart;
-  final List<Map<String, dynamic>> alternatifler;
+  final List<Map<String, dynamic>> antrenorListesi;
 
   @override
-  State<_SlotSecimSheet> createState() => _SlotSecimSheetState();
+  State<_AntrenorSecimSheet> createState() => _AntrenorSecimSheetState();
 }
 
-enum _GrupTuru { hoca, kort }
-
-class _SlotSecimSheetState extends State<_SlotSecimSheet> {
-  _GrupTuru _grup = _GrupTuru.hoca;
+class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
+  int? _selectedAntrenorId;
+  int? _selectedKortId;
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, List<Map<String, dynamic>>> gruplu = _grup ==
-            _GrupTuru.hoca
-        ? _grupla(
-            widget.alternatifler, (m) => (m['antrenor_adi'] ?? '—').toString())
-        : _grupla(
-            widget.alternatifler, (m) => (m['kort_adi'] ?? '—').toString());
+    final theme = Theme.of(context);
 
     return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.75,
+      ),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: theme.colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
             ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: uiAccentGreen.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.event_available_rounded,
-                      color: uiAccentGreen,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Seçenek Belirleyin',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        Text(
-                          _formatSaatTek(widget.slotStart),
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                        ),
+          ),
+          const SizedBox(height: 20),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        uiAccentGreen,
+                        uiAccentGreen.withValues(alpha: 0.8),
                       ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: uiAccentGreen.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
+                  child: const Icon(
+                    Icons.person_search_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Antrenör Seçin',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.schedule_rounded,
+                            size: 14,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatSaatTek(widget.slotStart),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: uiAccentGreen.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '${widget.antrenorListesi.length} antrenör',
+                              style: TextStyle(
+                                color: uiAccentGreen,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Antrenör listesi
+          Flexible(
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              shrinkWrap: true,
+              itemCount: widget.antrenorListesi.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final antrenor = widget.antrenorListesi[index];
+                final antrenorId = antrenor['antrenor_id'] as int?;
+                final antrenorAdi =
+                    antrenor['antrenor_adi']?.toString() ?? 'Antrenör';
+                final kortlar = (antrenor['kortlar'] as List?)
+                        ?.cast<Map<String, dynamic>>() ??
+                    [];
+                final isExpanded = _selectedAntrenorId == antrenorId;
+
+                return _AntrenorKart(
+                  antrenorAdi: antrenorAdi,
+                  kortlar: kortlar,
+                  isExpanded: isExpanded,
+                  selectedKortId: _selectedKortId,
+                  onTap: () {
+                    setState(() {
+                      if (_selectedAntrenorId == antrenorId) {
+                        _selectedAntrenorId = null;
+                        _selectedKortId = null;
+                      } else {
+                        _selectedAntrenorId = antrenorId;
+                        _selectedKortId = null;
+                      }
+                    });
+                  },
+                  onKortSelected: (kortId, kortAdi) {
+                    // Seçimi döndür
+                    Navigator.pop(context, {
+                      'baslangic_tarih_saat': antrenor['baslangic_tarih_saat'],
+                      'bitis_tarih_saat': antrenor['bitis_tarih_saat'],
+                      'antrenor_id': antrenorId,
+                      'antrenor_adi': antrenorAdi,
+                      'kort_id': kortId,
+                      'kort_adi': kortAdi,
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                          Antrenör Kartı                                     */
+/* -------------------------------------------------------------------------- */
+class _AntrenorKart extends StatelessWidget {
+  const _AntrenorKart({
+    required this.antrenorAdi,
+    required this.kortlar,
+    required this.isExpanded,
+    required this.selectedKortId,
+    required this.onTap,
+    required this.onKortSelected,
+  });
+
+  final String antrenorAdi;
+  final List<Map<String, dynamic>> kortlar;
+  final bool isExpanded;
+  final int? selectedKortId;
+  final VoidCallback onTap;
+  final void Function(int kortId, String kortAdi) onKortSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color:
+            isExpanded ? uiPrimaryLight.withValues(alpha: 0.3) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isExpanded
+              ? uiPrimaryBlue.withValues(alpha: 0.3)
+              : Colors.grey.shade200,
+          width: isExpanded ? 1.5 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isExpanded
+                ? uiPrimaryBlue.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: isExpanded ? 16 : 8,
+            offset: Offset(0, isExpanded ? 6 : 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Antrenör header
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: _SegmentButton(
-                        label: 'Antrenör',
-                        icon: Icons.person_rounded,
-                        selected: _grup == _GrupTuru.hoca,
-                        onTap: () => setState(() => _grup = _GrupTuru.hoca),
+                    // Avatar
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isExpanded
+                              ? [uiPrimaryBlue, const Color(0xFF3B82F6)]
+                              : [Colors.grey.shade200, Colors.grey.shade300],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: isExpanded
+                            ? [
+                                BoxShadow(
+                                  color: uiPrimaryBlue.withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: isExpanded ? Colors.white : Colors.grey.shade600,
+                        size: 24,
                       ),
                     ),
+                    const SizedBox(width: 14),
+
+                    // İsim ve kort sayısı
                     Expanded(
-                      child: _SegmentButton(
-                        label: 'Kort',
-                        icon: Icons.sports_tennis_rounded,
-                        selected: _grup == _GrupTuru.kort,
-                        onTap: () => setState(() => _grup = _GrupTuru.kort),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            antrenorAdi,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              color: isExpanded
+                                  ? uiPrimaryBlue
+                                  : Colors.grey.shade800,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.sports_tennis_rounded,
+                                size: 14,
+                                color: uiAccentGreen,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${kortlar.length} kort müsait',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Expand icon
+                    AnimatedRotation(
+                      turns: isExpanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 250),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isExpanded
+                              ? uiPrimaryBlue.withValues(alpha: 0.1)
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color:
+                              isExpanded ? uiPrimaryBlue : Colors.grey.shade500,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Flexible(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemCount: gruplu.length,
-                itemBuilder: (_, i) {
-                  final baslik = gruplu.keys.elementAt(i);
-                  final liste = gruplu[baslik]!
-                    ..sort((a, b) => a['baslangic_tarih_saat']
-                        .compareTo(b['baslangic_tarih_saat']));
+          ),
 
-                  return _GrupKart(
-                    baslik: baslik,
-                    altBaslik: _grup == _GrupTuru.hoca
-                        ? 'Uygun kortlar'
-                        : 'Uygun antrenörler',
-                    slotlar: liste,
-                    onSelect: (secim) => Navigator.pop(context, secim),
-                    slotStart: widget.slotStart,
-                  );
-                },
+          // Kort listesi (expanded)
+          AnimatedCrossFade(
+            duration: const Duration(milliseconds: 250),
+            crossFadeState: isExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            firstChild: const SizedBox.shrink(),
+            secondChild: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 1,
+                    color: Colors.grey.shade200,
+                    margin: const EdgeInsets.only(bottom: 12),
+                  ),
+                  Text(
+                    'Kort seçin',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade500,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: kortlar.map((kort) {
+                      final kortId = kort['id'] as int;
+                      final kortAdi = kort['adi']?.toString() ?? 'Kort';
+
+                      return _KortChip(
+                        kortAdi: kortAdi,
+                        onTap: () => onKortSelected(kortId, kortAdi),
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-
-  Map<String, List<Map<String, dynamic>>> _grupla(
-    List<Map<String, dynamic>> items,
-    String Function(Map<String, dynamic>) keySelector,
-  ) {
-    final map = <String, List<Map<String, dynamic>>>{};
-    for (final m in items) {
-      final k = keySelector(m);
-      map.putIfAbsent(k, () => []).add(m);
-    }
-    return map;
-  }
 }
 
-class _SegmentButton extends StatelessWidget {
-  const _SegmentButton({
-    required this.label,
-    required this.icon,
-    required this.selected,
+/* -------------------------------------------------------------------------- */
+/*                              Kort Chip                                      */
+/* -------------------------------------------------------------------------- */
+class _KortChip extends StatelessWidget {
+  const _KortChip({
+    required this.kortAdi,
     required this.onTap,
   });
 
-  final String label;
-  final IconData icon;
-  final bool selected;
+  final String kortAdi;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: selected ? uiPrimaryBlue : Colors.grey.shade500,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: uiAccentGreen.withValues(alpha: 0.3),
             ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                color: selected ? uiPrimaryBlue : Colors.grey.shade600,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _GrupKart extends StatelessWidget {
-  const _GrupKart({
-    required this.baslik,
-    required this.altBaslik,
-    required this.slotlar,
-    required this.onSelect,
-    required this.slotStart,
-  });
-
-  final String baslik;
-  final String altBaslik;
-  final List<Map<String, dynamic>> slotlar;
-  final void Function(Map<String, dynamic>) onSelect;
-  final DateTime slotStart;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            ],
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    baslik,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                  ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: uiAccentGreen.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: uiAccentGreen.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${slotlar.length} seçenek',
-                    style: TextStyle(
-                      color: uiAccentGreen,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
-                  ),
+                child: Icon(
+                  Icons.sports_tennis_rounded,
+                  color: uiAccentGreen,
+                  size: 16,
                 ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              altBaslik,
-              style: TextStyle(
-                color: Colors.grey.shade500,
-                fontSize: 13,
               ),
-            ),
-            const SizedBox(height: 12),
-            ...slotlar.map((a) {
-              final bas = DateTime.parse(a['baslangic_tarih_saat']).toLocal();
-              final bit = DateTime.parse(a['bitis_tarih_saat']).toLocal();
-              final saatText = _formatSaat(bas, bit);
-              final chipSol = a['kort_adi']?.toString() ?? '';
-              final chipSag = a['antrenor_adi']?.toString() ?? '';
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: Material(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  child: InkWell(
-                    onTap: () => onSelect(a),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: uiPrimaryLight,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              saatText,
-                              style: const TextStyle(
-                                color: uiPrimaryBlue,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
-                                fontFeatures: [FontFeature.tabularFigures()],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 6,
-                              children: [
-                                _chip(context, chipSol),
-                                _chip(context, chipSag, outlined: true),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: uiPrimaryLight,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 16,
-                              color: uiPrimaryBlue,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+              const SizedBox(width: 10),
+              Text(
+                kortAdi,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
                 ),
-              );
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _chip(BuildContext context, String text, {bool outlined = false}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: outlined
-            ? Colors.transparent
-            : uiAccentGreen.withValues(alpha: 0.12),
-        border: outlined ? Border.all(color: Colors.grey.shade300) : null,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: outlined ? Colors.grey.shade600 : uiAccentGreen,
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: Colors.grey.shade400,
+              ),
+            ],
+          ),
         ),
       ),
     );

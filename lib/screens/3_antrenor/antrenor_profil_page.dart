@@ -10,6 +10,7 @@ import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/uye/uye_api_serivce.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AntrenorProfilPage extends StatelessWidget {
   const AntrenorProfilPage({super.key});
@@ -20,90 +21,66 @@ class AntrenorProfilPage extends StatelessWidget {
       future: StorageService.antrenorBilgileriniGetir(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.1),
+                    Theme.of(context).colorScheme.surface,
+                  ],
+                ),
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
           );
         } else if (snapshot.hasError) {
           return Scaffold(
-            body: Center(child: Text('Bir hata oluştu: ${snapshot.error}')),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline_rounded,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Bir hata oluştu',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${snapshot.error}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
           );
         } else if (snapshot.data == null) {
           return const LoginPage();
         }
 
-        final antrenor = snapshot.data!;
-        return Scaffold(
-          appBar: AppBar(title: const Text('Profil')),
-          body: ListView(
-            children: [
-              _ProfileHeader(antrenor: antrenor),
-              const Divider(),
-              _ProfileTile(
-                icon: Icons.person,
-                title: 'Genel Bilgiler',
-                onTap: () => _navigate(
-                  context,
-                  title: 'Genel Bilgiler',
-                  data: {
-                    'Adı Soyadı': '${antrenor.adi} ${antrenor.soyadi}',
-                    'Aktiflik': antrenor.isActive ? 'Aktif' : 'Pasif',
-                    'Oluşturulma': _fmtDt(antrenor.createdAt),
-                  },
-                ),
-              ),
-              _ProfileTile(
-                icon: Icons.phone,
-                title: 'İletişim',
-                onTap: () => _navigate(
-                  context,
-                  title: 'İletişim',
-                  data: {
-                    'Telefon': antrenor.telefon ?? '-',
-                    'Mail': antrenor.ePosta ?? '-',
-                  },
-                ),
-              ),
-              const SizedBox(height: 8),
-              _ProfileTile(
-                icon: Icons.settings,
-                title: 'Ayarlar',
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const AntrenorSettingsPage()),
-                  );
-                },
-              ),
-            ],
-          ),
-        );
+        return _AntrenorProfilContent(antrenor: snapshot.data!);
       },
     );
   }
-
-  void _navigate(BuildContext ctx,
-      {required String title, required Map<String, String> data}) {
-    Navigator.of(ctx).push(
-      MaterialPageRoute(
-        builder: (_) => _ProfileDetailPage(title: title, data: data),
-      ),
-    );
-  }
-
-  static String _fmtDt(DateTime dt) {
-    final d = dt.toLocal();
-    String two(int v) => v.toString().padLeft(2, '0');
-    return '${two(d.day)}.${two(d.month)}.${d.year} ${two(d.hour)}:${two(d.minute)}';
-  }
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                   Header                                   */
-/* -------------------------------------------------------------------------- */
-
-class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader({required this.antrenor});
+class _AntrenorProfilContent extends StatelessWidget {
   final AntrenorModel antrenor;
+
+  const _AntrenorProfilContent({required this.antrenor});
 
   Color _colorFromHex(String? hex, {Color fallback = Colors.blueGrey}) {
     if (hex == null) return fallback;
@@ -115,62 +92,282 @@ class _ProfileHeader extends StatelessWidget {
     return fallback;
   }
 
+  static String _fmtDt(DateTime dt) {
+    final d = dt.toLocal();
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${two(d.day)}.${two(d.month)}.${d.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final renk = _colorFromHex(antrenor.renk, fallback: Colors.blueGrey);
+    final colorScheme = Theme.of(context).colorScheme;
+    final antrenorRenk =
+        _colorFromHex(antrenor.renk, fallback: colorScheme.primary);
 
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 36,
-            backgroundImage: (antrenor.profileImageUrl != null &&
-                    antrenor.profileImageUrl!.trim().isNotEmpty)
-                ? NetworkImage(antrenor.profileImageUrl!.trim())
-                : null,
-            child: (antrenor.profileImageUrl == null ||
-                    antrenor.profileImageUrl!.trim().isEmpty)
-                ? const Icon(Icons.person, size: 36)
-                : null,
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              antrenorRenk.withValues(alpha: 0.08),
+              colorScheme.surface,
+              colorScheme.secondary.withValues(alpha: 0.03),
+            ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${antrenor.adi} ${antrenor.soyadi}',
-                  style: Theme.of(context).textTheme.titleMedium,
+        ),
+        child: CustomScrollView(
+          slivers: [
+            // Modern SliverAppBar
+            SliverAppBar(
+              expandedHeight: 320,
+              pinned: true,
+              stretch: true,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              flexibleSpace: FlexibleSpaceBar(
+                background: _ProfileHeader(
+                  antrenor: antrenor,
+                  antrenorRenk: antrenorRenk,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  antrenor.ePosta ?? (antrenor.telefon ?? ''),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    Chip(
-                      label: Text(
-                        antrenor.isActive ? 'Aktif' : 'Pasif',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      backgroundColor:
-                          antrenor.isActive ? Colors.green : Colors.red,
+              ),
+              leading: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 20,
+                      color: colorScheme.onSurface,
                     ),
-                    Chip(
-                      label: Text(
-                        "Renk",
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      backgroundColor: renk,
+                  ),
+                ),
+              ),
+            ),
+
+            // İçerik
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Hızlı Bilgi Kartları
+                    _QuickInfoSection(
+                      antrenor: antrenor,
+                      antrenorRenk: antrenorRenk,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Menü Bölümü
+                    _MenuSection(
+                      antrenor: antrenor,
+                      antrenorRenk: antrenorRenk,
+                      formatDate: _fmtDt,
+                    ),
+
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Profile Header                                */
+/* -------------------------------------------------------------------------- */
+
+class _ProfileHeader extends StatelessWidget {
+  final AntrenorModel antrenor;
+  final Color antrenorRenk;
+
+  const _ProfileHeader({
+    required this.antrenor,
+    required this.antrenorRenk,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            antrenorRenk.withValues(alpha: 0.3),
+            antrenorRenk.withValues(alpha: 0.1),
+            colorScheme.surface,
+          ],
+          stops: const [0.0, 0.5, 1.0],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 48),
+
+              // Avatar
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      antrenorRenk,
+                      antrenorRenk.withValues(alpha: 0.6),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: antrenorRenk.withValues(alpha: 0.4),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-              ],
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colorScheme.surface,
+                  ),
+                  child: ClipOval(
+                    child: antrenor.profileImageUrl != null &&
+                            antrenor.profileImageUrl!.trim().isNotEmpty
+                        ? Image.network(
+                            antrenor.profileImageUrl!.trim(),
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                _buildAvatarPlaceholder(colorScheme),
+                          )
+                        : _buildAvatarPlaceholder(colorScheme),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // İsim
+              Text(
+                '${antrenor.adi} ${antrenor.soyadi}',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                  letterSpacing: -0.5,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // İletişim
+              if (antrenor.ePosta != null || antrenor.telefon != null)
+                Text(
+                  antrenor.ePosta ?? antrenor.telefon ?? '',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+
+              const SizedBox(height: 12),
+
+              // Durum Badge'leri
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _StatusBadge(
+                    label: antrenor.isActive ? 'Aktif' : 'Pasif',
+                    color: antrenor.isActive ? Colors.green : Colors.red,
+                    icon: antrenor.isActive
+                        ? Icons.check_circle_outline
+                        : Icons.cancel_outlined,
+                  ),
+                  _StatusBadge(
+                    label: 'Antrenör',
+                    color: antrenorRenk,
+                    icon: Icons.sports_tennis,
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarPlaceholder(ColorScheme colorScheme) {
+    return Container(
+      color: colorScheme.surfaceContainerHighest,
+      child: Center(
+        child: Text(
+          '${antrenor.adi[0]}${antrenor.soyadi[0]}',
+          style: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+            color: antrenorRenk,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+  final IconData icon;
+
+  const _StatusBadge({
+    required this.label,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color,
             ),
           ),
         ],
@@ -180,86 +377,69 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                                   Tiles                                    */
+/*                            Quick Info Section                              */
 /* -------------------------------------------------------------------------- */
 
-class _ProfileTile extends StatelessWidget {
-  const _ProfileTile({
-    required this.icon,
-    required this.title,
-    required this.onTap,
+class _QuickInfoSection extends StatelessWidget {
+  final AntrenorModel antrenor;
+  final Color antrenorRenk;
+
+  const _QuickInfoSection({
+    required this.antrenor,
+    required this.antrenorRenk,
   });
 
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: onTap,
-    );
-  }
-}
+    final colorScheme = Theme.of(context).colorScheme;
 
-/* -------------------------------------------------------------------------- */
-/*                                 Detail Page                                */
-/* -------------------------------------------------------------------------- */
-
-class _ProfileDetailPage extends StatelessWidget {
-  const _ProfileDetailPage({required this.title, required this.data});
-
-  final String title;
-  final Map<String, String> data;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemBuilder: (_, index) {
-          final key = data.keys.elementAt(index);
-          final value = data[key] ?? '-';
-          return _ProfileInfoRow(label: key, value: value);
-        },
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemCount: data.length,
-      ),
-    );
-  }
-}
-
-class _ProfileInfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _ProfileInfoRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          flex: 2,
-          child: Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          child: _QuickInfoCard(
+            icon: Icons.phone_outlined,
+            label: 'Telefon',
+            value: antrenor.telefon ?? 'Belirtilmedi',
+            color: antrenorRenk,
+            onTap: antrenor.telefon != null
+                ? () {
+                    HapticFeedback.lightImpact();
+                    Clipboard.setData(ClipboardData(text: antrenor.telefon!));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Telefon kopyalandı'),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    );
+                  }
+                : null,
           ),
         ),
+        const SizedBox(width: 12),
         Expanded(
-          flex: 3,
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Text(value),
+          child: _QuickInfoCard(
+            icon: Icons.email_outlined,
+            label: 'E-posta',
+            value: antrenor.ePosta ?? 'Belirtilmedi',
+            color: colorScheme.secondary,
+            onTap: antrenor.ePosta != null
+                ? () {
+                    HapticFeedback.lightImpact();
+                    Clipboard.setData(ClipboardData(text: antrenor.ePosta!));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('E-posta kopyalandı'),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    );
+                  }
+                : null,
           ),
         ),
       ],
@@ -267,66 +447,578 @@ class _ProfileInfoRow extends StatelessWidget {
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                   SETTINGS                                 */
-/* -------------------------------------------------------------------------- */
+class _QuickInfoCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+  final VoidCallback? onTap;
 
-class AntrenorSettingsPage extends StatelessWidget {
-  const AntrenorSettingsPage({super.key});
+  const _QuickInfoCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Ayarlar')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: 22, color: color),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (onTap != null) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.copy_rounded,
+                      size: 12,
+                      color: color.withValues(alpha: 0.7),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Kopyala',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: color.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Menu Section                                  */
+/* -------------------------------------------------------------------------- */
+
+class _MenuSection extends StatelessWidget {
+  final AntrenorModel antrenor;
+  final Color antrenorRenk;
+  final String Function(DateTime) formatDate;
+
+  const _MenuSection({
+    required this.antrenor,
+    required this.antrenorRenk,
+    required this.formatDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Profil Bilgileri
+        _SectionTitle(title: 'Profil Bilgileri', icon: Icons.person_outline),
+        const SizedBox(height: 12),
+        _MenuCard(
+          children: [
+            _ModernMenuTile(
+              icon: Icons.badge_outlined,
+              title: 'Genel Bilgiler',
+              subtitle: 'Ad, soyad ve hesap detayları',
+              color: antrenorRenk,
+              onTap: () => _showDetailSheet(
+                context,
+                title: 'Genel Bilgiler',
+                icon: Icons.badge_outlined,
+                color: antrenorRenk,
+                items: [
+                  _DetailItem(
+                      'Adı Soyadı', '${antrenor.adi} ${antrenor.soyadi}'),
+                  _DetailItem('Durum', antrenor.isActive ? 'Aktif' : 'Pasif'),
+                  _DetailItem('Kayıt Tarihi', formatDate(antrenor.createdAt)),
+                ],
+              ),
+            ),
+            _ModernMenuTile(
+              icon: Icons.contact_phone_outlined,
+              title: 'İletişim Bilgileri',
+              subtitle: 'Telefon ve e-posta',
+              color: Colors.teal,
+              onTap: () => _showDetailSheet(
+                context,
+                title: 'İletişim Bilgileri',
+                icon: Icons.contact_phone_outlined,
+                color: Colors.teal,
+                items: [
+                  _DetailItem('Telefon', antrenor.telefon ?? 'Belirtilmedi'),
+                  _DetailItem('E-posta', antrenor.ePosta ?? 'Belirtilmedi'),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 24),
+
+        // Ayarlar
+        _SectionTitle(title: 'Ayarlar', icon: Icons.settings_outlined),
+        const SizedBox(height: 12),
+        _MenuCard(
+          children: [
+            _ModernMenuTile(
+              icon: Icons.lock_reset_rounded,
+              title: 'Şifreyi Değiştir',
+              subtitle: 'Hesap güvenliği',
+              color: Colors.orange,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AntrenorChangePasswordPage(),
+                ),
+              ),
+            ),
+            _ModernMenuTile(
+              icon: Icons.privacy_tip_outlined,
+              title: 'KVKK Aydınlatma Metni',
+              subtitle: 'Veri işleme ve saklama bilgileri',
+              color: Colors.blue,
+              onTap: () => showKvkkAydinlatmaModal(context),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 24),
+
+        // Tehlikeli Bölge
+        _SectionTitle(
+          title: 'Tehlikeli Bölge',
+          icon: Icons.warning_amber_rounded,
+          color: colorScheme.error,
+        ),
+        const SizedBox(height: 12),
+        _MenuCard(
+          borderColor: colorScheme.error.withValues(alpha: 0.2),
+          children: [
+            _ModernMenuTile(
+              icon: Icons.delete_forever_rounded,
+              title: 'Hesabı Kalıcı Sil',
+              subtitle: 'Tüm verilerin kaldırılması',
+              color: colorScheme.error,
+              isDestructive: true,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AntrenorDeleteUserAccountPage(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _showDetailSheet(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color color,
+    required List<_DetailItem> items,
+  }) {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _DetailSheet(
+        title: title,
+        icon: icon,
+        color: color,
+        items: items,
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color? color;
+
+  const _SectionTitle({
+    required this.title,
+    required this.icon,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final displayColor = color ?? colorScheme.primary;
+
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: displayColor),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: displayColor,
+            letterSpacing: 0.3,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MenuCard extends StatelessWidget {
+  final List<Widget> children;
+  final Color? borderColor;
+
+  const _MenuCard({
+    required this.children,
+    this.borderColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color:
+              borderColor ?? colorScheme.outlineVariant.withValues(alpha: 0.3),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          children: children.asMap().entries.map((entry) {
+            final isLast = entry.key == children.length - 1;
+            return Column(
+              children: [
+                entry.value,
+                if (!isLast)
+                  Divider(
+                    height: 1,
+                    indent: 72,
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  ),
+              ],
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModernMenuTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+  final bool isDestructive;
+
+  const _ModernMenuTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+    this.isDestructive = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 22),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: isDestructive
+                            ? colorScheme.error
+                            : colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Detail Sheet                                  */
+/* -------------------------------------------------------------------------- */
+
+class _DetailItem {
+  final String label;
+  final String value;
+
+  _DetailItem(this.label, this.value);
+}
+
+class _DetailSheet extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final List<_DetailItem> items;
+
+  const _DetailSheet({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const _SectionHeader(title: 'Kullanıcı Ayarları'),
-          _SettingCard(
-            children: [
-              _SettingsTile(
-                icon: Icons.lock_reset,
-                title: 'Şifreyi Değiştir',
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const AntrenorChangePasswordPage()),
-                  );
-                },
-              ),
-              _SettingsTile(
-                icon: Icons.delete_forever_rounded,
-                title: 'Hesabı Kalıcı Sil',
-                subtitle: 'Tüm kişisel verilerin kaldırılması',
-                isDestructive: true,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (_) => const AntrenorDeleteUserAccountPage()),
-                  );
-                },
-              ),
-            ],
+          // Handle
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: colorScheme.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-          const SizedBox(height: 16),
-          const _SectionHeader(title: 'Gizlilik ve KVKK'),
-          _SettingCard(
-            children: [
-              _SettingsTile(
-                icon: Icons.privacy_tip_outlined,
-                title: 'KVKK Aydınlatma Metni',
-                subtitle: 'Veri işleme ve saklama bilgileri',
-                onTap: () => showKvkkAydinlatmaModal(context),
-              ),
-            ],
+
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(icon, size: 32, color: color),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Items
+                Container(
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Column(
+                    children: items.asMap().entries.map((entry) {
+                      final isLast = entry.key == items.length - 1;
+                      final item = entry.value;
+
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    item.label,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    item.value,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: colorScheme.onSurface,
+                                    ),
+                                    textAlign: TextAlign.end,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (!isLast)
+                            Divider(
+                              height: 1,
+                              color: colorScheme.outlineVariant
+                                  .withValues(alpha: 0.3),
+                            ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Close Button
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.tonal(
+                    onPressed: () => Navigator.pop(context),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Kapat'),
+                  ),
+                ),
+              ],
+            ),
           ),
+
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
         ],
       ),
     );
   }
 }
 
-/* --------------------------- Change Password Page -------------------------- */
+/* -------------------------------------------------------------------------- */
+/*                           Change Password Page                             */
+/* -------------------------------------------------------------------------- */
 
 class AntrenorChangePasswordPage extends StatefulWidget {
   const AntrenorChangePasswordPage({super.key});
@@ -367,14 +1059,18 @@ class _AntrenorChangePasswordPageState
     if (!_formKey.currentState!.validate()) return;
     if (_yeniCtrl.text != _yeni2Ctrl.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Yeni şifreler eşleşmiyor.')),
+        SnackBar(
+          content: const Text('Yeni şifreler eşleşmiyor.'),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
       );
       return;
     }
 
     setState(() => _isSubmitting = true);
     try {
-      // Not: Backend tarafında antrenör kullanıcıları da aynı endpointi kullanıyorsa sorunsuz çalışır.
       final res = await UyeApiService.kullaniciSifreDegistir(
         eskiSifre: _eskiCtrl.text.trim(),
         yeniSifre: _yeniCtrl.text.trim(),
@@ -396,73 +1092,168 @@ class _AntrenorChangePasswordPageState
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Şifreyi Değiştir')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.orange.withValues(alpha: 0.1),
+              colorScheme.surface,
+            ],
+          ),
+        ),
+        child: SafeArea(
           child: Column(
             children: [
-              TextFormField(
-                controller: _eskiCtrl,
-                obscureText: !_showOld,
-                decoration: InputDecoration(
-                  labelText: 'Mevcut Şifre',
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    onPressed: () => setState(() => _showOld = !_showOld),
-                    icon: Icon(
-                        _showOld ? Icons.visibility_off : Icons.visibility),
-                  ),
+              // AppBar
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          size: 20,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Şifreyi Değiştir',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
                 ),
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? 'Zorunlu alan.' : null,
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _yeniCtrl,
-                obscureText: !_showNew,
-                decoration: InputDecoration(
-                  labelText: 'Yeni Şifre',
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    onPressed: () => setState(() => _showNew = !_showNew),
-                    icon: Icon(
-                        _showNew ? Icons.visibility_off : Icons.visibility),
+
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
+                    key: _formKey,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    child: Column(
+                      children: [
+                        // Icon
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.lock_reset_rounded,
+                            size: 48,
+                            color: Colors.orange,
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // Form Fields
+                        _ModernTextField(
+                          controller: _eskiCtrl,
+                          label: 'Mevcut Şifre',
+                          obscureText: !_showOld,
+                          prefixIcon: Icons.lock_outline,
+                          suffixIcon: IconButton(
+                            onPressed: () =>
+                                setState(() => _showOld = !_showOld),
+                            icon: Icon(_showOld
+                                ? Icons.visibility_off
+                                : Icons.visibility),
+                          ),
+                          validator: (v) =>
+                              (v == null || v.isEmpty) ? 'Zorunlu alan.' : null,
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _ModernTextField(
+                          controller: _yeniCtrl,
+                          label: 'Yeni Şifre',
+                          obscureText: !_showNew,
+                          prefixIcon: Icons.lock_rounded,
+                          suffixIcon: IconButton(
+                            onPressed: () =>
+                                setState(() => _showNew = !_showNew),
+                            icon: Icon(_showNew
+                                ? Icons.visibility_off
+                                : Icons.visibility),
+                          ),
+                          validator: _validateNew,
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        _ModernTextField(
+                          controller: _yeni2Ctrl,
+                          label: 'Yeni Şifre (Tekrar)',
+                          obscureText: !_showNew2,
+                          prefixIcon: Icons.lock_rounded,
+                          suffixIcon: IconButton(
+                            onPressed: () =>
+                                setState(() => _showNew2 = !_showNew2),
+                            icon: Icon(_showNew2
+                                ? Icons.visibility_off
+                                : Icons.visibility),
+                          ),
+                          validator: (v) =>
+                              (v == null || v.isEmpty) ? 'Zorunlu alan.' : null,
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // Submit Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: _isSubmitting ? null : _submit,
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor: Colors.orange,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: _isSubmitting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Şifreyi Değiştir',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                validator: _validateNew,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _yeni2Ctrl,
-                obscureText: !_showNew2,
-                decoration: InputDecoration(
-                  labelText: 'Yeni Şifre (Tekrar)',
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    onPressed: () => setState(() => _showNew2 = !_showNew2),
-                    icon: Icon(
-                        _showNew2 ? Icons.visibility_off : Icons.visibility),
-                  ),
-                ),
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? 'Zorunlu alan.' : null,
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _isSubmitting ? null : _submit,
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Kaydet'),
                 ),
               ),
             ],
@@ -473,7 +1264,63 @@ class _AntrenorChangePasswordPageState
   }
 }
 
-/* ------------------------------ Delete Account ----------------------------- */
+class _ModernTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final bool obscureText;
+  final IconData prefixIcon;
+  final Widget? suffixIcon;
+  final String? Function(String?)? validator;
+
+  const _ModernTextField({
+    required this.controller,
+    required this.label,
+    this.obscureText = false,
+    required this.prefixIcon,
+    this.suffixIcon,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(prefixIcon),
+        suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.orange, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: colorScheme.error),
+        ),
+      ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                           Delete Account Page                              */
+/* -------------------------------------------------------------------------- */
 
 class AntrenorDeleteUserAccountPage extends StatefulWidget {
   const AntrenorDeleteUserAccountPage({super.key});
@@ -499,7 +1346,6 @@ class _AntrenorDeleteUserAccountPageState
   Future<void> _performDelete() async {
     setState(() => _isLoading = true);
     try {
-      // Not: Backend tarafında antrenör kullanıcıları da aynı endpointi kullanıyorsa sorunsuz çalışır.
       final res = await UyeApiService.kullaniciSil();
       await StorageService.clearAll();
 
@@ -520,294 +1366,380 @@ class _AntrenorDeleteUserAccountPageState
   }
 
   void _showFinalSheet() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     showModalBottomSheet(
       context: context,
-      useSafeArea: true,
-      showDragHandle: true,
       isScrollControlled: true,
-      builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16 + 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, size: 40),
-              const SizedBox(height: 8),
-              const Text(
-                'Bu işlem geri alınamaz.',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Hesabın ve ilişkili kişisel verilerin kalıcı olarak silinecek. '
-                'Mevzuat gereği saklanması zorunlu kayıtlar varsa, kişisel bağın koparılarak anonimleştirilir.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade700),
-              ),
-              const SizedBox(height: 16),
-              Row(
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
                 children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: const Text('Vazgeç'),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: colorScheme.error.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.warning_amber_rounded,
+                      size: 48,
+                      color: colorScheme.error,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () {
-                              Navigator.pop(ctx);
-                              _performDelete();
-                            },
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child:
-                                  CircularProgressIndicator(strokeWidth: 2.2),
-                            )
-                          : const Text('Evet, kalıcı sil'),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Bu işlem geri alınamaz!',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.error,
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Hesabın ve ilişkili kişisel verilerin kalıcı olarak silinecek. '
+                    'Mevzuat gereği saklanması zorunlu kayıtlar varsa, kişisel bağın koparılarak anonimleştirilir.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Vazgeç'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () {
+                                  Navigator.pop(ctx);
+                                  _performDelete();
+                                },
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            backgroundColor: colorScheme.error,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Evet, Kalıcı Sil'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
+            ),
+            SizedBox(height: MediaQuery.of(ctx).padding.bottom + 8),
+          ],
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Hesabı Kalıcı Sil')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _DangerCard(
-            title: 'Dikkat!',
-            points: const [
-              'Bu işlem geri alınamaz.',
-              'Tüm profil verilerin ve uygulama içi içeriklerin kaldırılacaktır.',
-              'Mevzuat gereği saklanması zorunlu finansal kayıtlar anonimleştirilebilir.',
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              colorScheme.error.withValues(alpha: 0.08),
+              colorScheme.surface,
             ],
           ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _confirmCtrl,
-                  textCapitalization: TextCapitalization.none,
-                  decoration: InputDecoration(
-                    labelText: 'Onay için "sil" yazın',
-                    hintText: 'sil',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onChanged: (_) => setState(() {}),
-                ),
-                const SizedBox(height: 12),
-                Row(
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // AppBar
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
                   children: [
-                    Expanded(
-                      child: FilledButton.tonal(
-                        onPressed: () => Navigator.of(context).maybePop(),
-                        child: const Text('Vazgeç'),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          size: 20,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: _canProceed
-                              ? theme.colorScheme.error
-                              : theme.colorScheme.error.withAlpha(153),
-                          foregroundColor: theme.colorScheme.onError,
-                        ),
-                        onPressed:
-                            _canProceed && !_isLoading ? _showFinalSheet : null,
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 18,
-                                width: 18,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2.2),
-                              )
-                            : const Text('Hesabı Kalıcı Sil'),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Hesabı Kalıcı Sil',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.error,
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+              ),
 
-/* -------------------------------------------------------------------------- */
-/*                               Helper Widgets                               */
-/* -------------------------------------------------------------------------- */
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      // Warning Card
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: colorScheme.error.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: colorScheme.error.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              size: 56,
+                              color: colorScheme.error,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Dikkat!',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.error,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            _WarningPoint(
+                              text: 'Bu işlem geri alınamaz.',
+                              color: colorScheme.error,
+                            ),
+                            const SizedBox(height: 8),
+                            _WarningPoint(
+                              text:
+                                  'Tüm profil verilerin ve uygulama içi içeriklerin kaldırılacaktır.',
+                              color: colorScheme.error,
+                            ),
+                            const SizedBox(height: 8),
+                            _WarningPoint(
+                              text:
+                                  'Mevzuat gereği saklanması zorunlu finansal kayıtlar anonimleştirilebilir.',
+                              color: colorScheme.error,
+                            ),
+                          ],
+                        ),
+                      ),
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title});
-  final String title;
+                      const SizedBox(height: 24),
 
-  @override
-  Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8, top: 8),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          letterSpacing: 0.8,
-          fontWeight: FontWeight.w700,
-          color: c.primary.withAlpha(230),
-        ),
-      ),
-    );
-  }
-}
-
-class _SettingCard extends StatelessWidget {
-  const _SettingCard({required this.children});
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    final cardShape =
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(16));
-    return Card(
-      elevation: 0,
-      margin: EdgeInsets.zero,
-      shape: cardShape,
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: children
-            .expand((w) => [
-                  w,
-                  if (w != children.last)
-                    Divider(
-                      height: 1,
-                      thickness: 0.6,
-                      indent: 56,
-                      color: Colors.grey.shade200,
-                    ),
-                ])
-            .toList(),
-      ),
-    );
-  }
-}
-
-class _SettingsTile extends StatelessWidget {
-  const _SettingsTile({
-    required this.icon,
-    required this.title,
-    this.subtitle,
-    required this.onTap,
-    this.isDestructive = false,
-  });
-
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final VoidCallback onTap;
-  final bool isDestructive;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isDestructive
-        ? Theme.of(context).colorScheme.error
-        : Theme.of(context).colorScheme.onSurface;
-
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: isDestructive
-              ? Theme.of(context).colorScheme.error.withAlpha(30)
-              : Theme.of(context).colorScheme.primary.withAlpha(20),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          icon,
-          color: isDestructive
-              ? Theme.of(context).colorScheme.error
-              : Theme.of(context).colorScheme.primary,
-        ),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: isDestructive ? color : null,
-        ),
-      ),
-      subtitle: subtitle == null ? null : Text(subtitle!),
-      onTap: onTap,
-    );
-  }
-}
-
-class _DangerCard extends StatelessWidget {
-  const _DangerCard({required this.title, required this.points});
-  final String title;
-  final List<String> points;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        color: c.error.withAlpha(20),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: c.error.withAlpha(60)),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Icon(Icons.warning_amber_rounded, color: c.error, size: 36),
-          const SizedBox(height: 8),
-          Text(title,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
-          ...points.map(
-            (e) => Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 4),
-                  child: Icon(Icons.circle, size: 6),
+                      // Confirmation Card
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: colorScheme.outlineVariant
+                                .withValues(alpha: 0.3),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colorScheme.shadow.withValues(alpha: 0.05),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Onay',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Devam etmek için aşağıya "sil" yazın.',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextField(
+                              controller: _confirmCtrl,
+                              textCapitalization: TextCapitalization.none,
+                              decoration: InputDecoration(
+                                hintText: 'sil',
+                                filled: true,
+                                fillColor: colorScheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.3),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.error,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              onChanged: (_) => setState(() {}),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: const Text('Vazgeç'),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: FilledButton(
+                                    onPressed: _canProceed && !_isLoading
+                                        ? _showFinalSheet
+                                        : null,
+                                    style: FilledButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 14),
+                                      backgroundColor: _canProceed
+                                          ? colorScheme.error
+                                          : colorScheme.error
+                                              .withValues(alpha: 0.3),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: _isLoading
+                                        ? const SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : const Text('Hesabı Sil'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(child: Text(e)),
-              ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WarningPoint extends StatelessWidget {
+  final String text;
+  final Color color;
+
+  const _WarningPoint({required this.text, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 6),
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              color: color.withValues(alpha: 0.9),
+              height: 1.4,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

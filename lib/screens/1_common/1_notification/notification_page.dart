@@ -9,7 +9,7 @@ import 'package:fitcall/services/core/notification_service.dart';
 import 'package:flutter/material.dart';
 
 /// ─────────────────────────────────────────────────────────────────────────
-///  NOTIFICATION PAGE – Listeyi burada çeker
+///  NOTIFICATION PAGE
 /// ─────────────────────────────────────────────────────────────────────────
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
@@ -32,8 +32,7 @@ class _NotificationPageState extends State<NotificationPage> {
   Future<List<NotificationModel>> _fetchNotifications() async {
     setState(() => _isLoading = true);
     try {
-      final res = await NotificationService.fetchNotifications(
-          context); // ApiResult<List<NotificationModel>>
+      final res = await NotificationService.fetchNotifications(context);
       final list = res.data ?? <NotificationModel>[];
       setState(() {
         _notifications = list;
@@ -54,8 +53,8 @@ class _NotificationPageState extends State<NotificationPage> {
   Future<void> _markNotificationRead(NotificationModel notif) async {
     if (!notif.isUnread) return;
     try {
-      final res = await NotificationService.markNotificationsRead(
-          context, [notif.id]); // ApiResult<bool>
+      final res =
+          await NotificationService.markNotificationsRead(context, [notif.id]);
       final ok = res.data == true;
       if (ok) {
         setState(() {
@@ -76,8 +75,7 @@ class _NotificationPageState extends State<NotificationPage> {
     if (ids.isEmpty) return;
     setState(() => _isLoading = true);
     try {
-      final res = await NotificationService.markNotificationsRead(
-          context, ids); // ApiResult<bool>
+      final res = await NotificationService.markNotificationsRead(context, ids);
       final ok = res.data == true;
       setState(() {
         if (ok) {
@@ -120,6 +118,8 @@ class _NotificationPageState extends State<NotificationPage> {
     ];
   }
 
+  int get _unreadCount => _notifications.where((n) => n.isUnread).length;
+
   /* -------------------- BUILD -------------------- */
 
   @override
@@ -127,129 +127,173 @@ class _NotificationPageState extends State<NotificationPage> {
     final groups = _groupByDate();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bildirimler'),
-        actions: [
-          if (_notifications.any((n) => n.isUnread))
-            IconButton(
-              tooltip: 'Tümünü okundu işaretle',
-              icon: const Icon(Icons.mark_email_read_rounded),
-              onPressed: _markAllRead,
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: _isLoading
+                  ? _buildLoadingState()
+                  : _notifications.isEmpty
+                      ? _buildEmptyState()
+                      : RefreshIndicator(
+                          onRefresh: _fetchNotifications,
+                          color: const Color(0xFF3B82F6),
+                          child: ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(
+                              parent: BouncingScrollPhysics(),
+                            ),
+                            padding: const EdgeInsets.only(bottom: 24),
+                            itemCount: groups.length,
+                            itemBuilder: (context, index) {
+                              final group = groups[index];
+                              return _buildGroup(
+                                group['title'] as String,
+                                group['items'] as List<NotificationModel>,
+                              );
+                            },
+                          ),
+                        ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /* -------------------- HEADER -------------------- */
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(8, 8, 16, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+              const Expanded(
+                child: Text(
+                  'Bildirimler',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E293B),
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ),
+              if (_unreadCount > 0)
+                TextButton.icon(
+                  onPressed: _markAllRead,
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF3B82F6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  icon: const Icon(Icons.done_all_rounded, size: 18),
+                  label: const Text(
+                    'Tümü Okundu',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                ),
+            ],
+          ),
+          if (_unreadCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(left: 16, top: 4),
+              child: Row(
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$_unreadCount okunmamış',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF3B82F6),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _notifications.isEmpty
-              ? _buildNoNotifications()
-              : ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: groups
-                      .map((g) => _buildGroup(g['title'], g['items']))
-                      .cast<Widget>()
-                      .toList(),
-                ),
     );
   }
+
+  /* -------------------- GROUP -------------------- */
 
   Widget _buildGroup(String title, List<NotificationModel> items) {
     if (items.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade500,
+              letterSpacing: 0.3,
             ),
           ),
-          ...items.map(_buildTile),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTile(NotificationModel notif) {
-    final isUnread = notif.isUnread;
-    final bgColor = isUnread ? Colors.blue.shade50 : Colors.white;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha((0.05 * 255).round()),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          )
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-        leading: CircleAvatar(
-          backgroundColor: Colors.blue,
-          child: const Icon(Icons.notifications, color: Colors.white, size: 20),
         ),
-        title: Text(
-          notif.title,
-          style: TextStyle(
-            fontWeight: isUnread ? FontWeight.bold : FontWeight.w500,
-          ),
-        ),
-        subtitle: Text(notif.subject),
-        trailing: isUnread
-            ? Container(
-                width: 10,
-                height: 10,
-                decoration: const BoxDecoration(
-                  color: Colors.red,
-                  shape: BoxShape.circle,
-                ),
-              )
-            : null,
-        onTap: () => _onNotificationTap(notif),
-      ),
+        ...items.map((n) => _NotificationTile(
+              notification: n,
+              onTap: () => _onNotificationTap(n),
+            )),
+      ],
     );
   }
 
   /* -------------------- TAP LOGIC -------------------- */
+
   Future<void> _onNotificationTap(NotificationModel notif) async {
-    // Ders teyit mi?
     if (_isDersTeyit(notif)) {
       await Navigator.pushNamed(
         context,
         routeEnums[SayfaAdi.dersTeyit]!,
         arguments: {
           'notification_id': notif.id,
-          'generic_id': notif.genericId, // uye_id
-          'model_own_id': notif.modelOwnId // etkinlik_id
+          'generic_id': notif.genericId,
+          'model_own_id': notif.modelOwnId,
         },
       );
       _markNotificationRead(notif);
       return;
     }
 
-    // Normal bildirim → detay sheet
     await showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (_) => _NotificationDetailSheet(notification: notif),
     );
     _markNotificationRead(notif);
@@ -261,26 +305,270 @@ class _NotificationPageState extends State<NotificationPage> {
         n.modelOwnId != null;
   }
 
-  /* -------------------- No Notifications -------------------- */
+  /* -------------------- STATES -------------------- */
 
-  Widget _buildNoNotifications() {
+  Widget _buildLoadingState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.notifications_off, size: 64, color: Colors.grey.shade400),
+          SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              color: Colors.grey.shade400,
+            ),
+          ),
           const SizedBox(height: 16),
           Text(
-            "Şu anda herhangi bir bildirim bulunmuyor.",
-            textAlign: TextAlign.center,
+            'Bildirimler yükleniyor...',
             style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 18,
+              color: Colors.grey.shade500,
+              fontSize: 14,
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.notifications_off_outlined,
+              size: 36,
+              color: Colors.grey.shade400,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Bildirim yok',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Yeni bildirimler burada görünecek',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// ─────────────────────────────────────────────────────────────────────────
+///  NOTIFICATION TILE
+/// ─────────────────────────────────────────────────────────────────────────
+class _NotificationTile extends StatelessWidget {
+  final NotificationModel notification;
+  final VoidCallback onTap;
+
+  const _NotificationTile({
+    required this.notification,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isUnread = notification.isUnread;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: isUnread ? const Color(0xFFF0F7FF) : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isUnread
+              ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
+              : Colors.grey.shade100,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon
+                _buildIcon(),
+                const SizedBox(width: 12),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              notification.title,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: isUnread
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
+                                color: const Color(0xFF1E293B),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _formatTime(notification.timestamp),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        notification.subject,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                          height: 1.4,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                // Unread indicator
+                if (isUnread)
+                  Container(
+                    margin: const EdgeInsets.only(left: 8, top: 4),
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF3B82F6),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIcon() {
+    final iconData = _getNotificationIcon();
+    final iconColor = _getIconColor();
+
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: iconColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(
+        iconData,
+        size: 20,
+        color: iconColor,
+      ),
+    );
+  }
+
+  IconData _getNotificationIcon() {
+    switch (notification.type) {
+      case NotificationType.DT: // Ders Teyidi
+        return Icons.event_available_rounded;
+      case NotificationType.DI: // Ders İptal Edildi
+        return Icons.event_busy_rounded;
+      case NotificationType.GO: // Geciken Ödeme
+        return Icons.payment_rounded;
+      case NotificationType.PB: // Paket Bitiyor
+      case NotificationType.PS: // Paket Süresi Doluyor
+        return Icons.hourglass_bottom_rounded;
+      case NotificationType.PBT: // Paket Bitti
+        return Icons.inventory_2_outlined;
+      case NotificationType.PSA: // Paket Satın Alındı
+        return Icons.shopping_bag_rounded;
+      case NotificationType.PHG: // Paket Hak Güncelleme
+        return Icons.sync_rounded;
+      case NotificationType.TK: // Telafi Kullanıldı
+        return Icons.replay_rounded;
+      case NotificationType.THI: // Telafi Hakkı İade Edildi
+        return Icons.undo_rounded;
+      case NotificationType.UT: // Üyelik Tanımlandı
+        return Icons.card_membership_rounded;
+      case NotificationType.AD: // Antrenör Değişikliği
+        return Icons.swap_horiz_rounded;
+    }
+  }
+
+  Color _getIconColor() {
+    switch (notification.type) {
+      case NotificationType.DT: // Ders Teyidi
+        return const Color(0xFF10B981); // Green
+      case NotificationType.DI: // Ders İptal Edildi
+        return const Color(0xFFEF4444); // Red
+      case NotificationType.GO: // Geciken Ödeme
+        return const Color(0xFFEF4444); // Red
+      case NotificationType.PB: // Paket Bitiyor
+      case NotificationType.PS: // Paket Süresi Doluyor
+        return const Color(0xFFF59E0B); // Amber
+      case NotificationType.PBT: // Paket Bitti
+        return const Color(0xFF64748B); // Gray
+      case NotificationType.PSA: // Paket Satın Alındı
+        return const Color(0xFF10B981); // Green
+      case NotificationType.PHG: // Paket Hak Güncelleme
+        return const Color(0xFF3B82F6); // Blue
+      case NotificationType.TK: // Telafi Kullanıldı
+        return const Color(0xFF8B5CF6); // Purple
+      case NotificationType.THI: // Telafi Hakkı İade Edildi
+        return const Color(0xFF10B981); // Green
+      case NotificationType.UT: // Üyelik Tanımlandı
+        return const Color(0xFF3B82F6); // Blue
+      case NotificationType.AD: // Antrenör Değişikliği
+        return const Color(0xFFF59E0B); // Gray
+    }
+  }
+
+  String _formatTime(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+
+    if (diff.inMinutes < 1) return 'Şimdi';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} dk';
+    if (diff.inHours < 24) return '${diff.inHours} sa';
+    if (diff.inDays < 7) return '${diff.inDays} gün';
+    return '${dt.day}.${dt.month}';
   }
 }
 
@@ -293,44 +581,206 @@ class _NotificationDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 24, left: 16, right: 16, bottom: 32),
+    return Container(
+      margin: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            notification.title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            notification.subject,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          Text(notification.body),
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Text(
-              _prettyDate(notification.timestamp),
-              style: TextStyle(color: Colors.grey.shade600),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with icon
+                Row(
+                  children: [
+                    _buildTypeIcon(),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            notification.title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _formatDateTime(notification.timestamp),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Subject
+                Text(
+                  notification.subject,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF334155),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Body
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    notification.body,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.6,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Close button
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFFF1F5F9),
+                      foregroundColor: const Color(0xFF475569),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Kapat',
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom),
         ],
       ),
     );
   }
 
-  static String _prettyDate(DateTime dt) {
-    final now = DateTime.now();
-    if (dt.difference(now).inDays == 0) {
-      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  Widget _buildTypeIcon() {
+    final iconData = _getIcon();
+    final color = _getColor();
+
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(iconData, size: 24, color: color),
+    );
+  }
+
+  IconData _getIcon() {
+    switch (notification.type) {
+      case NotificationType.DT: // Ders Teyidi
+        return Icons.event_available_rounded;
+      case NotificationType.DI: // Ders İptal Edildi
+        return Icons.event_busy_rounded;
+      case NotificationType.GO: // Geciken Ödeme
+        return Icons.payment_rounded;
+      case NotificationType.PB: // Paket Bitiyor
+      case NotificationType.PS: // Paket Süresi Doluyor
+        return Icons.hourglass_bottom_rounded;
+      case NotificationType.PBT: // Paket Bitti
+        return Icons.inventory_2_outlined;
+      case NotificationType.PSA: // Paket Satın Alındı
+        return Icons.shopping_bag_rounded;
+      case NotificationType.PHG: // Paket Hak Güncelleme
+        return Icons.sync_rounded;
+      case NotificationType.TK: // Telafi Kullanıldı
+        return Icons.replay_rounded;
+      case NotificationType.THI: // Telafi Hakkı İade Edildi
+        return Icons.undo_rounded;
+      case NotificationType.UT: // Üyelik Tanımlandı
+        return Icons.card_membership_rounded;
+      case NotificationType.AD: // Antrenör Değişikliği
+        return Icons.swap_horiz_rounded;
     }
-    return '${dt.day}.${dt.month}.${dt.year}';
+  }
+
+  Color _getColor() {
+    switch (notification.type) {
+      case NotificationType.DT: // Ders Teyidi
+        return const Color(0xFF10B981); // Green
+      case NotificationType.DI: // Ders İptal Edildi
+        return const Color(0xFFEF4444); // Red
+      case NotificationType.GO: // Geciken Ödeme
+        return const Color(0xFFEF4444); // Red
+      case NotificationType.PB: // Paket Bitiyor
+      case NotificationType.PS: // Paket Süresi Doluyor
+        return const Color(0xFFF59E0B); // Amber
+      case NotificationType.PBT: // Paket Bitti
+        return const Color(0xFF64748B); // Gray
+      case NotificationType.PSA: // Paket Satın Alındı
+        return const Color(0xFF10B981); // Green
+      case NotificationType.PHG: // Paket Hak Güncelleme
+        return const Color(0xFF3B82F6); // Blue
+      case NotificationType.TK: // Telafi Kullanıldı
+        return const Color(0xFF8B5CF6); // Purple
+      case NotificationType.THI: // Telafi Hakkı İade Edildi
+        return const Color(0xFF10B981); // Green
+      case NotificationType.UT: // Üyelik Tanımlandı
+        return const Color(0xFF3B82F6); // Blue
+      case NotificationType.AD: // Antrenör Değişikliği
+        return const Color(0xFFF59E0B); // Gray
+    }
+  }
+
+  String _formatDateTime(DateTime dt) {
+    final months = [
+      'Oca',
+      'Şub',
+      'Mar',
+      'Nis',
+      'May',
+      'Haz',
+      'Tem',
+      'Ağu',
+      'Eyl',
+      'Eki',
+      'Kas',
+      'Ara'
+    ];
+    return '${dt.day} ${months[dt.month - 1]} ${dt.year}, '
+        '${dt.hour.toString().padLeft(2, '0')}:'
+        '${dt.minute.toString().padLeft(2, '0')}';
   }
 }
