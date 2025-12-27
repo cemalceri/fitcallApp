@@ -34,6 +34,11 @@ android {
     compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
+// 16KB desteği için
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileOptions {
         coreLibraryDesugaringEnabled true   
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -58,6 +63,10 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+        // 16KB sayfa boyutu desteği 👇
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64'
+        }
     }
 
     signingConfigs {

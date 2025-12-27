@@ -1,26 +1,39 @@
-/// Bildirimden sonra yapılacak ertelenmiş aksiyon modelleri
-enum PendingActionType { dersTeyit, bildirimListe }
-
 class PendingAction {
-  final PendingActionType type;
-  final Map<String, dynamic> data;
+  final int notificationId;
+  final String title;
+  final String body;
+  final String actionType;
+  final String? actionScreen;
+  final Map<String, dynamic>? actionParams;
 
-  const PendingAction({required this.type, required this.data});
+  PendingAction({
+    required this.notificationId,
+    required this.title,
+    required this.body,
+    required this.actionType,
+    this.actionScreen,
+    this.actionParams,
+  });
 
-  /* ---------- json helpers ---------- */
   Map<String, dynamic> toJson() => {
-        'type': type.name,
-        'data': data,
+        'notificationId': notificationId,
+        'title': title,
+        'body': body,
+        'actionType': actionType,
+        'actionScreen': actionScreen,
+        'actionParams': actionParams,
       };
 
-  static PendingAction? fromJson(Map<String, dynamic>? json) {
-    if (json == null) return null;
-    final typeStr = json['type'] as String?;
-    final dataMap = (json['data'] as Map?)?.cast<String, dynamic>() ?? {};
-    final type = PendingActionType.values.firstWhere(
-      (e) => e.name == typeStr,
-      orElse: () => PendingActionType.bildirimListe,
+  factory PendingAction.fromJson(Map<String, dynamic> json) {
+    return PendingAction(
+      notificationId: json['notificationId'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      body: json['body'] as String? ?? '',
+      actionType: json['actionType'] as String? ?? 'NO_ACTION',
+      actionScreen: json['actionScreen'] as String?,
+      actionParams: json['actionParams'] != null
+          ? Map<String, dynamic>.from(json['actionParams'])
+          : null,
     );
-    return PendingAction(type: type, data: dataMap);
   }
 }

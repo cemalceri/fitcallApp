@@ -1,5 +1,5 @@
 import 'package:fitcall/common/api_urls.dart';
-import 'package:fitcall/models/1_common/notification_model.dart';
+import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 

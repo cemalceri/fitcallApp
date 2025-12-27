@@ -11,10 +11,11 @@ import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/etkinlik_service.dart';
-import 'package:fitcall/services/core/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+
+import '../services/notification/notification_service.dart';
 
 class UyeHomePage extends StatefulWidget {
   const UyeHomePage({super.key});

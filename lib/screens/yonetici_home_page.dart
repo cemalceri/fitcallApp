@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/services/core/auth_service.dart';
-import 'package:fitcall/services/core/notification_service.dart';
+import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:flutter/material.dart';
 
 // EKLENEN importlar

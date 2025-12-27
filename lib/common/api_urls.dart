@@ -1,10 +1,10 @@
-// =================== BASE URL TANIMLARI ===================
+// =================== BASE URL TANIMLARI =================== =
 
 const String baseUrlProd = "https://www.binay.fit/api";
 const String baseUrlLocal = "http://10.0.2.2:8000/api";
 
-//const String baseUrl = baseUrlLocal;
-const String baseUrl = baseUrlProd;
+const String baseUrl = baseUrlLocal;
+//const String baseUrl = baseUrlProd;
 
 // =================== ENDPOINTLER ===================
 String loginUrl = "$baseUrl/getToken";
