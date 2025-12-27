@@ -7,7 +7,7 @@ class DersTeyitService {
   static Future<ApiResult<NotificationModel>> getBildirim(String bildirimId) {
     return ApiClient.postParsed<NotificationModel>(
       getBildirimById,
-      {'bildirim_id': bildirimId},
+      {'notification_id': bildirimId},
       (json) => ApiParsing.parseObject<NotificationModel>(
         json,
         (m) => NotificationModel.fromJson(m),

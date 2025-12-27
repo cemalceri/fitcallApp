@@ -12,10 +12,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await initializeDateFormatting('tr', null);
-  await NotificationService.instance.initialize();
-  NotificationService.instance.registerNavigatorKey(navigatorKey);
 
-  /* → storage’taki pendingAction belleğe alınır */
+  NotificationService.instance.registerNavigatorKey(navigatorKey);
+  await NotificationService.instance.initialize();
+
   await PendingActionStore.instance.load();
   initFCMTokenListener();
   runApp(const MyApp());
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // bannerı kapatır
+      debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       title: 'Binay Akademi',
       theme: ThemeData(

@@ -23,10 +23,10 @@ class NavigateToScreenHandler implements NotificationHandler {
   }
 
   String? _getRouteName(String actionScreen) {
+    // ✅ DÜZELTİLDİ - Gerçek route'lara eşlendi
     final routes = {
-      'ders_teyit': '/ders-teyit',
-      'odeme_onay': '/odeme-onay',
-      'bildirim_detay': '/bildirim-detay',
+      'ders_teyit': '/dersTeyit', // ✅ Ders teyit sayfası
+      'bildirim_detay': '/bildirimler', // ✅ Bildirimler sayfası
     };
     return routes[actionScreen];
   }
