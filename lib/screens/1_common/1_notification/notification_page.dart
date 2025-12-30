@@ -234,15 +234,33 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Future<void> _onNotificationTap(NotificationModel notif) async {
     await _markNotificationRead(notif);
-    if (notif.actionType == ActionType.navigateToScreen) {
-      await _router.route(context, notif);
+
+    final shouldNavigate = notif.actionType == ActionType.navigateToScreen &&
+        notif.actionScreen != null &&
+        notif.actionScreen!.isNotEmpty &&
+        notif.actionScreen != 'bildirim_detay';
+
+    if (shouldNavigate) {
+      try {
+        await _router.route(context, notif);
+      } catch (e) {
+        debugPrint('🔔 Route hatası: $e');
+        if (mounted) {
+          _showDetailSheet(notif);
+        }
+      }
     } else {
-      await showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (_) => _NotificationDetailSheet(notification: notif));
+      _showDetailSheet(notif);
     }
+  }
+
+  void _showDetailSheet(NotificationModel notif) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _NotificationDetailSheet(notification: notif),
+    );
   }
 
   Widget _buildLoadingState() {

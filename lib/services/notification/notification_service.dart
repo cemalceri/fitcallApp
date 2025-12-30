@@ -24,10 +24,11 @@ class NotificationService {
 
   static Future<ApiResult<List<NotificationModel>>> fetchNotifications() {
     return ApiClient.postParsed<List<NotificationModel>>(
-        getNotifications,
-        const {},
-        (json) => ApiParsing.parseList<NotificationModel>(
-            json, (m) => NotificationModel.fromJson(m)));
+      getNotifications,
+      const {},
+      (json) => ApiParsing.parseList<NotificationModel>(
+          json, (m) => NotificationModel.fromJson(m)),
+    );
   }
 
   static Future<ApiResult<bool>> markNotificationsRead(List<int> ids) {
@@ -40,9 +41,10 @@ class NotificationService {
 
   static Future<ApiResult<NotificationModel>> getNotificationById(int id) {
     return ApiClient.postParsed<NotificationModel>(
-        getBildirimById,
-        {'notification_id': id},
-        (json) => ApiParsing.parseObject<NotificationModel>(
-            json, (m) => NotificationModel.fromJson(m)));
+      getBildirimById,
+      {'notification_id': id},
+      (json) => ApiParsing.parseObject<NotificationModel>(
+          json, (m) => NotificationModel.fromJson(m)),
+    );
   }
 }

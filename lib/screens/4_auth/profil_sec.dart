@@ -6,15 +6,11 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
-import 'package:fitcall/screens/1_common/1_notification/pending_action_store.dart';
 import 'package:fitcall/services/api_result.dart';
 import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:fitcall/models/1_common/event/event_model.dart';
 import 'package:fitcall/screens/1_common/event_qr_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
-import 'package:fitcall/services/notification/notification_router.dart';
-import 'package:fitcall/models/notification/notification_model.dart';
-import 'package:fitcall/main.dart';
 
 class ProfilSecPage extends StatefulWidget {
   final List<KullaniciProfilModel> kullaniciProfilList;
@@ -27,60 +23,16 @@ class ProfilSecPage extends StatefulWidget {
 class _ProfilSecPageState extends State<ProfilSecPage> {
   bool _routing = false;
   bool _suppressEventOnce = false;
-  late final NotificationRouter _router;
 
   @override
   void initState() {
     super.initState();
-    _router = NotificationRouter(navigatorKey: navigatorKey);
     WidgetsBinding.instance.addPostFrameCallback((_) => _runFlow());
   }
 
   Future<void> _runFlow() async {
     if (!mounted || _routing) return;
     _routing = true;
-
-    try {
-      final action = await PendingActionStore.instance.take();
-      if (action != null && mounted) {
-        final targetUyeId = action.actionParams?['uye_id'];
-        final targetAntrenorId = action.actionParams?['antrenor_id'];
-
-        if (targetUyeId != null || targetAntrenorId != null) {
-          final activeProfile =
-              await StorageService.uyeProfilBilgileriniGetir();
-          final currentUyeId = activeProfile?.uye?.id;
-          final currentAntrenorId = activeProfile?.antrenor?.id;
-
-          final isCorrectProfile =
-              (targetUyeId != null && currentUyeId == targetUyeId) ||
-                  (targetAntrenorId != null &&
-                      currentAntrenorId == targetAntrenorId);
-
-          if (!isCorrectProfile) {
-            await PendingActionStore.instance.set(action);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(
-                      'Bu bildirim başka bir profile ait. Lütfen doğru profili seçin.'),
-                  backgroundColor: Colors.orange,
-                  duration: Duration(seconds: 3)));
-            }
-            _routing = false;
-            return;
-          }
-        }
-
-        // ✅ Doğru profil ama henüz seçilmemiş
-        // Pending action'ı koru, kullanıcı profil seçsin
-        // _profilSecildi() içinde işlenecek
-        await PendingActionStore.instance.set(action);
-        _routing = false;
-        return;
-      }
-    } catch (e) {
-      // PendingAction hatası
-    }
 
     // Event kontrolü
     if (!_suppressEventOnce) {
@@ -90,8 +42,10 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
           final ApiResult<EventModel?> evRes =
               await QrCodeApiService.getirEventAktifApi(userId: userId);
           if (evRes.data != null && mounted) {
-            final closedByUser = await Navigator.push<bool>(context,
-                MaterialPageRoute(builder: (_) => EventQrPage(userId: userId)));
+            final closedByUser = await Navigator.push<bool>(
+              context,
+              MaterialPageRoute(builder: (_) => EventQrPage(userId: userId)),
+            );
             if (closedByUser == true) {
               _suppressEventOnce = true;
             }
@@ -114,44 +68,12 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     _suppressEventOnce = false;
   }
 
-  // ✅ DÜZELTİLMİŞ _profilSecildi
   Future<void> _profilSecildi(KullaniciProfilModel p) async {
     try {
       LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
       final rol = await AuthService.loginUser(p);
       if (!mounted) return;
-
-      // ✅ Pending action var mı kontrol et
-      final pendingAction = PendingActionStore.instance.current;
-
-      if (pendingAction != null) {
-        // Pending action varsa, önce onu temizle
-        await PendingActionStore.instance.clear();
-
-        final notification = NotificationModel(
-          id: pendingAction.notificationId,
-          notificationType: '',
-          title: pendingAction.title,
-          body: pendingAction.body,
-          actionType: pendingAction.actionType,
-          actionScreen: pendingAction.actionScreen,
-          actionParams: pendingAction.actionParams,
-          isRead: false,
-          timestamp: DateTime.now(),
-        );
-
-        // Home'a git
-        await NavigationHelper.redirectAfterLogin(context, rol);
-
-        // Kısa bekle, sonra notification route'unu çağır
-        await Future.delayed(Duration(milliseconds: 300));
-        if (mounted) {
-          await _router.route(context, notification);
-        }
-      } else {
-        // Pending action yoksa normal akış
-        await NavigationHelper.redirectAfterLogin(context, rol);
-      }
+      await NavigationHelper.redirectAfterLogin(context, rol);
     } on ApiException catch (e) {
       if (mounted) ShowMessage.error(context, e.message);
     } finally {
@@ -228,23 +150,26 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
           children: [
             if (Navigator.of(context).canPop())
               IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      size: 20, color: Color(0xFF1E293B))),
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                    size: 20, color: Color(0xFF1E293B)),
+              ),
             if (!Navigator.of(context).canPop()) const SizedBox(width: 16),
             const Expanded(
-                child: Text('Profil Seç',
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1E293B),
-                        letterSpacing: -0.3))),
+              child: Text('Profil Seç',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1E293B),
+                      letterSpacing: -0.3)),
+            ),
           ],
         ),
         Padding(
-            padding: const EdgeInsets.only(left: 16, top: 4),
-            child: Text('Devam etmek için bir profil seçin',
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade600))),
+          padding: const EdgeInsets.only(left: 16, top: 4),
+          child: Text('Devam etmek için bir profil seçin',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
+        ),
       ],
     );
   }
@@ -259,11 +184,12 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
           Row(
             children: [
               Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                      color: theme.color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Icon(theme.icon, size: 18, color: theme.color)),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                    color: theme.color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10)),
+                child: Icon(theme.icon, size: 18, color: theme.color),
+              ),
               const SizedBox(width: 10),
               Text(theme.label,
                   style: TextStyle(
@@ -292,18 +218,16 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.white, Colors.grey.shade50],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+            colors: [Colors.white, Colors.grey.shade50],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2))
         ],
       ),
       child: Material(
@@ -320,17 +244,15 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                   height: 48,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: theme.gradient,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                        colors: theme.gradient,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: theme.color.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
+                          color: theme.color.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2))
                     ],
                   ),
                   child: Icon(theme.icon, color: Colors.white, size: 24),
@@ -340,31 +262,21 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        displayName,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1E293B),
-                          letterSpacing: -0.2,
-                        ),
-                      ),
+                      Text(displayName,
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1E293B),
+                              letterSpacing: -0.2)),
                       const SizedBox(height: 2),
-                      Text(
-                        theme.label,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
+                      Text(theme.label,
+                          style: TextStyle(
+                              fontSize: 13, color: Colors.grey.shade600)),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 16,
-                  color: Colors.grey.shade400,
-                ),
+                Icon(Icons.arrow_forward_ios_rounded,
+                    size: 16, color: Colors.grey.shade400),
               ],
             ),
           ),
@@ -379,11 +291,9 @@ class _RolTheme {
   final Color color;
   final List<Color> gradient;
   final String label;
-
-  _RolTheme({
-    required this.icon,
-    required this.color,
-    required this.gradient,
-    required this.label,
-  });
+  _RolTheme(
+      {required this.icon,
+      required this.color,
+      required this.gradient,
+      required this.label});
 }
