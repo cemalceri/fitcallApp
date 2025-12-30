@@ -7,12 +7,11 @@ import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
 class TakvimService {
-  /// Haftalık takvim verileri: dersler + uygun/meşgul slotlar
+  // ==================== HAFTALIK TAKVİM ====================
   static Future<ApiResult<WeekTakvimDataDto>> loadWeek({
     required DateTime start,
     required DateTime end,
   }) async {
-    // 1) Dersler
     final dersRes = await ApiClient.postParsed<List<EtkinlikModel>>(
       getUyeDersProgrami,
       {'start': start.toIso8601String(), 'end': end.toIso8601String()},
@@ -22,7 +21,6 @@ class TakvimService {
       ),
     );
 
-    // 2) Uygun / meşgul slotlar
     final slotRes = await ApiClient.postParsed<Map<String, dynamic>>(
       getAntrenorUygunSaatleri,
       {'start': start.toIso8601String(), 'end': end.toIso8601String()},
@@ -47,7 +45,6 @@ class TakvimService {
     return ApiResult<WeekTakvimDataDto>(mesaj: mesaj, data: dto);
   }
 
-  /// Belirli tarih aralığında belirtilen ya da tüm antrenörlerin uygun saatleri döner
   static Future<ApiResult<List<UygunSlotDto>>> getAntrenorUygunSaatleriApi({
     required DateTime start,
     required DateTime end,
@@ -73,7 +70,6 @@ class TakvimService {
     return ApiResult<List<UygunSlotDto>>(mesaj: r.mesaj, data: parsed);
   }
 
-  /// Üyenin gelecekteki dersi iptal etmesi
   static Future<ApiResult<Map<String, dynamic>>> uyeDersIptal({
     required int etkinlikId,
     String? aciklama,
@@ -85,44 +81,169 @@ class TakvimService {
     );
   }
 
-  /// Geçmiş ders için tamamlama bilgisi
-  static Future<ApiResult<Map<String, dynamic>>> getDersYapildiBilgisiApi({
+  // ==================== DERS ONAY ====================
+  static Future<ApiResult<Map<String, dynamic>>> getDersOnayBilgisi({
     required int dersId,
     required int userId,
   }) {
-    final body = {'ders_id': dersId, 'user_id': userId};
     return ApiClient.postParsed<Map<String, dynamic>>(
-      getDersYapildiBilgisi,
-      body,
+      getDersOnayBilgisiUrl,
+      {'ders_id': dersId, 'user_id': userId},
       (json) => (json as Map).cast<String, dynamic>(),
     );
   }
 
-  /// (POST) Kaydet: ders_id + user_id + rol + tamamlandi + aciklama [+ onay_red_iptal_nedeni]
-  static Future<ApiResult<Map<String, dynamic>>> setDersYapildiBilgisiApi({
+  static Future<ApiResult<Map<String, dynamic>>> setDersOnayBilgisi({
     required int dersId,
     required int userId,
-    required String rol, // "UYE" | "ANTRENOR" | "YONETICI"
+    required String rol,
     required bool tamamlandi,
-    required String aciklama,
-    String?
-        onayRedIptalNedeni, // enum code: "YPL_PLAN", "YMD_OGRENCI", "IPT_PROG", ...
+    String? aciklama,
+    String? onayRedIptalNedeni,
   }) {
     final body = {
       'ders_id': dersId,
       'user_id': userId,
       'rol': rol,
       'tamamlandi': tamamlandi,
-      'aciklama': aciklama,
+      if (aciklama != null && aciklama.isNotEmpty) 'aciklama': aciklama,
       if (onayRedIptalNedeni != null)
         'onay_red_iptal_nedeni': onayRedIptalNedeni,
     };
     return ApiClient.postParsed<Map<String, dynamic>>(
-      setDersYapildiBilgisi,
+      setDersOnayBilgisiUrl,
       body,
       (json) => (json as Map).cast<String, dynamic>(),
     );
   }
+
+  // ==================== DEĞERLENDİRME ====================
+
+  static Future<ApiResult<Map<String, dynamic>>> getDersDegerlendirme({
+    required int dersId,
+    required int userId,
+    String? rol,
+  }) {
+    final body = {
+      'ders_id': dersId,
+      'user_id': userId,
+      if (rol != null) 'rol': rol,
+    };
+    return ApiClient.postParsed<Map<String, dynamic>>(
+      getDersDegerlendirmeUrl,
+      body,
+      (json) => (json as Map).cast<String, dynamic>(),
+    );
+  }
+
+  static Future<ApiResult<Map<String, dynamic>>> setDersDegerlendirme({
+    required int dersId,
+    required int userId,
+    required String rol,
+    required int puan,
+    String? yorum,
+  }) {
+    final body = {
+      'ders_id': dersId,
+      'user_id': userId,
+      'rol': rol,
+      'puan': puan,
+      if (yorum != null && yorum.isNotEmpty) 'yorum': yorum,
+    };
+    return ApiClient.postParsed<Map<String, dynamic>>(
+      setDersDegerlendirmeUrl,
+      body,
+      (json) => (json as Map).cast<String, dynamic>(),
+    );
+  }
+
+  static Future<ApiResult<Map<String, dynamic>>> getDersTumDegerlendirmeler({
+    required int dersId,
+  }) {
+    return ApiClient.postParsed<Map<String, dynamic>>(
+      getDersTumDegerlendirmelerUrl,
+      {'ders_id': dersId},
+      (json) => (json as Map).cast<String, dynamic>(),
+    );
+  }
+
+  // ==================== İPTAL TALEBİ ====================
+
+  static Future<ApiResult<Map<String, dynamic>>> createIptalTalebi({
+    required int dersId,
+    required int userId,
+    required String rol,
+    required String sebep,
+    int? uyeId,
+    String? aciklama,
+  }) {
+    final body = {
+      'ders_id': dersId,
+      'user_id': userId,
+      'rol': rol,
+      'sebep': sebep,
+      if (uyeId != null) 'uye_id': uyeId,
+      if (aciklama != null && aciklama.isNotEmpty) 'aciklama': aciklama,
+    };
+    return ApiClient.postParsed<Map<String, dynamic>>(
+      createIptalTalebiUrl,
+      body,
+      (json) => (json as Map).cast<String, dynamic>(),
+    );
+  }
+
+  static Future<ApiResult<List<Map<String, dynamic>>>> getIptalTalepleri({
+    String? durum,
+    int? dersId,
+  }) async {
+    final body = <String, dynamic>{};
+    if (durum != null) body['durum'] = durum;
+    if (dersId != null) body['ders_id'] = dersId;
+
+    final r = await ApiClient.postParsed<List<dynamic>>(
+      getIptalTalepleriUrl,
+      body,
+      (json) => (json as List),
+    );
+    final list =
+        (r.data ?? []).map((e) => (e as Map).cast<String, dynamic>()).toList();
+    return ApiResult<List<Map<String, dynamic>>>(mesaj: r.mesaj, data: list);
+  }
+
+  static Future<ApiResult<Map<String, dynamic>>> setIptalTalebiIslem({
+    required int talepId,
+    required int userId,
+    required String islem,
+    String? aciklama,
+  }) {
+    final body = {
+      'talep_id': talepId,
+      'user_id': userId,
+      'islem': islem,
+      if (aciklama != null && aciklama.isNotEmpty) 'aciklama': aciklama,
+    };
+    return ApiClient.postParsed<Map<String, dynamic>>(
+      setIptalTalebiIslemUrl,
+      body,
+      (json) => (json as Map).cast<String, dynamic>(),
+    );
+  }
+
+  static Future<ApiResult<List<Map<String, dynamic>>>>
+      getKullaniciIptalTalepleri({
+    required int userId,
+  }) async {
+    final r = await ApiClient.postParsed<List<dynamic>>(
+      getKullaniciIptalTalepleriUrl,
+      {'user_id': userId},
+      (json) => (json as List),
+    );
+    final list =
+        (r.data ?? []).map((e) => (e as Map).cast<String, dynamic>()).toList();
+    return ApiResult<List<Map<String, dynamic>>>(mesaj: r.mesaj, data: list);
+  }
+
+  // ==================== ANTRENÖR ====================
 
   static Future<ApiResult<Map<String, dynamic>>> antrenorDersIptal({
     required int dersId,
@@ -140,7 +261,6 @@ class TakvimService {
     required DateTime end,
     int? antrenorId,
   }) async {
-    // 1) Dersler
     final dersRes = await ApiClient.postParsed<List<EtkinlikModel>>(
       getAntrenorGunlukEtkinlikler,
       {'start': start.toIso8601String(), 'end': end.toIso8601String()},
@@ -150,7 +270,6 @@ class TakvimService {
       ),
     );
 
-    // 2) Uygun / meşgul slotlar
     final slotRes = await ApiClient.postParsed<Map<String, dynamic>>(
       getAntrenorUygunSaatleri,
       {
@@ -179,19 +298,6 @@ class TakvimService {
     return ApiResult<WeekTakvimDataDto>(mesaj: mesaj, data: dto);
   }
 
-  /// Geçmiş ders için tamamlama bilgisi
-  static Future<ApiResult<Map<String, dynamic>>> antrenorDersYapildiBilgisi({
-    required int dersId,
-    required bool tamamlandi,
-    required String aciklama,
-  }) {
-    return ApiClient.postParsed<Map<String, dynamic>>(
-      setDersYapildiBilgisi,
-      {'ders_id': dersId, 'aciklama': aciklama, 'tamamlandi': tamamlandi},
-      (json) => (json as Map).cast<String, dynamic>(),
-    );
-  }
-
   static Future<ApiResult<List<EtkinlikModel>>>
       getirAntrenorHaftalikDersBilgileri() {
     return ApiClient.postParsed<List<EtkinlikModel>>(
@@ -201,6 +307,45 @@ class TakvimService {
         json,
         (m) => EtkinlikModel.fromMap(m),
       ),
+    );
+  }
+
+  // ==================== GERİYE UYUMLULUK ====================
+
+  static Future<ApiResult<Map<String, dynamic>>> getDersYapildiBilgisiApi({
+    required int dersId,
+    required int userId,
+  }) {
+    return getDersOnayBilgisi(dersId: dersId, userId: userId);
+  }
+
+  static Future<ApiResult<Map<String, dynamic>>> setDersYapildiBilgisiApi({
+    required int dersId,
+    required int userId,
+    required String rol,
+    required bool tamamlandi,
+    required String aciklama,
+    String? onayRedIptalNedeni,
+  }) {
+    return setDersOnayBilgisi(
+      dersId: dersId,
+      userId: userId,
+      rol: rol,
+      tamamlandi: tamamlandi,
+      aciklama: aciklama,
+      onayRedIptalNedeni: onayRedIptalNedeni,
+    );
+  }
+
+  static Future<ApiResult<Map<String, dynamic>>> antrenorDersYapildiBilgisi({
+    required int dersId,
+    required bool tamamlandi,
+    required String aciklama,
+  }) {
+    return ApiClient.postParsed<Map<String, dynamic>>(
+      setDersOnayBilgisiUrl,
+      {'ders_id': dersId, 'aciklama': aciklama, 'tamamlandi': tamamlandi},
+      (json) => (json as Map).cast<String, dynamic>(),
     );
   }
 }

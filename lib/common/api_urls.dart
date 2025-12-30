@@ -78,3 +78,21 @@ String silTesisMisafirPass = "$baseUrl/silTesisMisafirPass";
 String getGaleriImages = "$baseUrl/getGaleriImages";
 String getDuyurular = "$baseUrl/getDuyurular";
 String getMobilConfigs = "$baseUrl/getMobilConfigs";
+
+// Ders Onay
+const String getDersOnayBilgisiUrl = "$baseUrl/getDersOnayBilgisi";
+const String setDersOnayBilgisiUrl = "$baseUrl/setDersOnayBilgisi";
+
+// Değerlendirme
+const String getDersDegerlendirmeUrl = "$baseUrl/getDersDegerlendirme";
+const String setDersDegerlendirmeUrl = "$baseUrl/setDersDegerlendirme";
+const String getDersTumDegerlendirmelerUrl =
+    "$baseUrl/getDersTumDegerlendirmeler";
+
+// İptal Talebi
+const String createIptalTalebiUrl = "$baseUrl/EtkinlikIptalTalebiOlustur";
+const String getIptalTalepleriUrl = "$baseUrl/getEtkinlikIptalTalepleri";
+const String setIptalTalebiIslemUrl =
+    "$baseUrl/setYoneticiIptalTalebiOnaylaReddet";
+const String getKullaniciIptalTalepleriUrl =
+    "$baseUrl/getKullaniciIptalTalepleri";

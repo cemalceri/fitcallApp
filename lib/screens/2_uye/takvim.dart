@@ -7,12 +7,12 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
-import 'package:fitcall/models/5_etkinlik/etkinlik_onay_model.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_talep_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 /* -------------------------------------------------------------------------- */
@@ -42,7 +42,6 @@ class _DersListesiPageState extends State<DersListesiPage>
   bool _isLoading = false;
 
   UyeModel? currentUye;
-  final Map<int, EtkinlikOnayModel> _userOnaylari = {};
   final Map<String, List<Map<String, dynamic>>> _slotAlternatifleri = {};
   final Set<DateTime> _yuklenenHaftalar = {};
   int userId = 0;
@@ -132,8 +131,16 @@ class _DersListesiPageState extends State<DersListesiPage>
       final WeekTakvimDataDto data =
           r.data ?? WeekTakvimDataDto(dersler: [], mesgul: [], uygun: []);
 
-      // --- DERSLER ---
-      final dersAppts = data.dersler.map(_dersToAppt).toList();
+      // --- DERSLER (duplicate kontrolü ile) ---
+      final existingDersIds = _tumRandevular
+          .where((a) => _safeNotes(a)['tip'] == 'ders')
+          .map((a) => a.id)
+          .toSet();
+
+      final dersAppts = data.dersler
+          .where((d) => !existingDersIds.contains(d.id))
+          .map(_dersToAppt)
+          .toList();
 
       // --- AVAILABLE (tekilleştirilmiş) ---
       final Set<String> availKeys = {};
@@ -152,25 +159,28 @@ class _DersListesiPageState extends State<DersListesiPage>
         _slotAlternatifleri[key]!.add(alt);
 
         if (availKeys.add(key)) {
-          availableAppts.add(Appointment(
-            id: 'available-$key',
-            startTime: s.baslangic,
-            endTime: s.bitis,
-            subject: '',
-            notes: jsonEncode({
-              'tip': 'available',
-              'baslangic': key,
-              'bitis': s.bitis.toUtc().toIso8601String(),
-            }),
-            color: uygunSaatRenk.withValues(alpha: 0.3),
-          ));
+          final existsAvail =
+              _tumRandevular.any((a) => a.id == 'available-$key');
+          if (!existsAvail) {
+            availableAppts.add(Appointment(
+              id: 'available-$key',
+              startTime: s.baslangic,
+              endTime: s.bitis,
+              subject: '',
+              notes: jsonEncode({
+                'tip': 'available',
+                'baslangic': key,
+                'bitis': s.bitis.toUtc().toIso8601String(),
+              }),
+              color: uygunSaatRenk.withValues(alpha: 0.3),
+            ));
+          }
         }
       }
 
       _tumRandevular.addAll(dersAppts);
       _tumRandevular.addAll(availableAppts);
     } on ApiException catch (e) {
-      // Sessiz hata - kullanıcıya gösterilmeyen arka plan hatası
       debugPrint('API Hatası: ${e.message}');
     } catch (e) {
       debugPrint('Takvim yükleme hatası: $e');
@@ -327,6 +337,7 @@ class _DersListesiPageState extends State<DersListesiPage>
     final dersler = <Appointment>[];
 
     final seenAvailKeys = <String>{};
+    final seenDersIds = <dynamic>{}; // Duplicate kontrolü için
 
     for (final a in _tumRandevular) {
       if (a.startTime.isBefore(ws) || !a.startTime.isBefore(weekEnd)) continue;
@@ -349,6 +360,9 @@ class _DersListesiPageState extends State<DersListesiPage>
 
         if (day == selectedDay) slots.add(st);
       } else if (tip == 'ders') {
+        // Duplicate kontrolü
+        if (!seenDersIds.add(a.id)) continue;
+
         final day = _normalizeDate(a.startTime);
         if (day == selectedDay) dersler.add(a);
       }
@@ -606,20 +620,25 @@ class _DersListesiPageState extends State<DersListesiPage>
                             final dayKey = _normalizeDate(date);
                             final uygunCount = _weekUygunSayilari[dayKey] ?? 0;
 
-                            final hasDers = _tumRandevular.any((a) {
+                            // Ders sayısını duplicate'sız hesapla
+                            final seenIds = <dynamic>{};
+                            final dersCount = _tumRandevular.where((a) {
                               final note = _safeNotes(a);
-                              return note['tip'] == 'ders' &&
-                                  _normalizeDate(a.startTime) == dayKey;
-                            });
+                              if (note['tip'] != 'ders') return false;
+                              if (_normalizeDate(a.startTime) != dayKey) {
+                                return false;
+                              }
+                              return seenIds.add(a.id); // Duplicate kontrolü
+                            }).length;
 
-                            if (uygunCount == 0 && !hasDers) return null;
+                            if (uygunCount == 0 && dersCount == 0) return null;
 
                             return Positioned(
                               bottom: 4,
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  if (hasDers)
+                                  if (dersCount > 0)
                                     Container(
                                       width: 6,
                                       height: 6,
@@ -632,7 +651,6 @@ class _DersListesiPageState extends State<DersListesiPage>
                                           BoxShadow(
                                             color: uiAccentOrange.withValues(
                                                 alpha: 0.4),
-                                            blurRadius: 4,
                                           ),
                                         ],
                                       ),
@@ -650,7 +668,6 @@ class _DersListesiPageState extends State<DersListesiPage>
                                           BoxShadow(
                                             color: uiAccentGreen.withValues(
                                                 alpha: 0.4),
-                                            blurRadius: 4,
                                           ),
                                         ],
                                       ),
@@ -769,6 +786,12 @@ class _DersListesiPageState extends State<DersListesiPage>
                           ),
 
                           const SizedBox(height: 20),
+
+                          // ======== SEÇİLİ GÜNÜN DERSLERİ ========
+                          if (_selectedDayDersler.isNotEmpty) ...[
+                            _buildDerslerSection(theme),
+                            const SizedBox(height: 24),
+                          ],
 
                           // Bilgilendirme kartı
                           _InfoCard(
@@ -1297,36 +1320,6 @@ class _DersListesiPageState extends State<DersListesiPage>
     );
   }
 
-  Future<void> _handleDersTap(EtkinlikModel ders) async {
-    final isPast = ders.bitisTarihSaat.isBefore(DateTime.now());
-
-    if (ders.iptalMi) {
-      ShowMessage.error(context, 'Bu ders iptal edilmiş.');
-      return;
-    }
-
-    if (isPast) {
-      final onay = _userOnaylari[ders.id];
-      _showTamamlamaPopup(
-        ders,
-        userCompleted: onay?.tamamlandi ?? false,
-        userAciklama: onay?.aciklama ?? '',
-        onSaved: (tam, acik) {
-          _userOnaylari[ders.id] = EtkinlikOnayModel.empty()
-            ..tamamlandi = tam
-            ..aciklama = acik;
-        },
-      );
-    } else {
-      _showIptalPopup(
-        ders,
-        onCancelled: () async {
-          await _forceReloadVisibleWeek();
-        },
-      );
-    }
-  }
-
   /* -------------------------------------------------------------------------- */
   /*                           BOŞ slot – rezervasyon                           */
   /* -------------------------------------------------------------------------- */
@@ -1429,196 +1422,744 @@ class _DersListesiPageState extends State<DersListesiPage>
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                    Geçmiş ders – tamamlama popup                           */
+  /*                    SEÇİLİ GÜNÜN DERSLERİ                                    */
   /* -------------------------------------------------------------------------- */
-  void _showTamamlamaPopup(EtkinlikModel ders,
-      {required bool userCompleted,
-      required String userAciklama,
-      required void Function(bool, String) onSaved}) {
-    final ctrl = TextEditingController(text: userAciklama);
-    bool tamamlandi = userCompleted;
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
+  Widget _buildDerslerSection(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: uiAccentGreen.withValues(alpha: 0.15),
+                color: uiAccentOrange.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(Icons.rate_review_rounded,
-                  color: uiAccentGreen, size: 20),
+              child: Icon(Icons.sports_tennis_rounded,
+                  color: uiAccentOrange, size: 20),
             ),
             const SizedBox(width: 12),
-            const Text('Ders Değerlendirme'),
+            Text('Derslerim',
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700)),
+            const Spacer(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: uiAccentOrange.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${_selectedDayDersler.length} ders',
+                style: TextStyle(
+                    color: uiAccentOrange,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12),
+              ),
+            ),
           ],
         ),
-        content: StatefulBuilder(
-          builder: (_, setState) => Column(
-            mainAxisSize: MainAxisSize.min,
+        const SizedBox(height: 16),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _selectedDayDersler.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (_, i) => _buildDersKart(_selectedDayDersler[i]),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDersKart(Appointment appt) {
+    final theme = Theme.of(context);
+    final note = _safeNotes(appt);
+    final ders = EtkinlikModel.fromMap(note.cast<String, dynamic>());
+    final isPast = appt.endTime.isBefore(DateTime.now());
+    final isIptal = ders.iptalMi;
+
+    Color cardColor;
+    Color accentColor;
+    IconData statusIcon;
+    String statusText;
+
+    if (isIptal) {
+      cardColor = Colors.red.shade50;
+      accentColor = Colors.red;
+      statusIcon = Icons.cancel_rounded;
+      statusText = 'İptal Edildi';
+    } else if (isPast) {
+      cardColor = uiAccentGreen.withValues(alpha: 0.08);
+      accentColor = uiAccentGreen;
+      statusIcon = Icons.check_circle_rounded;
+      statusText = 'Tamamlandı';
+    } else {
+      cardColor = uiPrimaryLight.withValues(alpha: 0.5);
+      accentColor = uiPrimaryBlue;
+      statusIcon = Icons.schedule_rounded;
+      statusText = 'Yaklaşan';
+    }
+
+    final kort = (note['kort_adi']?.toString().trim().isNotEmpty ?? false)
+        ? note['kort_adi'].toString()
+        : appt.subject.toString();
+    final hoca = (note['antrenor_adi']?.toString() ?? '').trim();
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isIptal ? null : () => _handleDersTap(ders),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: accentColor.withValues(alpha: 0.2)),
+          ),
+          child: Row(
             children: [
               Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: accentColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: CheckboxListTile(
-                  title: const Text('Ders tamamlandı mı?'),
-                  value: tamamlandi,
-                  onChanged: (v) => setState(() => tamamlandi = v ?? false),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                child: Column(
+                  children: [
+                    Text(_formatSaatTek(appt.startTime),
+                        style: TextStyle(
+                            color: accentColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16)),
+                    Text(_formatSaatTek(appt.endTime),
+                        style: TextStyle(
+                            color: accentColor.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12)),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: ctrl,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'Not',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(kort,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                            color: theme.colorScheme.onSurface)),
+                    if (hoca.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Row(children: [
+                        Icon(Icons.person_rounded,
+                            size: 14,
+                            color: theme.colorScheme.onSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Text(hoca,
+                            style: TextStyle(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                fontSize: 13)),
+                      ]),
+                    ],
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(statusIcon, size: 12, color: accentColor),
+                          const SizedBox(width: 4),
+                          Text(statusText,
+                              style: TextStyle(
+                                  color: accentColor,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              if (!isIptal)
+                Icon(Icons.chevron_right_rounded,
+                    color: accentColor.withValues(alpha: 0.5)),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
+      ),
+    );
+  }
+
+  Future<void> _handleDersTap(EtkinlikModel ders) async {
+    if (ders.iptalMi) {
+      ShowMessage.error(context, 'Bu ders iptal edilmiş.');
+      return;
+    }
+    final isPast = ders.bitisTarihSaat.isBefore(DateTime.now());
+    if (isPast) {
+      _showDersGeriBildirimSheet(ders);
+    } else {
+      _showIptalTalebiSheet(ders);
+    }
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                    GEÇMİŞ DERS – ONAY VE DEĞERLENDİRME                     */
+  /* -------------------------------------------------------------------------- */
+  void _showDersGeriBildirimSheet(EtkinlikModel ders) {
+    final theme = Theme.of(context);
+    String? secilenDurum;
+    String? secilenNeden;
+    int puan = 0;
+    final yorumCtrl = TextEditingController();
+    bool isLoading = false;
+
+    const yapilmadiNedenleri = [
+      {'code': 'YMD_OGRENCI', 'label': 'Öğrenci gelmedi'},
+      {'code': 'YMD_ANTRENOR', 'label': 'Antrenör mazeretli'},
+      {'code': 'YMD_HAVA', 'label': 'Hava şartları'},
+      {'code': 'YMD_KORT', 'label': 'Kort müsait değil'},
+      {'code': 'YMD_DIGER', 'label': 'Diğer'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.85),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2)),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: uiAccentGreen.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.rate_review_rounded,
+                            color: uiAccentGreen, size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Ders Geri Bildirimi',
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700)),
+                              Text(
+                                  '${_formatGunBaslik(ders.baslangicTarihSaat)} • ${_formatSaatTek(ders.baslangicTarihSaat)}',
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      color:
+                                          theme.colorScheme.onSurfaceVariant)),
+                            ]),
+                      ),
+                    ]),
+                  ),
+                  Divider(height: 1, color: Colors.grey.shade200),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Ders Durumu',
+                                style: TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.w600)),
+                            const SizedBox(height: 12),
+                            _buildDurumSecenegi(
+                              isSelected: secilenDurum == 'yapildi',
+                              icon: Icons.check_circle_rounded,
+                              color: uiAccentGreen,
+                              title: 'Ders yapıldı',
+                              subtitle: 'Ders planlandığı gibi gerçekleşti',
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setSheetState(() {
+                                  secilenDurum = 'yapildi';
+                                  secilenNeden = 'YPL_PLAN';
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 10),
+                            _buildDurumSecenegi(
+                              isSelected: secilenDurum == 'yapilmadi',
+                              icon: Icons.cancel_rounded,
+                              color: Colors.red,
+                              title: 'Ders yapılmadı',
+                              subtitle: 'Ders gerçekleşmedi',
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setSheetState(() {
+                                  secilenDurum = 'yapilmadi';
+                                  secilenNeden = null;
+                                });
+                              },
+                            ),
+                            if (secilenDurum == 'yapilmadi') ...[
+                              const SizedBox(height: 16),
+                              const Text('Neden yapılmadı?',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey)),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: yapilmadiNedenleri.map((n) {
+                                  final isSelected = secilenNeden == n['code'];
+                                  return ChoiceChip(
+                                    label: Text(n['label']!),
+                                    selected: isSelected,
+                                    onSelected: (_) {
+                                      HapticFeedback.selectionClick();
+                                      setSheetState(
+                                          () => secilenNeden = n['code']);
+                                    },
+                                    selectedColor: Colors.red.shade100,
+                                    labelStyle: TextStyle(
+                                      color: isSelected
+                                          ? Colors.red.shade700
+                                          : null,
+                                      fontWeight:
+                                          isSelected ? FontWeight.w600 : null,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                            if (secilenDurum == 'yapildi') ...[
+                              const SizedBox(height: 24),
+                              const Text('Değerlendirme (İsteğe bağlı)',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(5, (i) {
+                                  final starIndex = i + 1;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      HapticFeedback.selectionClick();
+                                      setSheetState(() {
+                                        puan =
+                                            puan == starIndex ? 0 : starIndex;
+                                      });
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6),
+                                      child: Icon(
+                                        starIndex <= puan
+                                            ? Icons.star_rounded
+                                            : Icons.star_border_rounded,
+                                        size: 40,
+                                        color: starIndex <= puan
+                                            ? uiAccentOrange
+                                            : Colors.grey.shade300,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: yorumCtrl,
+                                maxLines: 3,
+                                decoration: InputDecoration(
+                                  hintText: 'Yorum ekleyin (isteğe bağlı)',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14)),
+                                  filled: true,
+                                  fillColor: Colors.grey.shade50,
+                                ),
+                              ),
+                            ],
+                          ]),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(20, 16, 20,
+                        20 + MediaQuery.of(context).viewInsets.bottom),
+                    child: Row(children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text('Vazgeç'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: FilledButton(
+                          onPressed: secilenDurum == null || isLoading
+                              ? null
+                              : () async {
+                                  if (secilenDurum == 'yapilmadi' &&
+                                      secilenNeden == null) {
+                                    ShowMessage.error(
+                                        context, 'Lütfen bir neden seçin');
+                                    return;
+                                  }
+                                  setSheetState(() => isLoading = true);
+                                  try {
+                                    await TakvimService.setDersOnayBilgisi(
+                                      dersId: ders.id,
+                                      userId: userId,
+                                      rol: 'uye',
+                                      tamamlandi: secilenDurum == 'yapildi',
+                                      onayRedIptalNedeni: secilenNeden,
+                                    );
+                                    if (puan > 0) {
+                                      await TakvimService.setDersDegerlendirme(
+                                        dersId: ders.id,
+                                        userId: userId,
+                                        rol: 'uye',
+                                        puan: puan,
+                                        yorum: yorumCtrl.text.trim(),
+                                      );
+                                    }
+                                    if (mounted) {
+                                      Navigator.pop(context);
+                                      ShowMessage.success(
+                                          context, 'Geri bildirim kaydedildi');
+                                    }
+                                  } on ApiException catch (e) {
+                                    setSheetState(() => isLoading = false);
+                                    if (mounted) {
+                                      ShowMessage.error(context, e.message);
+                                    }
+                                  } catch (e) {
+                                    setSheetState(() => isLoading = false);
+                                    if (mounted) {
+                                      ShowMessage.error(context, 'Hata: $e');
+                                    }
+                                  }
+                                },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: uiPrimaryBlue,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.white))
+                              : const Text('Kaydet',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                    ]),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDurumSecenegi({
+    required bool isSelected,
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color:
+                isSelected ? color.withValues(alpha: 0.1) : Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+                color: isSelected ? color : Colors.grey.shade200,
+                width: isSelected ? 2 : 1),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: uiPrimaryBlue,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+          child: Row(children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, color: color, size: 22),
             ),
-            child: const Text('Kaydet'),
-            onPressed: () async {
-              try {
-                final r = await TakvimService.setDersYapildiBilgisiApi(
-                    dersId: ders.id,
-                    tamamlandi: tamamlandi,
-                    aciklama: ctrl.text,
-                    rol: 'UYE',
-                    userId: userId);
-                onSaved(tamamlandi, ctrl.text);
-                ShowMessage.success(context, r.mesaj);
-              } on ApiException catch (e) {
-                ShowMessage.error(context, e.message);
-              } catch (e) {
-                ShowMessage.error(context, 'Hata: $e');
-              }
-              Navigator.pop(context);
-            },
-          ),
-        ],
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? color : null)),
+                    Text(subtitle,
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.grey.shade600)),
+                  ]),
+            ),
+            if (isSelected) Icon(Icons.check_circle, color: color),
+          ]),
+        ),
       ),
     );
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                     Gelecek ders – iptal popup                             */
+  /*                     GELECEK DERS – İPTAL TALEBİ                            */
   /* -------------------------------------------------------------------------- */
-  void _showIptalPopup(EtkinlikModel ders,
-      {Future<void> Function()? onCancelled}) {
-    final ctrl = TextEditingController();
+  void _showIptalTalebiSheet(EtkinlikModel ders) {
+    final theme = Theme.of(context);
+    String? secilenSebep;
+    final aciklamaCtrl = TextEditingController();
+    bool isLoading = false;
 
-    showDialog(
+    const iptalSebepleri = [
+      {'code': 'HASTALIK', 'label': 'Hastalık', 'icon': Icons.sick_rounded},
+      {
+        'code': 'KISISEL_MAZERET',
+        'label': 'Kişisel mazeret',
+        'icon': Icons.person_off_rounded
+      },
+      {
+        'code': 'HAVA_KOSULLARI',
+        'label': 'Hava koşulları',
+        'icon': Icons.cloud_rounded
+      },
+      {'code': 'DIGER', 'label': 'Diğer', 'icon': Icons.more_horiz_rounded},
+    ];
+
+    showModalBottomSheet(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(10),
+                color: theme.colorScheme.surface,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
               ),
-              child: Icon(Icons.cancel_rounded, color: Colors.red, size: 20),
-            ),
-            const SizedBox(width: 12),
-            const Text('Ders İptal Et'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.amber.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.amber.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.warning_rounded, color: Colors.amber.shade700),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Text(
-                      'Bu işlem geri alınamaz.',
-                      style: TextStyle(fontWeight: FontWeight.w500),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                    20, 12, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2))),
+                  const SizedBox(height: 20),
+                  Row(children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(12)),
+                      child: Icon(Icons.event_busy_rounded,
+                          color: Colors.red, size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('İptal Talebi',
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.w700)),
+                            Text(
+                                '${_formatGunBaslik(ders.baslangicTarihSaat)} • ${_formatSaatTek(ders.baslangicTarihSaat)}',
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    color: theme.colorScheme.onSurfaceVariant)),
+                          ]),
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.amber.shade200),
+                    ),
+                    child: Row(children: [
+                      Icon(Icons.info_outline_rounded,
+                          color: Colors.amber.shade700),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                          child: Text(
+                              'İptal talebiniz yönetici onayına gönderilecektir.',
+                              style: TextStyle(fontSize: 13))),
+                    ]),
+                  ),
+                  const SizedBox(height: 20),
+                  const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('İptal Sebebi',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600))),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: iptalSebepleri.map((s) {
+                      final isSelected = secilenSebep == s['code'];
+                      return ChoiceChip(
+                        avatar: Icon(s['icon'] as IconData,
+                            size: 18,
+                            color:
+                                isSelected ? Colors.red.shade700 : Colors.grey),
+                        label: Text(s['label'] as String),
+                        selected: isSelected,
+                        onSelected: (_) {
+                          HapticFeedback.selectionClick();
+                          setSheetState(
+                              () => secilenSebep = s['code'] as String);
+                        },
+                        selectedColor: Colors.red.shade100,
+                        labelStyle: TextStyle(
+                            color: isSelected ? Colors.red.shade700 : null,
+                            fontWeight: isSelected ? FontWeight.w600 : null),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: aciklamaCtrl,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: 'Ek açıklama (isteğe bağlı)',
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      filled: true,
+                      fillColor: Colors.grey.shade50,
                     ),
                   ),
-                ],
+                  const SizedBox(height: 24),
+                  Row(children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Vazgeç'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: FilledButton(
+                        onPressed: secilenSebep == null || isLoading
+                            ? null
+                            : () async {
+                                setSheetState(() => isLoading = true);
+                                try {
+                                  final r =
+                                      await TakvimService.createIptalTalebi(
+                                    dersId: ders.id,
+                                    userId: userId,
+                                    rol: 'uye',
+                                    sebep: secilenSebep!,
+                                    aciklama: aciklamaCtrl.text.trim(),
+                                  );
+                                  if (mounted) {
+                                    Navigator.pop(context);
+                                    ShowMessage.success(context, r.mesaj);
+                                  }
+                                } on ApiException catch (e) {
+                                  setSheetState(() => isLoading = false);
+                                  if (mounted) {
+                                    ShowMessage.error(context, e.message);
+                                  }
+                                } catch (e) {
+                                  setSheetState(() => isLoading = false);
+                                  if (mounted) {
+                                    ShowMessage.error(context, 'Hata: $e');
+                                  }
+                                }
+                              },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white))
+                            : const Text('İptal Talebi Gönder',
+                                style: TextStyle(fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                  ]),
+                ]),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: ctrl,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Neden iptal ediyorsunuz? (isteğe bağlı)',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                filled: true,
-                fillColor: Colors.grey.shade50,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Vazgeç'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('İptal Et'),
-            onPressed: () async {
-              try {
-                final res = await TakvimService.uyeDersIptal(
-                  etkinlikId: ders.id,
-                  aciklama: ctrl.text,
-                );
-
-                ShowMessage.success(context, res.mesaj);
-                if (onCancelled != null) await onCancelled();
-              } on ApiException catch (e) {
-                ShowMessage.error(context, e.message);
-              } catch (e) {
-                ShowMessage.error(context, 'Hata: $e');
-              }
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
+            );
+          },
+        );
+      },
     );
   }
 }
