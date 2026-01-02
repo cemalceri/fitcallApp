@@ -64,10 +64,15 @@ class QrCodeApiService {
   static Future<ApiResult<GecisModel>> olusturEventMisafirPassApi({
     required int userId,
     required String label,
+    String? telefon,
   }) {
     return ApiClient.postParsed<GecisModel>(
       olusturEventMisafirPass,
-      {'user_id': userId, 'label': label},
+      {
+        'user_id': userId,
+        'label': label,
+        if (telefon != null && telefon.isNotEmpty) 'telefon': telefon,
+      },
       (json) => GecisModel.fromJson(Map<String, dynamic>.from(json)),
     );
   }

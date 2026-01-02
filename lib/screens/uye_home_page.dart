@@ -5,11 +5,14 @@ import 'dart:convert';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
+import 'package:fitcall/models/1_common/event/event_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
+import 'package:fitcall/screens/1_common/event_qr_page.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:fitcall/services/etkinlik/etkinlik_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,7 +28,7 @@ class UyeHomePage extends StatefulWidget {
 }
 
 class _UyeHomePageState extends State<UyeHomePage> {
-  final List<_MenuItem> menuItems = [
+  final List<_MenuItem> _baseMenuItems = [
     _MenuItem(
       route: routeEnums[SayfaAdi.profil]!,
       icon: Icons.person_outline_rounded,
@@ -66,6 +69,10 @@ class _UyeHomePageState extends State<UyeHomePage> {
   bool _hasMultipleProfiles = false;
   String _uyeAdi = "";
 
+  // Event/Davet için
+  EventModel? _aktifEvent;
+  int? _userId;
+
   @override
   void initState() {
     super.initState();
@@ -73,6 +80,52 @@ class _UyeHomePageState extends State<UyeHomePage> {
     _checkProfiles();
     _fetchWeek();
     _loadUyeAdi();
+    _checkAktifEvent();
+  }
+
+  Future<void> _checkAktifEvent() async {
+    try {
+      final userId = await StorageService.getUserId();
+      if (userId == null || userId <= 0) return;
+
+      _userId = userId;
+
+      final result = await QrCodeApiService.getirEventAktifApi(userId: userId);
+      if (mounted && result.data != null) {
+        setState(() => _aktifEvent = result.data);
+      }
+    } catch (_) {
+      // Sessizce başarısız ol
+    }
+  }
+
+  List<_MenuItem> get _menuItems {
+    final items = <_MenuItem>[];
+
+    for (final item in _baseMenuItems) {
+      // QR Giriş gösterilmemesi lazımsa → gizle
+      if (_aktifEvent != null &&
+          !_aktifEvent!.qrGirisGosterilsinMi &&
+          item.route == routeEnums[SayfaAdi.qrKodKayit]) {
+        continue;
+      }
+      items.add(item);
+    }
+
+    // Event/Davet butonu sadece gösterilmesi gerekiyorsa ekle
+    if (_aktifEvent != null && _aktifEvent!.eventDavetGosterilsinMi) {
+      items.insert(
+        3,
+        _MenuItem(
+          route: '',
+          icon: Icons.celebration_outlined,
+          text: 'Event/Davet',
+          color: const Color(0xFF2E7D6B),
+          isEventButton: true,
+        ),
+      );
+    }
+    return items;
   }
 
   Future<void> _loadUyeAdi() async {
@@ -293,6 +346,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
   }
 
   Widget _buildMenuGrid(ColorScheme colorScheme) {
+    final items = _menuItems;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -316,14 +370,23 @@ class _UyeHomePageState extends State<UyeHomePage> {
             mainAxisSpacing: 12,
             childAspectRatio: 1.0,
           ),
-          itemCount: menuItems.length,
+          itemCount: items.length,
           itemBuilder: (context, index) {
-            final item = menuItems[index];
+            final item = items[index];
             return _MenuCard(
               item: item,
               onTap: () {
                 HapticFeedback.lightImpact();
-                Navigator.pushNamed(context, item.route);
+                if (item.isEventButton && _userId != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EventQrPage(userId: _userId!),
+                    ),
+                  ).then((_) => _checkAktifEvent()); // Geri dönüşte yenile
+                } else {
+                  Navigator.pushNamed(context, item.route);
+                }
               },
             );
           },
@@ -825,12 +888,14 @@ class _MenuItem {
   final IconData icon;
   final String text;
   final Color color;
+  final bool isEventButton;
 
   const _MenuItem({
     required this.route,
     required this.icon,
     required this.text,
     required this.color,
+    this.isEventButton = false,
   });
 }
 

@@ -6,6 +6,7 @@ class GecisModel {
   final DateTime expiresAt;
   final bool iptalMi;
   final String? label; // davetli adı-soyadı (opsiyonel)
+  final String? telefon; // davetli telefon numarası (opsiyonel)
 
   GecisModel({
     required this.kapsam,
@@ -15,6 +16,7 @@ class GecisModel {
     required this.expiresAt,
     required this.iptalMi,
     this.label,
+    this.telefon,
   });
 
   factory GecisModel.fromJson(Map<String, dynamic> json) => GecisModel(
@@ -24,7 +26,8 @@ class GecisModel {
         code: json['code'] as String,
         expiresAt: DateTime.parse(json['expires_at'] as String),
         iptalMi: json['iptal_mi'] as bool,
-        label: json['label'] as String?, // backend eklediyse gelir
+        label: json['label'] as String?,
+        telefon: json['telefon'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -35,5 +38,6 @@ class GecisModel {
         'expires_at': expiresAt.toIso8601String(),
         'iptal_mi': iptalMi,
         if (label != null) 'label': label,
+        if (telefon != null) 'telefon': telefon,
       };
 }

@@ -6,11 +6,6 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
-import 'package:fitcall/services/api_result.dart';
-import 'package:fitcall/services/core/qr_code_api_service.dart';
-import 'package:fitcall/models/1_common/event/event_model.dart';
-import 'package:fitcall/screens/1_common/event_qr_page.dart';
-import 'package:fitcall/services/core/storage_service.dart';
 
 class ProfilSecPage extends StatefulWidget {
   final List<KullaniciProfilModel> kullaniciProfilList;
@@ -22,7 +17,6 @@ class ProfilSecPage extends StatefulWidget {
 
 class _ProfilSecPageState extends State<ProfilSecPage> {
   bool _routing = false;
-  bool _suppressEventOnce = false;
 
   @override
   void initState() {
@@ -34,29 +28,6 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     if (!mounted || _routing) return;
     _routing = true;
 
-    // Event kontrolü
-    if (!_suppressEventOnce) {
-      final userId = await StorageService.getUserId();
-      if (userId != null && userId > 0) {
-        try {
-          final ApiResult<EventModel?> evRes =
-              await QrCodeApiService.getirEventAktifApi(userId: userId);
-          if (evRes.data != null && mounted) {
-            final closedByUser = await Navigator.push<bool>(
-              context,
-              MaterialPageRoute(builder: (_) => EventQrPage(userId: userId)),
-            );
-            if (closedByUser == true) {
-              _suppressEventOnce = true;
-            }
-            _routing = false;
-            Future.microtask(_runFlow);
-            return;
-          }
-        } catch (_) {}
-      }
-    }
-
     // Tek profil varsa otomatik login
     if (mounted && widget.kullaniciProfilList.length == 1) {
       await _profilSecildi(widget.kullaniciProfilList.first);
@@ -65,7 +36,6 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     }
 
     _routing = false;
-    _suppressEventOnce = false;
   }
 
   Future<void> _profilSecildi(KullaniciProfilModel p) async {
