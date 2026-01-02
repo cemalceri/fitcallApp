@@ -222,7 +222,7 @@ class _DersListesiPageState extends State<DersListesiPage>
   /* -------------------------------------------------------------------------- */
   DateTime _haftaBaslangic(DateTime d) => d
       .subtract(Duration(days: d.weekday - 1))
-      .copyWith(hour: 7, minute: 0, second: 0, millisecond: 0);
+      .copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
 
   DateTime _normalizeDate(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -932,13 +932,17 @@ class _DersListesiPageState extends State<DersListesiPage>
             final hocaItems = <DropdownMenuItem<int?>>[
               const DropdownMenuItem(value: null, child: Text('Tüm Hocalar')),
               ..._hocaAdlari.entries.map(
-                (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
+                (e) => DropdownMenuItem(
+                    value: e.key,
+                    child: Text(e.value, overflow: TextOverflow.ellipsis)),
               ),
             ];
             final kortItems = <DropdownMenuItem<int?>>[
               const DropdownMenuItem(value: null, child: Text('Tüm Kortlar')),
               ..._kortAdlari.entries.map(
-                (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
+                (e) => DropdownMenuItem(
+                    value: e.key,
+                    child: Text(e.value, overflow: TextOverflow.ellipsis)),
               ),
             ];
 
@@ -1013,6 +1017,7 @@ class _DersListesiPageState extends State<DersListesiPage>
                         Expanded(
                           child: DropdownButtonFormField<int?>(
                             initialValue: tempHoca,
+                            isExpanded: true,
                             items: hocaItems,
                             onChanged: (v) => setMState(() => tempHoca = v),
                             decoration: InputDecoration(
@@ -1023,6 +1028,8 @@ class _DersListesiPageState extends State<DersListesiPage>
                               ),
                               filled: true,
                               fillColor: Colors.grey.shade50,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 14),
                             ),
                           ),
                         ),
@@ -1030,6 +1037,7 @@ class _DersListesiPageState extends State<DersListesiPage>
                         Expanded(
                           child: DropdownButtonFormField<int?>(
                             initialValue: tempKort,
+                            isExpanded: true,
                             items: kortItems,
                             onChanged: (v) => setMState(() => tempKort = v),
                             decoration: InputDecoration(
@@ -1041,6 +1049,8 @@ class _DersListesiPageState extends State<DersListesiPage>
                               ),
                               filled: true,
                               fillColor: Colors.grey.shade50,
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 14),
                             ),
                           ),
                         ),
