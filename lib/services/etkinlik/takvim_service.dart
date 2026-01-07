@@ -256,48 +256,6 @@ class TakvimService {
     );
   }
 
-  static Future<ApiResult<WeekTakvimDataDto>> antrenorLoadDay({
-    required DateTime start,
-    required DateTime end,
-    int? antrenorId,
-  }) async {
-    final dersRes = await ApiClient.postParsed<List<EtkinlikModel>>(
-      getAntrenorGunlukEtkinlikler,
-      {'start': start.toIso8601String(), 'end': end.toIso8601String()},
-      (json) => ApiParsing.parseList<EtkinlikModel>(
-        json,
-        (m) => EtkinlikModel.fromMap(m),
-      ),
-    );
-
-    final slotRes = await ApiClient.postParsed<Map<String, dynamic>>(
-      getAntrenorUygunSaatleri,
-      {
-        'start': start.toIso8601String(),
-        'end': end.toIso8601String(),
-        if (antrenorId != null) 'antrenor_id': antrenorId
-      },
-      (json) => (json as Map).cast<String, dynamic>(),
-    );
-
-    final busy = ((slotRes.data?['busy'] ?? []) as List)
-        .map((e) => MesgulSlotDto.fromJson((e as Map).cast<String, dynamic>()))
-        .toList();
-
-    final available = ((slotRes.data?['available'] ?? []) as List)
-        .map((e) => UygunSlotDto.fromJson((e as Map).cast<String, dynamic>()))
-        .toList();
-
-    final dto = WeekTakvimDataDto(
-      dersler: dersRes.data ?? [],
-      mesgul: busy,
-      uygun: available,
-    );
-
-    final mesaj = dersRes.mesaj.isNotEmpty ? dersRes.mesaj : slotRes.mesaj;
-    return ApiResult<WeekTakvimDataDto>(mesaj: mesaj, data: dto);
-  }
-
   static Future<ApiResult<List<EtkinlikModel>>>
       getirAntrenorHaftalikDersBilgileri() {
     return ApiClient.postParsed<List<EtkinlikModel>>(

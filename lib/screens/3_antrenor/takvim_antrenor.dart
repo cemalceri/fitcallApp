@@ -5,6 +5,7 @@ import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
@@ -40,8 +41,6 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage>
   final Set<DateTime> _yuklenenGunler = {};
   final Map<DateTime, List<_TimeSlotItem>> _gunlukSlotlar = {};
   final List<EtkinlikModel> _tumDersler = [];
-
-  static const int _basSaat = 7, _bitSaat = 23;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -82,10 +81,15 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage>
 
     try {
       var antrenorId = await StorageService.antrenorBilgileriniGetir();
-      final r = await TakvimService.antrenorLoadDay(
+
+      // Yeni DTO kullanılıyor
+      final r = await AntrenorApiService.antrenorLoadDay(
           start: start, end: end, antrenorId: antrenorId?.id);
-      final WeekTakvimDataDto data =
-          r.data ?? WeekTakvimDataDto(dersler: [], mesgul: [], uygun: []);
+
+      // AntrenorTakvimDataDto döndürüyor
+      final AntrenorTakvimDataDto data =
+          r.data ?? AntrenorTakvimDataDto(dersler: []);
+
       _tumDersler.addAll(data.dersler);
       _processGun(day00, data);
     } on ApiException catch (e) {
@@ -95,62 +99,24 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage>
     }
   }
 
-  void _processGun(DateTime gun00, WeekTakvimDataDto data) {
+  void _processGun(DateTime gun00, AntrenorTakvimDataDto data) {
     final List<_TimeSlotItem> slotlar = [];
-    final now = DateTime.now();
 
-    for (int saat = _basSaat; saat < _bitSaat; saat++) {
-      final slotStart = gun00.add(Duration(hours: saat));
-      final slotEnd = slotStart.add(const Duration(hours: 1));
-      final isPast = slotEnd.isBefore(now);
-
-      final dersler = data.dersler
-          .where((d) =>
-              d.baslangicTarihSaat.isAtSameMomentAs(slotStart) ||
-              (d.baslangicTarihSaat.isBefore(slotEnd) &&
-                  d.bitisTarihSaat.isAfter(slotStart)))
-          .toList();
-
-      if (dersler.isNotEmpty) {
-        for (final ders in dersler) {
-          slotlar.add(_TimeSlotItem(
-            baslangic: ders.baslangicTarihSaat,
-            bitis: ders.bitisTarihSaat,
-            tip: ders.iptalMi ? _SlotTip.iptal : _SlotTip.ders,
-            ders: ders,
-            antrenorAdi: ders.antrenorAdi,
-            kortAdi: ders.kortAdi,
-          ));
-        }
-        continue;
-      }
-
-      final mesgul = data.mesgul.any(
-          (m) => m.baslangic.isBefore(slotEnd) && m.bitis.isAfter(slotStart));
-      if (isPast || mesgul) {
-        slotlar.add(_TimeSlotItem(
-            baslangic: slotStart, bitis: slotEnd, tip: _SlotTip.uygunDegil));
-        continue;
-      }
-
-      final uygunlar = data.uygun
-          .where((u) =>
-              u.baslangic.isAtSameMomentAs(slotStart) &&
-              u.bitis.isAtSameMomentAs(slotEnd))
-          .toList();
-      if (uygunlar.isNotEmpty) {
-        slotlar.add(_TimeSlotItem(
-          baslangic: slotStart,
-          bitis: slotEnd,
-          tip: _SlotTip.uygun,
-          antrenorAdi: uygunlar.first.antrenorAdi,
-          kortAdi: uygunlar.first.kortAdi,
-        ));
-      } else {
-        slotlar.add(_TimeSlotItem(
-            baslangic: slotStart, bitis: slotEnd, tip: _SlotTip.uygunDegil));
-      }
+    // Dersleri direkt slot'lara çevir
+    for (final ders in data.dersler) {
+      slotlar.add(_TimeSlotItem(
+        baslangic: ders.baslangicTarihSaat,
+        bitis: ders.bitisTarihSaat,
+        tip: ders.iptalMi ? _SlotTip.iptal : _SlotTip.ders,
+        ders: ders,
+        antrenorAdi: ders.antrenorAdi,
+        kortAdi: ders.kortAdi,
+      ));
     }
+
+    // Zamana göre sırala
+    slotlar.sort((a, b) => a.baslangic.compareTo(b.baslangic));
+
     _gunlukSlotlar[gun00] = slotlar;
   }
 

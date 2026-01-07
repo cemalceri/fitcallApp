@@ -10,6 +10,7 @@ import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_talep_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,6 +27,7 @@ const Color uiPrimaryLight = Color(0xFFDBEAFE); // Blue 100
 const Color uiAccentGreen = Color(0xFF10B981); // Emerald
 const Color uiAccentOrange = Color(0xFFF59E0B); // Amber
 const Color uiSurfaceLight = Color(0xFFFAFAFA);
+const Color uiAccentRed = Color(0xFFEF4444); // Red - İptal için
 
 /* -------------------------------------------------------------------------- */
 /*                                Sayfa                                        */
@@ -240,6 +242,10 @@ class _DersListesiPageState extends State<DersListesiPage>
     final kortAdi =
         m['kort_adi'] ?? m['kortAdi'] ?? m['court_name'] ?? d.kortAdi;
 
+    // TEYİT BİLGİSİNİ AL - YENİ
+    final teyitBilgisi =
+        currentUye != null ? d.getTeyitBilgisi(currentUye!.id) : null;
+
     return Appointment(
       id: d.id,
       startTime: d.baslangicTarihSaat,
@@ -254,8 +260,16 @@ class _DersListesiPageState extends State<DersListesiPage>
         'antrenor_adi': antrenorAdi,
         'kort_id': (kortId is int) ? kortId : int.tryParse('${kortId ?? ''}'),
         'kort_adi': kortAdi,
+        // TEYİT BİLGİSİNİ NOTES'A EKLE - YENİ
+        if (teyitBilgisi != null)
+          'teyit_bilgisi': {
+            'id': teyitBilgisi.id,
+            'katilacak_mi': teyitBilgisi.katilacakMi,
+            'aciklama': teyitBilgisi.aciklama,
+          },
       }),
       color: d.iptalMi ? uygunOlmayanRenk : dersDoluRenk,
+      teyitBilgisi: teyitBilgisi, // YENİ
     );
   }
 
@@ -1181,6 +1195,558 @@ class _DersListesiPageState extends State<DersListesiPage>
   /* -------------------------------------------------------------------------- */
   /*                       Seçili gün derslerini göster                          */
   /* -------------------------------------------------------------------------- */
+
+  /* -------------------------------------------------------------------------- */
+/*                    3 SEÇENEKLİ GELECEK DERS MENÜSÜ - YENİ                */
+/* -------------------------------------------------------------------------- */
+  void _showGelecekDersMenuSheet(EtkinlikModel ders) {
+    final theme = Theme.of(context);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: uiPrimaryBlue.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.sports_tennis_rounded,
+                      color: uiPrimaryBlue,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Ders İşlemleri',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          '${_formatGunBaslik(ders.baslangicTarihSaat)} • ${_formatSaatTek(ders.baslangicTarihSaat)}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // 1. KATILIM BİLDİRİMİ
+              _buildMenuSecenegi(
+                icon: Icons.how_to_reg_rounded,
+                iconColor: uiAccentGreen,
+                title: 'Katılım Durumu Bildir',
+                subtitle: currentUye != null &&
+                        ders.getTeyitBilgisi(currentUye!.id) != null
+                    ? ders.getTeyitBilgisi(currentUye!.id)!.durumText
+                    : 'Henüz bildirilmedi',
+                onTap: () {
+                  Navigator.pop(context);
+                  _showKatilimDurumuSheet(ders);
+                },
+              ),
+
+              const SizedBox(height: 12),
+
+              // 2. DERS İPTAL
+              _buildMenuSecenegi(
+                icon: Icons.event_busy_rounded,
+                iconColor: uiAccentOrange,
+                title: 'Dersi İptal Et',
+                subtitle: 'Dersi tamamen iptal et',
+                onTap: () {
+                  Navigator.pop(context);
+                  _showIptalTalebiSheet(ders);
+                },
+              ),
+
+              const SizedBox(height: 12),
+
+              // 3. DETAY GÖRÜNTÜLE
+              _buildMenuSecenegi(
+                icon: Icons.info_outline_rounded,
+                iconColor: uiPrimaryBlue,
+                title: 'Detayları Görüntüle',
+                subtitle: 'Ders bilgilerini gör',
+                onTap: () {
+                  Navigator.pop(context);
+                  _showDersDetaySheet(ders);
+                },
+              ),
+
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMenuSecenegi({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: iconColor, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded,
+                  color: Colors.grey.shade400, size: 22),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+/* -------------------------------------------------------------------------- */
+/*                        KATILIM DURUMU SHEET - YENİ                         */
+/* -------------------------------------------------------------------------- */
+  void _showKatilimDurumuSheet(EtkinlikModel ders) {
+    final theme = Theme.of(context);
+    final mevcutTeyit =
+        currentUye != null ? ders.getTeyitBilgisi(currentUye!.id) : null;
+    bool? secilenDurum = mevcutTeyit?.katilacakMi;
+    final aciklamaCtrl = TextEditingController(
+      text: mevcutTeyit?.aciklama ?? '',
+    );
+    bool isLoading = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: EdgeInsets.fromLTRB(
+                  20, 12, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Header
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: uiAccentGreen.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.how_to_reg_rounded,
+                          color: uiAccentGreen,
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Katılım Durumu',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              '${_formatGunBaslik(ders.baslangicTarihSaat)} • ${_formatSaatTek(ders.baslangicTarihSaat)}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Durum seçenekleri
+                  _buildDurumSecenegi(
+                    isSelected: secilenDurum == true,
+                    icon: Icons.check_circle_rounded,
+                    color: uiAccentGreen,
+                    title: 'Katılacağım',
+                    subtitle: 'Derse katılacağım',
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setSheetState(() => secilenDurum = true);
+                    },
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  _buildDurumSecenegi(
+                    isSelected: secilenDurum == false,
+                    icon: Icons.cancel_rounded,
+                    color: uiAccentOrange,
+                    title: 'Katılamayacağım',
+                    subtitle: 'Derse katılamayacağım',
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setSheetState(() => secilenDurum = false);
+                    },
+                  ),
+
+                  if (secilenDurum == false) ...[
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: aciklamaCtrl,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: 'Açıklama (isteğe bağlı)',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 24),
+
+                  // Actions
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Vazgeç'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: FilledButton(
+                          onPressed: secilenDurum == null || isLoading
+                              ? null
+                              : () async {
+                                  setSheetState(() => isLoading = true);
+                                  try {
+                                    await DersTeyitService.setDersTeyitBilgisi(
+                                      uyeId: currentUye!.id.toString(),
+                                      etkinlikId: ders.id.toString(),
+                                      durum: secilenDurum!,
+                                      aciklama: aciklamaCtrl.text.trim(),
+                                    );
+
+                                    if (mounted) {
+                                      Navigator.pop(context);
+                                      ShowMessage.success(
+                                        context,
+                                        'Katılım durumunuz kaydedildi',
+                                      );
+                                      _forceReloadVisibleWeek();
+                                    }
+                                  } on ApiException catch (e) {
+                                    setSheetState(() => isLoading = false);
+                                    if (mounted) {
+                                      ShowMessage.error(context, e.message);
+                                    }
+                                  } catch (e) {
+                                    setSheetState(() => isLoading = false);
+                                    if (mounted) {
+                                      ShowMessage.error(context, 'Hata: $e');
+                                    }
+                                  }
+                                },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: uiPrimaryBlue,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  'Kaydet',
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+/* -------------------------------------------------------------------------- */
+/*                          DERS DETAY SHEET - YENİ                           */
+/* -------------------------------------------------------------------------- */
+  void _showDersDetaySheet(EtkinlikModel ders) {
+    final theme = Theme.of(context);
+    final teyit =
+        currentUye != null ? ders.getTeyitBilgisi(currentUye!.id) : null;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: uiPrimaryBlue.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.info_outline_rounded,
+                      color: uiPrimaryBlue,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Text(
+                      'Ders Detayları',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Detaylar
+              _buildDetayRow(Icons.calendar_today_rounded, 'Tarih',
+                  _formatGunBaslik(ders.baslangicTarihSaat)),
+              const SizedBox(height: 12),
+              _buildDetayRow(Icons.access_time_rounded, 'Saat',
+                  '${_formatSaatTek(ders.baslangicTarihSaat)} - ${_formatSaatTek(ders.bitisTarihSaat)}'),
+              const SizedBox(height: 12),
+              _buildDetayRow(Icons.sports_tennis_rounded, 'Kort', ders.kortAdi),
+              if (ders.antrenorAdi != null) ...[
+                const SizedBox(height: 12),
+                _buildDetayRow(
+                    Icons.person_rounded, 'Antrenör', ders.antrenorAdi!),
+              ],
+              if (teyit != null && teyit.katilacakMi != null) ...[
+                const SizedBox(height: 12),
+                _buildDetayRow(
+                  Icons.how_to_reg_rounded,
+                  'Katılım Durumu',
+                  teyit.durumText,
+                  color: teyit.durumColor,
+                ),
+              ],
+
+              const SizedBox(height: 24),
+
+              // Kapat butonu
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: uiPrimaryBlue,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Kapat',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetayRow(IconData icon, String label, String value,
+      {Color? color}) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: (color ?? uiPrimaryBlue).withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: color ?? uiPrimaryBlue, size: 20),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   void _openSelectedDayDerslerSheet() {
     if (_selectedDayDersler.isEmpty) {
       ShowMessage.error(context, 'Seçili günde ders bulunamadı.');
@@ -1576,25 +2142,64 @@ class _DersListesiPageState extends State<DersListesiPage>
                       ]),
                     ],
                     const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: accentColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(statusIcon, size: 12, color: accentColor),
-                          const SizedBox(width: 4),
-                          Text(statusText,
-                              style: TextStyle(
-                                  color: accentColor,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600)),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: accentColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(statusIcon, size: 12, color: accentColor),
+                              const SizedBox(width: 4),
+                              Text(statusText,
+                                  style: TextStyle(
+                                      color: accentColor,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                        // TEYİT BADGE - YENİ
+                        if (!isPast &&
+                            !isIptal &&
+                            appt.teyitBilgisi != null &&
+                            appt.teyitBilgisi!.katilacakMi != null) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: appt.teyitBilgisi!.durumColor
+                                  .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: appt.teyitBilgisi!.durumColor
+                                    .withValues(alpha: 0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(appt.teyitBilgisi!.durumIcon,
+                                    size: 11,
+                                    color: appt.teyitBilgisi!.durumColor),
+                                const SizedBox(width: 4),
+                                Text(appt.teyitBilgisi!.durumText,
+                                    style: TextStyle(
+                                        color: appt.teyitBilgisi!.durumColor,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600)),
+                              ],
+                            ),
+                          ),
                         ],
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -1618,7 +2223,8 @@ class _DersListesiPageState extends State<DersListesiPage>
     if (isPast) {
       _showDersGeriBildirimSheet(ders);
     } else {
-      _showIptalTalebiSheet(ders);
+      // YENİ: 3 seçenekli menü
+      _showGelecekDersMenuSheet(ders);
     }
   }
 
@@ -2952,7 +3558,6 @@ String _formatGunBaslik(DateTime d) {
   return '${d.day} $ay $gun';
 }
 
-// Syncfusion Appointment sınıfı (mevcut kodda kullanıldığı için korundu)
 class Appointment {
   final dynamic id;
   final DateTime startTime;
@@ -2960,6 +3565,7 @@ class Appointment {
   final String subject;
   final String? notes;
   Color color;
+  final EtkinlikTeyit? teyitBilgisi; // YENİ
 
   Appointment({
     required this.id,
@@ -2968,5 +3574,6 @@ class Appointment {
     required this.subject,
     this.notes,
     required this.color,
+    this.teyitBilgisi, // YENİ
   });
 }

@@ -1,8 +1,8 @@
 // =================== BASE URL ===================
 const String baseUrlProd = "https://www.binay.fit/api";
 const String baseUrlLocal = "http://10.0.2.2:8000/api";
-const String baseUrl = baseUrlProd;
-//const String baseUrl = baseUrlLocal;
+//const String baseUrl = baseUrlProd;
+const String baseUrl = baseUrlLocal;
 
 // =================== AUTH ===================
 String loginUrl = "$baseUrl/getToken";
@@ -78,6 +78,7 @@ String silTesisMisafirPass = "$baseUrl/silTesisMisafirPass";
 String getGaleriImages = "$baseUrl/getGaleriImages";
 String getDuyurular = "$baseUrl/getDuyurular";
 String getMobilConfigs = "$baseUrl/getMobilConfigs";
+String mobilLogKaydet = "$baseUrl/mobilLogKaydet";
 
 // Ders Onay
 const String getDersOnayBilgisiUrl = "$baseUrl/getDersOnayBilgisi";

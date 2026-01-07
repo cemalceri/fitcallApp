@@ -10,3 +10,20 @@ class WeekTakvimDataDto {
   WeekTakvimDataDto(
       {required this.dersler, required this.mesgul, required this.uygun});
 }
+
+class AntrenorTakvimDataDto {
+  final List<EtkinlikModel> dersler;
+
+  AntrenorTakvimDataDto({
+    required this.dersler,
+  });
+
+  /// Backend'den gelen ders listesini parse eder
+  factory AntrenorTakvimDataDto.fromBackendList(List<dynamic> jsonList) {
+    final dersler = jsonList
+        .map((item) => EtkinlikModel.fromMap(item as Map<String, dynamic>))
+        .toList();
+
+    return AntrenorTakvimDataDto(dersler: dersler);
+  }
+}

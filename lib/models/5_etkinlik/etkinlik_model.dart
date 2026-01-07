@@ -1,7 +1,62 @@
+// lib/models/5_etkinlik/etkinlik_model.dart
+
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-/// UyeModel'in hafif DTO'su – backend'in "uyeler" listesindeki öğelerle uyumlu
+/// Üye için katılım teyit bilgisi
+class EtkinlikTeyit {
+  final int id;
+  final int uyeId;
+  final bool?
+      katilacakMi; // null = bekliyor, true = katılacak, false = katılmayacak
+  final String? aciklama;
+  final DateTime? teyitTarihi;
+  final bool okundu;
+
+  EtkinlikTeyit({
+    required this.id,
+    required this.uyeId,
+    this.katilacakMi,
+    this.aciklama,
+    this.teyitTarihi,
+    required this.okundu,
+  });
+
+  factory EtkinlikTeyit.fromMap(Map<String, dynamic> j) {
+    DateTime? date(String? v) =>
+        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+
+    return EtkinlikTeyit(
+      id: j['id'] ?? 0,
+      uyeId: j['uye'] ?? 0,
+      katilacakMi: j['katilacak_mi'],
+      aciklama: j['aciklama']?.toString(),
+      teyitTarihi: date(j['teyit_tarihi']),
+      okundu: (j['okundu'] ?? false) == true,
+    );
+  }
+
+  /// Teyit durumu text
+  String get durumText {
+    if (katilacakMi == null) return 'Bekliyor';
+    return katilacakMi! ? 'Katılacağım' : 'Katılmayacağım';
+  }
+
+  /// Teyit durumu renk
+  Color get durumColor {
+    if (katilacakMi == null) return Colors.grey;
+    return katilacakMi! ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+  }
+
+  /// Teyit durumu ikon
+  IconData get durumIcon {
+    if (katilacakMi == null) return Icons.help_outline_rounded;
+    return katilacakMi! ? Icons.check_circle_rounded : Icons.cancel_rounded;
+  }
+}
+
+/// UyeModel'in hafif DTO'su
 class UyeLiteModel {
   final int id;
   final String ad;
@@ -26,7 +81,6 @@ class UyeLiteModel {
 
     return UyeLiteModel(
       id: asInt(j['id']),
-      // Backend bazen 'adi/soyadi', bazen 'ad/soyad', bazen first/last_name döndürebilir
       ad: asStr(j['ad'] ?? j['adi'] ?? j['first_name']),
       soyad: asStr(j['soyad'] ?? j['soyadi'] ?? j['last_name']),
       telefon: j['telefon']?.toString(),
@@ -43,61 +97,41 @@ class UyeLiteModel {
       };
 }
 
-/// Etkinlik DTO – Django ‹EtkinlikModel› ile uyumlu
+/// Etkinlik DTO
 class EtkinlikModel {
-  /* -------------------------------------------------------------------------- */
-  /*                              ZORUNLU alanlar                               */
-  /* -------------------------------------------------------------------------- */
+  /* ZORUNLU ALANLAR */
   final int id;
-
-  /// UI geriye uyumluluk için alan adı `uyeList` bırakıldı.
-  /// JSON'dan 'uyeler' (tercih edilen), yoksa 'uye_list'/'participants' -> `uyeList`
   final List<UyeLiteModel> uyeList;
-
-  // Kort FK zorunlu
   final int kortId;
   final String kortAdi;
-
   final DateTime baslangicTarihSaat;
   final DateTime bitisTarihSaat;
-
-  final String seviye; // default'u var ama null olamaz
+  final String seviye;
   final bool iptalMi;
-
-  // BaseAbstract alanları
   final bool isActive;
   final bool isDeleted;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  /* -------------------------------------------------------------------------- */
-  /*                             OPSİYONEL alanlar                              */
-  /* -------------------------------------------------------------------------- */
+  /* OPSİYONEL ALANLAR */
   final String? haftalikPlanKodu;
-
   final int? urunId;
   final String? urunAdi;
-
   final int? antrenorId;
   final String? antrenorAdi;
-
   final int? yardimciAntrenorId;
   final String? yardimciAntrenorAdi;
-
   final String? iptalEden;
   final DateTime? iptalTarihSaat;
   final double? ucret;
-
-  // Diğer meta
   final int? ekleyen;
   final int? guncelleyen;
   final int? isletme;
 
-  /* -------------------------------------------------------------------------- */
-  /*                                   CTOR                                     */
-  /* -------------------------------------------------------------------------- */
+  /* YENİ: TEYİT BİLGİSİ */
+  final List<EtkinlikTeyit>? uyeOnaylari;
+
   EtkinlikModel({
-    /* zorunlular */
     required this.id,
     required this.uyeList,
     required this.kortId,
@@ -110,7 +144,6 @@ class EtkinlikModel {
     required this.isDeleted,
     required this.createdAt,
     required this.updatedAt,
-    /* opsiyoneller */
     this.haftalikPlanKodu,
     this.urunId,
     this.urunAdi,
@@ -124,11 +157,9 @@ class EtkinlikModel {
     this.ekleyen,
     this.guncelleyen,
     this.isletme,
+    this.uyeOnaylari,
   });
 
-  /* -------------------------------------------------------------------------- */
-  /*                              JSON → Model                                  */
-  /* -------------------------------------------------------------------------- */
   factory EtkinlikModel.fromMap(Map<String, dynamic> j) {
     DateTime? date(String? v) =>
         (v == null || v.isEmpty) ? null : DateTime.parse(v);
@@ -136,7 +167,7 @@ class EtkinlikModel {
     int? asIntN(dynamic v) =>
         (v == null) ? null : (v is int ? v : int.tryParse(v.toString()));
 
-    // Katılımcı listesi: öncelik 'uyeler' (SerializerMethodField), geri uyumluluk için 'uye_list'/'participants'
+    // Katılımcı listesi
     final dynamic katilimciHam =
         j['uyeler'] ?? j['uye_list'] ?? j['participants'];
     final List<UyeLiteModel> uyeler = (katilimciHam is List)
@@ -145,8 +176,16 @@ class EtkinlikModel {
             .toList()
         : <UyeLiteModel>[];
 
+    // Teyit listesi - YENİ
+    final dynamic teyitHam = j['uye_onaylari'] ?? j['teyitler'];
+    final List<EtkinlikTeyit>? teyitler =
+        (teyitHam is List && teyitHam.isNotEmpty)
+            ? teyitHam
+                .map((e) => EtkinlikTeyit.fromMap(e as Map<String, dynamic>))
+                .toList()
+            : null;
+
     return EtkinlikModel(
-      /* zorunlu */
       id: j['id'],
       uyeList: uyeler,
       kortId: j['kort'],
@@ -159,7 +198,6 @@ class EtkinlikModel {
       isDeleted: (j['is_deleted'] ?? false) == true,
       createdAt: DateTime.parse(j['olusturulma_zamani']),
       updatedAt: DateTime.parse(j['guncellenme_zamani']),
-      /* opsiyonel */
       haftalikPlanKodu: j['haftalik_plan_kodu']?.toString(),
       urunId: asIntN(j['urun']),
       urunAdi: j['urun_adi']?.toString(),
@@ -173,10 +211,10 @@ class EtkinlikModel {
       ekleyen: asIntN(j['ekleyen']),
       guncelleyen: asIntN(j['guncelleyen']),
       isletme: asIntN(j['isletme']),
+      uyeOnaylari: teyitler,
     );
   }
 
-  /* ----------------------- HTTP cevabından liste üretir --------------------- */
   static List<EtkinlikModel> fromJson(http.Response res) {
     final raw = json.decode(utf8.decode(res.bodyBytes));
     if (raw is List) {
@@ -184,16 +222,12 @@ class EtkinlikModel {
           .map((e) => EtkinlikModel.fromMap(e as Map<String, dynamic>))
           .toList();
     } else if (raw is Map<String, dynamic>) {
-      // Bazı endpointler tek obje döndürebilir
       return [EtkinlikModel.fromMap(raw)];
     } else {
       return <EtkinlikModel>[];
     }
   }
 
-  /* -------------------------------------------------------------------------- */
-  /*                               Model → JSON                                 */
-  /* -------------------------------------------------------------------------- */
   Map<String, dynamic> toJson() => {
         'id': id,
         'haftalik_plan_kodu': haftalikPlanKodu,
@@ -219,8 +253,29 @@ class EtkinlikModel {
         'ekleyen': ekleyen,
         'guncelleyen': guncelleyen,
         'isletme': isletme,
-
-        // Backend uyumu: katılımcılar "uyeler" altında dönsün
         'uyeler': uyeList.map((e) => e.toJson()).toList(),
       };
+
+  /* YENİ HELPER METODLAR */
+
+  /// Bu üyenin teyit bilgisini getir
+  EtkinlikTeyit? getTeyitBilgisi(int uyeId) {
+    if (uyeOnaylari == null) return null;
+    try {
+      return uyeOnaylari!.firstWhere((t) => t.uyeId == uyeId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Bu üye teyit vermiş mi?
+  bool teyitVerilmisMi(int uyeId) {
+    final teyit = getTeyitBilgisi(uyeId);
+    return teyit?.katilacakMi != null;
+  }
+
+  /// Bu üye katılacak mı?
+  bool? katilacakMi(int uyeId) {
+    return getTeyitBilgisi(uyeId)?.katilacakMi;
+  }
 }
