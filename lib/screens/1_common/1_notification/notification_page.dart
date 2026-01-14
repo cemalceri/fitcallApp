@@ -8,6 +8,17 @@ import 'package:fitcall/services/notification/notification_router.dart';
 import 'package:fitcall/main.dart';
 import 'package:flutter/material.dart';
 
+/* -------------------------------------------------------------------------- */
+/*                             RENK SABİTLERİ                                  */
+/* -------------------------------------------------------------------------- */
+const Color _primaryBlue = Color(0xFF0095F6); // Instagram blue
+const Color _textPrimary = Color(0xFF262626);
+const Color _textSecondary = Color(0xFF8E8E8E);
+const Color _dividerColor = Color(0xFFDBDBDB);
+const Color _successGreen = Color(0xFF00D26A);
+const Color _warningOrange = Color(0xFFFF9500);
+const Color _errorRed = Color(0xFFED4956);
+
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
 
@@ -94,23 +105,32 @@ class _NotificationPageState extends State<NotificationPage> {
 
   List<Map<String, dynamic>> _groupByDate() {
     final today = <NotificationModel>[];
-    final last7 = <NotificationModel>[];
-    final last30 = <NotificationModel>[];
+    final yesterday = <NotificationModel>[];
+    final thisWeek = <NotificationModel>[];
+    final thisMonth = <NotificationModel>[];
+    final older = <NotificationModel>[];
     final now = DateTime.now();
+
     for (final n in _notifications) {
       final d = now.difference(n.timestamp).inDays;
       if (d == 0) {
         today.add(n);
+      } else if (d == 1) {
+        yesterday.add(n);
       } else if (d < 7) {
-        last7.add(n);
+        thisWeek.add(n);
       } else if (d < 30) {
-        last30.add(n);
+        thisMonth.add(n);
+      } else {
+        older.add(n);
       }
     }
     return [
       {'title': 'Bugün', 'items': today},
-      {'title': 'Son 7 Gün', 'items': last7},
-      {'title': 'Son 30 Gün', 'items': last30},
+      {'title': 'Dün', 'items': yesterday},
+      {'title': 'Bu Hafta', 'items': thisWeek},
+      {'title': 'Bu Ay', 'items': thisMonth},
+      {'title': 'Daha Eski', 'items': older},
     ];
   }
 
@@ -120,7 +140,7 @@ class _NotificationPageState extends State<NotificationPage> {
   Widget build(BuildContext context) {
     final groups = _groupByDate();
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -132,11 +152,11 @@ class _NotificationPageState extends State<NotificationPage> {
                       ? _buildEmptyState()
                       : RefreshIndicator(
                           onRefresh: _fetchNotifications,
-                          color: const Color(0xFF3B82F6),
+                          color: _primaryBlue,
                           child: ListView.builder(
                             physics: const AlwaysScrollableScrollPhysics(
                                 parent: BouncingScrollPhysics()),
-                            padding: const EdgeInsets.only(bottom: 24),
+                            padding: EdgeInsets.zero,
                             itemCount: groups.length,
                             itemBuilder: (context, index) {
                               final group = groups[index];
@@ -154,58 +174,40 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(8, 8, 16, 16),
-      decoration: BoxDecoration(color: Colors.white, boxShadow: [
-        BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2))
-      ]),
-      child: Column(
+      padding: const EdgeInsets.fromLTRB(4, 8, 16, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+            bottom: BorderSide(color: _dividerColor.withValues(alpha: 0.5))),
+      ),
+      child: Row(
         children: [
-          Row(
-            children: [
-              IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      size: 20, color: Color(0xFF1E293B))),
-              const Expanded(
-                  child: Text('Bildirimler',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1E293B),
-                          letterSpacing: -0.3))),
-              if (_unreadCount > 0)
-                TextButton.icon(
-                    onPressed: _markAllRead,
-                    style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF3B82F6),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8)),
-                    icon: const Icon(Icons.done_all_rounded, size: 18),
-                    label: const Text('Tümü Okundu',
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w600))),
-            ],
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                size: 22, color: _textPrimary),
+          ),
+          const Expanded(
+            child: Text(
+              'Bildirimler',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: _textPrimary,
+                letterSpacing: -0.5,
+              ),
+            ),
           ),
           if (_unreadCount > 0)
-            Padding(
-              padding: const EdgeInsets.only(left: 16, top: 4),
-              child: Row(
-                children: [
-                  Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12)),
-                      child: Text('$_unreadCount okunmamış',
-                          style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF3B82F6)))),
-                ],
+            GestureDetector(
+              onTap: _markAllRead,
+              child: Text(
+                'Tümünü Okundu Yap',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _primaryBlue,
+                ),
               ),
             ),
         ],
@@ -219,15 +221,20 @@ class _NotificationPageState extends State<NotificationPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-            child: Text(title,
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade500,
-                    letterSpacing: 0.3))),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: _textPrimary,
+            ),
+          ),
+        ),
         ...items.map((n) => _NotificationTile(
-            notification: n, onTap: () => _onNotificationTap(n))),
+              notification: n,
+              onTap: () => _onNotificationTap(n),
+            )),
       ],
     );
   }
@@ -264,19 +271,10 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-              width: 32,
-              height: 32,
-              child: CircularProgressIndicator(
-                  strokeWidth: 2.5, color: Colors.grey.shade400)),
-          const SizedBox(height: 16),
-          Text('Bildirimler yükleniyor...',
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 14)),
-        ],
+    return const Center(
+      child: CircularProgressIndicator(
+        strokeWidth: 2,
+        color: _textSecondary,
       ),
     );
   }
@@ -287,27 +285,44 @@ class _NotificationPageState extends State<NotificationPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                  color: Colors.grey.shade100, shape: BoxShape.circle),
-              child: Icon(Icons.notifications_off_outlined,
-                  size: 36, color: Colors.grey.shade400)),
-          const SizedBox(height: 20),
-          Text('Bildirim yok',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade700)),
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: _textPrimary, width: 2),
+            ),
+            child: const Icon(
+              Icons.favorite_border_rounded,
+              size: 48,
+              color: _textPrimary,
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Etkinlik Yok',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              color: _textPrimary,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('Yeni bildirimler burada görünecek',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade500)),
+          Text(
+            'Yeni bildirimler burada görünecek',
+            style: TextStyle(
+              fontSize: 14,
+              color: _textSecondary,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/*                         BİLDİRİM TILE - INSTAGRAM TARZI                     */
+/* -------------------------------------------------------------------------- */
 class _NotificationTile extends StatelessWidget {
   final NotificationModel notification;
   final VoidCallback onTap;
@@ -316,91 +331,100 @@ class _NotificationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUnread = !notification.isRead;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-          color: isUnread ? const Color(0xFFF0F7FF) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-              color: isUnread
-                  ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
-                  : Colors.grey.shade100),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2))
-          ]),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildIcon(),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+
+    return Material(
+      color: isUnread ? const Color(0xFFEFF6FF) : Colors.white,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Avatar / Icon
+              _buildAvatar(),
+              const SizedBox(width: 14),
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RichText(
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: _textPrimary,
+                          height: 1.4,
+                        ),
                         children: [
-                          Expanded(
-                              child: Text(notification.title,
-                                  style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: isUnread
-                                          ? FontWeight.w600
-                                          : FontWeight.w500,
-                                      color: const Color(0xFF1E293B)),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis)),
-                          const SizedBox(width: 8),
-                          Text(_formatTime(notification.timestamp),
-                              style: TextStyle(
-                                  fontSize: 12, color: Colors.grey.shade500)),
+                          TextSpan(
+                            text: notification.title,
+                            style: TextStyle(
+                              fontWeight:
+                                  isUnread ? FontWeight.w600 : FontWeight.w500,
+                            ),
+                          ),
+                          const TextSpan(text: ' '),
+                          TextSpan(
+                            text: notification.body,
+                            style: TextStyle(
+                              fontWeight:
+                                  isUnread ? FontWeight.w400 : FontWeight.w400,
+                              color: isUnread ? _textPrimary : _textSecondary,
+                            ),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(notification.body,
-                          style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey.shade600,
-                              height: 1.4),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis),
-                    ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatTime(notification.timestamp),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isUnread ? _primaryBlue : _textSecondary,
+                        fontWeight:
+                            isUnread ? FontWeight.w500 : FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Unread indicator
+              if (isUnread) ...[
+                const SizedBox(width: 12),
+                Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.only(top: 6),
+                  decoration: const BoxDecoration(
+                    color: _primaryBlue,
+                    shape: BoxShape.circle,
                   ),
                 ),
-                if (isUnread)
-                  Container(
-                      margin: const EdgeInsets.only(left: 8, top: 4),
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                          color: Color(0xFF3B82F6), shape: BoxShape.circle)),
               ],
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildIcon() {
+  Widget _buildAvatar() {
     final iconData = _getNotificationIcon();
+    final bgColor = _getIconBgColor();
     final iconColor = _getIconColor();
+
     return Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-            color: iconColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12)),
-        child: Icon(iconData, size: 20, color: iconColor));
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: bgColor,
+        shape: BoxShape.circle,
+      ),
+      child: Icon(iconData, size: 22, color: iconColor),
+    );
   }
 
   IconData _getNotificationIcon() {
@@ -433,28 +457,45 @@ class _NotificationTile extends StatelessWidget {
     }
   }
 
+  Color _getIconBgColor() {
+    switch (notification.notificationType) {
+      case NotificationType.dersTeyidi:
+      case NotificationType.telafiIade:
+      case NotificationType.paketSatinAlma:
+        return _successGreen.withValues(alpha: 0.15);
+      case NotificationType.dersIptal:
+      case NotificationType.gecikenOdeme:
+        return _errorRed.withValues(alpha: 0.15);
+      case NotificationType.paketBitiyor:
+      case NotificationType.paketSuresiDoluyor:
+      case NotificationType.antrenorDegisikligi:
+        return _warningOrange.withValues(alpha: 0.15);
+      case NotificationType.paketHakGuncelleme:
+      case NotificationType.uyelikTanimlandi:
+        return _primaryBlue.withValues(alpha: 0.15);
+      default:
+        return _textSecondary.withValues(alpha: 0.15);
+    }
+  }
+
   Color _getIconColor() {
     switch (notification.notificationType) {
       case NotificationType.dersTeyidi:
       case NotificationType.telafiIade:
       case NotificationType.paketSatinAlma:
-        return const Color(0xFF10B981);
+        return _successGreen;
       case NotificationType.dersIptal:
       case NotificationType.gecikenOdeme:
-        return const Color(0xFFEF4444);
+        return _errorRed;
       case NotificationType.paketBitiyor:
       case NotificationType.paketSuresiDoluyor:
       case NotificationType.antrenorDegisikligi:
-        return const Color(0xFFF59E0B);
-      case NotificationType.paketBitti:
-        return const Color(0xFF64748B);
+        return _warningOrange;
       case NotificationType.paketHakGuncelleme:
       case NotificationType.uyelikTanimlandi:
-        return const Color(0xFF3B82F6);
-      case NotificationType.telafiKullanildi:
-        return const Color(0xFF8B5CF6);
+        return _primaryBlue;
       default:
-        return const Color(0xFF64748B);
+        return _textSecondary;
     }
   }
 
@@ -462,13 +503,16 @@ class _NotificationTile extends StatelessWidget {
     final now = DateTime.now();
     final diff = now.difference(dt);
     if (diff.inMinutes < 1) return 'Şimdi';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} dk';
-    if (diff.inHours < 24) return '${diff.inHours} sa';
-    if (diff.inDays < 7) return '${diff.inDays} gün';
-    return '${dt.day}.${dt.month}';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}d';
+    if (diff.inHours < 24) return '${diff.inHours}s';
+    if (diff.inDays < 7) return '${diff.inDays}g';
+    return '${diff.inDays ~/ 7}h';
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/*                       BİLDİRİM DETAY SHEET                                  */
+/* -------------------------------------------------------------------------- */
 class _NotificationDetailSheet extends StatelessWidget {
   final NotificationModel notification;
   const _NotificationDetailSheet({required this.notification});
@@ -478,17 +522,21 @@ class _NotificationDetailSheet extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2))),
+            margin: const EdgeInsets.only(top: 12),
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: _dividerColor,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -497,20 +545,27 @@ class _NotificationDetailSheet extends StatelessWidget {
                 Row(
                   children: [
                     _buildTypeIcon(),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(notification.title,
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1E293B))),
-                          const SizedBox(height: 2),
-                          Text(_formatDateTime(notification.timestamp),
-                              style: TextStyle(
-                                  fontSize: 13, color: Colors.grey.shade500)),
+                          Text(
+                            notification.title,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: _textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _formatDateTime(notification.timestamp),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: _textSecondary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -518,30 +573,41 @@ class _NotificationDetailSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(12)),
-                    child: Text(notification.body,
-                        style: TextStyle(
-                            fontSize: 14,
-                            height: 1.6,
-                            color: Colors.grey.shade700))),
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAFAFA),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    notification.body,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      height: 1.6,
+                      color: _textPrimary,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 SizedBox(
-                    width: double.infinity,
-                    child: TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: TextButton.styleFrom(
-                            backgroundColor: const Color(0xFFF1F5F9),
-                            foregroundColor: const Color(0xFF475569),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12))),
-                        child: const Text('Kapat',
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w600)))),
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFFF5F5F5),
+                      foregroundColor: _textPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Kapat',
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -555,12 +621,14 @@ class _NotificationDetailSheet extends StatelessWidget {
     final iconData = _getIcon();
     final color = _getColor();
     return Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(14)),
-        child: Icon(iconData, size: 24, color: color));
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(iconData, size: 26, color: color),
+    );
   }
 
   IconData _getIcon() {
@@ -598,40 +666,36 @@ class _NotificationDetailSheet extends StatelessWidget {
       case NotificationType.dersTeyidi:
       case NotificationType.telafiIade:
       case NotificationType.paketSatinAlma:
-        return const Color(0xFF10B981);
+        return _successGreen;
       case NotificationType.dersIptal:
       case NotificationType.gecikenOdeme:
-        return const Color(0xFFEF4444);
+        return _errorRed;
       case NotificationType.paketBitiyor:
       case NotificationType.paketSuresiDoluyor:
       case NotificationType.antrenorDegisikligi:
-        return const Color(0xFFF59E0B);
-      case NotificationType.paketBitti:
-        return const Color(0xFF64748B);
+        return _warningOrange;
       case NotificationType.paketHakGuncelleme:
       case NotificationType.uyelikTanimlandi:
-        return const Color(0xFF3B82F6);
-      case NotificationType.telafiKullanildi:
-        return const Color(0xFF8B5CF6);
+        return _primaryBlue;
       default:
-        return const Color(0xFF64748B);
+        return _textSecondary;
     }
   }
 
   String _formatDateTime(DateTime dt) {
     final months = [
-      'Oca',
-      'Şub',
-      'Mar',
-      'Nis',
-      'May',
-      'Haz',
-      'Tem',
-      'Ağu',
-      'Eyl',
-      'Eki',
-      'Kas',
-      'Ara'
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık'
     ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.year}, ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }

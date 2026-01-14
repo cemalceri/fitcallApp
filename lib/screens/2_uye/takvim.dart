@@ -8,6 +8,7 @@ import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_talep_page.dart';
+import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
@@ -2153,7 +2154,7 @@ class _DersListesiPageState extends State<DersListesiPage>
     );
 
     try {
-      final rr = await TakvimService.getAntrenorUygunSaatleriApi(
+      final rr = await AntrenorApiService.getAntrenorUygunSaatleriApi(
         start: slotStart,
         end: slotStart.add(const Duration(hours: 1)),
       );
