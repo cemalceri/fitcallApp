@@ -1,8 +1,8 @@
 // =================== BASE URL ===================
 const String baseUrlProd = "https://www.binay.fit/api";
 const String baseUrlLocal = "http://10.0.2.2:8000/api";
-const String baseUrl = baseUrlProd;
-//const String baseUrl = baseUrlLocal;
+//const String baseUrl = baseUrlProd;
+const String baseUrl = baseUrlLocal;
 
 // =================== AUTH ===================
 String loginUrl = "$baseUrl/getToken";
@@ -23,7 +23,6 @@ String silUyedersTalebi = "$baseUrl/silUyedersTalebi";
 String getUyeUrunList = "$baseUrl/getUyeUrunList";
 String getHaftalikDersBilgilerim = "$baseUrl/getHaftalikDersBilgilerim";
 String getUrunListesiVeUyePaketleri = "$baseUrl/getUrunListesiVeUyePaketleri";
-String setUyeDersIptal = "$baseUrl/setUyeDersIptal";
 
 // =================== ANTRENÖR ===================
 String getAntrenorGunlukEtkinlikler = "$baseUrl/getAntrenorGunlukEtkinlikler";
@@ -32,7 +31,6 @@ String getAntrenorHaftalikEtkinlikler =
 String antrenorDersYapildiBilgisi = "$baseUrl/antrenorDersYapildiBilgisi";
 String getAntrenorOgrenciler = "$baseUrl/getAntrenorOgrenciler";
 String getAntrenorUygunSaatleri = "$baseUrl/getAntrenorUygunSaatleri";
-String setAntrenorDersIptal = "$baseUrl/setAntrenorDersIptal";
 
 // =================== ETKİNLİK ===================
 String setDersYapildiBilgisi = "$baseUrl/setDersYapildiBilgisi";
@@ -91,9 +89,11 @@ const String getDersTumDegerlendirmelerUrl =
     "$baseUrl/getDersTumDegerlendirmeler";
 
 // İptal Talebi
-const String createIptalTalebiUrl = "$baseUrl/EtkinlikIptalTalebiOlustur";
+const String createIptalTalebiUrl = "$baseUrl/etkinlikIptalTalebiOlustur";
 const String getIptalTalepleriUrl = "$baseUrl/getEtkinlikIptalTalepleri";
 const String setIptalTalebiIslemUrl =
     "$baseUrl/setYoneticiIptalTalebiOnaylaReddet";
 const String getKullaniciIptalTalepleriUrl =
     "$baseUrl/getKullaniciIptalTalepleri";
+const String getDersIptalTalebiUrl = "$baseUrl/getDersIptalTalebi";
+const String iptalTalebiGeriCekUrl = "$baseUrl/iptalTalebiGeriCek";

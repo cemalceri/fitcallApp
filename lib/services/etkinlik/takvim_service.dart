@@ -70,17 +70,6 @@ class TakvimService {
     return ApiResult<List<UygunSlotDto>>(mesaj: r.mesaj, data: parsed);
   }
 
-  static Future<ApiResult<Map<String, dynamic>>> uyeDersIptal({
-    required int etkinlikId,
-    String? aciklama,
-  }) {
-    return ApiClient.postParsed<Map<String, dynamic>>(
-      setUyeDersIptal,
-      {'etkinlik_id': etkinlikId, 'aciklama': aciklama ?? ''},
-      (json) => (json as Map).cast<String, dynamic>(),
-    );
-  }
-
   // ==================== DERS ONAY ====================
   static Future<ApiResult<Map<String, dynamic>>> getDersOnayBilgisi({
     required int dersId,
@@ -243,18 +232,35 @@ class TakvimService {
     return ApiResult<List<Map<String, dynamic>>>(mesaj: r.mesaj, data: list);
   }
 
-  // ==================== ANTRENÖR ====================
+  // ==================== YENİ: DERS İÇİN İPTAL TALEBİ SORGULA ====================
 
-  static Future<ApiResult<Map<String, dynamic>>> antrenorDersIptal({
+  /// Belirli bir ders için kullanıcının bekleyen iptal talebini sorgular
+  static Future<ApiResult<Map<String, dynamic>>> getDersIptalTalebi({
     required int dersId,
-    required String aciklama,
+    required int userId,
   }) {
     return ApiClient.postParsed<Map<String, dynamic>>(
-      setAntrenorDersIptal,
-      {'ders_id': dersId, 'aciklama': aciklama},
+      getDersIptalTalebiUrl,
+      {'ders_id': dersId, 'user_id': userId},
       (json) => (json as Map).cast<String, dynamic>(),
     );
   }
+
+  // ==================== YENİ: İPTAL TALEBİ GERİ ÇEK ====================
+
+  /// Bekleyen iptal talebini geri çeker (siler)
+  static Future<ApiResult<Map<String, dynamic>>> iptalTalebiGeriCek({
+    required int talepId,
+    required int userId,
+  }) {
+    return ApiClient.postParsed<Map<String, dynamic>>(
+      iptalTalebiGeriCekUrl,
+      {'talep_id': talepId, 'user_id': userId},
+      (json) => (json as Map).cast<String, dynamic>(),
+    );
+  }
+
+  // ==================== ANTRENÖR ====================
 
   static Future<ApiResult<List<EtkinlikModel>>>
       getirAntrenorHaftalikDersBilgileri() {

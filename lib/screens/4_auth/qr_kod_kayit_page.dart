@@ -99,6 +99,11 @@ class _QRKodKayitPageState extends State<QRKodKayitPage>
         _davetliler = aktifListe;
         _yukleniyor = false;
       });
+    } on ApiException catch (e) {
+      setState(() {
+        _hata = e.message;
+        _yukleniyor = false;
+      });
     } catch (e) {
       setState(() {
         _hata = e.toString();
@@ -257,15 +262,22 @@ class _QRKodKayitPageState extends State<QRKodKayitPage>
               lstRes.data!.where((p) => p.expiresAt.isAfter(now)).toList();
           setState(() => _davetliler = aktifListe);
         }
-      } catch (_) {}
+      } on ApiException {
+        ShowMessage.error(
+            context, 'Davet oluşturuldu ancak liste güncellenemedi.');
+      }
 
       await _paylasQrKodu(
         created.code,
         mesaj: _paylasMetni(created.label, created.expiresAt),
       );
+    } on ApiException catch (e) {
+      ShowMessage.error(context, e.message);
+      return;
     } catch (e) {
       if (!mounted) return;
       ShowMessage.error(context, 'Hata: $e');
+      return;
     }
   }
 

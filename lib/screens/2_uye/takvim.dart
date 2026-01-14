@@ -1199,122 +1199,351 @@ class _DersListesiPageState extends State<DersListesiPage>
   /* -------------------------------------------------------------------------- */
 /*                    3 SEÇENEKLİ GELECEK DERS MENÜSÜ - YENİ                */
 /* -------------------------------------------------------------------------- */
-  void _showGelecekDersMenuSheet(EtkinlikModel ders) {
+  void _showGelecekDersMenuSheet(EtkinlikModel ders) async {
     final theme = Theme.of(context);
+
+    // Loading göster
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // Mevcut iptal talebini sorgula
+    Map<String, dynamic>? iptalTalebiData;
+    try {
+      final res = await TakvimService.getDersIptalTalebi(
+        dersId: ders.id,
+        userId: userId,
+      );
+      iptalTalebiData = res.data;
+    } catch (e) {
+      // Hata olursa null kalır
+    }
+
+    if (!mounted) return;
+    Navigator.pop(context); // Loading kapat
+
+    final bool talepVar = iptalTalebiData?['talep_var'] == true;
+    final Map<String, dynamic>? mevcutTalep = talepVar
+        ? (iptalTalebiData?['talep'] as Map?)?.cast<String, dynamic>()
+        : null;
+
+    // Mevcut teyit bilgisi
+    final teyit =
+        currentUye != null ? ders.getTeyitBilgisi(currentUye!.id) : null;
+    final bool teyitVerilmis = teyit != null && teyit.katilacakMi != null;
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) {
-        return Container(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
               ),
-              const SizedBox(height: 20),
-
-              // Header
-              Row(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Handle
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    width: 40,
+                    height: 4,
                     decoration: BoxDecoration(
-                      color: uiPrimaryBlue.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.sports_tennis_rounded,
-                      color: uiPrimaryBlue,
-                      size: 22,
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Ders İşlemleri',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
+                  const SizedBox(height: 20),
+
+                  // Header
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: uiPrimaryBlue.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        Text(
-                          '${_formatGunBaslik(ders.baslangicTarihSaat)} • ${_formatSaatTek(ders.baslangicTarihSaat)}',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
+                        child: const Icon(
+                          Icons.sports_tennis_rounded,
+                          color: uiPrimaryBlue,
+                          size: 22,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Ders İşlemleri',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              '${_formatGunBaslik(ders.baslangicTarihSaat)} • ${_formatSaatTek(ders.baslangicTarihSaat)}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
+
+                  const SizedBox(height: 24),
+
+                  // BEKLEYEN İPTAL TALEBİ VARSA GÖSTER
+                  if (talepVar && mevcutTalep != null) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: uiAccentOrange.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: uiAccentOrange.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: uiAccentOrange.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.hourglass_empty_rounded,
+                                  color: uiAccentOrange,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'İptal Talebi Beklemede',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: uiAccentOrange,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      mevcutTalep['sebep_display'] ?? '',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (mevcutTalep['aciklama'] != null &&
+                              (mevcutTalep['aciklama'] as String)
+                                  .isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                mevcutTalep['aciklama'],
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                setSheetState(() {});
+                                try {
+                                  await TakvimService.iptalTalebiGeriCek(
+                                    talepId: mevcutTalep['id'],
+                                    userId: userId,
+                                  );
+                                  if (mounted) {
+                                    Navigator.pop(context);
+                                    ShowMessage.success(
+                                        context, 'İptal talebi geri çekildi');
+                                    _forceReloadVisibleWeek();
+                                  }
+                                } on ApiException catch (e) {
+                                  setSheetState(() {});
+                                  if (mounted) {
+                                    ShowMessage.error(context, e.message);
+                                  }
+                                } catch (e) {
+                                  setSheetState(() {});
+                                  if (mounted) {
+                                    ShowMessage.error(context, 'Hata: $e');
+                                  }
+                                }
+                              },
+                              icon: const Icon(Icons.undo_rounded),
+                              label: const Text('Talebi Geri Çek'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: uiAccentOrange,
+                                side: const BorderSide(color: uiAccentOrange),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // MEVCUT TEYİT BİLGİSİ VARSA GÖSTER
+                  if (teyitVerilmis && !talepVar) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: teyit.durumColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: teyit.durumColor.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: teyit.durumColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(teyit.durumIcon,
+                                color: teyit.durumColor, size: 24),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Katılım Durumunuz',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  teyit.durumText,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: teyit.durumColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded,
+                              color: Colors.blue.shade700),
+                          const SizedBox(width: 10),
+                          const Expanded(
+                            child: Text(
+                              'Değişiklik için lütfen kulüp ile iletişime geçin.',
+                              style: TextStyle(fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // MENÜ SEÇENEKLERİ (Sadece teyit verilmemişse ve iptal talebi yoksa)
+                  if (!teyitVerilmis && !talepVar) ...[
+                    // 1. KATILIM BİLDİRİMİ
+                    _buildMenuSecenegi(
+                      icon: Icons.how_to_reg_rounded,
+                      iconColor: uiAccentGreen,
+                      title: 'Katılım Durumu Bildir',
+                      subtitle: 'Derse katılıp katılmayacağınızı bildirin',
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showKatilimDurumuSheet(ders);
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // 2. DERS İPTAL
+                    _buildMenuSecenegi(
+                      icon: Icons.event_busy_rounded,
+                      iconColor: uiAccentOrange,
+                      title: 'İptal Talebi Gönder',
+                      subtitle: 'Dersin iptal edilmesini talep edin',
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showIptalTalebiSheet(ders);
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+                  ],
+
+                  // 3. DETAY GÖRÜNTÜLE (Her zaman göster)
+                  _buildMenuSecenegi(
+                    icon: Icons.info_outline_rounded,
+                    iconColor: uiPrimaryBlue,
+                    title: 'Detayları Görüntüle',
+                    subtitle: 'Ders bilgilerini gör',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showDersDetaySheet(ders);
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
                 ],
               ),
-
-              const SizedBox(height: 24),
-
-              // 1. KATILIM BİLDİRİMİ
-              _buildMenuSecenegi(
-                icon: Icons.how_to_reg_rounded,
-                iconColor: uiAccentGreen,
-                title: 'Katılım Durumu Bildir',
-                subtitle: currentUye != null &&
-                        ders.getTeyitBilgisi(currentUye!.id) != null
-                    ? ders.getTeyitBilgisi(currentUye!.id)!.durumText
-                    : 'Henüz bildirilmedi',
-                onTap: () {
-                  Navigator.pop(context);
-                  _showKatilimDurumuSheet(ders);
-                },
-              ),
-
-              const SizedBox(height: 12),
-
-              // 2. DERS İPTAL
-              _buildMenuSecenegi(
-                icon: Icons.event_busy_rounded,
-                iconColor: uiAccentOrange,
-                title: 'Dersi İptal Et',
-                subtitle: 'Dersi tamamen iptal et',
-                onTap: () {
-                  Navigator.pop(context);
-                  _showIptalTalebiSheet(ders);
-                },
-              ),
-
-              const SizedBox(height: 12),
-
-              // 3. DETAY GÖRÜNTÜLE
-              _buildMenuSecenegi(
-                icon: Icons.info_outline_rounded,
-                iconColor: uiPrimaryBlue,
-                title: 'Detayları Görüntüle',
-                subtitle: 'Ders bilgilerini gör',
-                onTap: () {
-                  Navigator.pop(context);
-                  _showDersDetaySheet(ders);
-                },
-              ),
-
-              const SizedBox(height: 20),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -2231,21 +2460,307 @@ class _DersListesiPageState extends State<DersListesiPage>
   /* -------------------------------------------------------------------------- */
   /*                    GEÇMİŞ DERS – ONAY VE DEĞERLENDİRME                     */
   /* -------------------------------------------------------------------------- */
-  void _showDersGeriBildirimSheet(EtkinlikModel ders) {
+  void _showDersGeriBildirimSheet(EtkinlikModel ders) async {
     final theme = Theme.of(context);
-    String? secilenDurum;
-    String? secilenNeden;
-    int puan = 0;
-    final yorumCtrl = TextEditingController();
-    bool isLoading = false;
+
+    // Loading göster
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // Mevcut onay ve değerlendirme bilgisini çek
+    Map<String, dynamic>? mevcutOnay;
+    Map<String, dynamic>? mevcutDegerlendirme;
+    try {
+      final onayRes = await TakvimService.getDersOnayBilgisi(
+          dersId: ders.id, userId: userId);
+      mevcutOnay = onayRes.data;
+
+      final degRes = await TakvimService.getDersDegerlendirme(
+          dersId: ders.id, userId: userId, rol: 'uye');
+      mevcutDegerlendirme = degRes.data;
+    } catch (e) {
+      // Hata olursa null kalır
+    }
+
+    if (!mounted) return;
+    Navigator.pop(context); // Loading kapat
+
+    // Mevcut durum var mı?
+    final bool mevcutOnayVar =
+        mevcutOnay != null && mevcutOnay['tamamlandi'] != null;
+    final bool? mevcutTamamlandi = mevcutOnay?['tamamlandi'];
+    final String? mevcutNeden = mevcutOnay?['onay_red_iptal_nedeni'];
+    final int? mevcutPuan = mevcutDegerlendirme?['puan'];
+    final String? mevcutYorum = mevcutDegerlendirme?['yorum'];
+    final bool degerlendirmeVar = mevcutPuan != null && mevcutPuan > 0;
 
     const yapilmadiNedenleri = [
-      {'code': 'YMD_OGRENCI', 'label': 'Öğrenci gelmedi'},
+      {'code': 'YMD_OGRENCI', 'label': 'Katılamadım'},
       {'code': 'YMD_ANTRENOR', 'label': 'Antrenör mazeretli'},
       {'code': 'YMD_HAVA', 'label': 'Hava şartları'},
       {'code': 'YMD_KORT', 'label': 'Kort müsait değil'},
       {'code': 'YMD_DIGER', 'label': 'Diğer'},
     ];
+
+    String getNedenLabel(String? code) {
+      if (code == null) return '';
+      final found =
+          yapilmadiNedenleri.where((n) => n['code'] == code).firstOrNull;
+      return found?['label'] ?? code;
+    }
+
+    // Eğer zaten onay verilmişse, salt okunur olarak göster
+    if (mevcutOnayVar) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: Colors.transparent,
+        builder: (ctx) {
+          return Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Header
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: uiAccentGreen.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.rate_review_rounded,
+                            color: uiAccentGreen, size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Ders Geri Bildirimi',
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.w700)),
+                            Text(
+                              '${_formatGunBaslik(ders.baslangicTarihSaat)} • ${_formatSaatTek(ders.baslangicTarihSaat)}',
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: theme.colorScheme.onSurfaceVariant),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // MEVCUT ONAY DURUMU
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: mevcutTamamlandi == true
+                          ? uiAccentGreen.withValues(alpha: 0.1)
+                          : uiAccentRed.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: mevcutTamamlandi == true
+                            ? uiAccentGreen.withValues(alpha: 0.3)
+                            : uiAccentRed.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: mevcutTamamlandi == true
+                                ? uiAccentGreen.withValues(alpha: 0.15)
+                                : uiAccentRed.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            mevcutTamamlandi == true
+                                ? Icons.check_circle_rounded
+                                : Icons.cancel_rounded,
+                            color: mevcutTamamlandi == true
+                                ? uiAccentGreen
+                                : uiAccentRed,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                mevcutTamamlandi == true
+                                    ? 'Ders Yapıldı'
+                                    : 'Ders Yapılmadı',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: mevcutTamamlandi == true
+                                      ? uiAccentGreen
+                                      : uiAccentRed,
+                                ),
+                              ),
+                              if (mevcutNeden != null &&
+                                  mevcutTamamlandi == false) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  getNedenLabel(mevcutNeden),
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      color:
+                                          theme.colorScheme.onSurfaceVariant),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // MEVCUT DEĞERLENDİRME (varsa)
+                  if (degerlendirmeVar) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: uiAccentOrange.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color: uiAccentOrange.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text('Değerlendirmeniz',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w600)),
+                              const Spacer(),
+                              Row(
+                                children: List.generate(5, (i) {
+                                  return Icon(
+                                    i < mevcutPuan
+                                        ? Icons.star_rounded
+                                        : Icons.star_border_rounded,
+                                    size: 20,
+                                    color: i < mevcutPuan
+                                        ? uiAccentOrange
+                                        : Colors.grey.shade300,
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
+                          if (mevcutYorum != null &&
+                              mevcutYorum.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                mevcutYorum,
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    color: theme.colorScheme.onSurface),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 16),
+
+                  // Info
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline_rounded,
+                            color: Colors.blue.shade700),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            'Geri bildiriminiz kaydedilmiştir. Cevabınız değiştiyse kulüp ile iletişime geçiniz.',
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Kapat butonu
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: uiPrimaryBlue,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Kapat',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+      return;
+    }
+
+    // Onay verilmemişse, düzenleme formu göster
+    String? secilenDurum;
+    String? secilenNeden;
+    int puan = 0;
+    final yorumCtrl = TextEditingController();
+    bool isLoading = false;
 
     showModalBottomSheet(
       context: context,
