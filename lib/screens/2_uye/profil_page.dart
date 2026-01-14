@@ -12,6 +12,7 @@ import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/uye/uye_api_serivce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -696,6 +697,19 @@ class _MenuSection extends StatelessWidget {
               subtitle: 'Veri işleme ve saklama bilgileri',
               color: Colors.blue,
               onTap: () => showKvkkAydinlatmaModal(context),
+            ),
+            FutureBuilder<PermissionStatus>(
+              future: Permission.notification.status,
+              builder: (context, snapshot) {
+                final isGranted = snapshot.data?.isGranted ?? false;
+                return _ModernMenuTile(
+                  icon: Icons.notifications_outlined,
+                  title: 'Bildirim İzni',
+                  subtitle: isGranted ? 'Açık' : 'Kapalı',
+                  color: isGranted ? Colors.green : Colors.orange,
+                  onTap: () => openAppSettings(),
+                );
+              },
             ),
           ],
         ),

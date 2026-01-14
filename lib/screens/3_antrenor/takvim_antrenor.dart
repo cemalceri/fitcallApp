@@ -386,8 +386,14 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage>
     HapticFeedback.selectionClick();
 
     final ders = slot.ders!;
-    final now = DateTime.now();
-    final isPast = ders.bitisTarihSaat.isBefore(now);
+    final bitisSaati = DateTime(
+      ders.bitisTarihSaat.year,
+      ders.bitisTarihSaat.month,
+      ders.bitisTarihSaat.day,
+      ders.bitisTarihSaat.hour,
+      ders.bitisTarihSaat.minute,
+    );
+    final isPast = bitisSaati.isBefore(DateTime.now());
 
     if (ders.iptalMi) {
       ShowMessage.error(context, 'Bu ders iptal edilmiş.');

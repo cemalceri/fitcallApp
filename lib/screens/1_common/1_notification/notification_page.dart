@@ -3,10 +3,12 @@
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/services/notification/notification_router.dart';
 import 'package:fitcall/main.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /* -------------------------------------------------------------------------- */
 /*                             RENK SABİTLERİ                                  */
@@ -36,6 +38,56 @@ class _NotificationPageState extends State<NotificationPage> {
     super.initState();
     _router = NotificationRouter(navigatorKey: navigatorKey);
     _fetchNotifications();
+    _checkNotificationPermission();
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    final status = await Permission.notification.status;
+
+    if (status.isGranted) return;
+
+    if (status.isDenied) {
+      await Permission.notification.request();
+      return;
+    }
+
+    // permanentlyDenied için haftada bir sor
+    if (status.isPermanentlyDenied) {
+      final sonSorulanTarih =
+          await SecureStorageService.getValue("notification_permission_prompt");
+      final lastAsked =
+          sonSorulanTarih != null ? int.tryParse(sonSorulanTarih) ?? 0 : 0;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      const oneWeek = 7 * 24 * 60 * 60 * 1000;
+
+      if (now - lastAsked > oneWeek) {
+        SecureStorageService.setValue(
+            "notification_permission_prompt", now.toString());
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('Bildirim İzni'),
+              content: const Text(
+                  'Bildirimleri alabilmek için ayarlardan izin vermeniz gerekiyor.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Daha Sonra'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    openAppSettings();
+                  },
+                  child: const Text('Ayarlara Git'),
+                ),
+              ],
+            ),
+          );
+        }
+      }
+    }
   }
 
   Future<List<NotificationModel>> _fetchNotifications() async {
