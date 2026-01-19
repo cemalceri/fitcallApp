@@ -2,6 +2,7 @@ import 'package:fitcall/screens/1_common/yardim_page.dart';
 import 'package:fitcall/screens/4_auth/forgot_password_page.dart';
 import 'package:fitcall/screens/2_uye/takvim.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
+import 'package:fitcall/screens/7_yonetici/yonetici_main_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +24,6 @@ import 'package:fitcall/screens/3_antrenor/takvim_antrenor.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_ogrenciler_page.dart';
 
 import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
-import 'package:fitcall/screens/yonetici_home_page.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 
 /// Uygulama genelinde kullanacağımız sayfaların enum değerleri
@@ -98,7 +98,7 @@ final Map<String, WidgetBuilder> routes = {
         baslangic: DateTime.now(),
       ),
   routeEnums[SayfaAdi.bildirimler]!: (c) => NotificationPage(),
-  routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiHomePage(),
+  routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiMainPage(),
   routeEnums[SayfaAdi.dersTeyit]!: (c) => const DersTeyitPage(),
   routeEnums[SayfaAdi.yardim]!: (c) => const YardimPage(),
 };

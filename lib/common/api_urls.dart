@@ -2,7 +2,7 @@
 const String baseUrlProd = "https://www.binay.fit/api";
 const String baseUrlLocal = "http://10.0.2.2:8000/api";
 const String baseUrl = baseUrlProd;
-//const String baseUrl = baseUrlLocal;
+// const String baseUrl = baseUrlLocal;
 
 // =================== AUTH ===================
 String loginUrl = "$baseUrl/getToken";
@@ -97,3 +97,11 @@ const String getKullaniciIptalTalepleriUrl =
     "$baseUrl/getKullaniciIptalTalepleri";
 const String getDersIptalTalebiUrl = "$baseUrl/getDersIptalTalebi";
 const String iptalTalebiGeriCekUrl = "$baseUrl/iptalTalebiGeriCek";
+
+// =================== YÖNETİCİ ===================
+const String yoneticiDashboard = "$baseUrl/yoneticiDashboard";
+const String yoneticiRaporlar = "$baseUrl/yoneticiRaporlar";
+const String yoneticiUyeler = "$baseUrl/yoneticiUyeler";
+const String yoneticiAntrenorler = "$baseUrl/yoneticiAntrenorler";
+const String yoneticiDersler = "$baseUrl/yoneticiDersler";
+const String yoneticiDersDetay = "$baseUrl/yoneticiDersDetay";
