@@ -29,22 +29,24 @@ class StatCardsGrid extends StatelessWidget {
       crossAxisSpacing: 12,
       childAspectRatio: 1.1,
       children: [
-        // Bugünkü Ciro
+        // Ciro (ders bazlı getiri)
         StatCard(
           baslik: 'Ciro',
           deger: _formatCurrency(data.ciro.toplamCiro),
-          altBaslik: 'Seçilen döneme göre',
-          ikon: Icons.attach_money,
+          altBaslik: '${data.ciro.dersSayisi} ders',
+          ikon: Icons.trending_up,
           ikonRenk: Colors.green,
+          degisimYuzdesi: data.ciro.degisimYuzdesi,
         ),
 
-        // Aylık Ciro
+        // Tahsilat (ödeme bazlı)
         StatCard(
-          baslik: 'Aylık Ciro',
-          deger: _formatCurrency(data.aylikCiro.toplamCiro),
-          ikon: Icons.description_outlined,
+          baslik: 'Tahsilat',
+          deger: _formatCurrency(data.tahsilat.toplamTahsilat),
+          altBaslik: '${data.tahsilat.islemSayisi} işlem',
+          ikon: Icons.attach_money,
           ikonRenk: Colors.blue,
-          degisimYuzdesi: data.aylikCiro.degisimYuzdesi,
+          degisimYuzdesi: data.tahsilat.degisimYuzdesi,
         ),
 
         // Günlük Ders
@@ -54,7 +56,7 @@ class StatCardsGrid extends StatelessWidget {
           deger2: data.ders.toplamDers.toString(),
           altBaslik: '%${data.ders.dolulukYuzdesi.toStringAsFixed(0)} doluluk',
           ikon: Icons.event_available,
-          ikonRenk: Colors.blue,
+          ikonRenk: Colors.indigo,
         ),
 
         // İptal Edilen
@@ -74,18 +76,17 @@ class StatCardsGrid extends StatelessWidget {
           baslik: 'Aktif Üye',
           deger: data.uye.aktifUyeSayisi.toString(),
           ikon: Icons.people_outline,
-          ikonRenk: Colors.green,
+          ikonRenk: Colors.teal,
           degisimYuzdesi: data.uye.degisimYuzdesi,
         ),
 
-        // Vadesi Geçmiş
+        // Toplam Alacak (eski: Vadesi Geçmiş)
         StatCard(
-          baslik: 'Vadesi Geçmiş Borçlar',
-          deger: _formatCurrency(data.vadesiGecmis.toplamBorc),
-          altBaslik: '${data.vadesiGecmis.borcluUyeSayisi} üye',
-          ikon: Icons.warning_amber_rounded,
-          ikonRenk: Colors.red,
-          degisimYuzdesi: data.vadesiGecmis.degisimYuzdesi,
+          baslik: 'Toplam Alacak',
+          deger: _formatCurrency(data.toplamAlacak.toplamBorc),
+          altBaslik: '${data.toplamAlacak.borcluUyeSayisi} üye',
+          ikon: Icons.account_balance_wallet_outlined,
+          ikonRenk: Colors.orange,
         ),
       ],
     );

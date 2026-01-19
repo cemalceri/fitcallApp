@@ -1,13 +1,13 @@
-// lib/screens/7_yonetici/raporlar/widgets/ciro_raporu_section.dart
+// lib/screens/7_yonetici/raporlar/widgets/tahsilat_raporu_section.dart
 
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:intl/intl.dart';
 
-class CiroRaporuSection extends StatelessWidget {
-  final List<CiroRaporuItem> data;
+class TahsilatRaporuSection extends StatelessWidget {
+  final List<TahsilatRaporuItem> data;
 
-  const CiroRaporuSection({super.key, required this.data});
+  const TahsilatRaporuSection({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +17,10 @@ class CiroRaporuSection extends StatelessWidget {
     final dateFormat = DateFormat('dd.MM.yyyy');
 
     // Toplam hesapla
-    final toplamCiro = data.fold<double>(0, (sum, item) => sum + item.ciro);
-    final toplamDers = data.fold<int>(0, (sum, item) => sum + item.dersSayisi);
+    final toplamTahsilat =
+        data.fold<double>(0, (sum, item) => sum + item.tahsilat);
+    final toplamIslem =
+        data.fold<int>(0, (sum, item) => sum + item.islemSayisi);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -36,11 +38,11 @@ class CiroRaporuSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
+                  color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.trending_up,
-                    size: 18, color: Colors.green),
+                child: const Icon(Icons.attach_money,
+                    size: 18, color: Colors.blue),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -48,7 +50,7 @@ class CiroRaporuSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ciro Raporu',
+                      'Tahsilat Raporu',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -56,7 +58,7 @@ class CiroRaporuSection extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Ders bazlı getiri',
+                      'Ödeme bazlı',
                       style: TextStyle(
                         fontSize: 11,
                         color: colorScheme.onSurfaceVariant,
@@ -70,15 +72,15 @@ class CiroRaporuSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    currencyFormat.format(toplamCiro),
+                    currencyFormat.format(toplamTahsilat),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green,
+                      color: Colors.blue,
                     ),
                   ),
                   Text(
-                    '$toplamDers ders',
+                    '$toplamIslem işlem',
                     style: TextStyle(
                       fontSize: 11,
                       color: colorScheme.onSurfaceVariant,
@@ -110,7 +112,7 @@ class CiroRaporuSection extends StatelessWidget {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      'Ciro',
+                      'Tahsilat',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -120,7 +122,7 @@ class CiroRaporuSection extends StatelessWidget {
                   ),
                   Expanded(
                     child: Text(
-                      'Ders',
+                      'İşlem',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -138,7 +140,7 @@ class CiroRaporuSection extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Bu dönem için veri bulunamadı',
+                  'Bu dönem için tahsilat verisi bulunamadı',
                   style: TextStyle(color: colorScheme.onSurfaceVariant),
                 ),
               ),
@@ -161,7 +163,7 @@ class CiroRaporuSection extends StatelessWidget {
                       Expanded(
                         flex: 2,
                         child: Text(
-                          currencyFormat.format(item.ciro),
+                          currencyFormat.format(item.tahsilat),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -171,7 +173,7 @@ class CiroRaporuSection extends StatelessWidget {
                       ),
                       Expanded(
                         child: Text(
-                          '${item.dersSayisi} ders',
+                          '${item.islemSayisi} işlem',
                           style: TextStyle(
                             fontSize: 12,
                             color: colorScheme.onSurfaceVariant,

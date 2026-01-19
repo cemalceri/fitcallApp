@@ -157,12 +157,12 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
             StatCardsGrid(data: _data!),
             const SizedBox(height: 16),
 
-            // Haftalık ciro grafiği
+            // Haftalık ciro/tahsilat grafiği (GÜNCELLENDİ)
             WeeklyChartCard(
-              data: _data!.haftalikCiro,
+              ciroData: _data!.haftalikCiro,
+              tahsilatData: _data!.haftalikTahsilat,
               onDetayTap: () {
                 // Raporlar sayfasına git
-                // Bu fonksiyon parent widget'tan callback ile yönetilebilir
               },
             ),
             const SizedBox(height: 20),

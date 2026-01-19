@@ -30,17 +30,18 @@ extension DonemFiltresiExtension on DonemFiltresi {
   }
 }
 
-// ==================== DASHBOARD MODELLERİ ====================
+// ==================== DASHBOARD - CİRO MODELLERİ ====================
 
+/// Ciro kartı (ders bazlı getiri)
 class DashboardCiroKarti {
   final double toplamCiro;
-  final int islemSayisi;
+  final int dersSayisi; // Değişti: islemSayisi -> dersSayisi
   final double oncekiDonemCiro;
   final double? degisimYuzdesi;
 
   DashboardCiroKarti({
     required this.toplamCiro,
-    required this.islemSayisi,
+    required this.dersSayisi,
     required this.oncekiDonemCiro,
     this.degisimYuzdesi,
   });
@@ -48,7 +49,7 @@ class DashboardCiroKarti {
   factory DashboardCiroKarti.fromJson(Map<String, dynamic> json) {
     return DashboardCiroKarti(
       toplamCiro: double.tryParse(json['toplam_ciro']?.toString() ?? '0') ?? 0,
-      islemSayisi: json['islem_sayisi'] ?? 0,
+      dersSayisi: json['ders_sayisi'] ?? 0,
       oncekiDonemCiro:
           double.tryParse(json['onceki_donem_ciro']?.toString() ?? '0') ?? 0,
       degisimYuzdesi: json['degisim_yuzdesi'] != null
@@ -57,6 +58,87 @@ class DashboardCiroKarti {
     );
   }
 }
+
+/// Haftalık ciro grafiği için günlük veri
+class HaftalikCiroItem {
+  final String gun;
+  final String gunKisa;
+  final DateTime tarih;
+  final double ciro;
+
+  HaftalikCiroItem({
+    required this.gun,
+    required this.gunKisa,
+    required this.tarih,
+    required this.ciro,
+  });
+
+  factory HaftalikCiroItem.fromJson(Map<String, dynamic> json) {
+    return HaftalikCiroItem(
+      gun: json['gun'] ?? '',
+      gunKisa: json['gun_kisa'] ?? '',
+      tarih: DateTime.tryParse(json['tarih'] ?? '') ?? DateTime.now(),
+      ciro: double.tryParse(json['ciro']?.toString() ?? '0') ?? 0,
+    );
+  }
+}
+
+// ==================== DASHBOARD - TAHSİLAT MODELLERİ (YENİ) ====================
+
+/// Tahsilat kartı (ödeme bazlı)
+class DashboardTahsilatKarti {
+  final double toplamTahsilat;
+  final int islemSayisi;
+  final double oncekiDonemTahsilat;
+  final double? degisimYuzdesi;
+
+  DashboardTahsilatKarti({
+    required this.toplamTahsilat,
+    required this.islemSayisi,
+    required this.oncekiDonemTahsilat,
+    this.degisimYuzdesi,
+  });
+
+  factory DashboardTahsilatKarti.fromJson(Map<String, dynamic> json) {
+    return DashboardTahsilatKarti(
+      toplamTahsilat:
+          double.tryParse(json['toplam_tahsilat']?.toString() ?? '0') ?? 0,
+      islemSayisi: json['islem_sayisi'] ?? 0,
+      oncekiDonemTahsilat:
+          double.tryParse(json['onceki_donem_tahsilat']?.toString() ?? '0') ??
+              0,
+      degisimYuzdesi: json['degisim_yuzdesi'] != null
+          ? double.tryParse(json['degisim_yuzdesi'].toString())
+          : null,
+    );
+  }
+}
+
+/// Haftalık tahsilat grafiği için günlük veri
+class HaftalikTahsilatItem {
+  final String gun;
+  final String gunKisa;
+  final DateTime tarih;
+  final double tahsilat;
+
+  HaftalikTahsilatItem({
+    required this.gun,
+    required this.gunKisa,
+    required this.tarih,
+    required this.tahsilat,
+  });
+
+  factory HaftalikTahsilatItem.fromJson(Map<String, dynamic> json) {
+    return HaftalikTahsilatItem(
+      gun: json['gun'] ?? '',
+      gunKisa: json['gun_kisa'] ?? '',
+      tarih: DateTime.tryParse(json['tarih'] ?? '') ?? DateTime.now(),
+      tahsilat: double.tryParse(json['tahsilat']?.toString() ?? '0') ?? 0,
+    );
+  }
+}
+
+// ==================== DASHBOARD - DİĞER MODELLER ====================
 
 class DashboardDersKarti {
   final int toplamDers;
@@ -112,51 +194,20 @@ class DashboardUyeKarti {
   }
 }
 
-class DashboardVadesiGecmisKarti {
+/// Toplam Alacak kartı (eski: VadesiGecmis)
+class DashboardToplamAlacakKarti {
   final double toplamBorc;
   final int borcluUyeSayisi;
-  final double oncekiDonemBorc;
-  final double? degisimYuzdesi;
 
-  DashboardVadesiGecmisKarti({
+  DashboardToplamAlacakKarti({
     required this.toplamBorc,
     required this.borcluUyeSayisi,
-    required this.oncekiDonemBorc,
-    this.degisimYuzdesi,
   });
 
-  factory DashboardVadesiGecmisKarti.fromJson(Map<String, dynamic> json) {
-    return DashboardVadesiGecmisKarti(
+  factory DashboardToplamAlacakKarti.fromJson(Map<String, dynamic> json) {
+    return DashboardToplamAlacakKarti(
       toplamBorc: double.tryParse(json['toplam_borc']?.toString() ?? '0') ?? 0,
       borcluUyeSayisi: json['borclu_uye_sayisi'] ?? 0,
-      oncekiDonemBorc:
-          double.tryParse(json['onceki_donem_borc']?.toString() ?? '0') ?? 0,
-      degisimYuzdesi: json['degisim_yuzdesi'] != null
-          ? double.tryParse(json['degisim_yuzdesi'].toString())
-          : null,
-    );
-  }
-}
-
-class HaftalikCiroItem {
-  final String gun;
-  final String gunKisa;
-  final DateTime tarih;
-  final double ciro;
-
-  HaftalikCiroItem({
-    required this.gun,
-    required this.gunKisa,
-    required this.tarih,
-    required this.ciro,
-  });
-
-  factory HaftalikCiroItem.fromJson(Map<String, dynamic> json) {
-    return HaftalikCiroItem(
-      gun: json['gun'] ?? '',
-      gunKisa: json['gun_kisa'] ?? '',
-      tarih: DateTime.tryParse(json['tarih'] ?? '') ?? DateTime.now(),
-      ciro: double.tryParse(json['ciro']?.toString() ?? '0') ?? 0,
     );
   }
 }
@@ -211,13 +262,23 @@ class GununOzeti {
   }
 }
 
+// ==================== ANA DASHBOARD DATA ====================
+
 class DashboardData {
+  // Ciro (ders bazlı getiri)
   final DashboardCiroKarti ciro;
   final DashboardCiroKarti aylikCiro;
+  final List<HaftalikCiroItem> haftalikCiro;
+
+  // Tahsilat (ödeme bazlı)
+  final DashboardTahsilatKarti tahsilat;
+  final DashboardTahsilatKarti aylikTahsilat;
+  final List<HaftalikTahsilatItem> haftalikTahsilat;
+
+  // Diğer
   final DashboardDersKarti ders;
   final DashboardUyeKarti uye;
-  final DashboardVadesiGecmisKarti vadesiGecmis;
-  final List<HaftalikCiroItem> haftalikCiro;
+  final DashboardToplamAlacakKarti toplamAlacak;
   final HizliErisimDersler hizliErisimDersler;
   final HizliErisimAntrenor hizliErisimAntrenor;
   final GununOzeti gununOzeti;
@@ -225,10 +286,13 @@ class DashboardData {
   DashboardData({
     required this.ciro,
     required this.aylikCiro,
+    required this.haftalikCiro,
+    required this.tahsilat,
+    required this.aylikTahsilat,
+    required this.haftalikTahsilat,
     required this.ders,
     required this.uye,
-    required this.vadesiGecmis,
-    required this.haftalikCiro,
+    required this.toplamAlacak,
     required this.hizliErisimDersler,
     required this.hizliErisimAntrenor,
     required this.gununOzeti,
@@ -236,15 +300,26 @@ class DashboardData {
 
   factory DashboardData.fromJson(Map<String, dynamic> json) {
     return DashboardData(
+      // Ciro
       ciro: DashboardCiroKarti.fromJson(json['ciro'] ?? {}),
       aylikCiro: DashboardCiroKarti.fromJson(json['aylik_ciro'] ?? {}),
-      ders: DashboardDersKarti.fromJson(json['ders'] ?? {}),
-      uye: DashboardUyeKarti.fromJson(json['uye'] ?? {}),
-      vadesiGecmis:
-          DashboardVadesiGecmisKarti.fromJson(json['vadesi_gecmis'] ?? {}),
       haftalikCiro: (json['haftalik_ciro'] as List? ?? [])
           .map((e) => HaftalikCiroItem.fromJson(e))
           .toList(),
+
+      // Tahsilat
+      tahsilat: DashboardTahsilatKarti.fromJson(json['tahsilat'] ?? {}),
+      aylikTahsilat:
+          DashboardTahsilatKarti.fromJson(json['aylik_tahsilat'] ?? {}),
+      haftalikTahsilat: (json['haftalik_tahsilat'] as List? ?? [])
+          .map((e) => HaftalikTahsilatItem.fromJson(e))
+          .toList(),
+
+      // Diğer
+      ders: DashboardDersKarti.fromJson(json['ders'] ?? {}),
+      uye: DashboardUyeKarti.fromJson(json['uye'] ?? {}),
+      toplamAlacak:
+          DashboardToplamAlacakKarti.fromJson(json['toplam_alacak'] ?? {}),
       hizliErisimDersler:
           HizliErisimDersler.fromJson(json['hizli_erisim_dersler'] ?? {}),
       hizliErisimAntrenor:
@@ -290,21 +365,43 @@ class RaporOzetKarti {
   }
 }
 
+/// Ciro raporu satırı (günlük) - Güncellendi
 class CiroRaporuItem {
   final DateTime tarih;
   final double ciro;
-  final int islemSayisi;
+  final int dersSayisi; // Değişti: islemSayisi -> dersSayisi
 
   CiroRaporuItem({
     required this.tarih,
     required this.ciro,
-    required this.islemSayisi,
+    required this.dersSayisi,
   });
 
   factory CiroRaporuItem.fromJson(Map<String, dynamic> json) {
     return CiroRaporuItem(
       tarih: DateTime.tryParse(json['tarih'] ?? '') ?? DateTime.now(),
       ciro: double.tryParse(json['ciro']?.toString() ?? '0') ?? 0,
+      dersSayisi: json['ders_sayisi'] ?? 0,
+    );
+  }
+}
+
+/// Tahsilat raporu satırı (günlük) - YENİ
+class TahsilatRaporuItem {
+  final DateTime tarih;
+  final double tahsilat;
+  final int islemSayisi;
+
+  TahsilatRaporuItem({
+    required this.tarih,
+    required this.tahsilat,
+    required this.islemSayisi,
+  });
+
+  factory TahsilatRaporuItem.fromJson(Map<String, dynamic> json) {
+    return TahsilatRaporuItem(
+      tarih: DateTime.tryParse(json['tarih'] ?? '') ?? DateTime.now(),
+      tahsilat: double.tryParse(json['tahsilat']?.toString() ?? '0') ?? 0,
       islemSayisi: json['islem_sayisi'] ?? 0,
     );
   }
@@ -371,12 +468,14 @@ class AntrenorPerformansItem {
 class RaporlarData {
   final List<RaporOzetKarti> ozetKartlar;
   final List<CiroRaporuItem> ciroRaporu;
+  final List<TahsilatRaporuItem> tahsilatRaporu; // YENİ
   final List<DolulukRaporuItem> dolulukRaporu;
   final List<AntrenorPerformansItem> antrenorPerformans;
 
   RaporlarData({
     required this.ozetKartlar,
     required this.ciroRaporu,
+    required this.tahsilatRaporu,
     required this.dolulukRaporu,
     required this.antrenorPerformans,
   });
@@ -388,6 +487,9 @@ class RaporlarData {
           .toList(),
       ciroRaporu: (json['ciro_raporu'] as List? ?? [])
           .map((e) => CiroRaporuItem.fromJson(e))
+          .toList(),
+      tahsilatRaporu: (json['tahsilat_raporu'] as List? ?? [])
+          .map((e) => TahsilatRaporuItem.fromJson(e))
           .toList(),
       dolulukRaporu: (json['doluluk_raporu'] as List? ?? [])
           .map((e) => DolulukRaporuItem.fromJson(e))
@@ -685,7 +787,7 @@ class DersListeItem {
   final bool iptalMi;
   final int katilimciSayisi;
   final List<DersKatilimci> katilimcilar;
-  final String durum; // planli, devam_ediyor, tamamlandi, iptal
+  final String durum; // planli, devam_ediyor, tamamlandi, iptal, onay_bekliyor
   final String onayDurumu; // bekliyor, onaylandi, reddedildi
   final String? aciklama;
 
@@ -746,6 +848,8 @@ class DersListeItem {
         return Colors.blue;
       case 'iptal':
         return Colors.red;
+      case 'onay_bekliyor':
+        return Colors.amber;
       default:
         return Colors.orange;
     }
@@ -759,6 +863,8 @@ class DersListeItem {
         return 'Devam Ediyor';
       case 'iptal':
         return 'İptal';
+      case 'onay_bekliyor':
+        return 'Onay Bekliyor';
       default:
         return 'Planlı';
     }

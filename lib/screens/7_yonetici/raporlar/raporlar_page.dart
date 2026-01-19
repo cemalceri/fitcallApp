@@ -6,6 +6,7 @@ import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_ozet_kartlar.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/ciro_raporu_section.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/tahsilat_raporu_section.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_raporu_section.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/antrenor_performans_section.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
@@ -102,7 +103,7 @@ class _RaporlarPageState extends State<RaporlarPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Detaylı performans ve ciro raporları',
+                      'Detaylı performans, ciro ve tahsilat raporları',
                       style: TextStyle(
                         fontSize: 14,
                         color: colorScheme.onSurfaceVariant,
@@ -173,8 +174,12 @@ class _RaporlarPageState extends State<RaporlarPage> {
             RaporOzetKartlar(data: _data!.ozetKartlar),
             const SizedBox(height: 24),
 
-            // Ciro raporu
+            // Ciro raporu (ders bazlı)
             CiroRaporuSection(data: _data!.ciroRaporu),
+            const SizedBox(height: 24),
+
+            // Tahsilat raporu (ödeme bazlı) - YENİ
+            TahsilatRaporuSection(data: _data!.tahsilatRaporu),
             const SizedBox(height: 24),
 
             // Doluluk raporu
