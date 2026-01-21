@@ -2977,9 +2977,11 @@ class _DersListesiPageState extends State<DersListesiPage>
                                   try {
                                     await TakvimService.setDersOnayBilgisi(
                                       dersId: ders.id,
+                                      uyeId: currentUye!.id,
                                       userId: userId,
                                       rol: 'uye',
                                       tamamlandi: secilenDurum == 'yapildi',
+                                      aciklama: yorumCtrl.text.trim(),
                                       onayRedIptalNedeni: secilenNeden,
                                     );
                                     if (puan > 0) {

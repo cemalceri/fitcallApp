@@ -46,22 +46,44 @@ class TakvimService {
   }
 
   // ==================== DERS ONAY ====================
+
+  /// Ders onay bilgisini getirir
+  ///
+  /// Yeni kullanım (önerilen):
+  /// - Üye için: `rol: 'uye'`, `uyeId: üyeninId`
+  /// - Antrenör için: `rol: 'antrenor'`, `antrenorId: antrenörünId`
+  ///
+  /// Eski kullanım (deprecated): sadece `userId`
   static Future<ApiResult<Map<String, dynamic>>> getDersOnayBilgisi({
     required int dersId,
     required int userId,
+    int? uyeId,
+    int? antrenorId,
+    String? rol,
   }) {
     return ApiClient.postParsed<Map<String, dynamic>>(
       getDersOnayBilgisiUrl,
-      {'ders_id': dersId, 'user_id': userId},
+      {
+        'ders_id': dersId,
+        'user_id': userId,
+        if (uyeId != null) 'uye_id': uyeId,
+        if (antrenorId != null) 'antrenor_id': antrenorId,
+        if (rol != null) 'rol': rol,
+      },
       (json) => (json as Map).cast<String, dynamic>(),
     );
   }
 
+  /// Ders onay bilgisini kaydeder
+  ///
+  /// [uyeId] - Üye rolünde onay için zorunlu, aynı üyenin tüm kullanıcıları
+  /// için tek onay kaydı tutulmasını sağlar.
   static Future<ApiResult<Map<String, dynamic>>> setDersOnayBilgisi({
     required int dersId,
     required int userId,
     required String rol,
     required bool tamamlandi,
+    int? uyeId,
     String? aciklama,
     String? onayRedIptalNedeni,
   }) {
@@ -70,6 +92,7 @@ class TakvimService {
       'user_id': userId,
       'rol': rol,
       'tamamlandi': tamamlandi,
+      if (uyeId != null) 'uye_id': uyeId,
       if (aciklama != null && aciklama.isNotEmpty) 'aciklama': aciklama,
       if (onayRedIptalNedeni != null)
         'onay_red_iptal_nedeni': onayRedIptalNedeni,
@@ -80,7 +103,6 @@ class TakvimService {
       (json) => (json as Map).cast<String, dynamic>(),
     );
   }
-
   // ==================== DEĞERLENDİRME ====================
 
   static Future<ApiResult<Map<String, dynamic>>> getDersDegerlendirme({

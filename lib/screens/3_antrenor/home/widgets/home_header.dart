@@ -1,0 +1,155 @@
+// lib/screens/3_antrenor/home/widgets/home_header.dart
+
+import 'dart:convert';
+import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
+import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
+import 'package:fitcall/screens/4_auth/profil_sec.dart';
+import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+class HomeHeader extends StatelessWidget {
+  final String antrenorAdi;
+  final bool hasMultipleProfiles;
+
+  const HomeHeader({
+    super.key,
+    required this.antrenorAdi,
+    required this.hasMultipleProfiles,
+  });
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Günaydın';
+    if (hour < 18) return 'İyi günler';
+    return 'İyi akşamlar';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 8, 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _getGreeting(),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        antrenorAdi.isNotEmpty ? antrenorAdi : 'Hoş geldin',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                          letterSpacing: -0.5,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('🎾', style: TextStyle(fontSize: 24)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Aksiyonlar
+          Row(
+            children: [
+              const NotificationsBell(),
+              if (hasMultipleProfiles)
+                _ProfileSwitchButton(colorScheme: colorScheme),
+              _LogoutButton(colorScheme: colorScheme),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileSwitchButton extends StatelessWidget {
+  final ColorScheme colorScheme;
+
+  const _ProfileSwitchButton({required this.colorScheme});
+
+  Future<void> _switchProfile(BuildContext context) async {
+    HapticFeedback.lightImpact();
+    final jsonStr =
+        await SecureStorageService.getValue<String>('kullanici_profiller');
+    if (jsonStr == null) return;
+    
+    final profiles = (jsonDecode(jsonStr) as List)
+        .map((e) =>
+            KullaniciProfilModel.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+    
+    if (!context.mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => ProfilSecPage(profiles)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () => _switchProfile(context),
+      icon: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          Icons.switch_account_rounded,
+          size: 22,
+          color: colorScheme.onSurface,
+        ),
+      ),
+    );
+  }
+}
+
+class _LogoutButton extends StatelessWidget {
+  final ColorScheme colorScheme;
+
+  const _LogoutButton({required this.colorScheme});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        HapticFeedback.lightImpact();
+        AuthService.logout(context);
+      },
+      icon: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: colorScheme.error.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          Icons.logout_rounded,
+          size: 22,
+          color: colorScheme.error,
+        ),
+      ),
+    );
+  }
+}

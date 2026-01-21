@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-/// Üye için katılım teyit bilgisi
-class EtkinlikTeyit {
+/// Üye için katılım teyit bilgisi (EtkinlikTeyitModel'den)
+class UyeTeyit {
   final int id;
   final int uyeId;
   final bool?
@@ -14,7 +14,7 @@ class EtkinlikTeyit {
   final DateTime? teyitTarihi;
   final bool okundu;
 
-  EtkinlikTeyit({
+  UyeTeyit({
     required this.id,
     required this.uyeId,
     this.katilacakMi,
@@ -23,13 +23,13 @@ class EtkinlikTeyit {
     required this.okundu,
   });
 
-  factory EtkinlikTeyit.fromMap(Map<String, dynamic> j) {
+  factory UyeTeyit.fromMap(Map<String, dynamic> j) {
     DateTime? date(String? v) =>
         (v == null || v.isEmpty) ? null : DateTime.parse(v);
 
-    return EtkinlikTeyit(
+    return UyeTeyit(
       id: j['id'] ?? 0,
-      uyeId: j['uye'] ?? 0,
+      uyeId: j['uye'] ?? j['uye_id'] ?? 0,
       katilacakMi: j['katilacak_mi'],
       aciklama: j['aciklama']?.toString(),
       teyitTarihi: date(j['teyit_tarihi']),
@@ -54,6 +54,142 @@ class EtkinlikTeyit {
     if (katilacakMi == null) return Icons.help_outline_rounded;
     return katilacakMi! ? Icons.check_circle_rounded : Icons.cancel_rounded;
   }
+}
+
+// TODO: Flutter yeni sürüm devreye alınınca bu typedef'i sil
+/// Eski isim için alias - geriye uyumluluk
+typedef EtkinlikTeyit = UyeTeyit;
+
+/// Antrenör ders onayı (EtkinlikOnayModel'den rol=antrenor)
+class AntrenorOnay {
+  final int id;
+  final bool tamamlandi;
+  final String? onayRedIptalNedeni;
+  final String? aciklama;
+  final DateTime? onayTarihi;
+  final int? onaylayanId;
+
+  AntrenorOnay({
+    required this.id,
+    required this.tamamlandi,
+    this.onayRedIptalNedeni,
+    this.aciklama,
+    this.onayTarihi,
+    this.onaylayanId,
+  });
+
+  factory AntrenorOnay.fromMap(Map<String, dynamic> j) {
+    DateTime? date(String? v) =>
+        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+
+    return AntrenorOnay(
+      id: j['id'] ?? 0,
+      tamamlandi: (j['tamamlandi'] ?? false) == true,
+      onayRedIptalNedeni: j['onay_red_iptal_nedeni']?.toString(),
+      aciklama: j['aciklama']?.toString(),
+      onayTarihi: date(j['onay_tarihi']),
+      onaylayanId: j['onaylayan_id'],
+    );
+  }
+
+  /// Onay durumu text
+  String get durumText => tamamlandi ? 'Onaylandı' : 'Bekliyor';
+
+  /// Onay durumu renk
+  Color get durumColor => tamamlandi ? const Color(0xFF10B981) : Colors.orange;
+
+  /// Onay durumu ikon
+  IconData get durumIcon =>
+      tamamlandi ? Icons.check_circle_rounded : Icons.schedule_rounded;
+}
+
+/// Üye ders onayı (EtkinlikOnayModel'den rol=uye)
+class UyeDersOnay {
+  final int id;
+  final int? uyeId;
+  final bool tamamlandi;
+  final String? onayRedIptalNedeni;
+  final String? aciklama;
+  final DateTime? onayTarihi;
+  final int? onaylayanId;
+
+  UyeDersOnay({
+    required this.id,
+    this.uyeId,
+    required this.tamamlandi,
+    this.onayRedIptalNedeni,
+    this.aciklama,
+    this.onayTarihi,
+    this.onaylayanId,
+  });
+
+  factory UyeDersOnay.fromMap(Map<String, dynamic> j) {
+    DateTime? date(String? v) =>
+        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+
+    return UyeDersOnay(
+      id: j['id'] ?? 0,
+      uyeId: j['uye_id'],
+      tamamlandi: (j['tamamlandi'] ?? false) == true,
+      onayRedIptalNedeni: j['onay_red_iptal_nedeni']?.toString(),
+      aciklama: j['aciklama']?.toString(),
+      onayTarihi: date(j['onay_tarihi']),
+      onaylayanId: j['onaylayan_id'],
+    );
+  }
+
+  /// Onay durumu text
+  String get durumText => tamamlandi ? 'Onaylandı' : 'Bekliyor';
+
+  /// Onay durumu renk
+  Color get durumColor => tamamlandi ? const Color(0xFF10B981) : Colors.orange;
+
+  /// Onay durumu ikon
+  IconData get durumIcon =>
+      tamamlandi ? Icons.check_circle_rounded : Icons.schedule_rounded;
+}
+
+/// Yönetici ders onayı (EtkinlikOnayModel'den rol=yonetici)
+class YoneticiOnay {
+  final int id;
+  final bool tamamlandi;
+  final String? onayRedIptalNedeni;
+  final String? aciklama;
+  final DateTime? onayTarihi;
+  final int? onaylayanId;
+
+  YoneticiOnay({
+    required this.id,
+    required this.tamamlandi,
+    this.onayRedIptalNedeni,
+    this.aciklama,
+    this.onayTarihi,
+    this.onaylayanId,
+  });
+
+  factory YoneticiOnay.fromMap(Map<String, dynamic> j) {
+    DateTime? date(String? v) =>
+        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+
+    return YoneticiOnay(
+      id: j['id'] ?? 0,
+      tamamlandi: (j['tamamlandi'] ?? false) == true,
+      onayRedIptalNedeni: j['onay_red_iptal_nedeni']?.toString(),
+      aciklama: j['aciklama']?.toString(),
+      onayTarihi: date(j['onay_tarihi']),
+      onaylayanId: j['onaylayan_id'],
+    );
+  }
+
+  /// Onay durumu text
+  String get durumText => tamamlandi ? 'Onaylandı' : 'Bekliyor';
+
+  /// Onay durumu renk
+  Color get durumColor => tamamlandi ? const Color(0xFF10B981) : Colors.orange;
+
+  /// Onay durumu ikon
+  IconData get durumIcon =>
+      tamamlandi ? Icons.check_circle_rounded : Icons.schedule_rounded;
 }
 
 /// UyeModel'in hafif DTO'su
@@ -128,8 +264,22 @@ class EtkinlikModel {
   final int? guncelleyen;
   final int? isletme;
 
-  /* YENİ: TEYİT BİLGİSİ */
-  final List<EtkinlikTeyit>? uyeOnaylari;
+  /* TEYİT VE ONAY BİLGİLERİ */
+  /// Üye teyitleri (EtkinlikTeyitModel'den - katılacak mı?)
+  final List<UyeTeyit>? uyeTeyitleri;
+
+  /// Antrenör onayı (EtkinlikOnayModel'den - ders tamamlandı mı?)
+  final AntrenorOnay? antrenorOnayi;
+
+  /// Yönetici onayı (EtkinlikOnayModel'den - ders tamamlandı mı?)
+  final YoneticiOnay? yoneticiOnayi;
+
+  /// Üye ders onayları (EtkinlikOnayModel'den - ders tamamlandı mı?)
+  final List<UyeDersOnay>? uyeDersOnaylari;
+
+  // TODO: Flutter yeni sürüm devreye alınınca bu alanı sil
+  /// Eski alan - geriye uyumluluk için (uyeTeyitleri ile aynı)
+  List<UyeTeyit>? get uyeOnaylari => uyeTeyitleri;
 
   EtkinlikModel({
     required this.id,
@@ -157,7 +307,10 @@ class EtkinlikModel {
     this.ekleyen,
     this.guncelleyen,
     this.isletme,
-    this.uyeOnaylari,
+    this.uyeTeyitleri,
+    this.antrenorOnayi,
+    this.uyeDersOnaylari,
+    this.yoneticiOnayi,
   });
 
   factory EtkinlikModel.fromMap(Map<String, dynamic> j) {
@@ -176,12 +329,33 @@ class EtkinlikModel {
             .toList()
         : <UyeLiteModel>[];
 
-    // Teyit listesi - YENİ
-    final dynamic teyitHam = j['uye_onaylari'] ?? j['teyitler'];
-    final List<EtkinlikTeyit>? teyitler =
-        (teyitHam is List && teyitHam.isNotEmpty)
-            ? teyitHam
-                .map((e) => EtkinlikTeyit.fromMap(e as Map<String, dynamic>))
+    // Üye teyitleri - yeni isim öncelikli, eski isim fallback
+    final dynamic teyitHam =
+        j['uye_teyitleri'] ?? j['uye_onaylari'] ?? j['teyitler'];
+    final List<UyeTeyit>? teyitler = (teyitHam is List && teyitHam.isNotEmpty)
+        ? teyitHam
+            .map((e) => UyeTeyit.fromMap(e as Map<String, dynamic>))
+            .toList()
+        : null;
+
+    // Antrenör onayı - YENİ
+    final dynamic antrenorOnayHam = j['antrenor_onayi'];
+    final AntrenorOnay? antrenorOnay = (antrenorOnayHam is Map<String, dynamic>)
+        ? AntrenorOnay.fromMap(antrenorOnayHam)
+        : null;
+
+    // Yönetici onayı - YENİ
+    final dynamic yoneticiOnayHam = j['yonetici_onayi'];
+    final YoneticiOnay? yoneticiOnay = (yoneticiOnayHam is Map<String, dynamic>)
+        ? YoneticiOnay.fromMap(yoneticiOnayHam)
+        : null;
+
+    // Üye ders onayları - YENİ
+    final dynamic uyeDersOnayHam = j['uye_ders_onaylari'];
+    final List<UyeDersOnay>? uyeDersOnaylar =
+        (uyeDersOnayHam is List && uyeDersOnayHam.isNotEmpty)
+            ? uyeDersOnayHam
+                .map((e) => UyeDersOnay.fromMap(e as Map<String, dynamic>))
                 .toList()
             : null;
 
@@ -211,7 +385,10 @@ class EtkinlikModel {
       ekleyen: asIntN(j['ekleyen']),
       guncelleyen: asIntN(j['guncelleyen']),
       isletme: asIntN(j['isletme']),
-      uyeOnaylari: teyitler,
+      uyeTeyitleri: teyitler,
+      antrenorOnayi: antrenorOnay,
+      uyeDersOnaylari: uyeDersOnaylar,
+      yoneticiOnayi: yoneticiOnay,
     );
   }
 
@@ -256,13 +433,13 @@ class EtkinlikModel {
         'uyeler': uyeList.map((e) => e.toJson()).toList(),
       };
 
-  /* YENİ HELPER METODLAR */
+  /* ==================== TEYİT HELPER METODLARI ==================== */
 
   /// Bu üyenin teyit bilgisini getir
-  EtkinlikTeyit? getTeyitBilgisi(int uyeId) {
-    if (uyeOnaylari == null) return null;
+  UyeTeyit? getTeyitBilgisi(int uyeId) {
+    if (uyeTeyitleri == null) return null;
     try {
-      return uyeOnaylari!.firstWhere((t) => t.uyeId == uyeId);
+      return uyeTeyitleri!.firstWhere((t) => t.uyeId == uyeId);
     } catch (e) {
       return null;
     }
@@ -278,4 +455,45 @@ class EtkinlikModel {
   bool? katilacakMi(int uyeId) {
     return getTeyitBilgisi(uyeId)?.katilacakMi;
   }
+
+  /* ==================== ONAY HELPER METODLARI ==================== */
+
+  /// Antrenör onayı verilmiş mi?
+  bool get antrenorOnayiVerilmisMi => antrenorOnayi?.tamamlandi ?? false;
+
+  /// Bu üyenin ders onayını getir
+  UyeDersOnay? getUyeDersOnayi(int uyeId) {
+    if (uyeDersOnaylari == null) return null;
+    try {
+      return uyeDersOnaylari!.firstWhere((o) => o.uyeId == uyeId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Bu üye ders onayı vermiş mi?
+  bool uyeDersOnayiVerilmisMi(int uyeId) {
+    final onay = getUyeDersOnayi(uyeId);
+    return onay?.tamamlandi ?? false;
+  }
+
+  /// Tüm üyeler onay vermiş mi?
+  bool get tumUyelerOnayVermisMi {
+    if (uyeDersOnaylari == null || uyeDersOnaylari!.isEmpty) return false;
+    if (uyeList.isEmpty) return true;
+
+    for (final uye in uyeList) {
+      if (!uyeDersOnayiVerilmisMi(uye.id)) return false;
+    }
+    return true;
+  }
+
+  /// Yönetici onayı verilmiş mi?
+  bool get yoneticiOnayiVerilmisMi => yoneticiOnayi?.tamamlandi ?? false;
+
+  /// Ders tam onaylı mı? (antrenör + yönetici + tüm üyeler)
+  bool get dersTamOnayliMi =>
+      antrenorOnayiVerilmisMi &&
+      yoneticiOnayiVerilmisMi &&
+      tumUyelerOnayVermisMi;
 }

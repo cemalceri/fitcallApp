@@ -1,7 +1,7 @@
 // =================== BASE URL ===================
 const String baseUrlProd = "https://www.binay.fit/api";
 const String baseUrlLocal = "http://10.0.2.2:8000/api";
-// const String baseUrl = baseUrlProd;
+//const String baseUrl = baseUrlProd;
 const String baseUrl = baseUrlLocal;
 
 // =================== AUTH ===================
@@ -31,6 +31,9 @@ String getAntrenorHaftalikEtkinlikler =
 String antrenorDersYapildiBilgisi = "$baseUrl/antrenorDersYapildiBilgisi";
 String getAntrenorOgrenciler = "$baseUrl/getAntrenorOgrenciler";
 String getAntrenorUygunSaatleri = "$baseUrl/getAntrenorUygunSaatleri";
+String getAntrenorHomeCardsUrl = "$baseUrl/getAntrenorHomeCards";
+String dismissAntrenorHomeCardUrl = "$baseUrl/dismissAntrenorHomeCard";
+String getAntrenorSonrakiDersUrl = "$baseUrl/getAntrenorSonrakiDers";
 
 // =================== ETKİNLİK ===================
 String setDersYapildiBilgisi = "$baseUrl/setDersYapildiBilgisi";
