@@ -80,6 +80,8 @@ String getGaleriImages = "$baseUrl/getGaleriImages";
 String getDuyurular = "$baseUrl/getDuyurular";
 String getMobilConfigs = "$baseUrl/getMobilConfigs";
 String mobilLogKaydet = "$baseUrl/mobilLogKaydet";
+String getAktifDuyurularUrl = "$baseUrl/getAktifDuyurular";
+String getDuyuruDetayUrl = "$baseUrl/getDuyuruDetay";
 
 // Ders Onay
 const String getDersOnayBilgisiUrl = "$baseUrl/getDersOnayBilgisi";

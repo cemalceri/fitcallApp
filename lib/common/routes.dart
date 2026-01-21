@@ -1,4 +1,5 @@
 import 'package:fitcall/screens/1_common/yardim_page.dart';
+import 'package:fitcall/screens/2_uye/home/uye_home_page.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/antrenor_takvim_page.dart';
 import 'package:fitcall/screens/4_auth/forgot_password_page.dart';
 import 'package:fitcall/screens/2_uye/takvim.dart';
@@ -14,7 +15,6 @@ import 'package:fitcall/screens/4_auth/register_page.dart';
 import 'package:fitcall/screens/4_auth/qr_kod_kayit_page.dart';
 import 'package:fitcall/screens/1_common/qr_kod_dogrula_page.dart';
 
-import 'package:fitcall/screens/uye_home_page.dart';
 import 'package:fitcall/screens/2_uye/profil_page.dart';
 import 'package:fitcall/screens/6_muhasebe/muhasebe_page.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_talep_page.dart';
