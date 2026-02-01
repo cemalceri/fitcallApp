@@ -104,14 +104,13 @@ class UyeHeader extends StatelessWidget {
                   icon: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest
-                          .withValues(alpha: 0.5),
+                      color: colorScheme.onSecondary.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      Icons.switch_account_rounded,
+                      Icons.switch_account,
                       size: 22,
-                      color: colorScheme.onSurface,
+                      color: colorScheme.primary,
                     ),
                   ),
                 ),

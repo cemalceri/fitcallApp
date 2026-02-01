@@ -543,24 +543,19 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
           ),
           const SizedBox(height: 14),
           _buildBilgiMaddesi(
-            '24 saat öncesinden yapılan bildirimler için paketinizden düşmez veya telafi tanımlanır.',
-          ),
+              'Ders iptali veya değişiklik taleplerinin en az 24 saat önceden bildirilmesini önemle rica ederiz. Bu süre içinde yapılmayan bildirimlerde ders, paket kapsamında kullanılmış sayılacaktır.'),
           const SizedBox(height: 8),
           _buildBilgiMaddesi(
-            'Geç bildirimlerde sistem dersi "yapıldı" olarak işaretler.',
-          ),
+              'Zamanında bildirilmeyen dersler sistem tarafından "gerçekleşti" olarak işaretlenmektedir.'),
           const SizedBox(height: 8),
           _buildBilgiMaddesi(
-            'İstisnai durumlarda (hastalık, acil işler vb.) geç bildirim olsa bile kort ve hoca uygunluğuna göre telafi sağlanabilir. Fakat telafi garantisi yoktur.',
-          ),
+              'İstisnai hallerde, kort ve antrenör uygunluğu doğrultusunda telafi dersi planlanması için gerekli hassasiyet gösterilecektir; ancak telafi garantisi sunulamamaktadır.'),
           const SizedBox(height: 8),
           _buildBilgiMaddesi(
-            'Saat değişikliği talepleriniz için lütfen kulüp ile iletişime geçiniz, "katılamayacağım" butonunu kullanmayınız.',
-          ),
+              'Saat değişikliği talepleriniz için kulübümüzle doğrudan iletişime geçmenizi rica ederiz. Bu gibi durumlarda "katılamayacağım" butonunun kullanılmaması sürecin daha sağlıklı ilerlemesini sağlayacaktır.'),
           const SizedBox(height: 8),
           _buildBilgiMaddesi(
-            'İstisnai durumlar için kulüp ile iletişime geçebilirsiniz.',
-          ),
+              'Tüm sorularınız ve özel durumlarınız için ekibimiz size 8.30-20.30 saatleri arasında destek olmaktan memnuniyet duyacaktır.'),
         ],
       ),
     );
