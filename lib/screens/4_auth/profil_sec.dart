@@ -87,6 +87,8 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
       groupedProfiles.putIfAbsent(p.rol, () => []).add(p);
     }
 
+    final isEmpty = widget.kullaniciProfilList.isEmpty;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
@@ -97,14 +99,64 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
               const SizedBox(height: 20),
               _buildHeader(),
               const SizedBox(height: 8),
-              Expanded(
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  children: groupedProfiles.entries
-                      .map((e) => _buildRoleSection(e.key, e.value))
-                      .toList(),
+              if (isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.inbox_rounded,
+                          size: 80,
+                          color: Colors.grey.shade300,
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Profil Bulunamadı',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Mevcut profil yok',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        ElevatedButton.icon(
+                          onPressed: () => AuthService.logout(context),
+                          icon: const Icon(Icons.logout_rounded),
+                          label: const Text('Çıkış Yap'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFEF4444),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView(
+                    physics: const BouncingScrollPhysics(),
+                    children: groupedProfiles.entries
+                        .map((e) => _buildRoleSection(e.key, e.value))
+                        .toList(),
+                  ),
                 ),
-              ),
             ],
           ),
         ),

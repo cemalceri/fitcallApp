@@ -266,10 +266,25 @@ class _ParaHareketPageState extends State<ParaHareketPage> {
     double toplamBorc = 0;
     double toplamOdeme = 0;
     for (final t in transactions) {
-      if (t.hareketTuru == 'Alacak') {
-        toplamBorc += t.tutar;
-      } else {
-        toplamOdeme += t.tutar;
+      switch (t.hareketTuru) {
+        // Borç artıranlar
+        case 'ALACAK':
+        case 'FARK_ALACAK':
+          toplamBorc += t.tutar;
+          break;
+
+        // Borç azaltanlar
+        case 'ODEME':
+        case 'INDIRIM':
+        case 'FARK_IADE':
+        case 'IPTAL':
+        case 'IADE':
+          toplamOdeme += t.tutar;
+          break;
+
+        default:
+          // Bilinmeyen / ileride eklenecek türler için
+          break;
       }
     }
     final fark = toplamOdeme - toplamBorc;

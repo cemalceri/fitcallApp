@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 /// - Progress bar ile otomatik geçiş (5 saniye)
 /// - Dokunulduğunda durur
 /// - Swipe ile manuel geçiş
+/// - Her duyuru için farklı renk paleti
 class DuyuruCarousel extends StatefulWidget {
   final List<DuyuruModel> duyurular;
   final double height;
@@ -102,7 +103,7 @@ class _DuyuruCarouselState extends State<DuyuruCarousel>
   @override
   Widget build(BuildContext context) {
     if (widget.duyurular.isEmpty) {
-      return const SizedBox.shrink(); // Duyuru yoksa hiçbir şey gösterme
+      return const SizedBox.shrink();
     }
 
     return Column(
@@ -149,6 +150,7 @@ class _DuyuruCarouselState extends State<DuyuruCarousel>
                 return _DuyuruKart(
                   duyuru: duyuru,
                   onTap: () => _openDuyuruDetay(duyuru),
+                  index: index,
                 );
               },
             ),
@@ -206,14 +208,16 @@ class _ProgressBar extends StatelessWidget {
   }
 }
 
-/// Tek duyuru kartı
+/// Tek duyuru kartı - Index'e göre farklı renkler
 class _DuyuruKart extends StatelessWidget {
   final DuyuruModel duyuru;
   final VoidCallback onTap;
+  final int index;
 
   const _DuyuruKart({
     required this.duyuru,
     required this.onTap,
+    required this.index,
   });
 
   @override
@@ -239,35 +243,8 @@ class _DuyuruKart extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Arka plan (resim veya gradient)
-              if (duyuru.resimVar)
-                Image.network(
-                  duyuru.ilkResim,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _buildGradientBackground(),
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return _buildGradientBackground();
-                  },
-                )
-              else
-                _buildGradientBackground(),
-
-              // Gradient overlay (metin okunabilirliği için)
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.3),
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
-                    stops: const [0.0, 0.5, 1.0],
-                  ),
-                ),
-              ),
+              // Gradient background
+              _buildGradientBackground(),
 
               // İçerik
               Padding(
@@ -285,7 +262,7 @@ class _DuyuruKart extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF59E0B),
+                              color: const Color(0xFFDC2626),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Row(
@@ -316,8 +293,11 @@ class _DuyuruKart extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.5),
+                              color: Colors.black.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -352,12 +332,6 @@ class _DuyuruKart extends StatelessWidget {
                         color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black26,
-                            blurRadius: 4,
-                          ),
-                        ],
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -387,10 +361,10 @@ class _DuyuruKart extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.white.withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
+                              color: Colors.white.withValues(alpha: 0.4),
                             ),
                           ),
                           child: const Row(
@@ -426,10 +400,57 @@ class _DuyuruKart extends StatelessWidget {
   }
 
   Widget _buildGradientBackground() {
-    // Önemli duyurular için farklı renk
-    final colors = duyuru.onemliMi
-        ? [const Color(0xFFF59E0B), const Color(0xFFEF4444)]
-        : [const Color(0xFF2563EB), const Color(0xFF7C3AED)];
+    // 10 farklı renk paleti - beyaz yazıya uygun koyu tonlar
+    // 15 duyuru olsa bile döngüsel olarak bu renkler tekrar eder (index % 10)
+    final List<List<Color>> colorPalettes = [
+      // 4. Koyu Mavi
+      [const Color(0xFF1E3A8A), const Color(0xFF2563EB)],
+
+      // 5. Koyu Yeşil
+      [const Color(0xFF065F46), const Color(0xFF059669)],
+
+      // 6. Koyu Pembe
+      [const Color(0xFF9F1239), const Color(0xFFE11D48)],
+
+      // 7. Koyu Cyan
+      [const Color(0xFF155E75), const Color(0xFF0891B2)],
+
+      // 8. Koyu İndigo
+      [const Color(0xFF3730A3), const Color(0xFF4F46E5)],
+
+      // 9. Koyu Amber
+      [const Color(0xFF92400E), const Color(0xFFF59E0B)],
+
+      // 10. Koyu Teal
+      [const Color(0xFF134E4A), const Color(0xFF14B8A6)],
+
+      // 1. Koyu Turuncu
+      [const Color(0xFFB45309), const Color(0xFFD97706)],
+
+      // 2. Koyu Kırmızı
+      [const Color(0xFF991B1B), const Color(0xFFDC2626)],
+
+      // 3. Koyu Mor
+      [const Color(0xFF6B21A8), const Color(0xFF9333EA)],
+    ];
+
+    // Önemli duyurular için daha dramatik renkler
+    final List<List<Color>> importantPalettes = [
+      [const Color(0xFF7C2D12), const Color(0xFFDC2626)],
+      [const Color(0xFF881337), const Color(0xFFE11D48)],
+      [const Color(0xFF581C87), const Color(0xFF9333EA)],
+      [const Color(0xFF172554), const Color(0xFF3B82F6)],
+      [const Color(0xFF78350F), const Color(0xFFF59E0B)],
+    ];
+
+    final List<Color> colors;
+    if (duyuru.onemliMi) {
+      // Önemli duyurular: 5 palet arasından seç (mod 5)
+      colors = importantPalettes[index % importantPalettes.length];
+    } else {
+      // Normal duyurular: 10 palet arasından seç (mod 10)
+      colors = colorPalettes[index % colorPalettes.length];
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -443,7 +464,7 @@ class _DuyuruKart extends StatelessWidget {
         child: Icon(
           Icons.campaign_rounded,
           size: 60,
-          color: Colors.white.withValues(alpha: 0.3),
+          color: Colors.white.withValues(alpha: 0.2),
         ),
       ),
     );

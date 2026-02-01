@@ -5,7 +5,6 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
 
 class LessonCancelDialog extends StatefulWidget {
@@ -93,32 +92,7 @@ class _LessonCancelDialogContent extends StatefulWidget {
 class _LessonCancelDialogContentState
     extends State<_LessonCancelDialogContent> {
   bool _isSaving = false;
-  String? _secilenSebep;
   final _aciklamaCtrl = TextEditingController();
-
-  static const _iptalSebepleri = [
-    {
-      'code': 'ANTRENOR_MUSAIT_DEGIL',
-      'label': 'Müsait değilim',
-      'icon': Icons.person_off_rounded
-    },
-    {
-      'code': 'HAVA_KOSULLARI',
-      'label': 'Hava koşulları',
-      'icon': Icons.cloud_rounded
-    },
-    {
-      'code': 'KORT_SORUNU',
-      'label': 'Kort sorunu',
-      'icon': Icons.sports_tennis_rounded
-    },
-    {
-      'code': 'KISISEL_MAZERET',
-      'label': 'Kişisel mazeret',
-      'icon': Icons.person_rounded
-    },
-    {'code': 'DIGER', 'label': 'Diğer', 'icon': Icons.more_horiz_rounded},
-  ];
 
   @override
   void dispose() {
@@ -135,14 +109,12 @@ class _LessonCancelDialogContentState
 
   @override
   Widget build(BuildContext context) {
-    final katilimcilar = widget.ders.uyeList.map((u) => u.adSoyad).toList();
-
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
           maxWidth: 400,
         ),
         child: Column(
@@ -154,10 +126,8 @@ class _LessonCancelDialogContentState
             // Content (scrollable)
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                child: _talepVar
-                    ? _buildMevcutTalep()
-                    : _buildYeniTalepForm(katilimcilar),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                child: _talepVar ? _buildMevcutTalep() : _buildYeniTalepForm(),
               ),
             ),
 
@@ -173,8 +143,7 @@ class _LessonCancelDialogContentState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: (_talepVar ? TakvimColors.pending : TakvimColors.cancelled)
-            .withValues(alpha: 0.08),
+        color: TakvimColors.primaryLight.withValues(alpha: 0.3),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
@@ -182,15 +151,12 @@ class _LessonCancelDialogContentState
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: (_talepVar ? TakvimColors.pending : TakvimColors.cancelled)
-                  .withValues(alpha: 0.15),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              _talepVar
-                  ? Icons.hourglass_empty_rounded
-                  : Icons.event_busy_rounded,
-              color: _talepVar ? TakvimColors.pending : TakvimColors.cancelled,
+              Icons.event_note_rounded,
+              color: TakvimColors.primary,
               size: 22,
             ),
           ),
@@ -199,10 +165,9 @@ class _LessonCancelDialogContentState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _talepVar ? 'İptal Talebi' : 'Ders İptali',
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w700),
+                const Text(
+                  'Ders Detayı',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -233,9 +198,20 @@ class _LessonCancelDialogContentState
 
     return Column(
       children: [
-        const SizedBox(height: 8),
+        // Kort ve Saat Bilgisi
+        _buildDersBilgisi(),
+        const SizedBox(height: 16),
 
-        // Mevcut talep durumu
+        // Katılımcı durumları
+        if (widget.ders.uyeList.isNotEmpty) ...[
+          _buildKatilimDurumlari(),
+          const SizedBox(height: 20),
+          // Ayırıcı çizgi
+          Divider(color: Colors.grey.shade300, thickness: 1),
+          const SizedBox(height: 20),
+        ],
+
+        // Mevcut iptal talebi
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
@@ -263,21 +239,21 @@ class _LessonCancelDialogContentState
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Talebiniz Beklemede',
+                        Text(
+                          'İptal Talebi Beklemede',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: TakvimColors.pending,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
-                          talep['sebep_display'] ?? '',
+                          'Yönetici onayı bekleniyor',
                           style: TextStyle(
                             fontSize: 13,
                             color: TakvimColors.textSecondary,
@@ -314,15 +290,36 @@ class _LessonCancelDialogContentState
     );
   }
 
-  Widget _buildYeniTalepForm(List<String> katilimcilar) {
+  Widget _buildYeniTalepForm() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Katılımcılar
-        if (katilimcilar.isNotEmpty) ...[
-          _buildKatilimcilar(katilimcilar),
+        // Kort ve Saat Bilgisi
+        _buildDersBilgisi(),
+        const SizedBox(height: 16),
+
+        // Katılımcı durumları
+        if (widget.ders.uyeList.isNotEmpty) ...[
+          _buildKatilimDurumlari(),
+          const SizedBox(height: 20),
+          // Ayırıcı çizgi
+          Divider(color: Colors.grey.shade300, thickness: 1),
           const SizedBox(height: 20),
         ],
+
+        // İptal Talebi Başlığı
+        Row(
+          children: [
+            Icon(Icons.event_busy_rounded,
+                size: 20, color: TakvimColors.cancelled),
+            const SizedBox(width: 8),
+            const Text(
+              'İptal Talebi',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
 
         // Bilgi
         Container(
@@ -334,7 +331,8 @@ class _LessonCancelDialogContentState
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline_rounded, color: Colors.blue.shade700),
+              Icon(Icons.info_outline_rounded,
+                  color: Colors.blue.shade700, size: 20),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
@@ -346,86 +344,240 @@ class _LessonCancelDialogContentState
           ),
         ),
 
-        const SizedBox(height: 20),
-
-        // Sebepler
-        const Text(
-          'İptal Sebebi',
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _iptalSebepleri.map((s) {
-            final isSelected = _secilenSebep == s['code'];
-            return ChoiceChip(
-              avatar: Icon(
-                s['icon'] as IconData,
-                size: 18,
-                color: isSelected
-                    ? TakvimColors.cancelled
-                    : TakvimColors.textSecondary,
-              ),
-              label: Text(s['label'] as String),
-              selected: isSelected,
-              onSelected: (_) {
-                HapticFeedback.selectionClick();
-                setState(() => _secilenSebep = s['code'] as String);
-              },
-              selectedColor: TakvimColors.cancelled.withValues(alpha: 0.15),
-              labelStyle: TextStyle(
-                color: isSelected ? TakvimColors.cancelled : null,
-                fontWeight: isSelected ? FontWeight.w600 : null,
-                fontSize: 13,
-              ),
-            );
-          }).toList(),
-        ),
-
         const SizedBox(height: 16),
 
         // Açıklama
+        const Text(
+          'İptal Nedeni',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 10),
         TextField(
           controller: _aciklamaCtrl,
-          maxLines: 3,
+          maxLines: 4,
+          maxLength: 500,
           decoration: InputDecoration(
-            hintText: 'Açıklama (isteğe bağlı)',
+            hintText: 'İptal nedeninizi açıklayın...',
+            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
             filled: true,
             fillColor: Colors.grey.shade50,
+            contentPadding: const EdgeInsets.all(14),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildKatilimcilar(List<String> katilimcilar) {
+  Widget _buildDersBilgisi() {
+    final baslangic = widget.ders.baslangicTarihSaat;
+    final bitis = widget.ders.bitisTarihSaat;
+    final sure = bitis.difference(baslangic).inMinutes;
+
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: TakvimColors.primaryLight.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200, width: 1.5),
       ),
-      child: Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        children: katilimcilar
-            .map((isim) => Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      child: Row(
+        children: [
+          // Kort
+          Expanded(
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    color: TakvimColors.primaryLight.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(
-                    isim,
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w500),
+                  child: Icon(
+                    Icons.sports_tennis_rounded,
+                    color: TakvimColors.primary,
+                    size: 18,
                   ),
-                ))
-            .toList(),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Kort',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: TakvimColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.ders.kortAdi,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Dikey ayırıcı
+          Container(
+            height: 40,
+            width: 1,
+            color: Colors.grey.shade300,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+          ),
+
+          // Saat
+          Expanded(
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: TakvimColors.primaryLight.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.access_time_rounded,
+                    color: TakvimColors.primary,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Saat',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: TakvimColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${TimeUtils.formatTime(baslangic)} ($sure dk)',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKatilimDurumlari() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.people_rounded,
+                size: 18, color: TakvimColors.textSecondary),
+            const SizedBox(width: 6),
+            Text(
+              'Katılımcı Durumları (${widget.ders.uyeList.length})',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: TakvimColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          constraints:
+              const BoxConstraints(maxHeight: 250), // 200'den 250'ye çıkardık
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          padding: const EdgeInsets.all(10),
+          child: SingleChildScrollView(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: widget.ders.uyeList.map((uye) {
+                final teyit = widget.ders.getTeyitBilgisi(uye.id);
+                return _buildUyeDurumChip(uye, teyit);
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUyeDurumChip(UyeLiteModel uye, UyeTeyit? teyit) {
+    // katilacakMi: null veya true → Katılması planlanıyor (yeşil)
+    // katilacakMi: false → Katılmayacağını bildirdi (kırmızı)
+    final katilacak = teyit?.katilacakMi ?? true;
+    final color = katilacak ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final icon = katilacak ? Icons.check_circle_rounded : Icons.cancel_rounded;
+    final durum =
+        katilacak ? 'Katılması planlanıyor' : 'Katılmayacağını bildirdi';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              uye.adSoyad,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              durum,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -465,8 +617,8 @@ class _LessonCancelDialogContentState
                     )
                   : const Icon(Icons.undo_rounded, size: 18),
               label: const Text(
-                'Talebi Geri Çek',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                'İptal Talebini Geri Çek',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
               ),
               style: FilledButton.styleFrom(
                 backgroundColor: TakvimColors.pending,
@@ -483,6 +635,8 @@ class _LessonCancelDialogContentState
   }
 
   Widget _buildYeniTalepActions() {
+    final hasText = _aciklamaCtrl.text.trim().isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -507,8 +661,7 @@ class _LessonCancelDialogContentState
           Expanded(
             flex: 2,
             child: FilledButton(
-              onPressed:
-                  _secilenSebep == null || _isSaving ? null : _talepGonder,
+              onPressed: !hasText || _isSaving ? null : _talepGonder,
               style: FilledButton.styleFrom(
                 backgroundColor: TakvimColors.cancelled,
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -524,7 +677,7 @@ class _LessonCancelDialogContentState
                           strokeWidth: 2, color: Colors.white),
                     )
                   : const Text(
-                      'Talep Gönder',
+                      'İptal Talebi Gönder',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
             ),
@@ -541,7 +694,7 @@ class _LessonCancelDialogContentState
       await TakvimService.createIptalTalebi(
         dersId: widget.ders.id,
         userId: widget.userId,
-        sebep: _secilenSebep!,
+        sebep: 'ANTRENOR_IPTAL',
         aciklama: _aciklamaCtrl.text.trim(),
         rol: 'antrenor',
       );

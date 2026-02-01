@@ -56,10 +56,6 @@ class UyeTeyit {
   }
 }
 
-// TODO: Flutter yeni sürüm devreye alınınca bu typedef'i sil
-/// Eski isim için alias - geriye uyumluluk
-typedef EtkinlikTeyit = UyeTeyit;
-
 /// Antrenör ders onayı (EtkinlikOnayModel'den rol=antrenor)
 class AntrenorOnay {
   final int id;
@@ -276,10 +272,6 @@ class EtkinlikModel {
 
   /// Üye ders onayları (EtkinlikOnayModel'den - ders tamamlandı mı?)
   final List<UyeDersOnay>? uyeDersOnaylari;
-
-  // TODO: Flutter yeni sürüm devreye alınınca bu alanı sil
-  /// Eski alan - geriye uyumluluk için (uyeTeyitleri ile aynı)
-  List<UyeTeyit>? get uyeOnaylari => uyeTeyitleri;
 
   EtkinlikModel({
     required this.id,
