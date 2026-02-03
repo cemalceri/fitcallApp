@@ -4,7 +4,6 @@ import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/3_antrenor/home_card_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
-import 'package:fitcall/models/dtos/takvim_dtos/uygun_slot_dto.dart';
 import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
@@ -19,32 +18,6 @@ class AntrenorApiService {
         (m) => UyeModel.fromJson(m),
       ),
     );
-  }
-
-  /// Belirli tarih aralığında belirtilen ya da tüm antrenörlerin uygun saatleri döner
-  static Future<ApiResult<List<UygunSlotDto>>> getAntrenorUygunSaatleriApi({
-    required DateTime start,
-    required DateTime end,
-    int? antrenorId,
-  }) async {
-    final body = {
-      'start': start.toIso8601String(),
-      'end': end.toIso8601String(),
-      if (antrenorId != null) 'antrenor_id': antrenorId,
-    };
-
-    final r = await ApiClient.postParsed<Map<String, dynamic>>(
-      getAntrenorUygunSaatleri,
-      body,
-      (json) => (json as Map).cast<String, dynamic>(),
-    );
-
-    final list = (r.data?['available'] ?? []) as List;
-    final parsed = list
-        .map((e) => UygunSlotDto.fromJson((e as Map).cast<String, dynamic>()))
-        .toList();
-
-    return ApiResult<List<UygunSlotDto>>(mesaj: r.mesaj, data: parsed);
   }
 
   static Future<ApiResult<AntrenorTakvimDataDto>> antrenorLoadDay({

@@ -259,6 +259,7 @@ class EtkinlikModel {
   final int? ekleyen;
   final int? guncelleyen;
   final int? isletme;
+  final String? iptalEdenAdi;
 
   /* TEYİT VE ONAY BİLGİLERİ */
   /// Üye teyitleri (EtkinlikTeyitModel'den - katılacak mı?)
@@ -303,6 +304,7 @@ class EtkinlikModel {
     this.antrenorOnayi,
     this.uyeDersOnaylari,
     this.yoneticiOnayi,
+    this.iptalEdenAdi,
   });
 
   factory EtkinlikModel.fromMap(Map<String, dynamic> j) {
@@ -381,6 +383,7 @@ class EtkinlikModel {
       antrenorOnayi: antrenorOnay,
       uyeDersOnaylari: uyeDersOnaylar,
       yoneticiOnayi: yoneticiOnay,
+      iptalEdenAdi: j['iptal_eden_adi']?.toString(),
     );
   }
 

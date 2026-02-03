@@ -45,7 +45,7 @@ class DersDetayPopup extends StatefulWidget {
 class _DersDetayPopupState extends State<DersDetayPopup> {
   final _aciklamaController = TextEditingController();
   bool _isLoading = false;
-  bool _showKatilimForm = false;
+  bool _showKatilmayacagimForm = false;
 
   @override
   void dispose() {
@@ -53,7 +53,36 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     super.dispose();
   }
 
-  Future<void> _katilmayacagimiBildir() async {
+  Future<void> _katilacagim() async {
+    setState(() => _isLoading = true);
+
+    try {
+      await DersTeyitService.setDersTeyitBilgisi(
+        uyeId: widget.uyeId.toString(),
+        etkinlikId: widget.ders.id.toString(),
+        durum: true,
+        aciklama: null,
+      );
+
+      if (mounted) {
+        Navigator.pop(context);
+        ShowMessage.success(context, 'Katılım durumunuz kaydedildi');
+        widget.onSuccess();
+      }
+    } on ApiException catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ShowMessage.error(context, e.message);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ShowMessage.error(context, 'Bir hata oluştu: $e');
+      }
+    }
+  }
+
+  Future<void> _katilmayacagim() async {
     setState(() => _isLoading = true);
 
     try {
@@ -87,6 +116,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     final theme = Theme.of(context);
     final teyit = widget.ders.getTeyitBilgisi(widget.uyeId);
     final teyitVerilmis = teyit != null && teyit.katilacakMi != null;
+    final iptalEdildi = widget.ders.iptalMi;
 
     return Container(
       constraints: BoxConstraints(
@@ -99,7 +129,6 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle
           const SizedBox(height: 12),
           Container(
             width: 40,
@@ -110,13 +139,8 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Kompakt Header — tarih + saat + kort + antrenör tek blokta
-          _buildCompactHeader(theme),
-
+          _buildCompactHeaderWithCancelBadge(theme, iptalEdildi),
           const SizedBox(height: 16),
-
-          // İçerik
           Flexible(
             child: SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(
@@ -128,24 +152,22 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Mevcut teyit durumu (varsa)
-                  if (teyitVerilmis) ...[
-                    _buildMevcutTeyitCard(teyit),
+                  if (iptalEdildi) ...[
+                    _buildIptalDurumuCard(),
+                    const SizedBox(height: 16),
+                    _buildIletisimNotu(),
+                    const SizedBox(height: 20),
+                  ],
+                  if (teyitVerilmis && !iptalEdildi) ...[
+                    _buildTeyitSonrasiCard(teyit),
                     const SizedBox(height: 16),
                   ],
-
-                  // Katılım Bildirimi — ÖN PLANDA
-                  if (!teyitVerilmis) ...[
-                    _buildKatilimSection(),
+                  if (!teyitVerilmis && !iptalEdildi) ...[
+                    _buildKatilimButonlari(),
                     const SizedBox(height: 16),
+                    _buildBilgilendirmeNotu(),
+                    const SizedBox(height: 20),
                   ],
-
-                  // Önemli Bilgiler — VURGULU
-                  _buildBilgilendirmeNotu(),
-
-                  const SizedBox(height: 20),
-
-                  // Kapat Butonu
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
@@ -172,8 +194,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     );
   }
 
-  /// Kompakt header: ikon + başlık + detaylar tek satırlık chip'ler halinde
-  Widget _buildCompactHeader(ThemeData theme) {
+  Widget _buildCompactHeaderWithCancelBadge(ThemeData theme, bool iptalEdildi) {
     final saat =
         '${TimeUtils.formatTime(widget.ders.baslangicTarihSaat)} - ${TimeUtils.formatTime(widget.ders.bitisTarihSaat)}';
     final kort = widget.ders.kortAdi;
@@ -184,18 +205,20 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Başlık satırı
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: TakvimColors.primary.withValues(alpha: 0.12),
+                  color: iptalEdildi
+                      ? Colors.red.shade50
+                      : TakvimColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.sports_tennis_rounded,
-                  color: TakvimColors.primary,
+                  color:
+                      iptalEdildi ? Colors.red.shade400 : TakvimColors.primary,
                   size: 22,
                 ),
               ),
@@ -209,11 +232,34 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                   ),
                 ),
               ),
+              if (iptalEdildi)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade500,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.shade500.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Text(
+                    'İPTAL EDİLDİ',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 12),
-
-          // Detaylar — yatay chip'ler
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -255,23 +301,24 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     );
   }
 
-  Widget _buildMevcutTeyitCard(UyeTeyit teyit) {
+  Widget _buildIptalDurumuCard() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: teyit.durumColor.withValues(alpha: 0.1),
+        color: Colors.red.shade50,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: teyit.durumColor.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.red.shade200, width: 1.5),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: teyit.durumColor.withValues(alpha: 0.15),
+              color: Colors.red.shade100,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(teyit.durumIcon, color: teyit.durumColor, size: 24),
+            child: Icon(Icons.cancel_rounded,
+                color: Colors.red.shade600, size: 24),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -279,7 +326,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Katılım Durumunuz',
+                  'Ders Durumu',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade600,
@@ -287,17 +334,17 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  teyit.durumText,
+                  'İptal Edildi',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: teyit.durumColor,
+                    color: Colors.red.shade700,
                   ),
                 ),
-                if (teyit.aciklama != null && teyit.aciklama!.isNotEmpty) ...[
+                if (widget.ders.iptalEden != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    teyit.aciklama!,
+                    'İptal eden: ${widget.ders.iptalEdenAdi}',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey.shade700,
@@ -312,88 +359,162 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     );
   }
 
-  Widget _buildKatilimSection() {
-    if (!_showKatilimForm) {
-      // --- VURGULU BUTON ---
-      return Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            setState(() => _showKatilimForm = true);
-          },
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  TakvimColors.notAttending,
-                  TakvimColors.notAttending.withValues(alpha: 0.85),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+  Widget _buildTeyitSonrasiCard(UyeTeyit teyit) {
+    final katilacak = teyit.katilacakMi == true;
+    final mesaj = katilacak
+        ? 'Bu ders için katılacağınızı belirttiniz.'
+        : 'Bu ders için katılamayacağınızı belirttiniz.';
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: teyit.durumColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: teyit.durumColor.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: teyit.durumColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(teyit.durumIcon, color: teyit.durumColor, size: 24),
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: TakvimColors.notAttending.withValues(alpha: 0.35),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.event_busy_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Katılamayacak mısınız?',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      mesaj,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: teyit.durumColor,
                       ),
-                      SizedBox(height: 2),
+                    ),
+                    if (teyit.aciklama != null &&
+                        teyit.aciklama!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
                       Text(
-                        'Bildirmek için dokunun',
+                        'Açıklama: ${teyit.aciklama}',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.white70,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey.shade600,
                         ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.white70,
-                  size: 18,
-                ),
-              ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildIletisimNotu(),
+      ],
+    );
+  }
+
+  Widget _buildIletisimNotu() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: TakvimColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: TakvimColors.primary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            size: 20,
+            color: TakvimColors.primary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Değişiklik talebiniz varsa lütfen iletişime geçiniz.',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade700,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKatilimButonlari() {
+    if (_showKatilmayacagimForm) {
+      return _buildKatilmayacagimForm();
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          child: FilledButton.icon(
+            onPressed: _isLoading ? null : _katilacagim,
+            icon: _isLoading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.check_circle_rounded, size: 18),
+            label: const Text(
+              'Katılacağım',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),
-      );
-    }
+        const SizedBox(width: 10),
+        Expanded(
+          child: FilledButton.icon(
+            onPressed: _isLoading
+                ? null
+                : () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _showKatilmayacagimForm = true);
+                  },
+            icon: const Icon(Icons.event_busy_rounded, size: 18),
+            label: const Text(
+              'Katılamayacağım',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: TakvimColors.notAttending,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-    // Form açık
+  Widget _buildKatilmayacagimForm() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -431,7 +552,8 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                 ),
               ),
               IconButton(
-                onPressed: () => setState(() => _showKatilimForm = false),
+                onPressed: () =>
+                    setState(() => _showKatilmayacagimForm = false),
                 icon: const Icon(Icons.close_rounded),
                 style: IconButton.styleFrom(
                   backgroundColor: Colors.grey.shade200,
@@ -472,7 +594,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: _isLoading ? null : _katilmayacagimiBildir,
+              onPressed: _isLoading ? null : _katilmayacagim,
               icon: _isLoading
                   ? const SizedBox(
                       width: 18,
@@ -503,7 +625,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
 
   Widget _buildBilgilendirmeNotu() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: TakvimColors.pending.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
@@ -541,19 +663,19 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           _buildBilgiMaddesi(
               'Ders iptali veya değişiklik taleplerinin en az 24 saat önceden bildirilmesini önemle rica ederiz. Bu süre içinde yapılmayan bildirimlerde ders, paket kapsamında kullanılmış sayılacaktır.'),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           _buildBilgiMaddesi(
               'Zamanında bildirilmeyen dersler sistem tarafından "gerçekleşti" olarak işaretlenmektedir.'),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           _buildBilgiMaddesi(
               'İstisnai hallerde, kort ve antrenör uygunluğu doğrultusunda telafi dersi planlanması için gerekli hassasiyet gösterilecektir; ancak telafi garantisi sunulamamaktadır.'),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           _buildBilgiMaddesi(
               'Saat değişikliği talepleriniz için kulübümüzle doğrudan iletişime geçmenizi rica ederiz. Bu gibi durumlarda "katılamayacağım" butonunun kullanılmaması sürecin daha sağlıklı ilerlemesini sağlayacaktır.'),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           _buildBilgiMaddesi(
               'Tüm sorularınız ve özel durumlarınız için ekibimiz size 8.30-20.30 saatleri arasında destek olmaktan memnuniyet duyacaktır.'),
         ],

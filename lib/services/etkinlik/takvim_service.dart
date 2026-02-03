@@ -1,19 +1,17 @@
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
-import 'package:fitcall/models/dtos/takvim_dtos/mesgul_slot_dto.dart';
-import 'package:fitcall/models/dtos/takvim_dtos/uygun_slot_dto.dart';
 import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
 class TakvimService {
   // ==================== HAFTALIK TAKVİM ====================
-  static Future<ApiResult<WeekTakvimDataDto>> loadWeek({
+  static Future<ApiResult<WeekTakvimDataDto>> getUyeDersProramiApi({
     required DateTime start,
     required DateTime end,
   }) async {
     final dersRes = await ApiClient.postParsed<List<EtkinlikModel>>(
-      getUyeDersProgrami,
+      getUyeDersProgramiUrl,
       {'start': start.toIso8601String(), 'end': end.toIso8601String()},
       (json) => ApiParsing.parseList<EtkinlikModel>(
         json,
@@ -21,27 +19,11 @@ class TakvimService {
       ),
     );
 
-    final slotRes = await ApiClient.postParsed<Map<String, dynamic>>(
-      getAntrenorUygunSaatleri,
-      {'start': start.toIso8601String(), 'end': end.toIso8601String()},
-      (json) => (json as Map).cast<String, dynamic>(),
-    );
-
-    final busy = ((slotRes.data?['busy'] ?? []) as List)
-        .map((e) => MesgulSlotDto.fromJson((e as Map).cast<String, dynamic>()))
-        .toList();
-
-    final available = ((slotRes.data?['available'] ?? []) as List)
-        .map((e) => UygunSlotDto.fromJson((e as Map).cast<String, dynamic>()))
-        .toList();
-
     final dto = WeekTakvimDataDto(
       dersler: dersRes.data ?? [],
-      mesgul: busy,
-      uygun: available,
     );
 
-    final mesaj = dersRes.mesaj.isNotEmpty ? dersRes.mesaj : slotRes.mesaj;
+    final mesaj = dersRes.mesaj.isNotEmpty ? dersRes.mesaj : '';
     return ApiResult<WeekTakvimDataDto>(mesaj: mesaj, data: dto);
   }
 

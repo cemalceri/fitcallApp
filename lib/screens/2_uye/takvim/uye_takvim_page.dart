@@ -98,7 +98,7 @@ class _DersListesiPageState extends State<DersListesiPage>
     final weekEnd = normalizedWeekStart.add(const Duration(days: 7));
 
     try {
-      final response = await TakvimService.loadWeek(
+      final response = await TakvimService.getUyeDersProramiApi(
         start: normalizedWeekStart,
         end: weekEnd,
       );
@@ -204,10 +204,8 @@ class _DersListesiPageState extends State<DersListesiPage>
   }
 
   void _onLessonTap(EtkinlikModel ders) {
-    if (ders.iptalMi) {
-      ShowMessage.error(context, 'Bu ders iptal edilmiş');
-      return;
-    }
+    // İPTAL EDİLDİ KONTROLÜ KALDIRILDI - Artık iptal edilen derslere de tıklanabilir
+    // İptal durumu popup içinde gösterilecek
 
     final isPast = ders.bitisTarihSaat.isBefore(DateTime.now());
 
@@ -220,7 +218,7 @@ class _DersListesiPageState extends State<DersListesiPage>
         onSuccess: _forceReloadCurrentWeek,
       );
     } else {
-      // Gelecek ders - detay popup'ı
+      // Gelecek ders - detay popup'ı (iptal edilen dersler de dahil)
       if (_currentUye == null) {
         ShowMessage.error(context, 'Kullanıcı bilgisi bulunamadı');
         return;

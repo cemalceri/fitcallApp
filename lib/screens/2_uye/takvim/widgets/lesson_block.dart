@@ -21,31 +21,38 @@ class LessonBlock extends StatelessWidget {
 
     // Durum rengini belirle
     Color statusColor;
+    Color backgroundColor;
+    Color borderColor;
     IconData statusIcon;
 
     if (isIptal) {
-      statusColor = TakvimColors.cancelled;
+      // İPTAL EDİLDİ - Kırmızı tema
+      statusColor = const Color(0xFFEF4444); // Kırmızı
+      backgroundColor = const Color(0xFFFEE2E2); // Açık kırmızımsı
+      borderColor = const Color(0xFFFCA5A5); // Kırmızı border
       statusIcon = Icons.cancel_rounded;
     } else if (isPast) {
       statusColor = TakvimColors.completed;
+      backgroundColor = statusColor.withValues(alpha: 0.12);
+      borderColor = statusColor;
       statusIcon = Icons.check_circle_rounded;
     } else {
       statusColor = TakvimColors.future;
+      backgroundColor = statusColor.withValues(alpha: 0.12);
+      borderColor = statusColor;
       statusIcon = Icons.schedule_rounded;
     }
 
     return GestureDetector(
-      onTap: isIptal ? null : onTap,
+      onTap: onTap, // İptal edilen derslere de tıklanabilir
       child: Container(
         margin: const EdgeInsets.only(right: 2, bottom: 2),
         decoration: BoxDecoration(
-          color: statusColor.withValues(alpha: 0.12),
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(TakvimSizes.lessonCardRadius),
-          border: Border(
-            left: BorderSide(
-              color: statusColor,
-              width: TakvimSizes.lessonCardBorderWidth,
-            ),
+          border: Border.all(
+            color: borderColor,
+            width: isIptal ? 1.5 : 1.0, // İptal edildiyse daha kalın border
           ),
         ),
         child: ClipRRect(
@@ -53,7 +60,7 @@ class LessonBlock extends StatelessWidget {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: isIptal ? null : onTap,
+              onTap: onTap,
               child: Padding(
                 padding: const EdgeInsets.all(TakvimSizes.lessonCardPadding),
                 child: Column(
@@ -79,6 +86,27 @@ class LessonBlock extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        // İPTAL BADGE (sağ üstte)
+                        if (isIptal)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: statusColor,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'İPTAL',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
 
@@ -91,9 +119,13 @@ class LessonBlock extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: TakvimColors.textPrimary,
+                          color: isIptal
+                              ? Colors.grey.shade600
+                              : TakvimColors.textPrimary,
                           decoration:
                               isIptal ? TextDecoration.lineThrough : null,
+                          decorationColor: statusColor,
+                          decorationThickness: 2,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -109,7 +141,9 @@ class LessonBlock extends StatelessWidget {
                           Icon(
                             Icons.person_rounded,
                             size: 12,
-                            color: TakvimColors.textMuted,
+                            color: isIptal
+                                ? Colors.grey.shade400
+                                : TakvimColors.textMuted,
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -117,7 +151,13 @@ class LessonBlock extends StatelessWidget {
                               ders.antrenorAdi!,
                               style: TextStyle(
                                 fontSize: 11,
-                                color: TakvimColors.textSecondary,
+                                color: isIptal
+                                    ? Colors.grey.shade500
+                                    : TakvimColors.textSecondary,
+                                decoration:
+                                    isIptal ? TextDecoration.lineThrough : null,
+                                decorationColor:
+                                    statusColor.withValues(alpha: 0.6),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
