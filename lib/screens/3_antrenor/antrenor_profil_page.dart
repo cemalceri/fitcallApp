@@ -8,7 +8,7 @@ import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
-import 'package:fitcall/services/uye/uye_api_serivce.dart';
+import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
