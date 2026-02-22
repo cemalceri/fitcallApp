@@ -530,14 +530,25 @@ class _LessonCancelDialogContentState
   }
 
   Widget _buildUyeDurumChip(UyeLiteModel uye, UyeTeyit? teyit) {
-    // katilacakMi: null veya true → Katılması planlanıyor (yeşil)
-    // katilacakMi: false → Katılmayacağını bildirdi (kırmızı)
-    final katilacak = teyit?.katilacakMi ?? true;
-    final color = katilacak ? const Color(0xFF10B981) : const Color(0xFFEF4444);
-    final icon = katilacak ? Icons.check_circle_rounded : Icons.cancel_rounded;
-    final durum =
-        katilacak ? 'Katılması planlanıyor' : 'Katılmayacağını bildirdi';
-
+// katilacakMi: null → Henüz cevap vermedi (sarı)
+// katilacakMi: true → Katılacağını bildirdi (yeşil)
+// katilacakMi: false → Katılmayacağını bildirdi (kırmızı)
+    final katilacakMi = teyit?.katilacakMi;
+    final color = katilacakMi == null
+        ? const Color(0xFFF59E0B)
+        : katilacakMi
+            ? const Color(0xFF10B981)
+            : const Color(0xFFEF4444);
+    final icon = katilacakMi == null
+        ? Icons.help_outline_rounded
+        : katilacakMi
+            ? Icons.check_circle_rounded
+            : Icons.cancel_rounded;
+    final durum = katilacakMi == null
+        ? 'Henüz cevap vermedi'
+        : katilacakMi
+            ? 'Katılacağını bildirdi'
+            : 'Katılmayacağını bildirdi';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(

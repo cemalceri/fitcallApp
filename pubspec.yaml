@@ -25,8 +25,8 @@ dependencies:
   in_app_update: ^4.2.3
   package_info_plus: ^9.0.0
   flutter_native_splash: ^2.4.6
-  table_calendar: ^3.2.0
   permission_handler: ^11.3.1
+  webview_flutter: ^4.10.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

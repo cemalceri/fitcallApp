@@ -164,7 +164,15 @@ class _StandaloneNotificationPageState
         final month = int.tryParse(dotParts[1]);
         final year = int.tryParse(dotParts[2]);
         if (day != null && month != null && year != null) {
-          return DateTime(year, month, day, 23, 59);
+          int hour = 23, minute = 59;
+          if (saatStr != null) {
+            final tp = saatStr.split(':');
+            if (tp.length >= 2) {
+              hour = int.tryParse(tp[0]) ?? 23;
+              minute = int.tryParse(tp[1]) ?? 59;
+            }
+          }
+          return DateTime(year, month, day, hour, minute);
         }
       }
     } catch (e) {

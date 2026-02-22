@@ -3,6 +3,7 @@
 
 import 'package:fitcall/models/6_muhasebe/muhasebe_ozet_model.dart';
 import 'package:fitcall/screens/6_muhasebe/widgets/para_hareket_page.dart';
+// import 'package:fitcall/screens/6_muhasebe/widgets/payment_summary_sheet.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/muhasebe/muhasebe_service.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -80,10 +81,35 @@ class _MuhasebePageState extends State<MuhasebePage> {
 
   void _showPaymentSheet() {
     HapticFeedback.mediumImpact();
+
+    // Seçili ayları hazırla
+    final seciliAylar = _selectedIndices.map((index) {
+      final row = _rows[index];
+      return {'yil': row.yil, 'ay': row.ay};
+    }).toList();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      // TODO: Online ödeme aktif olduğunda buraya ödeme özet sayfası gelecek
+      //   builder: (ctx) => PaymentSummarySheet(
+      //     seciliAylar: seciliAylar,
+      //     onComplete: () {
+      //       // Ödeme başarılı — seçimi temizle ve verileri yenile
+      //       _clearSelection();
+      //       _loadData();
+      //       if (mounted) {
+      //         ScaffoldMessenger.of(context).showSnackBar(
+      //           const SnackBar(
+      //             content: Text('Ödemeniz başarıyla tamamlandı! ✓'),
+      //             backgroundColor: Colors.green,
+      //           ),
+      //         );
+      //       }
+      //     },
+      //   ),
+      // );
       builder: (ctx) => _PaymentInfoSheet(
         selectedCount: _selectedIndices.length,
         totalAmount: _selectedTotal,
@@ -636,7 +662,11 @@ class _MonthCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      row.fark >= 0 ? 'Fazla' : 'Borç',
+                      row.fark > 0
+                          ? 'Fazla Ödeme'
+                          : row.fark < 0
+                              ? 'Borç'
+                              : 'Borç Yok',
                       style: TextStyle(
                         fontSize: 11,
                         color: farkColor.withValues(alpha: 0.8),
@@ -868,7 +898,7 @@ class _PaymentInfoSheet extends StatelessWidget {
                       child: FilledButton.icon(
                         onPressed: () {
                           Navigator.pop(context);
-                          final phoneNumber = '905422464982';
+                          final phoneNumber = '905422462982';
                           final whatsappUrl = 'https://wa.me/$phoneNumber';
                           launchUrl(Uri.parse(whatsappUrl),
                               mode: LaunchMode.externalApplication);

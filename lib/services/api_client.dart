@@ -7,7 +7,7 @@ import 'api_exception.dart';
 import 'api_result.dart';
 
 class ApiClient {
-  static const _defaultTimeout = Duration(seconds: 15);
+  static const _defaultTimeout = Duration(seconds: 20);
 
   static Future<Map<String, String>> _buildHeaders({
     Map<String, String>? headers,

@@ -57,6 +57,9 @@ String notificationAction = "$baseUrl/n/"; // + token
 // =================== MUHASEBE ===================
 String getMuhasebeOzet = "$baseUrl/getMuhasebeOzet";
 String getParaHareketi = "$baseUrl/getParaHareketi";
+String odemeHesaplaUrl = "$baseUrl/odemeHesapla";
+String odemeBaslatUrl = "$baseUrl/odemeBaslat";
+String odemeDurumUrl = "$baseUrl/odemeDurum/";
 
 // =================== QR & GEÇİŞ ===================
 String qrInOrOut = "$baseUrl/qrInOrOut";

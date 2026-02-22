@@ -22,8 +22,13 @@ class NotificationRouter {
     final nav = navigatorKey.currentState;
     if (nav == null) return;
 
-    nav.push(MaterialPageRoute(
-      builder: (_) => StandaloneNotificationPage(notification: notification),
-    ));
+    showDialog(
+      context: nav.context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (_) => Dialog.fullscreen(
+        child: StandaloneNotificationPage(notification: notification),
+      ),
+    );
   }
 }
