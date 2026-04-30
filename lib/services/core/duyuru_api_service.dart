@@ -37,4 +37,15 @@ class DuyuruService {
       (json) => DuyuruModel.fromMap(json),
     );
   }
+
+  /// Duyuruyu okundu olarak işaretle (fire-and-forget kullanımı uygun)
+  static Future<ApiResult<Map<String, dynamic>>> setDuyuruOkundu({
+    required int duyuruId,
+  }) {
+    return ApiClient.postParsed<Map<String, dynamic>>(
+      setDuyuruOkunduUrl,
+      {'duyuru_id': duyuruId},
+      (json) => (json as Map?)?.cast<String, dynamic>() ?? {},
+    );
+  }
 }

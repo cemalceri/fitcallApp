@@ -86,6 +86,7 @@ String getMobilConfigs = "$baseUrl/getMobilConfigs";
 String mobilLogKaydet = "$baseUrl/mobilLogKaydet";
 String getAktifDuyurularUrl = "$baseUrl/getAktifDuyurular";
 String getDuyuruDetayUrl = "$baseUrl/getDuyuruDetay";
+String setDuyuruOkunduUrl = "$baseUrl/setDuyuruOkundu";
 
 // Ders Onay
 const String getDersOnayBilgisiUrl = "$baseUrl/getDersOnayBilgisi";

@@ -1,6 +1,8 @@
 // lib/screens/5_etkinlik/widgets/duyuru_detay_sheet.dart
 
 import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/services/api_result.dart';
+import 'package:fitcall/services/core/duyuru_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -28,6 +30,14 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
   void initState() {
     super.initState();
     _imagePageController = PageController();
+    _markAsRead(); // YENİ
+  }
+
+  void _markAsRead() {
+    if (widget.duyuru.id <= 0) return;
+    DuyuruService.setDuyuruOkundu(duyuruId: widget.duyuru.id).catchError(
+      (_) => ApiResult<Map<String, dynamic>>(mesaj: ''),
+    );
   }
 
   @override
