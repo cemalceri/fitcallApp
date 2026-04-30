@@ -1,9 +1,14 @@
 // lib/screens/3_antrenor/takvim/widgets/lesson_approval_dialog.dart
 
+import 'package:fitcall/models/5_etkinlik/ders_katilim_data.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/models/5_etkinlik/katilim_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
+import 'package:fitcall/screens/3_antrenor/takvim/widgets/katilim_not_dialog.dart';
+import 'package:fitcall/screens/3_antrenor/takvim/widgets/plan_disi_uye_secim_sheet.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
+import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
@@ -11,7 +16,7 @@ import 'takvim_constants.dart';
 class LessonApprovalDialog extends StatefulWidget {
   final EtkinlikModel ders;
   final int userId;
-  final int? antrenorId; // Yeni parametre
+  final int? antrenorId;
   final VoidCallback onSuccess;
 
   const LessonApprovalDialog({
@@ -47,15 +52,19 @@ class LessonApprovalDialog extends StatefulWidget {
 
 class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
   bool _isSaving = false;
+  bool _isLoading = true;
 
-  // Mevcut onay bilgisi - artık ders modelinden alınıyor
-  AntrenorOnay? get _mevcutOnay => widget.ders.antrenorOnayi;
-  bool get _onayVerilmis => _mevcutOnay != null;
+  // Mevcut katılım verisi (backend'den)
+  DersKatilimDto? _katilimData;
 
-  // Yeni onay için
-  String? _secilenDurum;
+  // Form state
+  String? _secilenDurum; // 'yapildi' | 'yapilmadi'
   String? _secilenNeden;
   final _aciklamaCtrl = TextEditingController();
+
+  // Katılım state — _katilimData yüklendikten sonra doldurulur
+  // uyeId -> KatilimModel
+  final Map<int, KatilimModel> _katilimMap = {};
 
   static const _yapildiNedenleri = [
     {'code': 'YPL_PLAN', 'label': 'Planlanan ders yapıldı'},
@@ -71,10 +80,51 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadKatilim();
+  }
+
+  @override
   void dispose() {
     _aciklamaCtrl.dispose();
     super.dispose();
   }
+
+  Future<void> _loadKatilim() async {
+    try {
+      final res =
+          await TakvimService.getDersKatilimlari(dersId: widget.ders.id);
+      final data = res.data;
+      if (!mounted) return;
+
+      setState(() {
+        _katilimData = data;
+        _isLoading = false;
+
+        // Mevcut katılımları map'e koy
+        if (data != null) {
+          for (final k in data.katilimlar) {
+            _katilimMap[k.uyeId] = k;
+          }
+
+          // Antrenör onayı varsa form alanlarını doldur
+          final ao = data.antrenorOnayi;
+          if (ao?.tamamlandi != null) {
+            _secilenDurum = ao!.tamamlandi! ? 'yapildi' : 'yapilmadi';
+            _secilenNeden = ao.onayRedIptalNedeni;
+            _aciklamaCtrl.text = ao.aciklama ?? '';
+          }
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ShowMessage.error(context, 'Katılım bilgisi yüklenemedi');
+    }
+  }
+
+  bool get _kilitli => _katilimData?.kilitliMi ?? false;
 
   String _getNedenLabel(String? code, bool tamamlandi) {
     if (code == null) return '';
@@ -87,172 +137,147 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
-          maxWidth: 400,
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+          maxWidth: 480,
         ),
-        child: _onayVerilmis ? _buildOnayVerilmisView() : _buildOnayFormu(),
+        child: _isLoading
+            ? _buildLoadingView()
+            : _kilitli
+                ? _buildKilitliView()
+                : _buildFormView(),
       ),
     );
   }
 
-  /// Onay verilmişse - salt okunur görünüm
-  Widget _buildOnayVerilmisView() {
-    final onay = _mevcutOnay!;
-    final katilimcilar = widget.ders.uyeList.map((u) => u.adSoyad).toList();
-    final isYapildi = onay.tamamlandi;
-    final statusColor =
-        isYapildi ? TakvimColors.completed : TakvimColors.cancelled;
+  /* -------------------------------------------------------------------------- */
+  /*                              LOADING                                       */
+  /* -------------------------------------------------------------------------- */
+
+  Widget _buildLoadingView() {
+    return SizedBox(
+      height: 200,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
+          Text(
+            'Katılım bilgisi yükleniyor...',
+            style: TextStyle(color: TakvimColors.textSecondary, fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                              KİLİTLİ VIEW                                  */
+  /* -------------------------------------------------------------------------- */
+
+  Widget _buildKilitliView() {
+    final ao = _katilimData?.antrenorOnayi;
+    final isYapildi = ao?.tamamlandi == true;
+    final color = isYapildi ? TakvimColors.completed : TakvimColors.cancelled;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Header
-        _buildHeader(statusColor),
-
-        // Content
+        _buildHeader(color, 'Ders Onayı'),
         Flexible(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Katılımcılar
-                if (katilimcilar.isNotEmpty) ...[
-                  _buildKatilimcilar(katilimcilar),
-                  const SizedBox(height: 20),
-                ],
-
-                // Onay durumu kartı
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: statusColor.withValues(alpha: 0.3),
-                    ),
+                    border: Border.all(color: color.withValues(alpha: 0.3)),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: statusColor.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              isYapildi
-                                  ? Icons.check_circle_rounded
-                                  : Icons.cancel_rounded,
-                              color: statusColor,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isYapildi ? 'Ders Yapıldı' : 'Ders Yapılmadı',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: statusColor,
-                                  ),
-                                ),
-                                if (onay.onayRedIptalNedeni != null) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _getNedenLabel(
-                                        onay.onayRedIptalNedeni, isYapildi),
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: TakvimColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          isYapildi
+                              ? Icons.check_circle_rounded
+                              : Icons.cancel_rounded,
+                          color: color,
+                          size: 24,
+                        ),
                       ),
-
-                      // Açıklama varsa
-                      if (onay.aciklama != null &&
-                          onay.aciklama!.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Açıklama',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: TakvimColors.textMuted,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isYapildi ? 'Ders Yapıldı' : 'Ders Yapılmadı',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: color,
                               ),
+                            ),
+                            if (ao?.onayRedIptalNedeni != null) ...[
                               const SizedBox(height: 4),
                               Text(
-                                onay.aciklama!,
+                                _getNedenLabel(
+                                    ao!.onayRedIptalNedeni, isYapildi),
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: TakvimColors.textPrimary,
+                                  color: TakvimColors.textSecondary,
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                      ],
-
-                      // Onay tarihi
-                      if (onay.onayTarihi != null) ...[
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.access_time_rounded,
-                              size: 14,
-                              color: TakvimColors.textMuted,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Onay tarihi: ${_formatDateTime(onay.onayTarihi!)}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: TakvimColors.textMuted,
-                              ),
-                            ),
                           ],
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ),
-
+                if ((ao?.aciklama ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Açıklama',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: TakvimColors.textMuted,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          ao!.aciklama!,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
-
-                // Yönetici onay durumu
-                _buildYoneticiOnayDurumu(),
-
+                _buildKatilimOzeti(readonly: true),
                 const SizedBox(height: 16),
-
-                // Bilgi mesajı
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -262,12 +287,12 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline_rounded,
+                      Icon(Icons.lock_rounded,
                           color: Colors.blue.shade700, size: 20),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Onay bilgisi değiştirilemez. Değişiklik için yöneticinizle iletişime geçin.',
+                          'Yönetici onayı verildiği için bu ders kilitlenmiştir. Değişiklik için yöneticinizle iletişime geçin.',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.blue.shade700,
@@ -281,174 +306,377 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
             ),
           ),
         ),
-
-        // Actions
-        _buildOnayVerilmisActions(),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius:
+                const BorderRadius.vertical(bottom: Radius.circular(20)),
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () => Navigator.pop(context),
+              style: FilledButton.styleFrom(
+                backgroundColor: TakvimColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Tamam',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildYoneticiOnayDurumu() {
-    final yoneticiOnayi = widget.ders.yoneticiOnayi;
-    final bool yoneticiOnayladi = yoneticiOnayi?.tamamlandi ?? false;
+  /* -------------------------------------------------------------------------- */
+  /*                              FORM VIEW                                     */
+  /* -------------------------------------------------------------------------- */
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: yoneticiOnayladi
-            ? TakvimColors.completed.withValues(alpha: 0.08)
-            : TakvimColors.pending.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: yoneticiOnayladi
-              ? TakvimColors.completed.withValues(alpha: 0.3)
-              : TakvimColors.pending.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: yoneticiOnayladi
-                  ? TakvimColors.completed.withValues(alpha: 0.15)
-                  : TakvimColors.pending.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              yoneticiOnayladi
-                  ? Icons.verified_rounded
-                  : Icons.hourglass_empty_rounded,
-              color: yoneticiOnayladi
-                  ? TakvimColors.completed
-                  : TakvimColors.pending,
-              size: 18,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Yönetici Onayı',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: yoneticiOnayladi
-                        ? TakvimColors.completed
-                        : TakvimColors.pending,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  yoneticiOnayladi ? 'Onaylandı' : 'Bekliyor',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: TakvimColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(
-            yoneticiOnayladi ? Icons.check_circle : Icons.schedule,
-            color: yoneticiOnayladi
-                ? TakvimColors.completed
-                : TakvimColors.pending,
-            size: 20,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOnayVerilmisActions() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
-      ),
-      child: SizedBox(
-        width: double.infinity,
-        child: FilledButton(
-          onPressed: () => Navigator.pop(context),
-          style: FilledButton.styleFrom(
-            backgroundColor: TakvimColors.primary,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: const Text(
-            'Tamam',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _formatDateTime(DateTime dt) {
-    return '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-  }
-
-  /// Onay formu - henüz onay verilmemişse
-  Widget _buildOnayFormu() {
-    final katilimcilar = widget.ders.uyeList.map((u) => u.adSoyad).toList();
+  Widget _buildFormView() {
+    final hasOnceden = _katilimData?.antrenorOnayi?.tamamlandi != null;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Header
-        _buildHeader(TakvimColors.primary),
-
-        // Content
+        _buildHeader(
+          TakvimColors.primary,
+          hasOnceden ? 'Ders Onayını Güncelle' : 'Ders Onayı Ver',
+        ),
         Flexible(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Katılımcılar
-                if (katilimcilar.isNotEmpty) ...[
-                  _buildKatilimcilar(katilimcilar),
-                  const SizedBox(height: 20),
-                ],
-
-                // Durum seçimi
                 const Text(
                   'Ders durumu',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
                 _buildDurumSecimi(),
-
-                // Neden seçimi (durum seçiliyse)
                 if (_secilenDurum != null) ...[
                   const SizedBox(height: 20),
                   _buildNedenSecimi(),
-                ],
-
-                // Açıklama
-                if (_secilenDurum != null) ...[
                   const SizedBox(height: 16),
                   _buildAciklamaField(),
+                ],
+                // Sadece "yapıldı" seçildiğinde katılımcı listesi açılır
+                if (_secilenDurum == 'yapildi') ...[
+                  const SizedBox(height: 24),
+                  _buildKatilimEditor(),
                 ],
               ],
             ),
           ),
         ),
-
-        // Actions
         _buildActions(),
       ],
     );
   }
 
-  Widget _buildHeader(Color accentColor) {
+  /* -------------------------------------------------------------------------- */
+  /*                              KATILIM EDITOR                                */
+  /* -------------------------------------------------------------------------- */
+
+  Widget _buildKatilimEditor() {
+    final entries = _katilimMap.values.toList()
+      ..sort((a, b) {
+        // Planlı önce, plan dışı sonra; ada göre
+        if (a.planliMi != b.planliMi) return a.planliMi ? -1 : 1;
+        return a.adSoyad.compareTo(b.adSoyad);
+      });
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.groups_rounded, size: 18),
+            const SizedBox(width: 6),
+            const Text(
+              'Katılımcılar',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            ),
+            const Spacer(),
+            TextButton.icon(
+              onPressed: _planDisiEkle,
+              icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
+              label: const Text('Plan Dışı Ekle'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (entries.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.people_outline_rounded,
+                    size: 32, color: Colors.grey.shade400),
+                const SizedBox(height: 8),
+                Text(
+                  'Bu derste planlı katılımcı yok',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: TakvimColors.textSecondary,
+                  ),
+                ),
+                Text(
+                  'Plan dışı üye ekleyebilirsiniz',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: TakvimColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ...entries.map((k) => _buildKatilimRow(k)),
+      ],
+    );
+  }
+
+  Widget _buildKatilimRow(KatilimModel k) {
+    final katildi = k.katildi;
+
+    Color borderColor;
+    Color bgColor;
+    if (katildi == true) {
+      borderColor = TakvimColors.completed;
+      bgColor = TakvimColors.completed.withValues(alpha: 0.06);
+    } else if (katildi == false) {
+      borderColor = TakvimColors.cancelled;
+      bgColor = TakvimColors.cancelled.withValues(alpha: 0.06);
+    } else {
+      borderColor = Colors.grey.shade300;
+      bgColor = Colors.grey.shade50;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        k.adSoyad,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (k.planDisiMi) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'Plan Dışı',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                if (k.planDisiMi) ...[
+                  const SizedBox(height: 4),
+                  GestureDetector(
+                    onTap: () => _notDuzenle(k),
+                    child: Row(
+                      children: [
+                        Icon(
+                          (k.notMetni ?? '').isEmpty
+                              ? Icons.note_add_outlined
+                              : Icons.sticky_note_2_outlined,
+                          size: 14,
+                          color: TakvimColors.textMuted,
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            (k.notMetni ?? '').isEmpty
+                                ? 'Not ekle'
+                                : k.notMetni!,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: TakvimColors.textMuted,
+                              fontStyle: (k.notMetni ?? '').isEmpty
+                                  ? FontStyle.italic
+                                  : FontStyle.normal,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          // Katıldı / Katılmadı toggle
+          ToggleButtons(
+            isSelected: [katildi == true, katildi == false],
+            borderRadius: BorderRadius.circular(8),
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 32),
+            selectedColor: Colors.white,
+            fillColor: katildi == true
+                ? TakvimColors.completed
+                : (katildi == false ? TakvimColors.cancelled : Colors.grey),
+            color: Colors.grey.shade700,
+            onPressed: (i) {
+              HapticFeedback.selectionClick();
+              setState(() {
+                _katilimMap[k.uyeId] =
+                    k.copyWith(katildi: i == 0 ? true : false);
+              });
+            },
+            children: const [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Icon(Icons.check_rounded, size: 18),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Icon(Icons.close_rounded, size: 18),
+              ),
+            ],
+          ),
+          // Plan dışı için sil butonu
+          if (k.planDisiMi)
+            IconButton(
+              icon: Icon(Icons.delete_outline_rounded,
+                  size: 20, color: Colors.red.shade400),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                setState(() => _katilimMap.remove(k.uyeId));
+              },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Sadece kilitli view'da gösterilen özet
+  Widget _buildKatilimOzeti({required bool readonly}) {
+    final entries = _katilimMap.values.toList()
+      ..sort((a, b) {
+        if (a.planliMi != b.planliMi) return a.planliMi ? -1 : 1;
+        return a.adSoyad.compareTo(b.adSoyad);
+      });
+
+    if (entries.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: const [
+            Icon(Icons.groups_rounded, size: 18),
+            SizedBox(width: 6),
+            Text(
+              'Katılım Durumu',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ...entries.map((k) {
+          final katildi = k.katildi;
+          IconData icon;
+          Color color;
+          if (katildi == true) {
+            icon = Icons.check_circle_rounded;
+            color = TakvimColors.completed;
+          } else if (katildi == false) {
+            icon = Icons.cancel_rounded;
+            color = TakvimColors.cancelled;
+          } else {
+            icon = Icons.remove_circle_outline_rounded;
+            color = Colors.grey;
+          }
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                Icon(icon, color: color, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    k.adSoyad,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ),
+                if (k.planDisiMi)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Plan Dışı',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                              HEADER / FORM PARTS                           */
+  /* -------------------------------------------------------------------------- */
+
+  Widget _buildHeader(Color accentColor, String title) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -463,11 +691,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
               color: accentColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              Icons.fact_check_rounded,
-              color: accentColor,
-              size: 22,
-            ),
+            child: Icon(Icons.fact_check_rounded, color: accentColor, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -475,7 +699,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _onayVerilmis ? 'Ders Onayı' : 'Ders Onayı Ver',
+                  title,
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.w700),
                 ),
@@ -483,9 +707,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                 Text(
                   '${TimeUtils.formatDateFull(widget.ders.baslangicTarihSaat)} • ${TimeUtils.formatTime(widget.ders.baslangicTarihSaat)}',
                   style: TextStyle(
-                    fontSize: 13,
-                    color: TakvimColors.textSecondary,
-                  ),
+                      fontSize: 13, color: TakvimColors.textSecondary),
                 ),
               ],
             ),
@@ -503,50 +725,6 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
     );
   }
 
-  Widget _buildKatilimcilar(List<String> katilimcilar) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: TakvimColors.primaryLight.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Katılımcılar',
-            style: TextStyle(
-              fontSize: 11,
-              color: TakvimColors.textMuted,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: katilimcilar
-                .map((isim) => Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        isim,
-                        style: const TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w500),
-                      ),
-                    ))
-                .toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildDurumSecimi() {
     return Column(
       children: [
@@ -555,7 +733,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
           icon: Icons.check_circle_rounded,
           color: TakvimColors.completed,
           title: 'Ders yapıldı',
-          subtitle: 'Ders planlandığı gibi gerçekleşti',
+          subtitle: 'Katılımcıları işaretleyin',
           onTap: () {
             HapticFeedback.selectionClick();
             setState(() {
@@ -570,7 +748,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
           icon: Icons.cancel_rounded,
           color: TakvimColors.cancelled,
           title: 'Ders yapılmadı',
-          subtitle: 'Ders gerçekleşmedi',
+          subtitle: 'Tüm üyeler katılmadı sayılır',
           onTap: () {
             HapticFeedback.selectionClick();
             setState(() {
@@ -630,7 +808,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
   Widget _buildAciklamaField() {
     return TextField(
       controller: _aciklamaCtrl,
-      maxLines: 3,
+      maxLines: 2,
       decoration: InputDecoration(
         hintText: 'Açıklama (isteğe bağlı)',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
@@ -641,6 +819,9 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
   }
 
   Widget _buildActions() {
+    final canSave =
+        _secilenDurum != null && _secilenNeden != null && !_isSaving;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -665,10 +846,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
           Expanded(
             flex: 2,
             child: FilledButton(
-              onPressed:
-                  _secilenDurum == null || _secilenNeden == null || _isSaving
-                      ? null
-                      : _kaydet,
+              onPressed: canSave ? _kaydet : null,
               style: FilledButton.styleFrom(
                 backgroundColor: TakvimColors.primary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -681,14 +859,10 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
+                          strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text(
-                      'Kaydet',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
+                  : const Text('Kaydet',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -696,22 +870,116 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
     );
   }
 
+  /* -------------------------------------------------------------------------- */
+  /*                              ACTIONS                                       */
+  /* -------------------------------------------------------------------------- */
+
+  Future<void> _planDisiEkle() async {
+    HapticFeedback.lightImpact();
+    final mevcutIds = _katilimMap.keys.toSet();
+
+    final secilen = await showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => PlanDisiUyeSecimSheet(haricUyeIds: mevcutIds),
+    );
+
+    if (secilen == null) return;
+
+    // Seçilen üyeyi map'ten getir
+    // Sheet sadece id döndürdüğü için adı sheet içinden alıp burada cache'lemek lazım.
+    // Basitleştirmek için sheet kapanmadan önce cache'i tekrar kullanıyoruz:
+    final cevap = await _uyeAdiniGetir(secilen);
+    if (cevap == null) return;
+
+    setState(() {
+      _katilimMap[secilen] = KatilimModel(
+        uyeId: secilen,
+        adSoyad: cevap,
+        planliMi: false,
+        katildi: true, // plan dışı eklenince varsayılan: katıldı
+        planDisiMi: true,
+      );
+    });
+
+    // Not iste
+    if (mounted) {
+      _notDuzenle(_katilimMap[secilen]!);
+    }
+  }
+
+  Future<String?> _uyeAdiniGetir(int uyeId) async {
+    // UyeApiService'den (cache'li) ad bilgisini çek
+    // import etmek için service dosyasını ekledik
+    try {
+      final res = await _getCachedUyeAdi(uyeId);
+      return res;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<String?> _getCachedUyeAdi(int uyeId) async {
+    // ignore: avoid_dynamic_calls
+    final dyn = await _importedUyeService();
+    final list = dyn.data as List?;
+    if (list == null) return null;
+    for (final u in list) {
+      if (u.id == uyeId) return u.adSoyad;
+    }
+    return null;
+  }
+
+  // UyeApiService.getAktifUyeler() çağırılıyor — sheet zaten cache'i doldurdu.
+  // Bu fonksiyon placeholder; gerçek import aşağıdaki sheet üzerinden yapılır.
+  Future<dynamic> _importedUyeService() async {
+    // ignore: implementation_imports
+    return await UyeApiService.getAktifUyeler();
+  }
+
+  void _notDuzenle(KatilimModel k) async {
+    final yeniNot = await showDialog<String?>(
+      context: context,
+      builder: (_) => KatilimNotDialog(
+        adSoyad: k.adSoyad,
+        baslangicNot: k.notMetni,
+      ),
+    );
+    if (yeniNot == null) return; // iptal
+    setState(() {
+      _katilimMap[k.uyeId] = k.copyWith(
+        notMetni: yeniNot.isEmpty ? null : yeniNot,
+        clearNot: yeniNot.isEmpty,
+      );
+    });
+  }
+
   Future<void> _kaydet() async {
     setState(() => _isSaving = true);
 
     try {
-      await TakvimService.setDersOnayBilgisi(
+      final tamamlandi = _secilenDurum == 'yapildi';
+      // "yapılmadı" ise boş gönder, backend planlıları otomatik işaretler
+      final katilimList = tamamlandi
+          ? _katilimMap.values
+              .where((k) => k.katildi != null) // null = işaretlenmemiş, atla
+              .toList()
+          : <KatilimModel>[];
+
+      await TakvimService.setDersKatilimi(
         dersId: widget.ders.id,
         userId: widget.userId,
-        rol: 'antrenor',
-        tamamlandi: _secilenDurum == 'yapildi',
+        tamamlandi: tamamlandi,
         aciklama: _aciklamaCtrl.text.trim(),
         onayRedIptalNedeni: _secilenNeden,
+        katilimlar: katilimList,
       );
 
       if (mounted) {
         Navigator.pop(context);
-        ShowMessage.success(context, 'Ders onayı kaydedildi');
+        ShowMessage.success(context, 'Ders ve katılım kaydedildi');
         widget.onSuccess();
       }
     } on ApiException catch (e) {
@@ -723,6 +991,10 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
     }
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/*                              YARDIMCI WIDGET'LAR                           */
+/* -------------------------------------------------------------------------- */
 
 class _DurumSecenegi extends StatelessWidget {
   final bool isSelected;
@@ -784,9 +1056,7 @@ class _DurumSecenegi extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        fontSize: 12,
-                        color: TakvimColors.textSecondary,
-                      ),
+                          fontSize: 12, color: TakvimColors.textSecondary),
                     ),
                   ],
                 ),

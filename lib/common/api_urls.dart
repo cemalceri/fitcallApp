@@ -24,6 +24,7 @@ String getUyeUrunList = "$baseUrl/getUyeUrunList";
 String getHaftalikDersBilgilerim = "$baseUrl/getHaftalikDersBilgilerim";
 String getUrunListesiVeUyePaketleri = "$baseUrl/getUrunListesiVeUyePaketleri";
 String getTelafiDersBilgileriUrl = "$baseUrl/getTelafiDersBilgileri";
+String getAktifUyeListesiUrl = "$baseUrl/getAktifUyeListesi";
 
 // =================== ANTRENÖR ===================
 String getAntrenorGunlukEtkinlikler = "$baseUrl/getAntrenorGunlukEtkinlikler";
@@ -46,6 +47,8 @@ String setGenelDersTalep = "$baseUrl/setGenelDersTalep";
 String getKortveAntrenorList = "$baseUrl/getKortveAntrenorList";
 String setTeyitOkundu = "$baseUrl/setTeyitOkundu";
 String getTeyitDetay = "$baseUrl/getTeyitDetay";
+String setDersKatilimiUrl = "$baseUrl/setDersKatilimi";
+String getDersKatilimlariUrl = "$baseUrl/getDersKatilimlari";
 
 // =================== BİLDİRİM ===================
 String getNotifications = "$baseUrl/getNotifications";

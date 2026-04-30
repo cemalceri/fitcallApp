@@ -1,5 +1,7 @@
 import 'package:fitcall/common/api_urls.dart';
+import 'package:fitcall/models/5_etkinlik/ders_katilim_data.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/models/5_etkinlik/katilim_model.dart';
 import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
@@ -288,6 +290,44 @@ class TakvimService {
     return ApiClient.postParsed<Map<String, dynamic>>(
       setDersOnayBilgisiUrl,
       {'ders_id': dersId, 'aciklama': aciklama, 'tamamlandi': tamamlandi},
+      (json) => (json as Map).cast<String, dynamic>(),
+    );
+  }
+
+  // ==================== KATILIM ====================
+
+  /// Bir dersin katılım durumunu getirir
+  static Future<ApiResult<DersKatilimDto>> getDersKatilimlari({
+    required int dersId,
+  }) {
+    return ApiClient.postParsed<DersKatilimDto>(
+      getDersKatilimlariUrl,
+      {'ders_id': dersId},
+      (json) => DersKatilimDto.fromMap((json as Map).cast<String, dynamic>()),
+    );
+  }
+
+  /// Antrenör onayı + tüm katılım kayıtlarını atomic kaydeder
+  static Future<ApiResult<Map<String, dynamic>>> setDersKatilimi({
+    required int dersId,
+    required int userId,
+    required bool tamamlandi,
+    required List<KatilimModel> katilimlar,
+    String? aciklama,
+    String? onayRedIptalNedeni,
+  }) {
+    final body = {
+      'ders_id': dersId,
+      'user_id': userId,
+      'tamamlandi': tamamlandi,
+      if (aciklama != null && aciklama.isNotEmpty) 'aciklama': aciklama,
+      if (onayRedIptalNedeni != null)
+        'onay_red_iptal_nedeni': onayRedIptalNedeni,
+      'katilimlar': katilimlar.map((k) => k.toRequestMap()).toList(),
+    };
+    return ApiClient.postParsed<Map<String, dynamic>>(
+      setDersKatilimiUrl,
+      body,
       (json) => (json as Map).cast<String, dynamic>(),
     );
   }
