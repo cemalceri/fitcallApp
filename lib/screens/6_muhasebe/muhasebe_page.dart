@@ -3,7 +3,6 @@
 
 import 'package:fitcall/models/6_muhasebe/muhasebe_ozet_model.dart';
 import 'package:fitcall/screens/6_muhasebe/widgets/para_hareket_page.dart';
-// import 'package:fitcall/screens/6_muhasebe/widgets/payment_summary_sheet.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/muhasebe/muhasebe_service.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -54,8 +53,8 @@ class _MuhasebePageState extends State<MuhasebePage> {
         _selectedIndices.remove(index);
         if (_selectedIndices.isEmpty) _isSelectionMode = false;
       } else {
-        // Sadece borçlu ayları seçilebilir
-        if (_rows[index].fark < 0) {
+        // Sadece o ayda borç oluşmuş aylar seçilebilir (aylık net negatif)
+        if (_rows[index].buAyNet < 0) {
           _selectedIndices.add(index);
           _isSelectionMode = true;
         }
@@ -74,42 +73,25 @@ class _MuhasebePageState extends State<MuhasebePage> {
   double get _selectedTotal {
     double total = 0;
     for (final index in _selectedIndices) {
-      total += _rows[index].fark.abs();
+      total += _rows[index].buAyNet.abs();
     }
     return total;
+  }
+
+  /// Üstteki büyük kartın kaynağı: en yeni ayın kümülatif kapanış bakiyesi
+  /// (Liste yeniden eskiye sıralı geldiği için _rows.first en güncel ay)
+  double get _kumulatifBakiye {
+    if (_rows.isEmpty) return 0;
+    return _rows.first.kapanisBakiyesi;
   }
 
   void _showPaymentSheet() {
     HapticFeedback.mediumImpact();
 
-    // Seçili ayları hazırla
-    final seciliAylar = _selectedIndices.map((index) {
-      final row = _rows[index];
-      return {'yil': row.yil, 'ay': row.ay};
-    }).toList();
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      // TODO: Online ödeme aktif olduğunda buraya ödeme özet sayfası gelecek
-      //   builder: (ctx) => PaymentSummarySheet(
-      //     seciliAylar: seciliAylar,
-      //     onComplete: () {
-      //       // Ödeme başarılı — seçimi temizle ve verileri yenile
-      //       _clearSelection();
-      //       _loadData();
-      //       if (mounted) {
-      //         ScaffoldMessenger.of(context).showSnackBar(
-      //           const SnackBar(
-      //             content: Text('Ödemeniz başarıyla tamamlandı! ✓'),
-      //             backgroundColor: Colors.green,
-      //           ),
-      //         );
-      //       }
-      //     },
-      //   ),
-      // );
       builder: (ctx) => _PaymentInfoSheet(
         selectedCount: _selectedIndices.length,
         totalAmount: _selectedTotal,
@@ -140,7 +122,6 @@ class _MuhasebePageState extends State<MuhasebePage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final toplamFark = _rows.fold<double>(0, (p, e) => p + e.fark);
 
     return Scaffold(
       body: Container(
@@ -159,7 +140,7 @@ class _MuhasebePageState extends State<MuhasebePage> {
             children: [
               _buildAppBar(colorScheme),
               if (!_isLoading && _rows.isNotEmpty)
-                _buildSummaryCard(toplamFark, colorScheme),
+                _buildSummaryCard(_kumulatifBakiye, colorScheme),
               Expanded(
                 child: _isLoading
                     ? _buildLoadingState()
@@ -246,9 +227,14 @@ class _MuhasebePageState extends State<MuhasebePage> {
     );
   }
 
-  Widget _buildSummaryCard(double toplamFark, ColorScheme colorScheme) {
-    final isPositive = toplamFark >= 0;
-    final summaryColor = isPositive ? Colors.green : Colors.red;
+  /// Üst kart: kümülatif bakiye gösterir
+  /// Pozitif = fazla ödeme (yeşil), Negatif = borç (kırmızı), 0 = nötr
+  Widget _buildSummaryCard(double kapanisBakiyesi, ColorScheme colorScheme) {
+    final isPositive = kapanisBakiyesi > 0;
+    final isZero = kapanisBakiyesi == 0;
+    final summaryColor = isZero
+        ? colorScheme.onSurfaceVariant
+        : (isPositive ? Colors.green : Colors.red);
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -274,9 +260,11 @@ class _MuhasebePageState extends State<MuhasebePage> {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
-              isPositive
-                  ? Icons.account_balance_wallet_outlined
-                  : Icons.warning_amber_rounded,
+              isZero
+                  ? Icons.check_circle_outline_rounded
+                  : isPositive
+                      ? Icons.account_balance_wallet_outlined
+                      : Icons.warning_amber_rounded,
               color: summaryColor,
               size: 28,
             ),
@@ -287,7 +275,11 @@ class _MuhasebePageState extends State<MuhasebePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isPositive ? 'Fazla Ödeme' : 'Kalan Borç',
+                  isZero
+                      ? 'Borç Yok'
+                      : isPositive
+                          ? 'Fazla Ödeme'
+                          : 'Kalan Borç',
                   style: TextStyle(
                     fontSize: 14,
                     color: summaryColor.withValues(alpha: 0.8),
@@ -295,27 +287,31 @@ class _MuhasebePageState extends State<MuhasebePage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  _currencyFormat.format(toplamFark.abs()),
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: summaryColor,
-                    letterSpacing: -0.5,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _currencyFormat.format(kapanisBakiyesi.abs()),
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: summaryColor,
+                      letterSpacing: -0.5,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          if (!isPositive && !_isSelectionMode)
+          if (!isPositive && !isZero && !_isSelectionMode)
             FilledButton.icon(
               onPressed: () {
                 HapticFeedback.lightImpact();
-                // Borçlu tüm ayları seç
+                // O ayda net borç oluşmuş ayları seç
                 setState(() {
                   _selectedIndices.clear();
                   for (int i = 0; i < _rows.length; i++) {
-                    if (_rows[i].fark < 0) {
+                    if (_rows[i].buAyNet < 0) {
                       _selectedIndices.add(i);
                     }
                   }
@@ -401,7 +397,7 @@ class _MuhasebePageState extends State<MuhasebePage> {
         itemBuilder: (context, index) {
           final row = _rows[index];
           final isSelected = _selectedIndices.contains(index);
-          final hasDebt = row.fark < 0;
+          final hasMonthDebt = row.buAyNet < 0;
 
           return _MonthCard(
             row: row,
@@ -409,7 +405,7 @@ class _MuhasebePageState extends State<MuhasebePage> {
             currencyFormat: _currencyFormat,
             isSelected: isSelected,
             isSelectionMode: _isSelectionMode,
-            hasDebt: hasDebt,
+            hasMonthDebt: hasMonthDebt,
             onTap: () {
               if (_isSelectionMode) {
                 _toggleSelection(index);
@@ -423,14 +419,10 @@ class _MuhasebePageState extends State<MuhasebePage> {
                 );
               }
             },
-            onLongPress: hasDebt ? () => _toggleSelection(index) : null,
-            onCheckChanged: hasDebt
+            onLongPress: hasMonthDebt ? () => _toggleSelection(index) : null,
+            onCheckChanged: hasMonthDebt
                 ? (value) {
-                    if (value == true) {
-                      _toggleSelection(index);
-                    } else {
-                      _toggleSelection(index);
-                    }
+                    _toggleSelection(index);
                   }
                 : null,
           );
@@ -502,13 +494,17 @@ class _MuhasebePageState extends State<MuhasebePage> {
 /*                              Month Card Widget                             */
 /* -------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------- */
+/*                              Month Card Widget                             */
+/* -------------------------------------------------------------------------- */
+
 class _MonthCard extends StatelessWidget {
   final MuhasebeOzetModel row;
   final String monthName;
   final NumberFormat currencyFormat;
   final bool isSelected;
   final bool isSelectionMode;
-  final bool hasDebt;
+  final bool hasMonthDebt;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
   final ValueChanged<bool?>? onCheckChanged;
@@ -519,7 +515,7 @@ class _MonthCard extends StatelessWidget {
     required this.currencyFormat,
     required this.isSelected,
     required this.isSelectionMode,
-    required this.hasDebt,
+    required this.hasMonthDebt,
     required this.onTap,
     this.onLongPress,
     this.onCheckChanged,
@@ -528,13 +524,22 @@ class _MonthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final farkColor = row.fark >= 0 ? Colors.green : Colors.red;
+
+    // Kalan'a göre vurgu rengi (sol rozet + sağ vurgu çizgisi için)
+    final Color accentColor;
+    if (row.kapanisBakiyesi > 0) {
+      accentColor = Colors.green.shade600;
+    } else if (row.kapanisBakiyesi < 0) {
+      accentColor = Colors.red.shade600;
+    } else {
+      accentColor = colorScheme.primary;
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isSelected
-            ? Colors.green.withValues(alpha: 0.1)
+            ? Colors.green.withValues(alpha: 0.08)
             : colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -557,131 +562,175 @@ class _MonthCard extends StatelessWidget {
           onTap: onTap,
           onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+          child: IntrinsicHeight(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Checkbox (sadece seçim modunda ve borçlu aylarda)
-                if (isSelectionMode && hasDebt)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Checkbox(
-                      value: isSelected,
-                      onChanged: onCheckChanged,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      activeColor: Colors.green,
-                    ),
-                  ),
-
-                // Ay ikonu
+                // Sol renkli vurgu çizgisi (Kalan rengine göre)
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 4,
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        row.ay.toString().padLeft(2, '0'),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                      Text(
-                        row.yil.toString(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: colorScheme.primary.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
+                    color: accentColor.withValues(alpha: 0.6),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
+                    ),
                   ),
                 ),
 
-                const SizedBox(width: 14),
-
-                // Bilgiler
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$monthName ${row.yil}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          _InfoChip(
-                            label: 'Borç',
-                            value: currencyFormat.format(row.borc),
-                            color: Colors.red,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Checkbox (sadece seçim modu + bu ayda borç varsa)
+                        if (isSelectionMode && hasMonthDebt)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Checkbox(
+                              value: isSelected,
+                              onChanged: onCheckChanged,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              activeColor: Colors.green,
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          _InfoChip(
-                            label: 'Ödeme',
-                            value: currencyFormat.format(row.odeme),
-                            color: Colors.green,
+
+                        // Ay rozeti (gradient + ay/yıl)
+                        Container(
+                          width: 56,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                accentColor.withValues(alpha: 0.18),
+                                accentColor.withValues(alpha: 0.08),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: accentColor.withValues(alpha: 0.25),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                row.ay.toString().padLeft(2, '0'),
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: accentColor,
+                                  letterSpacing: -0.5,
+                                  height: 1.0,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                row.yil.toString(),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: accentColor.withValues(alpha: 0.75),
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        // Orta: Ay adı + durum etiketi
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                monthName,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: colorScheme.onSurface,
+                                  letterSpacing: -0.3,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 6),
+                              _StatusBadge(
+                                kapanisBakiyesi: row.kapanisBakiyesi,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(width: 8),
+
+                        // Sağ: 4 satır rakam
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _DataRow(
+                                label: 'Önceki',
+                                value: row.acilisBakiyesi,
+                                cf: currencyFormat,
+                                kind: _RowKind.signed,
+                              ),
+                              const SizedBox(height: 3),
+                              _DataRow(
+                                label: 'Borç',
+                                value: row.borc,
+                                cf: currencyFormat,
+                                kind: _RowKind.alwaysNegative,
+                              ),
+                              const SizedBox(height: 3),
+                              _DataRow(
+                                label: 'Ödeme',
+                                value: row.odeme,
+                                cf: currencyFormat,
+                                kind: _RowKind.alwaysPositive,
+                              ),
+                              const SizedBox(height: 6),
+                              Container(
+                                height: 1,
+                                color: colorScheme.outlineVariant
+                                    .withValues(alpha: 0.3),
+                              ),
+                              const SizedBox(height: 6),
+                              _DataRow(
+                                label: 'Kalan',
+                                value: row.kapanisBakiyesi,
+                                cf: currencyFormat,
+                                kind: _RowKind.signed,
+                                isHighlighted: true,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        if (!isSelectionMode) ...[
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: 20,
+                            color: colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.5),
                           ),
                         ],
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-
-                // Fark
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: farkColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        currencyFormat.format(row.fark.abs()),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: farkColor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      row.fark > 0
-                          ? 'Fazla Ödeme'
-                          : row.fark < 0
-                              ? 'Borç'
-                              : 'Borç Yok',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: farkColor.withValues(alpha: 0.8),
-                      ),
-                    ),
-                  ],
-                ),
-
-                if (!isSelectionMode) ...[
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                  ),
-                ],
               ],
             ),
           ),
@@ -691,36 +740,155 @@ class _MonthCard extends StatelessWidget {
   }
 }
 
-class _InfoChip extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
+/* -------------------------------------------------------------------------- */
+/*                            Status Badge                                    */
+/* -------------------------------------------------------------------------- */
 
-  const _InfoChip({
+class _StatusBadge extends StatelessWidget {
+  final double kapanisBakiyesi;
+
+  const _StatusBadge({required this.kapanisBakiyesi});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    final Color color;
+    final String label;
+    final IconData icon;
+
+    if (kapanisBakiyesi > 0) {
+      color = Colors.green.shade600;
+      label = 'Fazla';
+      icon = Icons.arrow_upward_rounded;
+    } else if (kapanisBakiyesi < 0) {
+      color = Colors.red.shade600;
+      label = 'Borç';
+      icon = Icons.arrow_downward_rounded;
+    } else {
+      color = colorScheme.onSurfaceVariant;
+      label = 'Borç Yok';
+      icon = Icons.check_rounded;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Data Row                                      */
+/* -------------------------------------------------------------------------- */
+
+enum _RowKind {
+  /// Pozitif=yeşil, negatif=kırmızı (Önceki, Kalan için)
+  signed,
+
+  /// Her zaman kırmızı, "-" ile gösterilir (Borç için, ham değer pozitif gelir)
+  alwaysNegative,
+
+  /// Her zaman yeşil, "+" ile gösterilir (Ödeme için, ham değer pozitif gelir)
+  alwaysPositive,
+}
+
+class _DataRow extends StatelessWidget {
+  final String label;
+  final double value;
+  final NumberFormat cf;
+  final _RowKind kind;
+  final bool isHighlighted;
+
+  const _DataRow({
     required this.label,
     required this.value,
-    required this.color,
+    required this.cf,
+    required this.kind,
+    this.isHighlighted = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Renk ve gösterim metni
+    Color color;
+    String displayValue;
+
+    if (value == 0) {
+      color = colorScheme.onSurfaceVariant.withValues(alpha: 0.5);
+      displayValue = '—';
+    } else {
+      switch (kind) {
+        case _RowKind.signed:
+          if (value > 0) {
+            color = Colors.green.shade600;
+            displayValue =
+                '${isHighlighted ? '+' : ''}${cf.format(value.abs())}';
+          } else {
+            color = Colors.red.shade600;
+            displayValue = '-${cf.format(value.abs())}';
+          }
+          break;
+        case _RowKind.alwaysNegative:
+          color = Colors.red.shade600;
+          displayValue = '-${cf.format(value.abs())}';
+          break;
+        case _RowKind.alwaysPositive:
+          color = Colors.green.shade600;
+          displayValue = '${isHighlighted ? '+' : ''}${cf.format(value.abs())}';
+          break;
+      }
+    }
+
     return Row(
       mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.6),
-            shape: BoxShape.circle,
+        Text(
+          '$label:',
+          style: TextStyle(
+            fontSize: isHighlighted ? 13 : 11.5,
+            fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.w400,
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(width: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+        const SizedBox(width: 6),
+        Flexible(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            reverse: true, // taşınca sondan görünsün
+            physics: const ClampingScrollPhysics(),
+            child: Text(
+              displayValue,
+              style: TextStyle(
+                fontSize: isHighlighted ? 15 : 12.5,
+                fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w600,
+                color: color,
+                letterSpacing: -0.2,
+              ),
+              maxLines: 1,
+              softWrap: false,
+            ),
           ),
         ),
       ],
@@ -755,7 +923,6 @@ class _PaymentInfoSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle
           Container(
             margin: const EdgeInsets.only(top: 12),
             width: 40,
@@ -765,12 +932,10 @@ class _PaymentInfoSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                // Icon
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -783,10 +948,7 @@ class _PaymentInfoSheet extends StatelessWidget {
                     color: Colors.blue,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Başlık
                 Text(
                   'Online Ödeme Yakında!',
                   style: TextStyle(
@@ -795,10 +957,7 @@ class _PaymentInfoSheet extends StatelessWidget {
                     color: colorScheme.onSurface,
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
-                // Tutar özeti
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -827,10 +986,7 @@ class _PaymentInfoSheet extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Bilgilendirme
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -875,10 +1031,7 @@ class _PaymentInfoSheet extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                // Butonlar
                 Row(
                   children: [
                     Expanded(
@@ -898,8 +1051,8 @@ class _PaymentInfoSheet extends StatelessWidget {
                       child: FilledButton.icon(
                         onPressed: () {
                           Navigator.pop(context);
-                          final phoneNumber = '905422462982';
-                          final whatsappUrl = 'https://wa.me/$phoneNumber';
+                          const phoneNumber = '905422462982';
+                          const whatsappUrl = 'https://wa.me/$phoneNumber';
                           launchUrl(Uri.parse(whatsappUrl),
                               mode: LaunchMode.externalApplication);
                         },
@@ -919,7 +1072,6 @@ class _PaymentInfoSheet extends StatelessWidget {
               ],
             ),
           ),
-
           SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
         ],
       ),

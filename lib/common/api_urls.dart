@@ -1,7 +1,7 @@
 // =================== BASE URL ===================
 const String baseUrlProd = "https://www.binay.fit/api";
 const String baseUrlLocal = "http://10.0.2.2:8000/api";
-//const String baseUrl = baseUrlProd;
+// const String baseUrl = baseUrlProd;
 const String baseUrl = baseUrlLocal;
 
 // =================== AUTH ===================
