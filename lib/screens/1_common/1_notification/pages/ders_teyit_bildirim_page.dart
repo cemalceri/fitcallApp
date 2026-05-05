@@ -1,32 +1,25 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/models/notification/notification_model.dart';
+import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
+import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/2_uye/takvim/widgets/takvim_constants.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
+import 'package:fitcall/services/notification/notification_action_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fitcall/models/notification/notification_model.dart';
-import 'package:fitcall/services/notification/notification_action_service.dart';
-import 'package:fitcall/services/core/storage_service.dart';
-import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 
-const Color _textPrimary = Color(0xFF1A1A1A);
-const Color _textSecondary = Color(0xFF6B7280);
-const Color _successGreen = Color(0xFF10B981);
-const Color _errorRed = Color(0xFFEF4444);
-const Color _bgGray = Color(0xFFF9FAFB);
-
-class StandaloneNotificationPage extends StatefulWidget {
+class DersTeyitBildirimPage extends StatefulWidget {
   final NotificationModel notification;
-  const StandaloneNotificationPage({super.key, required this.notification});
+  const DersTeyitBildirimPage({super.key, required this.notification});
 
   @override
-  State<StandaloneNotificationPage> createState() =>
-      _StandaloneNotificationPageState();
+  State<DersTeyitBildirimPage> createState() => _DersTeyitBildirimPageState();
 }
 
-class _StandaloneNotificationPageState
-    extends State<StandaloneNotificationPage> {
+class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
   bool _loading = false;
   bool _checkingStatus = true;
   bool _actionDone = false;
@@ -41,7 +34,6 @@ class _StandaloneNotificationPageState
 
   NotificationModel get notif => widget.notification;
   Map<String, dynamic> get displayData => notif.displayData ?? {};
-  bool get isDersTeyit => notif.notificationType == NotificationType.dersTeyidi;
 
   @override
   void initState() {
@@ -64,11 +56,6 @@ class _StandaloneNotificationPageState
   }
 
   Future<void> _checkPreviousConfirmation() async {
-    if (!isDersTeyit) {
-      setState(() => _checkingStatus = false);
-      return;
-    }
-
     try {
       final etkinlikId = displayData['etkinlik_id'];
       final tarihStr = displayData['tarih'];
@@ -86,7 +73,8 @@ class _StandaloneNotificationPageState
 
       // Geçmiş ders kontrolü
       if (tarihStr != null) {
-        final lessonDate = _parseLessonDate(tarihStr, saatStr);
+        final lessonDate =
+            _parseLessonDate(tarihStr.toString(), saatStr?.toString());
         if (lessonDate != null && lessonDate.isBefore(DateTime.now())) {
           setState(() {
             _isLessonPast = true;
@@ -120,7 +108,9 @@ class _StandaloneNotificationPageState
       debugPrint('Teyit kontrolü hatası: $e');
     }
 
-    setState(() => _checkingStatus = false);
+    if (mounted) {
+      setState(() => _checkingStatus = false);
+    }
   }
 
   DateTime? _parseLessonDate(String tarihStr, String? saatStr) {
@@ -244,7 +234,7 @@ class _StandaloneNotificationPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bgGray,
+      backgroundColor: BildirimRenkleri.arkaplanGri,
       body: SafeArea(
         child: _checkingStatus
             ? const Center(
@@ -253,7 +243,7 @@ class _StandaloneNotificationPageState
               )
             : Column(
                 children: [
-                  _TopBar(onClose: _handleClose),
+                  BildirimUstBarWidget(onClose: _handleClose),
                   Expanded(child: _buildContent()),
                 ],
               ),
@@ -264,9 +254,9 @@ class _StandaloneNotificationPageState
   Widget _buildContent() {
     // İptal edilen ders
     if (_isLessonCancelled) {
-      return _StatusView(
+      return BildirimDurumGorunumWidget(
         icon: Icons.cancel_rounded,
-        color: _errorRed,
+        color: BildirimRenkleri.hataKirmizi,
         title: 'Ders İptal Edildi',
         subtitle: 'Bu ders iptal edilmiştir.',
         onClose: _handleClose,
@@ -275,9 +265,9 @@ class _StandaloneNotificationPageState
 
     // Geçmiş ders
     if (_isLessonPast) {
-      return _StatusView(
+      return BildirimDurumGorunumWidget(
         icon: Icons.schedule_rounded,
-        color: _textSecondary,
+        color: BildirimRenkleri.yaziIkincil,
         title: 'Ders Tarihi Geçti',
         subtitle: 'Bu ders için katılım bildirimi artık yapılamaz.',
         onClose: _handleClose,
@@ -287,9 +277,11 @@ class _StandaloneNotificationPageState
     // Teyit verilmiş
     if (_previouslyConfirmed == true) {
       final katilacak = _previousKatilacakMi == true;
-      return _StatusView(
+      return BildirimDurumGorunumWidget(
         icon: katilacak ? Icons.check_circle_rounded : Icons.cancel_rounded,
-        color: katilacak ? _successGreen : _errorRed,
+        color: katilacak
+            ? BildirimRenkleri.basariYesil
+            : BildirimRenkleri.hataKirmizi,
         title: katilacak ? 'Katılacaksınız' : 'Katılmayacaksınız',
         subtitle: 'Bu ders için daha önce cevap verdiniz.',
         showChangeHint: true,
@@ -300,9 +292,11 @@ class _StandaloneNotificationPageState
     // Aksiyon tamamlandı
     if (_actionDone) {
       final katilacak = _previousKatilacakMi == true;
-      return _StatusView(
+      return BildirimDurumGorunumWidget(
         icon: katilacak ? Icons.check_circle_rounded : Icons.cancel_rounded,
-        color: katilacak ? _successGreen : _errorRed,
+        color: katilacak
+            ? BildirimRenkleri.basariYesil
+            : BildirimRenkleri.hataKirmizi,
         title: 'Bildirildi',
         subtitle: 'Cevabınız iletildi.',
         onClose: _handleClose,
@@ -320,11 +314,14 @@ class _StandaloneNotificationPageState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _CompactHeader(displayData: displayData),
+          BildirimKompaktBaslikWidget(displayData: displayData),
           const SizedBox(height: 16),
-          _NotificationMessage(notification: notif),
+          BildirimMesajKutusuWidget(
+            title: notif.title,
+            body: notif.body,
+          ),
           const SizedBox(height: 16),
-          _KatilimSection(
+          _KatilimBolumu(
             showForm: _showKatilmayacagimForm,
             isKatilacagimLoading: _showKatilacagimLoading,
             isKatilmayacagimLoading: _loading,
@@ -352,7 +349,8 @@ class _StandaloneNotificationPageState
               ),
               child: const Text('Kapat',
                   style: TextStyle(
-                      fontWeight: FontWeight.w600, color: _textPrimary)),
+                      fontWeight: FontWeight.w600,
+                      color: BildirimRenkleri.yaziAna)),
             ),
           ),
         ],
@@ -361,245 +359,11 @@ class _StandaloneNotificationPageState
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  WIDGET'LAR
-// ═══════════════════════════════════════════════════════════════════════════
+/* -------------------------------------------------------------------------- */
+/*                  DERS TEYİDİNE ÖZEL WIDGET'LAR (PRIVATE)                    */
+/* -------------------------------------------------------------------------- */
 
-class _TopBar extends StatelessWidget {
-  final VoidCallback onClose;
-  const _TopBar({required this.onClose});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      color: _bgGray,
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.close_rounded, color: _textPrimary),
-            onPressed: onClose,
-          ),
-          const Spacer(),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatusView extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
-  final bool showChangeHint;
-  final VoidCallback onClose;
-
-  const _StatusView({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.subtitle,
-    required this.onClose,
-    this.showChangeHint = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(flex: 2),
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 40),
-          ),
-          const SizedBox(height: 24),
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: _textPrimary),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 8),
-          Text(subtitle,
-              style: const TextStyle(
-                  fontSize: 15, color: _textSecondary, height: 1.4),
-              textAlign: TextAlign.center),
-          if (showChangeHint) ...[
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.info_outline_rounded,
-                      size: 18, color: TakvimColors.primary),
-                  const SizedBox(width: 8),
-                  const Flexible(
-                    child: Text(
-                      'Değiştirmek için kulüp ile iletişime geçin',
-                      style: TextStyle(fontSize: 13, color: _textSecondary),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          const Spacer(flex: 3),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: onClose,
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                side: BorderSide(color: _textSecondary.withValues(alpha: 0.3)),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text('Kapat',
-                  style: TextStyle(
-                      color: _textPrimary, fontWeight: FontWeight.w600)),
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-}
-
-class _CompactHeader extends StatelessWidget {
-  final Map<String, dynamic> displayData;
-  const _CompactHeader({required this.displayData});
-
-  @override
-  Widget build(BuildContext context) {
-    final tarih = displayData['tarih'] ?? '';
-    final saat = displayData['saat'] ?? '';
-    final kort = displayData['kort_adi'] ?? displayData['kort'] ?? '';
-    final antrenor =
-        displayData['antrenor_adi'] ?? displayData['antrenor'] ?? '';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: TakvimColors.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.sports_tennis_rounded,
-                  color: TakvimColors.primary, size: 22),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(tarih,
-                  style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: _textPrimary)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            if (saat.isNotEmpty)
-              _InfoChip(icon: Icons.access_time_rounded, text: saat),
-            if (kort.isNotEmpty)
-              _InfoChip(icon: Icons.sports_tennis_rounded, text: kort),
-            if (antrenor.isNotEmpty)
-              _InfoChip(icon: Icons.person_rounded, text: antrenor),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  const _InfoChip({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: TakvimColors.primary),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(text,
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade800),
-                overflow: TextOverflow.ellipsis),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NotificationMessage extends StatelessWidget {
-  final NotificationModel notification;
-  const _NotificationMessage({required this.notification});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(notification.title,
-              style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: _textPrimary)),
-          const SizedBox(height: 6),
-          Text(notification.body,
-              style: const TextStyle(
-                  fontSize: 14, color: _textSecondary, height: 1.5)),
-        ],
-      ),
-    );
-  }
-}
-
-class _KatilimSection extends StatelessWidget {
+class _KatilimBolumu extends StatelessWidget {
   final bool showForm;
   final bool isKatilacagimLoading;
   final bool isKatilmayacagimLoading;
@@ -609,7 +373,7 @@ class _KatilimSection extends StatelessWidget {
   final VoidCallback onFormClose;
   final VoidCallback onKatilmayacagim;
 
-  const _KatilimSection({
+  const _KatilimBolumu({
     required this.showForm,
     required this.isKatilacagimLoading,
     required this.isKatilmayacagimLoading,
@@ -631,7 +395,7 @@ class _KatilimSection extends StatelessWidget {
       );
     }
 
-    return _KatilimButtons(
+    return _KatilimButonlari(
       isKatilacagimLoading: isKatilacagimLoading,
       onKatilacagim: onKatilacagim,
       onKatilmayacagim: onKatilmayacagimTap,
@@ -639,12 +403,12 @@ class _KatilimSection extends StatelessWidget {
   }
 }
 
-class _KatilimButtons extends StatelessWidget {
+class _KatilimButonlari extends StatelessWidget {
   final bool isKatilacagimLoading;
   final VoidCallback onKatilacagim;
   final VoidCallback onKatilmayacagim;
 
-  const _KatilimButtons({
+  const _KatilimButonlari({
     required this.isKatilacagimLoading,
     required this.onKatilacagim,
     required this.onKatilmayacagim,
@@ -673,7 +437,7 @@ class _KatilimButtons extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
             ),
             style: FilledButton.styleFrom(
-              backgroundColor: _successGreen,
+              backgroundColor: BildirimRenkleri.basariYesil,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -748,7 +512,7 @@ class _KatilmayacagimForm extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: _textPrimary)),
+                        color: BildirimRenkleri.yaziAna)),
               ),
               IconButton(
                 onPressed: onClose,

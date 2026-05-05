@@ -18,6 +18,11 @@ class NotificationFCMService {
   final _messaging = FirebaseMessaging.instance;
   final _localNotifications = FlutterLocalNotificationsPlugin();
 
+  /// Login sayfasının auto-login tetiklemesini yönetmek için.
+  /// `true` iken bildirim cache'de var veya dialog açık.
+  /// `false` olunca (kullanıcı dialog'u kapatınca) auto-login serbest.
+  final ValueNotifier<bool> hasPendingNotification = ValueNotifier(false);
+
   NotificationRouter? _router;
   bool _isInitialized = false;
   RemoteMessage? _initialMessage;
@@ -70,6 +75,9 @@ class NotificationFCMService {
   /// Uygulama kapalıyken gelen bildirimi cache'le
   Future<void> _cacheInitialMessage() async {
     _initialMessage = await _messaging.getInitialMessage();
+    if (_initialMessage != null) {
+      hasPendingNotification.value = true;
+    }
   }
 
   /// Navigator hazır olduktan sonra çağrılacak
@@ -127,6 +135,7 @@ class NotificationFCMService {
   }
 
   Future<void> _handleRemoteMessage(RemoteMessage message) async {
+    hasPendingNotification.value = true;
     final fullData = {
       ...message.data,
       'title': message.notification?.title ?? 'Bildirim',
@@ -140,6 +149,8 @@ class NotificationFCMService {
 
     try {
       final data = Map<String, dynamic>.from(jsonDecode(details.payload!));
+
+      hasPendingNotification.value = true;
 
       // Router henüz hazır değilse beklet
       if (_router == null) {
@@ -170,5 +181,11 @@ class NotificationFCMService {
       await Future.delayed(const Duration(milliseconds: 100));
       attempts++;
     }
+  }
+
+  /// Bildirim dialog'u kapandığında router tarafından çağrılır.
+  /// Pending flag'i temizler, dinleyenler (örn. LoginPage) auto-login'i tetikler.
+  void notifyDismissed() {
+    hasPendingNotification.value = false;
   }
 }

@@ -14,6 +14,10 @@ class NotificationType {
   static const uyelikTanimlandi = 'UYELIK_TANIMLANDI';
   static const antrenorDegisikligi = 'ANTRENOR_DEGISIKLIGI';
   static const genel = 'GENEL';
+  static const antrenorDevirTeklifi = 'ANTRENOR_DEVIR_TEKLIFI';
+  static const antrenorDevirKabul = 'ANTRENOR_DEVIR_KABUL';
+  static const antrenorDevirRed = 'ANTRENOR_DEVIR_RED';
+  static const antrenorDevirGeriCekildi = 'ANTRENOR_DEVIR_GERI_CEKILDI';
 }
 
 class ActionType {

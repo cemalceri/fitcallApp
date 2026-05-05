@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/services/notification/notification_fcm_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
@@ -45,6 +46,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
+    NotificationFCMService.instance.hasPendingNotification
+        .removeListener(_onNotificationDismissedRetryLogin);
     _kullaniciAdiCtrl.dispose();
     _sifreCtrl.dispose();
     super.dispose();
@@ -68,6 +71,13 @@ class _LoginPageState extends State<LoginPage> {
 
   /// Beni hatırla açık ve kayıtlı krediler varsa profilleri **API'den** çeker ve yönlendirir.
   Future<void> _tryAutoLoginFromApi() async {
+    // Pending bildirim varsa auto-login bekleyecek; dialog kapatılınca tetiklenecek.
+    if (NotificationFCMService.instance.hasPendingNotification.value) {
+      NotificationFCMService.instance.hasPendingNotification
+          .addListener(_onNotificationDismissedRetryLogin);
+      return;
+    }
+
     final remember = await StorageService.beniHatirlaIsaretlenmisMi();
     if (remember != true) return;
 
@@ -89,6 +99,16 @@ class _LoginPageState extends State<LoginPage> {
       // oto login sessiz düşsün; kullanıcı manuel giriş yapabilir
     } finally {
       if (mounted) setState(() => _yukleniyor = false);
+    }
+  }
+
+  void _onNotificationDismissedRetryLogin() {
+    final notifier = NotificationFCMService.instance.hasPendingNotification;
+    if (notifier.value == false) {
+      notifier.removeListener(_onNotificationDismissedRetryLogin);
+      if (mounted) {
+        _tryAutoLoginFromApi();
+      }
     }
   }
 

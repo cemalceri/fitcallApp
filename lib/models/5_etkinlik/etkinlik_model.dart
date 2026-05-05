@@ -1,6 +1,7 @@
 // lib/models/5_etkinlik/etkinlik_model.dart
 
 import 'dart:convert';
+import 'package:fitcall/models/3_antrenor/ders_devir_talebi_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -260,6 +261,7 @@ class EtkinlikModel {
   final int? guncelleyen;
   final int? isletme;
   final String? iptalEdenAdi;
+  final AktifDevirTalebiModel? aktifDevirTalebi;
 
   /* TEYİT VE ONAY BİLGİLERİ */
   /// Üye teyitleri (EtkinlikTeyitModel'den - katılacak mı?)
@@ -305,6 +307,7 @@ class EtkinlikModel {
     this.uyeDersOnaylari,
     this.yoneticiOnayi,
     this.iptalEdenAdi,
+    this.aktifDevirTalebi,
   });
 
   factory EtkinlikModel.fromMap(Map<String, dynamic> j) {
@@ -353,6 +356,12 @@ class EtkinlikModel {
                 .toList()
             : null;
 
+    final dynamic devirHam = j['aktif_devir_talebi'];
+    final AktifDevirTalebiModel? devirTalebi =
+        (devirHam is Map<String, dynamic>)
+            ? AktifDevirTalebiModel.fromMap(devirHam)
+            : null;
+
     return EtkinlikModel(
       id: j['id'],
       uyeList: uyeler,
@@ -384,6 +393,7 @@ class EtkinlikModel {
       uyeDersOnaylari: uyeDersOnaylar,
       yoneticiOnayi: yoneticiOnay,
       iptalEdenAdi: j['iptal_eden_adi']?.toString(),
+      aktifDevirTalebi: devirTalebi,
     );
   }
 
@@ -426,6 +436,7 @@ class EtkinlikModel {
         'guncelleyen': guncelleyen,
         'isletme': isletme,
         'uyeler': uyeList.map((e) => e.toJson()).toList(),
+        'aktif_devir_talebi': null, // backend tarafından doldurulur
       };
 
   /* ==================== TEYİT HELPER METODLARI ==================== */

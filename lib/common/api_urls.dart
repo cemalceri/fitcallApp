@@ -36,6 +36,11 @@ String getAntrenorUygunSaatleri = "$baseUrl/getAntrenorUygunSaatleri";
 String getAntrenorHomeCardsUrl = "$baseUrl/getAntrenorHomeCards";
 String dismissAntrenorHomeCardUrl = "$baseUrl/dismissAntrenorHomeCard";
 String getAntrenorSonrakiDersUrl = "$baseUrl/getAntrenorSonrakiDers";
+String dersDevirTalebiOlusturUrl = "$baseUrl/dersDevirTalebiOlustur";
+String dersDevirTalebiCevaplaUrl = "$baseUrl/dersDevirTalebiCevapla";
+String dersDevirTalebiGeriCekUrl = "$baseUrl/dersDevirTalebiGeriCek";
+String getDersIcinAntrenorListesiUrl = "$baseUrl/getDersIcinAntrenorListesi";
+String getDersDevirTalebiDetayUrl = "$baseUrl/getDersDevirTalebiDetay";
 
 // =================== ETKİNLİK ===================
 String setDersYapildiBilgisi = "$baseUrl/setDersYapildiBilgisi";

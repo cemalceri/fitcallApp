@@ -5,6 +5,8 @@ import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/cancelled_lesson_info_dialog.dart';
+import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_action_sheet.dart';
+import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_devir_dialog.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
@@ -135,21 +137,46 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
     if (!mounted) return;
 
     if (isPast) {
-      // Geçmiş ders - onay dialog'u
+      // Geçmiş ders — onay dialog'u
       LessonApprovalDialog.show(
         context: context,
         ders: ders,
         userId: userId,
         onSuccess: _forceRefresh,
       );
-    } else {
-      // Gelecek ders - iptal dialog'u
-      LessonCancelDialog.show(
+      return;
+    }
+
+    // Gelecek ders — aktif devir talebi varsa direkt onu göster
+    if (ders.aktifDevirTalebi != null) {
+      await LessonDevirDialog.show(
         context: context,
         ders: ders,
-        userId: userId,
         onSuccess: _forceRefresh,
       );
+      return;
+    }
+
+    // Aksi halde seçim sheet'i (Devret / İptal)
+    final action = await LessonActionSheet.show(context);
+    if (action == null || !mounted) return;
+
+    switch (action) {
+      case LessonAction.devret:
+        await LessonDevirDialog.show(
+          context: context,
+          ders: ders,
+          onSuccess: _forceRefresh,
+        );
+        break;
+      case LessonAction.iptal:
+        await LessonCancelDialog.show(
+          context: context,
+          ders: ders,
+          userId: userId,
+          onSuccess: _forceRefresh,
+        );
+        break;
     }
   }
 
