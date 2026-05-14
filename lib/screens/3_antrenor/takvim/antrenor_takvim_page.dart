@@ -5,19 +5,16 @@ import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/cancelled_lesson_info_dialog.dart';
-import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_action_sheet.dart';
-import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_devir_dialog.dart';
+import 'package:fitcall/screens/3_antrenor/takvim/widgets/future_lesson_detail_dialog.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'widgets/takvim_constants.dart';
 import 'widgets/week_day_selector.dart';
 import 'widgets/timeline_view.dart';
 import 'widgets/lesson_approval_dialog.dart';
-import 'widgets/lesson_cancel_dialog.dart';
 
 class AntrenorTakvimPage extends StatefulWidget {
   const AntrenorTakvimPage({super.key});
@@ -147,37 +144,13 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
       return;
     }
 
-    // Gelecek ders — aktif devir talebi varsa direkt onu göster
-    if (ders.aktifDevirTalebi != null) {
-      await LessonDevirDialog.show(
-        context: context,
-        ders: ders,
-        onSuccess: _forceRefresh,
-      );
-      return;
-    }
-
-    // Aksi halde seçim sheet'i (Devret / İptal)
-    final action = await LessonActionSheet.show(context);
-    if (action == null || !mounted) return;
-
-    switch (action) {
-      case LessonAction.devret:
-        await LessonDevirDialog.show(
-          context: context,
-          ders: ders,
-          onSuccess: _forceRefresh,
-        );
-        break;
-      case LessonAction.iptal:
-        await LessonCancelDialog.show(
-          context: context,
-          ders: ders,
-          userId: userId,
-          onSuccess: _forceRefresh,
-        );
-        break;
-    }
+    // Gelecek ders — detay + aksiyon dialog'u
+    FutureLessonDetailDialog.show(
+      context: context,
+      ders: ders,
+      userId: userId,
+      onSuccess: _forceRefresh,
+    );
   }
 
   /* --------------------------------- UI ----------------------------------- */

@@ -47,7 +47,6 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
 
   AktifDevirTalebiModel? get _mevcutTalep => widget.ders.aktifDevirTalebi;
 
-  /// Dersin sahibi (talep eden) bu kullanıcı mı?
   bool get _benTalepEden =>
       _mevcutTalep != null && _mevcutTalep!.benTalepEdenim;
 
@@ -145,6 +144,23 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
     } catch (e) {
       setState(() => _saving = false);
       if (mounted) ShowMessage.error(context, 'Hata: $e');
+    }
+  }
+
+  Future<void> _antrenorSecimAc() async {
+    HapticFeedback.selectionClick();
+    final secilen = await showModalBottomSheet<DevirAdayAntrenorModel>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _AntrenorSecimSheet(
+        adaylar: _adaylar,
+        secilenId: _secilen?.id,
+      ),
+    );
+    if (secilen != null) {
+      setState(() => _secilen = secilen);
     }
   }
 
@@ -377,28 +393,11 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
           ),
           const SizedBox(height: 16),
           const Text(
-            'Antrenör Seçin',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            'Antrenör',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 10),
-          if (_adaylar.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Center(
-                child: Text(
-                  'Devredilecek antrenör bulunamadı.',
-                  style: TextStyle(color: TakvimColors.textSecondary),
-                ),
-              ),
-            )
-          else
-            ..._adaylar.map(_buildAdayTile),
+          const SizedBox(height: 8),
+          _buildDropdownButton(),
           const SizedBox(height: 16),
           const Text(
             'Not (isteğe bağlı)',
@@ -423,88 +422,90 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
     );
   }
 
-  Widget _buildAdayTile(DevirAdayAntrenorModel a) {
-    final disabled = !a.devralabilirMi;
-    final selected = !disabled && _secilen?.id == a.id;
-
-    Color renk;
-    try {
-      final hex = (a.renk ?? '').replaceAll('#', '');
-      renk = hex.length == 6
-          ? Color(int.parse('FF$hex', radix: 16))
-          : TakvimColors.primary;
-    } catch (_) {
-      renk = TakvimColors.primary;
+  Widget _buildDropdownButton() {
+    if (_adaylar.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Text(
+          'Devredilecek antrenör bulunamadı.',
+          style: TextStyle(color: TakvimColors.textSecondary, fontSize: 13),
+        ),
+      );
     }
 
-    return Opacity(
-      opacity: disabled ? 0.5 : 1.0,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: disabled
-                ? null
-                : () {
-                    HapticFeedback.selectionClick();
-                    setState(() => _secilen = a);
-                  },
+    final secili = _secilen;
+    Color? renk;
+    if (secili != null) {
+      try {
+        final hex = (secili.renk ?? '').replaceAll('#', '');
+        renk = hex.length == 6
+            ? Color(int.parse('FF$hex', radix: 16))
+            : TakvimColors.primary;
+      } catch (_) {
+        renk = TakvimColors.primary;
+      }
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _antrenorSecimAc,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
             borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: selected
-                    ? TakvimColors.primary.withValues(alpha: 0.08)
-                    : Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: selected ? TakvimColors.primary : Colors.grey.shade200,
-                  width: selected ? 2 : 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: renk.withValues(alpha: 0.2),
-                    radius: 18,
-                    child: Text(
-                      a.adi.isNotEmpty ? a.adi[0].toUpperCase() : '?',
-                      style:
-                          TextStyle(color: renk, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          a.adSoyad,
-                          style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w600),
-                        ),
-                        if (disabled && (a.engelNedeni ?? '').isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                              a.engelNedeni!,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: TakvimColors.cancelled,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  if (selected)
-                    const Icon(Icons.check_circle_rounded,
-                        color: TakvimColors.primary, size: 22),
-                ],
-              ),
+            border: Border.all(
+              color:
+                  secili != null ? TakvimColors.primary : Colors.grey.shade300,
+              width: secili != null ? 1.5 : 1,
             ),
+          ),
+          child: Row(
+            children: [
+              if (secili != null) ...[
+                CircleAvatar(
+                  backgroundColor: renk!.withValues(alpha: 0.2),
+                  radius: 14,
+                  child: Text(
+                    secili.adi.isNotEmpty ? secili.adi[0].toUpperCase() : '?',
+                    style: TextStyle(
+                        color: renk, fontWeight: FontWeight.w700, fontSize: 12),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    secili.adSoyad,
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w600),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ] else ...[
+                Icon(Icons.person_search_rounded,
+                    size: 20, color: TakvimColors.textMuted),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Antrenör seçin...',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: TakvimColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+              Icon(Icons.keyboard_arrow_down_rounded,
+                  color: TakvimColors.textSecondary),
+            ],
           ),
         ),
       ),
@@ -606,6 +607,235 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/* ============================================================================
+ *                       ANTRENÖR SEÇİM BOTTOM SHEET
+ * ============================================================================
+ */
+
+class _AntrenorSecimSheet extends StatefulWidget {
+  final List<DevirAdayAntrenorModel> adaylar;
+  final int? secilenId;
+
+  const _AntrenorSecimSheet({
+    required this.adaylar,
+    this.secilenId,
+  });
+
+  @override
+  State<_AntrenorSecimSheet> createState() => _AntrenorSecimSheetState();
+}
+
+class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
+  final _aramaCtrl = TextEditingController();
+  String _aramaText = '';
+
+  @override
+  void dispose() {
+    _aramaCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final aramaLower = _aramaText.trim().toLowerCase();
+    final filtreli = aramaLower.isEmpty
+        ? widget.adaylar
+        : widget.adaylar
+            .where((a) => a.adSoyad.toLowerCase().contains(aramaLower))
+            .toList();
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (_, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Antrenör Seç',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded),
+                      padding: EdgeInsets.zero,
+                      constraints:
+                          const BoxConstraints(minWidth: 32, minHeight: 32),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  controller: _aramaCtrl,
+                  autofocus: false,
+                  onChanged: (v) => setState(() => _aramaText = v),
+                  decoration: InputDecoration(
+                    hintText: 'Antrenör ara...',
+                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                    suffixIcon: _aramaText.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.close_rounded, size: 18),
+                            onPressed: () {
+                              _aramaCtrl.clear();
+                              setState(() => _aramaText = '');
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    isDense: true,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: filtreli.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Text(
+                            _aramaText.isEmpty
+                                ? 'Antrenör yok'
+                                : '"$_aramaText" için sonuç yok',
+                            style: TextStyle(color: TakvimColors.textSecondary),
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        controller: scrollController,
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
+                        itemCount: filtreli.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 4),
+                        itemBuilder: (_, i) {
+                          final a = filtreli[i];
+                          return _buildTile(a);
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTile(DevirAdayAntrenorModel a) {
+    final disabled = !a.devralabilirMi;
+    final selected = !disabled && widget.secilenId == a.id;
+
+    Color renk;
+    try {
+      final hex = (a.renk ?? '').replaceAll('#', '');
+      renk = hex.length == 6
+          ? Color(int.parse('FF$hex', radix: 16))
+          : TakvimColors.primary;
+    } catch (_) {
+      renk = TakvimColors.primary;
+    }
+
+    return Opacity(
+      opacity: disabled ? 0.5 : 1.0,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: disabled
+              ? null
+              : () {
+                  HapticFeedback.selectionClick();
+                  Navigator.pop(context, a);
+                },
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            decoration: BoxDecoration(
+              color: selected
+                  ? TakvimColors.primary.withValues(alpha: 0.08)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: selected ? TakvimColors.primary : Colors.transparent,
+                width: selected ? 1.5 : 0,
+              ),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: renk.withValues(alpha: 0.2),
+                  radius: 18,
+                  child: Text(
+                    a.adi.isNotEmpty ? a.adi[0].toUpperCase() : '?',
+                    style: TextStyle(
+                        color: renk, fontWeight: FontWeight.w700, fontSize: 14),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        a.adSoyad,
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (disabled && (a.engelNedeni ?? '').isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Text(
+                            a.engelNedeni!,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: TakvimColors.cancelled,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (selected)
+                  const Icon(Icons.check_circle_rounded,
+                      color: TakvimColors.primary, size: 22),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
