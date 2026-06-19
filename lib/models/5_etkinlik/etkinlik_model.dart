@@ -375,7 +375,8 @@ class EtkinlikModel {
       isDeleted: (j['is_deleted'] ?? false) == true,
       createdAt: DateTime.parse(j['olusturulma_zamani']),
       updatedAt: DateTime.parse(j['guncellenme_zamani']),
-      haftalikPlanKodu: j['haftalik_plan_kodu']?.toString(),
+      haftalikPlanKodu:
+          (j['sabit_plan'] ?? j['haftalik_plan_kodu'])?.toString(),
       urunId: asIntN(j['urun']),
       urunAdi: j['urun_adi']?.toString(),
       antrenorId: asIntN(j['antrenor']),
@@ -383,7 +384,8 @@ class EtkinlikModel {
       yardimciAntrenorId: asIntN(j['yardimci_antrenor']),
       yardimciAntrenorAdi: j['yardimci_antrenor_adi']?.toString(),
       iptalEden: j['iptal_eden']?.toString(),
-      iptalTarihSaat: date(j['iptal_tarih_saat']),
+      iptalTarihSaat:
+          date((j['iptal_tarihi'] ?? j['iptal_tarih_saat']) as String?),
       ucret: dbl(j['ucret']),
       ekleyen: asIntN(j['ekleyen']),
       guncelleyen: asIntN(j['guncelleyen']),

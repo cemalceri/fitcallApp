@@ -17,11 +17,18 @@ class ParaHareketModel {
 
   // ---- ParaHareketiModel özgün alanları ----
   final int uye;
-  final String hareketTuru; // "Alacak" | "Odeme"
+
+  /// Django ParaHareketTuruEnum: ALACAK | FARK_ALACAK (borç artıran)
+  /// ODEME | INDIRIM | FARK_IADE | IPTAL | IADE (borç azaltan)
+  final String hareketTuru;
   final double tutar;
   final String? odemeSekli;
   final DateTime tarih;
+  final DateTime? borcTarihi; // borcun oluştuğu tarih (ders tarihi vb.)
   final int? urun;
+  final int? uyeUrun; // kaynak ÜyeÜrün (paket) kaydı
+  final String? referansKodu;
+  final bool isEkstra;
   final String? aciklama;
 
   const ParaHareketModel({
@@ -38,11 +45,55 @@ class ParaHareketModel {
     required this.tutar,
     this.odemeSekli,
     required this.tarih,
+    this.borcTarihi,
     this.urun,
+    this.uyeUrun,
+    this.referansKodu,
+    this.isEkstra = false,
     this.aciklama,
   });
 
+  /// Borç azaltan (ödeme yönlü) hareket türleri — Django enum ile birebir
+  static const Set<String> odemeYonluTurler = {
+    'ODEME',
+    'INDIRIM',
+    'FARK_IADE',
+    'IPTAL',
+    'IADE',
+  };
+
+  /// Borç artıran hareket türleri
+  static const Set<String> borcYonluTurler = {'ALACAK', 'FARK_ALACAK'};
+
+  /// Bu hareket borcu azaltıyor mu? (renk/işaret için tek doğruluk kaynağı)
+  bool get odemeYonlu => odemeYonluTurler.contains(hareketTuru);
+
+  /// Kullanıcıya gösterilecek Türkçe etiket
+  String get hareketTuruLabel {
+    switch (hareketTuru) {
+      case 'ALACAK':
+        return 'Borç';
+      case 'FARK_ALACAK':
+        return 'Fark Borcu';
+      case 'ODEME':
+        return 'Ödeme';
+      case 'INDIRIM':
+        return 'İndirim';
+      case 'FARK_IADE':
+        return 'Fark İadesi';
+      case 'IPTAL':
+        return 'İptal';
+      case 'IADE':
+        return 'İade';
+      default:
+        return hareketTuru;
+    }
+  }
+
   factory ParaHareketModel.fromJson(Map<String, dynamic> json) {
+    DateTime? dtN(dynamic v) =>
+        (v == null || '$v'.isEmpty) ? null : DateTime.tryParse(v.toString());
+
     return ParaHareketModel(
       id: json['id'],
       isActive: json['is_active'],
@@ -57,7 +108,11 @@ class ParaHareketModel {
       tutar: double.parse(json['tutar'].toString()),
       odemeSekli: json['odeme_sekli'],
       tarih: DateTime.parse(json['tarih']),
+      borcTarihi: dtN(json['borc_tarihi']),
       urun: json['urun'],
+      uyeUrun: json['uye_urun'],
+      referansKodu: json['referans_kodu'],
+      isEkstra: json['is_ekstra'] ?? false,
       aciklama: json['aciklama'],
     );
   }

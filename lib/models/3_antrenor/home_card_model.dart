@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 
 /// Bilgi kartı türleri
 enum HomeCardType {
-  pendingApproval,  // Onay bekleyen dersler
-  weeklySummary,    // Haftalık özet
-  cancelled,        // İptal edilen dersler
-  earnings,         // Kazanç bilgisi
-  studentCount,     // Öğrenci sayısı
-  upcomingLessons,  // Yaklaşan dersler
-  info,             // Genel bilgilendirme
-  warning,          // Uyarı
-  success,          // Başarı mesajı
+  pendingApproval, // Onay bekleyen dersler
+  weeklySummary, // Haftalık özet
+  cancelled, // İptal edilen dersler
+  earnings, // Kazanç bilgisi
+  studentCount, // Öğrenci sayısı
+  upcomingLessons, // Yaklaşan dersler
+  info, // Genel bilgilendirme
+  warning, // Uyarı
+  success, // Başarı mesajı
 }
 
 /// Backend'den gelen bilgi kartı modeli
@@ -51,9 +51,8 @@ class HomeCardModel {
       actionRoute: json['action_route'],
       actionParams: json['action_params'],
       value: json['value'],
-      createdAt: json['created_at'] != null 
-          ? DateTime.tryParse(json['created_at']) 
-          : null,
+      createdAt: DateTime.tryParse(
+          (json['olusturulma_zamani'] ?? json['created_at'] ?? '').toString()),
       dismissible: json['dismissible'] ?? false,
     );
   }

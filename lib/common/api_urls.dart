@@ -5,7 +5,6 @@ const String baseUrl = baseUrlProd;
 //const String baseUrl = baseUrlLocal;
 
 // =================== AUTH ===================
-String loginUrl = "$baseUrl/getToken";
 String createToken = "$baseUrl/createToken";
 String getMyMembers = "$baseUrl/getMyMembers";
 String registerUrl = "${baseUrl.replaceFirst('/api', '/auths')}/register";
@@ -16,7 +15,6 @@ String uyeKullaniciSil = "$baseUrl/uyeKullaniciSil";
 
 // =================== ÜYE ===================
 String uyeKaydet = "$baseUrl/uyeKaydet";
-String getOdemeBilgileri = "$baseUrl/getAidatOdemeGecmisi";
 String getUyeDersProgramiUrl = "$baseUrl/getUyeDersProgrami";
 String getUyedersTalepListesi = "$baseUrl/getUyedersTalepListesi";
 String silUyedersTalebi = "$baseUrl/silUyedersTalebi";
@@ -45,7 +43,6 @@ String getDersDevirTalebiDetayUrl = "$baseUrl/getDersDevirTalebiDetay";
 // =================== ETKİNLİK ===================
 String setDersYapildiBilgisi = "$baseUrl/setDersYapildiBilgisi";
 String getDersYapildiBilgisi = "$baseUrl/getDersYapildiBilgisi";
-String dersTalebiOlustur = "$baseUrl/dersTalebiOlustur";
 String setDersTeyit = "$baseUrl/setDersTeyit";
 String setDersTalep = "$baseUrl/setDersTalep";
 String setGenelDersTalep = "$baseUrl/setGenelDersTalep";
@@ -70,7 +67,6 @@ String odemeBaslatUrl = "$baseUrl/odemeBaslat";
 String odemeDurumUrl = "$baseUrl/odemeDurum/";
 
 // =================== QR & GEÇİŞ ===================
-String qrInOrOut = "$baseUrl/qrInOrOut";
 String qrKodDogrula = "$baseUrl/qrKodDogrula";
 String cihazKaydetGuncelle = "$baseUrl/cihazKaydetGuncelle";
 
@@ -89,7 +85,6 @@ String silTesisMisafirPass = "$baseUrl/silTesisMisafirPass";
 
 // =================== DİĞER ===================
 String getGaleriImages = "$baseUrl/getGaleriImages";
-String getDuyurular = "$baseUrl/getDuyurular";
 String getMobilConfigs = "$baseUrl/getMobilConfigs";
 String mobilLogKaydet = "$baseUrl/mobilLogKaydet";
 String getAktifDuyurularUrl = "$baseUrl/getAktifDuyurular";

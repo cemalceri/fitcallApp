@@ -14,7 +14,7 @@ class UyeUrunModel {
   /*                             OPSİYONEL alanlar                              */
   /* -------------------------------------------------------------------------- */
   final int? toplamHak;
-  final int? kalanHak;
+  final num? kalanHak;
   final DateTime? bitis;
 
   /* -------------------------------------------------------------------------- */
@@ -38,6 +38,10 @@ class UyeUrunModel {
   factory UyeUrunModel.fromJson(Map<String, dynamic> j) {
     DateTime? d(String? v) =>
         (v == null || v.isEmpty) ? null : DateTime.parse(v);
+    num? kalan = j['kalan_hak'] is num
+        ? j['kalan_hak'] as num
+        : num.tryParse('${j['kalan_hak'] ?? ''}');
+    if (kalan != null && kalan % 1 == 0) kalan = kalan.toInt();
 
     return UyeUrunModel(
       id: j['id'],
@@ -45,7 +49,7 @@ class UyeUrunModel {
       urunId: j['urun'],
       urunAdi: j['urun_adi'] ?? '',
       toplamHak: j['toplam_hak'],
-      kalanHak: j['kalan_hak'],
+      kalanHak: kalan,
       baslangic: DateTime.parse(j['baslangic']),
       bitis: d(j['bitis']),
       aktifMi: j['aktif_mi'] ?? true,

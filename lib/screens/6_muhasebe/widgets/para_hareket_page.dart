@@ -449,11 +449,11 @@ class _TransactionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isOdeme = transaction.hareketTuru == 'Odeme';
+    final isOdeme = transaction.odemeYonlu;
     final typeColor = isOdeme ? Colors.green : Colors.red;
     final typeIcon =
         isOdeme ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded;
-    final typeLabel = isOdeme ? 'Ödeme' : 'Borç';
+    final typeLabel = transaction.hareketTuruLabel;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -581,9 +581,9 @@ class _TransactionDetailSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isOdeme = transaction.hareketTuru == 'Odeme';
+    final isOdeme = transaction.odemeYonlu;
     final typeColor = isOdeme ? Colors.green : Colors.red;
-    final typeLabel = isOdeme ? 'Ödeme' : 'Borç';
+    final typeLabel = transaction.hareketTuruLabel;
 
     return Container(
       decoration: BoxDecoration(

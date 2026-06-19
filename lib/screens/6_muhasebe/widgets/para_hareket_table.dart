@@ -22,7 +22,7 @@ class ParaHareketTable extends StatelessWidget {
       itemBuilder: (ctx, i) {
         final e = rows[i];
         final tutarStyle = TextStyle(
-          color: e.hareketTuru == 'Odeme' ? Colors.green : Colors.red,
+          color: e.odemeYonlu ? Colors.green : Colors.red,
           fontWeight: FontWeight.w600,
         );
 
@@ -55,7 +55,7 @@ class ParaHareketTable extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  e.hareketTuru == 'Alacak' ? 'Borç' : e.hareketTuru,
+                  e.hareketTuruLabel,
                   style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
                       fontSize: 12),

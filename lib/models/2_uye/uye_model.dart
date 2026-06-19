@@ -95,12 +95,14 @@ class UyeModel {
       id: json['id'] ?? 0,
       isActive: json['is_active'] ?? false,
       isDeleted: json['is_deleted'] ?? false,
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'])
-          : DateTime.now(),
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'])
-          : DateTime.now(),
+      createdAt: DateTime.tryParse(
+              (json['olusturulma_zamani'] ?? json['created_at'] ?? '')
+                  .toString()) ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(
+              (json['guncellenme_zamani'] ?? json['updated_at'] ?? '')
+                  .toString()) ??
+          DateTime.now(),
       isletme: json['isletme'] ?? 0,
       adi: json['adi'] ?? '',
       soyadi: json['soyadi'] ?? '',
