@@ -32,11 +32,12 @@ class MuhasebeService {
     );
   }
 
-  /// Sipariş durumunu sorgular
+  /// Sipariş durumunu sorgular (backend OdemeDurumAPIView @token_user ile korunur)
   static Future<ApiResult<Map<String, dynamic>>> durum(String siparisId) {
     return ApiClient.getParsed<Map<String, dynamic>>(
       '$odemeDurumUrl$siparisId/',
       (json) => json as Map<String, dynamic>,
+      auth: true,
     );
   }
 }
