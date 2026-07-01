@@ -84,8 +84,8 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
         }
       }
 
-      // Teyit kontrolü
-      if (etkinlikId != null) {
+      final oturumGecerli = await StorageService.tokenGecerliMi();
+      if (etkinlikId != null && oturumGecerli) {
         final uye = await StorageService.uyeBilgileriniGetir();
         if (uye != null) {
           final res = await DersTeyitService.getTeyitDetayBilgisi(
@@ -102,8 +102,7 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
         }
       }
     } on ApiException catch (e) {
-      ShowMessage.error(
-          context, 'Teyit bilgisi alınırken hata oluştu: ${e.message}');
+      debugPrint('Teyit ön-kontrolü atlandı: ${e.message}');
     } catch (e) {
       debugPrint('Teyit kontrolü hatası: $e');
     }
