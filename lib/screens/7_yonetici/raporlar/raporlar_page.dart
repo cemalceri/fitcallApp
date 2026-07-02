@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
+import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_haritasi_section.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_ozet_kartlar.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/ciro_raporu_section.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/tahsilat_raporu_section.dart';
@@ -21,6 +23,7 @@ class RaporlarPage extends StatefulWidget {
 class _RaporlarPageState extends State<RaporlarPage> {
   DonemFiltresi _seciliDonem = DonemFiltresi.buHafta;
   RaporlarData? _data;
+  DolulukHaritasi? _harita;
   bool _loading = true;
   String? _errorMessage;
 
@@ -37,10 +40,16 @@ class _RaporlarPageState extends State<RaporlarPage> {
     });
 
     try {
-      final result = await YoneticiApiService.getRaporlar(donem: _seciliDonem);
+      // İki isteği eşzamanlı başlat
+      final raporFuture = YoneticiApiService.getRaporlar(donem: _seciliDonem);
+      final haritaFuture =
+          YoneticiApiService.getDolulukHaritasi(donem: _seciliDonem);
+      final result = await raporFuture;
+      final harita = await haritaFuture;
       if (mounted) {
         setState(() {
           _data = result.data;
+          _harita = harita.data;
           _loading = false;
         });
       }
@@ -182,7 +191,13 @@ class _RaporlarPageState extends State<RaporlarPage> {
             TahsilatRaporuSection(data: _data!.tahsilatRaporu),
             const SizedBox(height: 24),
 
-            // Doluluk raporu
+            // Doluluk ısı haritası (saat x haftanın günü)
+            if (_harita != null) ...[
+              DolulukHaritasiSection(data: _harita!),
+              const SizedBox(height: 24),
+            ],
+
+            // Doluluk raporu (kort bazlı)
             DolulukRaporuSection(data: _data!.dolulukRaporu),
             const SizedBox(height: 24),
 

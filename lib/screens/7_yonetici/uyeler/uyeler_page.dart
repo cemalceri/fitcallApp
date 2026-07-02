@@ -7,6 +7,8 @@ import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_istatistik_kartlar.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_liste_item.dart';
+import 'package:fitcall/screens/7_yonetici/uyeler/uye_detay_page.dart';
+import 'package:fitcall/screens/7_yonetici/widgets/skeleton.dart';
 
 class UyelerPage extends StatefulWidget {
   const UyelerPage({super.key});
@@ -17,59 +19,40 @@ class UyelerPage extends StatefulWidget {
 
 class _UyelerPageState extends State<UyelerPage> {
   final TextEditingController _aramaController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
 
-  UyelerData? _data;
+  // Tüm liste tek seferde çekilir; arama/filtre client-side yapılır (API dövülmez).
+  UyeIstatistik? _istatistik;
+  List<UyeListeItem> _tumUyeler = [];
   bool _loading = true;
-  bool _loadingMore = false;
   String? _errorMessage;
 
-  String _filtre = 'tumu'; // 'aktif', 'pasif', 'tumu'
-  int _sayfa = 1;
+  String _filtre = 'tumu'; // 'tumu' | 'aktif' | 'pasif' | 'borclu'
 
   @override
   void initState() {
     super.initState();
     _loadData();
-    _scrollController.addListener(_onScroll);
+    _aramaController.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
     _aramaController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 200 &&
-        !_loadingMore &&
-        _data != null &&
-        _sayfa < _data!.toplamSayfa) {
-      _loadMore();
-    }
-  }
-
-  Future<void> _loadData({bool refresh = false}) async {
-    if (refresh) {
-      _sayfa = 1;
-    }
-
+  Future<void> _loadData() async {
     setState(() {
       _loading = true;
       _errorMessage = null;
     });
 
     try {
-      final result = await YoneticiApiService.getUyeler(
-        sayfa: _sayfa,
-        arama: _aramaController.text,
-        filtre: _filtre,
-      );
+      final result = await YoneticiApiService.getUyeler(hepsi: true);
       if (mounted) {
         setState(() {
-          _data = result.data;
+          _istatistik = result.data?.istatistikler;
+          _tumUyeler = result.data?.uyeler ?? [];
           _loading = false;
         });
       }
@@ -80,7 +63,7 @@ class _UyelerPageState extends State<UyelerPage> {
           _loading = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() {
           _errorMessage = 'Veriler yüklenirken bir hata oluştu.';
@@ -90,41 +73,49 @@ class _UyelerPageState extends State<UyelerPage> {
     }
   }
 
-  Future<void> _loadMore() async {
-    if (_loadingMore || _data == null || _sayfa >= _data!.toplamSayfa) return;
+  /// Client-side arama + filtre.
+  List<UyeListeItem> get _filtrelenmis {
+    var list = _tumUyeler;
 
-    setState(() => _loadingMore = true);
-
-    try {
-      final result = await YoneticiApiService.getUyeler(
-        sayfa: _sayfa + 1,
-        arama: _aramaController.text,
-        filtre: _filtre,
-      );
-      if (mounted && result.data != null) {
-        setState(() {
-          _sayfa++;
-          _data = UyelerData(
-            istatistikler: result.data!.istatistikler,
-            uyeler: [..._data!.uyeler, ...result.data!.uyeler],
-            toplamSayfa: result.data!.toplamSayfa,
-            mevcutSayfa: result.data!.mevcutSayfa,
-          );
-          _loadingMore = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) setState(() => _loadingMore = false);
+    if (_filtre == 'aktif') {
+      list = list.where((u) => u.aktifMi).toList();
+    } else if (_filtre == 'pasif') {
+      list = list.where((u) => !u.aktifMi).toList();
+    } else if (_filtre == 'borclu') {
+      list = list.where((u) => u.bakiye < 0).toList();
     }
+
+    final q = _aramaController.text.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      list = list
+          .where((u) =>
+              u.adSoyad.toLowerCase().contains(q) ||
+              (u.telefon ?? '').contains(q) ||
+              u.uyeNo.toString().contains(q))
+          .toList();
+    }
+
+    if (_filtre == 'borclu') {
+      // En borçlu (en negatif bakiye) önce
+      list = [...list]..sort((a, b) => a.bakiye.compareTo(b.bakiye));
+    }
+
+    return list;
   }
 
   void _onFiltreChanged(String filtre) {
     setState(() => _filtre = filtre);
-    _loadData(refresh: true);
   }
 
-  void _onArama(String value) {
-    _loadData(refresh: true);
+  void _acUyeDetay(UyeListeItem uye) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => UyeDetayPage(
+          uyeId: uye.id,
+          baslangicAdSoyad: uye.adSoyad,
+        ),
+      ),
+    );
   }
 
   @override
@@ -148,7 +139,6 @@ class _UyelerPageState extends State<UyelerPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -163,13 +153,17 @@ class _UyelerPageState extends State<UyelerPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Arama
                     TextField(
                       controller: _aramaController,
-                      onChanged: _onArama,
                       decoration: InputDecoration(
                         hintText: 'İsim, telefon veya üye no ile ara...',
                         prefixIcon: const Icon(Icons.search, size: 20),
+                        suffixIcon: _aramaController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 18),
+                                onPressed: () => _aramaController.clear(),
+                              )
+                            : null,
                         filled: true,
                         fillColor: colorScheme.surfaceContainerHighest
                             .withValues(alpha: 0.5),
@@ -182,13 +176,10 @@ class _UyelerPageState extends State<UyelerPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // Filtre
                     _buildFiltreler(colorScheme),
                   ],
                 ),
               ),
-
-              // Content
               Expanded(child: _buildContent()),
             ],
           ),
@@ -219,17 +210,23 @@ class _UyelerPageState extends State<UyelerPage> {
             selected: _filtre == 'pasif',
             onSelected: () => _onFiltreChanged('pasif'),
           ),
+          const SizedBox(width: 8),
+          _FilterChip(
+            label: 'Borçlular',
+            selected: _filtre == 'borclu',
+            onSelected: () => _onFiltreChanged('borclu'),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildContent() {
-    if (_loading && _data == null) {
-      return const Center(child: CircularProgressIndicator());
+    if (_loading) {
+      return const UyeListeSkeleton();
     }
 
-    if (_errorMessage != null && _data == null) {
+    if (_errorMessage != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -242,7 +239,7 @@ class _UyelerPageState extends State<UyelerPage> {
               Text(_errorMessage!, textAlign: TextAlign.center),
               const SizedBox(height: 24),
               FilledButton.icon(
-                onPressed: () => _loadData(refresh: true),
+                onPressed: _loadData,
                 icon: const Icon(Icons.refresh),
                 label: const Text('Tekrar Dene'),
               ),
@@ -252,40 +249,44 @@ class _UyelerPageState extends State<UyelerPage> {
       );
     }
 
-    if (_data == null || _data!.uyeler.isEmpty) {
-      return Center(
-        child: Text(
-          'Üye bulunamadı',
-          style:
-              TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-        ),
-      );
-    }
+    final uyeler = _filtrelenmis;
 
     return RefreshIndicator(
-      onRefresh: () => _loadData(refresh: true),
+      onRefresh: _loadData,
       child: ListView.builder(
-        controller: _scrollController,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _data!.uyeler.length + 2, // +1 istatistikler, +1 loading
+        itemCount: uyeler.length + 2, // +1 istatistik, +1 boşluk/boş-durum
         itemBuilder: (context, index) {
           if (index == 0) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: UyeIstatistikKartlar(data: _data!.istatistikler),
+              child: _istatistik != null
+                  ? UyeIstatistikKartlar(data: _istatistik!)
+                  : const SizedBox.shrink(),
             );
           }
-          if (index == _data!.uyeler.length + 1) {
-            return _loadingMore
-                ? const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                : const SizedBox(height: 80);
+          if (index == uyeler.length + 1) {
+            if (uyeler.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.only(top: 40),
+                child: Center(
+                  child: Text(
+                    'Üye bulunamadı',
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              );
+            }
+            return const SizedBox(height: 80);
           }
+          final uye = uyeler[index - 1];
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: UyeListeItemWidget(uye: _data!.uyeler[index - 1]),
+            child: UyeListeItemWidget(
+              uye: uye,
+              onTap: () => _acUyeDetay(uye),
+            ),
           );
         },
       ),

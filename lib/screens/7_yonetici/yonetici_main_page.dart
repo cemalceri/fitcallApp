@@ -18,13 +18,23 @@ class YoneticiMainPage extends StatefulWidget {
 class _YoneticiMainPageState extends State<YoneticiMainPage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = const [
-    YoneticiDashboardPage(),
-    RaporlarPage(),
-    UyelerPage(),
-    AntrenorlerPage(),
-    DerslerPage(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      YoneticiDashboardPage(onTabChange: _goTab),
+      const RaporlarPage(),
+      const UyelerPage(),
+      const AntrenorlerPage(),
+      const DerslerPage(),
+    ];
+  }
+
+  void _goTab(int index) {
+    setState(() => _selectedIndex = index);
+  }
 
   final List<NavigationDestination> _destinations = const [
     NavigationDestination(

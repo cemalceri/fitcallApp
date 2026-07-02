@@ -7,8 +7,13 @@ import 'package:intl/intl.dart';
 
 class StatCardsGrid extends StatelessWidget {
   final DashboardData data;
+  final VoidCallback? onToplamAlacakTap;
 
-  const StatCardsGrid({super.key, required this.data});
+  const StatCardsGrid({
+    super.key,
+    required this.data,
+    this.onToplamAlacakTap,
+  });
 
   String _formatCurrency(double value) {
     final formatter = NumberFormat.currency(
@@ -80,13 +85,23 @@ class StatCardsGrid extends StatelessWidget {
           degisimYuzdesi: data.uye.degisimYuzdesi,
         ),
 
-        // Toplam Alacak (eski: Vadesi Geçmiş)
-        StatCard(
-          baslik: 'Toplam Alacak',
-          deger: _formatCurrency(data.toplamAlacak.toplamBorc),
-          altBaslik: '${data.toplamAlacak.borcluUyeSayisi} üye',
-          ikon: Icons.account_balance_wallet_outlined,
-          ikonRenk: Colors.orange,
+        // Toplam Alacak (tıklanınca borçlu üyeler / tahsilat ekranı)
+        GestureDetector(
+          onTap: onToplamAlacakTap,
+          child: StatCard(
+            baslik: 'Toplam Alacak',
+            deger: _formatCurrency(data.toplamAlacak.toplamBorc),
+            altBaslik: '${data.toplamAlacak.borcluUyeSayisi} üye',
+            ikon: Icons.account_balance_wallet_outlined,
+            ikonRenk: Colors.orange,
+            trailing: onToplamAlacakTap != null
+                ? Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  )
+                : null,
+          ),
         ),
       ],
     );

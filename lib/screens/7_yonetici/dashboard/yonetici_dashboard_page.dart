@@ -2,17 +2,23 @@
 
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/screens/7_yonetici/uyeler/borclu_uyeler_page.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/dashboard_header.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/weekly_chart_card.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/quick_access_section.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/daily_summary_card.dart';
+import 'package:fitcall/screens/7_yonetici/widgets/skeleton.dart';
 
 class YoneticiDashboardPage extends StatefulWidget {
-  const YoneticiDashboardPage({super.key});
+  /// Alt sekmeler arası geçiş (0:Dashboard 1:Raporlar 2:Üyeler 3:Antrenör 4:Dersler)
+  final void Function(int index)? onTabChange;
+
+  const YoneticiDashboardPage({super.key, this.onTabChange});
 
   @override
   State<YoneticiDashboardPage> createState() => _YoneticiDashboardPageState();
@@ -93,9 +99,7 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
 
   Widget _buildContent() {
     if (_loading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const DashboardSkeleton();
     }
 
     if (_errorMessage != null) {
@@ -154,31 +158,33 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
             const SizedBox(height: 20),
 
             // İstatistik kartları
-            StatCardsGrid(data: _data!),
+            StatCardsGrid(
+              data: _data!,
+              onToplamAlacakTap: () {
+                HapticFeedback.lightImpact();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const BorcluUyelerPage(),
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 16),
 
-            // Haftalık ciro/tahsilat grafiği (GÜNCELLENDİ)
+            // Haftalık ciro/tahsilat grafiği
             WeeklyChartCard(
               ciroData: _data!.haftalikCiro,
               tahsilatData: _data!.haftalikTahsilat,
-              onDetayTap: () {
-                // Raporlar sayfasına git
-              },
+              onDetayTap: () => widget.onTabChange?.call(1), // Raporlar
             ),
             const SizedBox(height: 20),
 
             // Hızlı erişim
             QuickAccessSection(
               data: _data!,
-              onRaporlarTap: () {
-                // Raporlar sekmesine geç
-              },
-              onAntrenorTap: () {
-                // Antrenörler sekmesine geç
-              },
-              onDerslerTap: () {
-                // Dersler sekmesine geç
-              },
+              onRaporlarTap: () => widget.onTabChange?.call(1), // Raporlar
+              onAntrenorTap: () => widget.onTabChange?.call(3), // Antrenörler
+              onDerslerTap: () => widget.onTabChange?.call(4), // Dersler
             ),
             const SizedBox(height: 16),
 
