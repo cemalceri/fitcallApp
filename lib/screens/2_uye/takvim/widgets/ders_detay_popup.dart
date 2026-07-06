@@ -1,5 +1,6 @@
 // lib/screens/5_etkinlik/takvim/widgets/ders_detay_popup.dart
 
+import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -51,6 +52,26 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
   void dispose() {
     _aciklamaController.dispose();
     super.dispose();
+  }
+
+  void _takvimeEkle() {
+    HapticFeedback.lightImpact();
+    final ders = widget.ders;
+    final aciklamaParcalari = [
+      if (ders.antrenorAdi != null && ders.antrenorAdi!.isNotEmpty)
+        'Antrenör: ${ders.antrenorAdi}',
+      if (ders.urunAdi != null && ders.urunAdi!.isNotEmpty)
+        'Program: ${ders.urunAdi}',
+    ];
+    final event = Event(
+      title: 'Tenis Dersi — ${ders.kortAdi}',
+      description: aciklamaParcalari.join('\n'),
+      location: ders.kortAdi,
+      startDate: ders.baslangicTarihSaat,
+      endDate: ders.bitisTarihSaat,
+      iosParams: const IOSParams(reminder: Duration(hours: 1)),
+    );
+    Add2Calendar.addEvent2Cal(event);
   }
 
   Future<void> _katilacagim() async {
@@ -167,6 +188,34 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                     const SizedBox(height: 16),
                     _buildBilgilendirmeNotu(),
                     const SizedBox(height: 20),
+                  ],
+                  if (!iptalEdildi &&
+                      widget.ders.baslangicTarihSaat
+                          .isAfter(DateTime.now())) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _takvimeEkle,
+                        icon: const Icon(Icons.calendar_month_outlined,
+                            size: 18),
+                        label: const Text(
+                          'Telefon Takvimine Ekle',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          side: BorderSide(
+                            color:
+                                TakvimColors.primary.withValues(alpha: 0.4),
+                          ),
+                          foregroundColor: TakvimColors.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                   ],
                   SizedBox(
                     width: double.infinity,

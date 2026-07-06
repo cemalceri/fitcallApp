@@ -1,3 +1,4 @@
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_sheet.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/ders_teyit_bildirim_page.dart';
@@ -55,7 +56,21 @@ class NotificationRouter {
       return;
     }
 
-    // 3) Default: bildirim detay sheet
+    // 3) Yoklama hatırlatma (antrenöre): takvimde ilgili günü aç, dialogu göster
+    if (_isYoklamaHatirlatma(notification)) {
+      final params = notification.actionParams;
+      nav.pushNamed(
+        routeEnums[SayfaAdi.antrenorDersler]!,
+        arguments: {
+          if (params?['tarih'] != null) 'tarih': params!['tarih'],
+          if (params?['ders_id'] != null) 'ders_id': params!['ders_id'],
+        },
+      );
+      NotificationFCMService.instance.notifyDismissed();
+      return;
+    }
+
+    // 4) Default: bildirim detay sheet
     await BildirimDetaySheetWidget.goster(
         context: ctx, notification: notification);
     NotificationFCMService.instance.notifyDismissed();
@@ -84,6 +99,12 @@ class NotificationRouter {
   bool _isDersTeyit(NotificationModel n) {
     return n.notificationType == NotificationType.dersTeyidi ||
         n.actionScreen == 'ders_teyit';
+  }
+
+  /// Antrenöre yoklama hatırlatması mı?
+  bool _isYoklamaHatirlatma(NotificationModel n) {
+    return n.notificationType == NotificationType.yoklamaHatirlatma ||
+        n.actionScreen == 'antrenor_yoklama';
   }
 
   int? _talepIdOf(NotificationModel n) {

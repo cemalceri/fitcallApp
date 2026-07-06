@@ -1,8 +1,8 @@
 // =================== BASE URL ===================
 const String baseUrlProd = "https://www.binay.fit/api";
 const String baseUrlLocal = "http://10.0.2.2:8000/api";
-const String baseUrl = baseUrlProd;
-//const String baseUrl = baseUrlLocal;
+// const String baseUrl = baseUrlProd;
+const String baseUrl = baseUrlLocal;
 
 // =================== AUTH ===================
 String createToken = "$baseUrl/createToken";
@@ -23,6 +23,8 @@ String getHaftalikDersBilgilerim = "$baseUrl/getHaftalikDersBilgilerim";
 String getUrunListesiVeUyePaketleri = "$baseUrl/getUrunListesiVeUyePaketleri";
 String getTelafiDersBilgileriUrl = "$baseUrl/getTelafiDersBilgileri";
 String getAktifUyeListesiUrl = "$baseUrl/getAktifUyeListesi";
+String getUyeHomeOzetUrl = "$baseUrl/getUyeHomeOzet";
+String getUyeGecmisDerslerUrl = "$baseUrl/getUyeGecmisDersler";
 
 // =================== ANTRENÖR ===================
 String getAntrenorGunlukEtkinlikler = "$baseUrl/getAntrenorGunlukEtkinlikler";
@@ -39,6 +41,10 @@ String dersDevirTalebiCevaplaUrl = "$baseUrl/dersDevirTalebiCevapla";
 String dersDevirTalebiGeriCekUrl = "$baseUrl/dersDevirTalebiGeriCek";
 String getDersIcinAntrenorListesiUrl = "$baseUrl/getDersIcinAntrenorListesi";
 String getDersDevirTalebiDetayUrl = "$baseUrl/getDersDevirTalebiDetay";
+String getAntrenorGunlukOzetUrl = "$baseUrl/getAntrenorGunlukOzet";
+String getAntrenorOgrenciDetayUrl = "$baseUrl/getAntrenorOgrenciDetay";
+String getAntrenorCalismaGunleriUrl = "$baseUrl/getAntrenorCalismaGunleri";
+String setAntrenorCalismaGunleriUrl = "$baseUrl/setAntrenorCalismaGunleri";
 
 // =================== ETKİNLİK ===================
 String setDersYapildiBilgisi = "$baseUrl/setDersYapildiBilgisi";

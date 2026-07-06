@@ -15,6 +15,7 @@ import 'package:fitcall/screens/4_auth/register_page.dart';
 import 'package:fitcall/screens/4_auth/qr_kod_kayit_page.dart';
 import 'package:fitcall/screens/1_common/qr_kod_dogrula_page.dart';
 
+import 'package:fitcall/screens/2_uye/gecmis_dersler/gecmis_dersler_page.dart';
 import 'package:fitcall/screens/2_uye/profil/profil_page.dart';
 import 'package:fitcall/screens/6_muhasebe/muhasebe_page.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_talep_page.dart';
@@ -38,6 +39,7 @@ enum SayfaAdi {
   profil,
   muhasebe,
   dersler,
+  uyeGecmisDersler,
   antrenorAnasayfa,
   antrenorProfil,
   antrenorDersler,
@@ -61,6 +63,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.profil: '/profil',
   SayfaAdi.muhasebe: '/muhasebe',
   SayfaAdi.dersler: '/dersler',
+  SayfaAdi.uyeGecmisDersler: '/uyeGecmisDersler',
   SayfaAdi.antrenorAnasayfa: '/antrenorAnasayfa',
   SayfaAdi.antrenorProfil: '/antrenor_profil',
   SayfaAdi.antrenorDersler: '/antrenor_dersler',
@@ -84,6 +87,7 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.profil]!: (c) => const ProfilePage(),
   routeEnums[SayfaAdi.muhasebe]!: (c) => const MuhasebePage(),
   routeEnums[SayfaAdi.dersler]!: (c) => const DersListesiPage(),
+  routeEnums[SayfaAdi.uyeGecmisDersler]!: (c) => const GecmisDerslerPage(),
   routeEnums[SayfaAdi.antrenorAnasayfa]!: (c) => AntrenorHomePage(),
   routeEnums[SayfaAdi.antrenorProfil]!: (c) => AntrenorProfilPage(),
   routeEnums[SayfaAdi.antrenorDersler]!: (c) => AntrenorTakvimPage(),
@@ -123,6 +127,7 @@ final Map<String, AccessRule> accessPolicies = {
 
   // Örnekler (şimdilik serbest):
   routeEnums[SayfaAdi.dersler]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.uyeGecmisDersler]!: AccessRule.anyone,
   routeEnums[SayfaAdi.qrKodKayit]!: AccessRule.anyone,
   routeEnums[SayfaAdi.qrKodDogrula]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yardim]!: AccessRule.anyone,

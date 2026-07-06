@@ -2,8 +2,11 @@
 
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
+import 'package:fitcall/models/3_antrenor/calisma_saatleri_model.dart';
 import 'package:fitcall/models/3_antrenor/ders_devir_talebi_model.dart';
+import 'package:fitcall/models/3_antrenor/gunluk_ozet_model.dart';
 import 'package:fitcall/models/3_antrenor/home_card_model.dart';
+import 'package:fitcall/models/3_antrenor/ogrenci_detay_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/services/api_client.dart';
@@ -93,6 +96,49 @@ class AntrenorApiService {
         return EtkinlikModel.fromMap(json as Map<String, dynamic>);
       },
       auth: true,
+    );
+  }
+
+  /// Günlük kokpit özeti (varsayılan: bugün)
+  static Future<ApiResult<GunlukOzetModel>> getAntrenorGunlukOzet({
+    DateTime? tarih,
+  }) {
+    return ApiClient.postParsed<GunlukOzetModel>(
+      getAntrenorGunlukOzetUrl,
+      {
+        if (tarih != null)
+          'tarih': tarih.toIso8601String().split('T').first,
+      },
+      (json) => GunlukOzetModel.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  /// Öğrenci detayı (profil, istatistik, paketler, notlar)
+  static Future<ApiResult<OgrenciDetayModel>> getOgrenciDetay(int uyeId) {
+    return ApiClient.postParsed<OgrenciDetayModel>(
+      getAntrenorOgrenciDetayUrl,
+      {'uye_id': uyeId},
+      (json) => OgrenciDetayModel.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  /// Antrenörün çalışma saatleri + gün referans listesi
+  static Future<ApiResult<CalismaGunleriResponse>> getCalismaGunleri() {
+    return ApiClient.getParsed<CalismaGunleriResponse>(
+      getAntrenorCalismaGunleriUrl,
+      (json) => CalismaGunleriResponse.fromJson(json as Map<String, dynamic>),
+      auth: true,
+    );
+  }
+
+  /// Çalışma saatlerini tam liste olarak günceller
+  static Future<ApiResult<void>> setCalismaGunleri(
+    List<CalismaSaatiModel> saatler,
+  ) {
+    return ApiClient.postParsed<void>(
+      setAntrenorCalismaGunleriUrl,
+      {'gunler': saatler.map((s) => s.toSetJson()).toList()},
+      (_) {},
     );
   }
 }

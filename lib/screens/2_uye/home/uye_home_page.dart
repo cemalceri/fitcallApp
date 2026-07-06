@@ -3,6 +3,8 @@
 
 import 'dart:convert';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
+import 'package:fitcall/models/3_antrenor/home_card_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:fitcall/models/1_common/event/event_model.dart';
@@ -11,12 +13,15 @@ import 'package:fitcall/screens/2_uye/home/widgets/duyuru_carousel.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_header.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_menu_grid.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_next_lesson_card.dart';
+import 'package:fitcall/screens/2_uye/home/widgets/uye_ozet_serit.dart';
+import 'package:fitcall/screens/3_antrenor/home/widgets/info_cards_carousel.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/duyuru_api_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:fitcall/services/etkinlik/etkinlik_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
+import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:flutter/material.dart';
 
 class UyeHomePage extends StatefulWidget {
@@ -43,6 +48,10 @@ class _UyeHomePageState extends State<UyeHomePage> {
   List<DuyuruModel> _duyurular = [];
   bool _loadingDuyurular = true;
 
+  // Özet şeridi + yapılacaklar kartları
+  UyeHomeOzetModel? _homeOzet;
+  bool _loadingOzet = true;
+
   @override
   void initState() {
     super.initState();
@@ -57,7 +66,30 @@ class _UyeHomePageState extends State<UyeHomePage> {
       _checkAktifEvent(),
       _fetchWeek(),
       _fetchDuyurular(),
+      _fetchHomeOzet(),
     ]);
+  }
+
+  Future<void> _fetchHomeOzet() async {
+    try {
+      final result = await UyeApiService.getUyeHomeOzet();
+      if (!mounted) return;
+      setState(() {
+        _homeOzet = result.data;
+        _loadingOzet = false;
+      });
+    } catch (_) {
+      // Özet alınamazsa şerit/kartlar gizlenir; ana sayfa çalışmaya devam eder
+      if (!mounted) return;
+      setState(() => _loadingOzet = false);
+    }
+  }
+
+  void _onYapilacakKartTap(HomeCardModel card) {
+    if (card.actionRoute == null || card.actionRoute!.isEmpty) return;
+    Navigator.pushNamed(context, card.actionRoute!,
+            arguments: card.actionParams)
+        .then((_) => _fetchHomeOzet());
   }
 
   Future<void> _loadUyeAdi() async {
@@ -146,6 +178,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
       _fetchWeek(),
       _fetchDuyurular(),
       _checkAktifEvent(),
+      _fetchHomeOzet(),
     ]);
   }
 
@@ -180,9 +213,34 @@ class _UyeHomePageState extends State<UyeHomePage> {
                   ),
                 ),
 
-                // ========== MENÜ GRID ==========
+                // ========== ÖZET ŞERİDİ ==========
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: UyeOzetSerit(
+                      ozet: _homeOzet?.ozet,
+                      isLoading: _loadingOzet,
+                    ),
+                  ),
+                ),
+
+                // ========== YAPILACAKLAR ==========
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 0, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: InfoCardsCarousel(
+                      cards: _homeOzet?.kartlar ?? const [],
+                      isLoading: _loadingOzet,
+                      title: 'Yapılacaklar',
+                      hideWhenEmpty: true,
+                      onCardTap: _onYapilacakKartTap,
+                    ),
+                  ),
+                ),
+
+                // ========== MENÜ GRID ==========
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                   sliver: SliverToBoxAdapter(
                     child: UyeMenuGrid(
                       aktifEvent: _aktifEvent,

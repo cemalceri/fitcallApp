@@ -32,10 +32,45 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
   final Map<DateTime, List<EtkinlikModel>> _gunlukDersler = {};
   final Map<DateTime, int> _gunlukDersSayilari = {};
 
+  bool _routeArgsIslendiMi = false;
+
   @override
   void initState() {
     super.initState();
     _prepare();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_routeArgsIslendiMi) return;
+    _routeArgsIslendiMi = true;
+
+    // Bildirim yönlendirmesi: {tarih: 'YYYY-MM-DD', ders_id: int} argümanıyla
+    // gelinirse ilgili günü açıp dersin dialogunu gösterir
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map) {
+      final tarih = DateTime.tryParse(args['tarih']?.toString() ?? '');
+      final dersId = int.tryParse(args['ders_id']?.toString() ?? '');
+      if (tarih != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _gunAcVeDersGoster(tarih, dersId);
+        });
+      }
+    }
+  }
+
+  Future<void> _gunAcVeDersGoster(DateTime tarih, int? dersId) async {
+    await _onDaySelected(tarih);
+    if (dersId == null || !mounted) return;
+
+    final dersler = _gunlukDersler[TimeUtils.normalizeDate(tarih)] ?? const [];
+    for (final ders in dersler) {
+      if (ders.id == dersId) {
+        await _onLessonTap(ders);
+        break;
+      }
+    }
   }
 
   Future<void> _prepare() async {

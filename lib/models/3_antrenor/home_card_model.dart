@@ -13,6 +13,12 @@ enum HomeCardType {
   info, // Genel bilgilendirme
   warning, // Uyarı
   success, // Başarı mesajı
+  // Üye "yapılacaklar" kart tipleri (getUyeHomeOzet)
+  teyitBekleyen, // Cevaplanmamış ders teyidi
+  borc, // Ödenmemiş borç
+  paketBitiyor, // Kalan hakkı azalan paket
+  telafiSureYaklasan, // Süresi dolmak üzere olan telafi
+  degerlendirmeBekleyen, // Değerlendirilmemiş ders
 }
 
 /// Backend'den gelen bilgi kartı modeli
@@ -75,6 +81,16 @@ class HomeCardModel {
         return HomeCardType.warning;
       case 'success':
         return HomeCardType.success;
+      case 'teyit_bekleyen':
+        return HomeCardType.teyitBekleyen;
+      case 'borc':
+        return HomeCardType.borc;
+      case 'paket_bitiyor':
+        return HomeCardType.paketBitiyor;
+      case 'telafi_sure_yaklasan':
+        return HomeCardType.telafiSureYaklasan;
+      case 'degerlendirme_bekleyen':
+        return HomeCardType.degerlendirmeBekleyen;
       default:
         return HomeCardType.info;
     }
@@ -101,6 +117,16 @@ class HomeCardModel {
         return const Color(0xFF10B981); // Yeşil
       case HomeCardType.info:
         return const Color(0xFF64748B); // Gri
+      case HomeCardType.teyitBekleyen:
+        return const Color(0xFFF59E0B); // Turuncu
+      case HomeCardType.borc:
+        return const Color(0xFFEF4444); // Kırmızı
+      case HomeCardType.paketBitiyor:
+        return const Color(0xFF8B5CF6); // Mor
+      case HomeCardType.telafiSureYaklasan:
+        return const Color(0xFF6366F1); // İndigo
+      case HomeCardType.degerlendirmeBekleyen:
+        return const Color(0xFF10B981); // Yeşil
     }
   }
 
@@ -125,6 +151,16 @@ class HomeCardModel {
         return Icons.celebration_rounded;
       case HomeCardType.info:
         return Icons.info_rounded;
+      case HomeCardType.teyitBekleyen:
+        return Icons.how_to_reg_rounded;
+      case HomeCardType.borc:
+        return Icons.account_balance_wallet_rounded;
+      case HomeCardType.paketBitiyor:
+        return Icons.inventory_2_rounded;
+      case HomeCardType.telafiSureYaklasan:
+        return Icons.event_repeat_rounded;
+      case HomeCardType.degerlendirmeBekleyen:
+        return Icons.star_rounded;
     }
   }
 

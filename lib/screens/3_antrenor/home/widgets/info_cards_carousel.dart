@@ -10,17 +10,29 @@ class InfoCardsCarousel extends StatelessWidget {
   final Function(HomeCardModel card)? onCardTap;
   final Function(HomeCardModel card)? onCardDismiss;
 
+  /// Bölüm başlığı (antrenör: 'Özet', üye: 'Yapılacaklar')
+  final String title;
+
+  /// true ise kart yokken bölüm tamamen gizlenir (boş durum kartı yerine)
+  final bool hideWhenEmpty;
+
   const InfoCardsCarousel({
     super.key,
     required this.cards,
     this.isLoading = false,
     this.onCardTap,
     this.onCardDismiss,
+    this.title = 'Özet',
+    this.hideWhenEmpty = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+
+    if (hideWhenEmpty && !isLoading && cards.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,7 +42,7 @@ class InfoCardsCarousel extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                'Özet',
+                title,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

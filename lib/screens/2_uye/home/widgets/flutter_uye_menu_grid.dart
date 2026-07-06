@@ -57,6 +57,12 @@ class UyeMenuGrid extends StatelessWidget {
       color: Color(0xFFF59E0B),
     ),
     UyeMenuItem(
+      route: routeEnums[SayfaAdi.uyeGecmisDersler]!,
+      icon: Icons.history_rounded,
+      text: 'Geçmiş Dersler',
+      color: Color(0xFF14B8A6),
+    ),
+    UyeMenuItem(
       route: routeEnums[SayfaAdi.qrKodKayit]!,
       icon: Icons.qr_code_rounded,
       text: 'QR Giriş',

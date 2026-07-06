@@ -12,7 +12,9 @@ import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:flutter/material.dart';
 
 // Widgets
+import 'package:fitcall/models/3_antrenor/gunluk_ozet_model.dart';
 import 'widgets/home_header.dart';
+import 'widgets/gunluk_kokpit_card.dart';
 import 'widgets/quick_access_grid.dart';
 import 'widgets/next_lesson_card.dart';
 import 'widgets/info_cards_carousel.dart';
@@ -31,6 +33,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
   String _antrenorAdi = "";
   EtkinlikModel? _nextLesson;
   List<HomeCardModel> _infoCards = [];
+  GunlukOzetModel? _gunlukOzet;
 
   @override
   void initState() {
@@ -45,10 +48,25 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
       _checkProfiles(),
       _fetchNextLesson(),
       _fetchInfoCards(),
+      _fetchGunlukOzet(),
     ]);
 
     if (mounted) {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _fetchGunlukOzet() async {
+    try {
+      final result = await AntrenorApiService.getAntrenorGunlukOzet();
+      if (mounted) {
+        setState(() => _gunlukOzet = result.data);
+      }
+    } catch (_) {
+      // Özet alınamazsa kokpit gizlenir; ana sayfa çalışmaya devam eder
+      if (mounted) {
+        setState(() => _gunlukOzet = null);
+      }
     }
   }
 
@@ -191,9 +209,20 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
                   ),
                 ),
 
+                // Günlük Kokpit
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: GunlukKokpitCard(
+                      ozet: _gunlukOzet,
+                      isLoading: _isLoading,
+                    ),
+                  ),
+                ),
+
                 // Hızlı Erişim Menüsü
                 const SliverPadding(
-                  padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  padding: EdgeInsets.fromLTRB(16, 20, 16, 0),
                   sliver: SliverToBoxAdapter(
                     child: QuickAccessGrid(),
                   ),

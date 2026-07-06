@@ -4,6 +4,7 @@
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/screens/1_common/widgets/kvkk.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
+import 'package:fitcall/screens/3_antrenor/calisma_saatleri/calisma_saatleri_page.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
@@ -616,6 +617,18 @@ class _MenuSection extends StatelessWidget {
         const SizedBox(height: 12),
         _MenuCard(
           children: [
+            _ModernMenuTile(
+              icon: Icons.schedule_rounded,
+              title: 'Çalışma Saatlerim',
+              subtitle: 'Haftalık uygunluk saatleri',
+              color: Colors.indigo,
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CalismaSaatleriPage(),
+                ),
+              ),
+            ),
             _ModernMenuTile(
               icon: Icons.lock_reset_rounded,
               title: 'Şifreyi Değiştir',

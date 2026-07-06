@@ -2,6 +2,8 @@ import 'dart:convert';
 
 class NotificationType {
   static const dersTeyidi = 'DERS_TEYIDI';
+  static const dersHatirlatma = 'DERS_HATIRLATMA';
+  static const yoklamaHatirlatma = 'YOKLAMA_HATIRLATMA';
   static const gecikenOdeme = 'GECIKEN_ODEME';
   static const paketBitiyor = 'PAKET_BITIYOR';
   static const paketSuresiDoluyor = 'PAKET_SURESI_DOLUYOR';

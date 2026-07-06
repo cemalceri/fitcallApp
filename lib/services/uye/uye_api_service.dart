@@ -1,7 +1,9 @@
 // Dosya: lib/services/api/uye_api_serivce.dart
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/2_uye/basit_uye_model.dart';
+import 'package:fitcall/models/2_uye/gecmis_ders_model.dart';
 import 'package:fitcall/models/2_uye/telafi_ders/telafi_response_model.dart';
+import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
@@ -33,6 +35,31 @@ class UyeApiService {
       uyeKullaniciSil,
       const {},
       (json) => (json as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+    );
+  }
+
+  /// Üye ana sayfası: özet şeridi + yapılacaklar kartları
+  static Future<ApiResult<UyeHomeOzetModel>> getUyeHomeOzet() {
+    return ApiClient.postParsed<UyeHomeOzetModel>(
+      getUyeHomeOzetUrl,
+      const {},
+      (json) => UyeHomeOzetModel.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  /// Üyenin geçmiş dersleri (katılım + ders sonucu + puan).
+  /// [baslangic]/[bitis] verilmezse backend son 30 günü döndürür.
+  static Future<ApiResult<GecmisDerslerResponse>> getGecmisDersler({
+    DateTime? baslangic,
+    DateTime? bitis,
+  }) {
+    return ApiClient.postParsed<GecmisDerslerResponse>(
+      getUyeGecmisDerslerUrl,
+      {
+        if (baslangic != null) 'baslangic': baslangic.toIso8601String(),
+        if (bitis != null) 'bitis': bitis.toIso8601String(),
+      },
+      (json) => GecmisDerslerResponse.fromJson(json as Map<String, dynamic>),
     );
   }
 
