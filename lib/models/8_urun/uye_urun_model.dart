@@ -44,11 +44,11 @@ class UyeUrunModel {
     if (kalan != null && kalan % 1 == 0) kalan = kalan.toInt();
 
     return UyeUrunModel(
-      id: j['id'],
-      uyeId: j['uye'],
-      urunId: j['urun'],
+      id: (j['id'] as num).toInt(),
+      uyeId: (j['uye'] as num).toInt(),
+      urunId: (j['urun'] as num).toInt(),
       urunAdi: j['urun_adi'] ?? '',
-      toplamHak: j['toplam_hak'],
+      toplamHak: (j['toplam_hak'] as num?)?.toInt(),
       kalanHak: kalan,
       baslangic: DateTime.parse(j['baslangic']),
       bitis: d(j['bitis']),

@@ -29,9 +29,6 @@ class _UyeUrunListPageState extends State<UyeUrunListPage> {
       if (mounted) {
         ShowMessage.error(context, e.message);
       }
-      if (mounted) {
-        ShowMessage.error(context, 'Ürün listesi alınamadı: $e');
-      }
       return [];
     }
   }
