@@ -1,11 +1,11 @@
 // lib/screens/6_muhasebe/muhasebe_page.dart
-// ignore_for_file: use_build_context_synchronously
 
 import 'package:fitcall/models/6_muhasebe/muhasebe_ozet_model.dart';
-import 'package:fitcall/screens/6_muhasebe/widgets/para_hareket_page.dart';
+import 'package:fitcall/models/6_muhasebe/para_hareket_model.dart';
+import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/muhasebe/muhasebe_service.dart';
-import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
+import 'package:fitcall/services/muhasebe/para_hareket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -19,104 +19,156 @@ class MuhasebePage extends StatefulWidget {
 }
 
 class _MuhasebePageState extends State<MuhasebePage> {
-  bool _isLoading = true;
-  List<MuhasebeOzetModel> _rows = [];
-  final Set<int> _selectedIndices = {};
-  bool _isSelectionMode = false;
-
+  final _scrollController = ScrollController();
   final _currencyFormat = NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
+
+  /// Hareketi olan aylar, yeniden eskiye. Sayfalama birimi olarak kullanılır.
+  List<MuhasebeOzetModel> _donemler = [];
+
+  /// Şu ana kadar yüklenmiş hareketler, yeniden eskiye.
+  final List<ParaHareketModel> _hareketler = [];
+
+  /// _donemler içinde bir sonraki yüklenecek ayın sırası
+  int _sonrakiDonem = 0;
+
+  double _kalanBakiye = 0;
+  bool _ilkYukleme = true;
+
+  /// Devam eden dönem isteği; aynı anda ikinci istek açılmasını engeller
+  Future<void>? _aktifYukleme;
+
+  /// Her yenilemede artar; uçuşta kalan eski isteklerin listeye yazmasını engeller
+  int _nesil = 0;
+
+  /// Bir dönem çekilemediğinde sayfalama durur, kullanıcıya tekrar dene sunulur
+  bool _yuklemeHatasi = false;
+
+  bool get _tumHareketlerYuklendi => _sonrakiDonem >= _donemler.length;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _scrollController.addListener(_onScroll);
+    _verileriYukle();
   }
 
-  Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final esik = _scrollController.position.maxScrollExtent - 300;
+    if (_scrollController.position.pixels >= esik) {
+      _sonrakiDonemiYukle();
+    }
+  }
+
+  Future<void> _verileriYukle() async {
+    final nesil = ++_nesil;
+    setState(() {
+      _ilkYukleme = true;
+      _hareketler.clear();
+      _donemler = [];
+      _sonrakiDonem = 0;
+      _kalanBakiye = 0;
+      _yuklemeHatasi = false;
+    });
+
     try {
       final res = await MuhasebeService.fetch();
-      _rows = res.data ?? [];
+      final ozetler = res.data ?? [];
+      if (!mounted || nesil != _nesil) return;
+
+      // En güncel ayın kapanış bakiyesi = güncel kalan bakiye
+      _kalanBakiye = ozetler.isEmpty ? 0 : ozetler.first.kapanisBakiyesi;
+      // Hiç hareketi olmayan aylar için istek atmaya gerek yok
+      _donemler =
+          ozetler.where((o) => o.borc != 0 || o.odeme != 0).toList();
     } on ApiException catch (e) {
       if (mounted) ShowMessage.error(context, e.message);
     } catch (e) {
       if (mounted) ShowMessage.error(context, 'Beklenmeyen bir hata: $e');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    }
+
+    if (!mounted || nesil != _nesil) return;
+    setState(() => _ilkYukleme = false);
+
+    // İlk ekranı doldurmaya yetecek kadar hareket çek
+    while (mounted &&
+        nesil == _nesil &&
+        !_tumHareketlerYuklendi &&
+        !_yuklemeHatasi &&
+        _hareketler.length < 12) {
+      await _sonrakiDonemiYukle();
     }
   }
 
-  void _toggleSelection(int index) {
-    HapticFeedback.lightImpact();
-    setState(() {
-      if (_selectedIndices.contains(index)) {
-        _selectedIndices.remove(index);
-        if (_selectedIndices.isEmpty) _isSelectionMode = false;
-      } else {
-        // Sadece o ayda borç oluşmuş aylar seçilebilir (aylık net negatif)
-        if (_rows[index].buAyNet < 0) {
-          _selectedIndices.add(index);
-          _isSelectionMode = true;
-        }
+  /// Sıradaki ayın hareketlerini çeker. Zaten bir istek uçuyorsa onu bekler,
+  /// böylece scroll tetiklemesi ile ilk doldurma döngüsü çakışmaz.
+  Future<void> _sonrakiDonemiYukle() {
+    if (_aktifYukleme != null) return _aktifYukleme!;
+    if (_tumHareketlerYuklendi || _yuklemeHatasi) return Future.value();
+
+    final future = _donemYukle(_nesil);
+    _aktifYukleme = future;
+    return future;
+  }
+
+  Future<void> _donemYukle(int nesil) async {
+    final donem = _donemler[_sonrakiDonem];
+    try {
+      final res = await ParaHareketService.fetchForPeriod(donem.yil, donem.ay);
+      if (!mounted || nesil != _nesil) return;
+
+      final gelenler = (res.data ?? []).where((h) => h.tutar != 0).toList()
+        ..sort((a, b) => b.tarih.compareTo(a.tarih));
+      setState(() {
+        _hareketler.addAll(gelenler);
+        _sonrakiDonem++;
+      });
+    } on ApiException catch (e) {
+      if (mounted && nesil == _nesil) {
+        ShowMessage.error(context, e.message);
+        setState(() => _yuklemeHatasi = true);
       }
-    });
-  }
-
-  void _clearSelection() {
-    HapticFeedback.lightImpact();
-    setState(() {
-      _selectedIndices.clear();
-      _isSelectionMode = false;
-    });
-  }
-
-  double get _selectedTotal {
-    double total = 0;
-    for (final index in _selectedIndices) {
-      total += _rows[index].buAyNet.abs();
+    } catch (e) {
+      if (mounted && nesil == _nesil) {
+        ShowMessage.error(context, 'Beklenmeyen bir hata: $e');
+        setState(() => _yuklemeHatasi = true);
+      }
+    } finally {
+      _aktifYukleme = null;
     }
-    return total;
   }
 
-  /// Üstteki büyük kartın kaynağı: en yeni ayın kümülatif kapanış bakiyesi
-  /// (Liste yeniden eskiye sıralı geldiği için _rows.first en güncel ay)
-  double get _kumulatifBakiye {
-    if (_rows.isEmpty) return 0;
-    return _rows.first.kapanisBakiyesi;
-  }
-
-  void _showPaymentSheet() {
+  void _odemeSayfasiniAc() {
     HapticFeedback.mediumImpact();
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _PaymentInfoSheet(
-        selectedCount: _selectedIndices.length,
-        totalAmount: _selectedTotal,
+      builder: (ctx) => _OdemeBilgiSheet(
+        tutar: _kalanBakiye.abs(),
         currencyFormat: _currencyFormat,
       ),
     );
   }
 
-  String _getMonthName(int month) {
-    const months = [
-      '',
-      'Ocak',
-      'Şubat',
-      'Mart',
-      'Nisan',
-      'Mayıs',
-      'Haziran',
-      'Temmuz',
-      'Ağustos',
-      'Eylül',
-      'Ekim',
-      'Kasım',
-      'Aralık'
-    ];
-    return months[month];
+  void _hareketDetayiniAc(ParaHareketModel hareket) {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _HareketDetaySheet(
+        hareket: hareket,
+        currencyFormat: _currencyFormat,
+      ),
+    );
   }
 
   @override
@@ -139,16 +191,14 @@ class _MuhasebePageState extends State<MuhasebePage> {
           child: Column(
             children: [
               _buildAppBar(colorScheme),
-              if (!_isLoading && _rows.isNotEmpty)
-                _buildSummaryCard(_kumulatifBakiye, colorScheme),
+              if (!_ilkYukleme) _buildBakiyeKarti(colorScheme),
               Expanded(
-                child: _isLoading
+                child: _ilkYukleme
                     ? _buildLoadingState()
-                    : _rows.isEmpty
+                    : _hareketler.isEmpty && _tumHareketlerYuklendi
                         ? _buildEmptyState(colorScheme)
-                        : _buildMonthList(colorScheme),
+                        : _buildHareketListesi(colorScheme),
               ),
-              if (_isSelectionMode) _buildSelectionBar(colorScheme),
             ],
           ),
         ),
@@ -192,7 +242,7 @@ class _MuhasebePageState extends State<MuhasebePage> {
                   ),
                 ),
                 Text(
-                  'Borç ve ödeme detayları',
+                  'Borç ve ödeme hareketleri',
                   style: TextStyle(
                     fontSize: 13,
                     color: colorScheme.onSurfaceVariant,
@@ -201,40 +251,35 @@ class _MuhasebePageState extends State<MuhasebePage> {
               ],
             ),
           ),
-          if (_isSelectionMode)
-            TextButton(
-              onPressed: _clearSelection,
-              child: const Text('İptal'),
-            )
-          else
-            IconButton(
-              onPressed: _loadData,
-              icon: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.refresh_rounded,
-                  color: colorScheme.primary,
-                  size: 22,
-                ),
+          IconButton(
+            onPressed: _verileriYukle,
+            icon: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.refresh_rounded,
+                color: colorScheme.primary,
+                size: 22,
               ),
             ),
+          ),
         ],
       ),
     );
   }
 
-  /// Üst kart: kümülatif bakiye gösterir
-  /// Pozitif = fazla ödeme (yeşil), Negatif = borç (kırmızı), 0 = nötr
-  Widget _buildSummaryCard(double kapanisBakiyesi, ColorScheme colorScheme) {
-    final isPositive = kapanisBakiyesi > 0;
-    final isZero = kapanisBakiyesi == 0;
-    final summaryColor = isZero
-        ? colorScheme.onSurfaceVariant
-        : (isPositive ? Colors.green : Colors.red);
+  /// Tek özet kart: kalan borç / fazla ödeme / borç yok
+  Widget _buildBakiyeKarti(ColorScheme colorScheme) {
+    final borcVar = _kalanBakiye < 0;
+    final fazlaVar = _kalanBakiye > 0;
+    final renk = borcVar
+        ? Colors.red
+        : fazlaVar
+            ? Colors.green
+            : colorScheme.onSurfaceVariant;
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -244,28 +289,28 @@ class _MuhasebePageState extends State<MuhasebePage> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            summaryColor.withValues(alpha: 0.15),
-            summaryColor.withValues(alpha: 0.05),
+            renk.withValues(alpha: 0.15),
+            renk.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: summaryColor.withValues(alpha: 0.3)),
+        border: Border.all(color: renk.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: summaryColor.withValues(alpha: 0.2),
+              color: renk.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
-              isZero
-                  ? Icons.check_circle_outline_rounded
-                  : isPositive
+              borcVar
+                  ? Icons.warning_amber_rounded
+                  : fazlaVar
                       ? Icons.account_balance_wallet_outlined
-                      : Icons.warning_amber_rounded,
-              color: summaryColor,
+                      : Icons.check_circle_outline_rounded,
+              color: renk,
               size: 28,
             ),
           ),
@@ -275,14 +320,14 @@ class _MuhasebePageState extends State<MuhasebePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isZero
-                      ? 'Borç Yok'
-                      : isPositive
+                  borcVar
+                      ? 'Kalan Borç'
+                      : fazlaVar
                           ? 'Fazla Ödeme'
-                          : 'Kalan Borç',
+                          : 'Borç Yok',
                   style: TextStyle(
                     fontSize: 14,
-                    color: summaryColor.withValues(alpha: 0.8),
+                    color: renk.withValues(alpha: 0.8),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -291,11 +336,11 @@ class _MuhasebePageState extends State<MuhasebePage> {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    _currencyFormat.format(kapanisBakiyesi.abs()),
+                    _currencyFormat.format(_kalanBakiye.abs()),
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: summaryColor,
+                      color: renk,
                       letterSpacing: -0.5,
                     ),
                   ),
@@ -303,27 +348,13 @@ class _MuhasebePageState extends State<MuhasebePage> {
               ],
             ),
           ),
-          if (!isPositive && !isZero && !_isSelectionMode)
+          if (borcVar)
             FilledButton.icon(
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                // O ayda net borç oluşmuş ayları seç
-                setState(() {
-                  _selectedIndices.clear();
-                  for (int i = 0; i < _rows.length; i++) {
-                    if (_rows[i].buAyNet < 0) {
-                      _selectedIndices.add(i);
-                    }
-                  }
-                  if (_selectedIndices.isNotEmpty) {
-                    _isSelectionMode = true;
-                  }
-                });
-              },
+              onPressed: _odemeSayfasiniAc,
               icon: const Icon(Icons.payment_rounded, size: 18),
               label: const Text('Öde'),
               style: FilledButton.styleFrom(
-                backgroundColor: summaryColor,
+                backgroundColor: renk,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 shape: RoundedRectangleBorder(
@@ -388,99 +419,203 @@ class _MuhasebePageState extends State<MuhasebePage> {
     );
   }
 
-  Widget _buildMonthList(ColorScheme colorScheme) {
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-        itemCount: _rows.length,
-        itemBuilder: (context, index) {
-          final row = _rows[index];
-          final isSelected = _selectedIndices.contains(index);
-          final hasMonthDebt = row.buAyNet < 0;
+  Widget _buildHareketListesi(ColorScheme colorScheme) {
+    // Liste sonundaki "yükleniyor" satırı için bir ekstra eleman
+    final ekSatir = _tumHareketlerYuklendi ? 0 : 1;
 
-          return _MonthCard(
-            row: row,
-            monthName: _getMonthName(row.ay),
-            currencyFormat: _currencyFormat,
-            isSelected: isSelected,
-            isSelectionMode: _isSelectionMode,
-            hasMonthDebt: hasMonthDebt,
-            onTap: () {
-              if (_isSelectionMode) {
-                _toggleSelection(index);
-              } else {
-                HapticFeedback.lightImpact();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ParaHareketPage(yil: row.yil, ay: row.ay),
+    return RefreshIndicator(
+      onRefresh: _verileriYukle,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        itemCount: _hareketler.length + ekSatir,
+        itemBuilder: (context, index) {
+          if (index >= _hareketler.length) {
+            if (_yuklemeHatasi) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Center(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      setState(() => _yuklemeHatasi = false);
+                      _sonrakiDonemiYukle();
+                    },
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: const Text('Önceki hareketleri yükle'),
                   ),
-                );
-              }
-            },
-            onLongPress: hasMonthDebt ? () => _toggleSelection(index) : null,
-            onCheckChanged: hasMonthDebt
-                ? (value) {
-                    _toggleSelection(index);
-                  }
-                : null,
+                ),
+              );
+            }
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            );
+          }
+
+          final hareket = _hareketler[index];
+          return _HareketSatiri(
+            hareket: hareket,
+            currencyFormat: _currencyFormat,
+            ilkMi: index == 0,
+            // Yükleme satırı varken çizgi devam etmeli
+            sonMu: index == _hareketler.length - 1 && ekSatir == 0,
+            sonSatirMi: index == _hareketler.length - 1,
+            onTap: () => _hareketDetayiniAc(hareket),
           );
         },
       ),
     );
   }
+}
 
-  Widget _buildSelectionBar(ColorScheme colorScheme) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-          20, 16, 20, 16 + MediaQuery.of(context).padding.bottom),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
+/* -------------------------------------------------------------------------- */
+/*                          Zaman Çizelgesi Satırı                            */
+/* -------------------------------------------------------------------------- */
+
+class _HareketSatiri extends StatelessWidget {
+  final ParaHareketModel hareket;
+  final NumberFormat currencyFormat;
+  final bool ilkMi;
+  final bool sonMu;
+  final bool sonSatirMi;
+  final VoidCallback onTap;
+
+  const _HareketSatiri({
+    required this.hareket,
+    required this.currencyFormat,
+    required this.ilkMi,
+    required this.sonMu,
+    required this.sonSatirMi,
+    required this.onTap,
+  });
+
+  static const double _sutunGenisligi = 26;
+  static const double _noktaCapi = 10;
+  static const double _noktaUstBosluk = 20;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final odemeMi = hareket.odemeYonlu;
+    final renk = odemeMi ? Colors.green.shade600 : Colors.red.shade600;
+    final cizgiRengi = colorScheme.outlineVariant.withValues(alpha: 0.6);
+
+    final baslik = (hareket.aciklama ?? '').trim().isNotEmpty
+        ? hareket.aciklama!.trim()
+        : hareket.hareketTuruLabel;
+    final altBilgi =
+        '${DateFormat('d MMMM yyyy', 'tr').format(hareket.tarih)} · ${hareket.hareketTuruLabel}';
+
+    return IntrinsicHeight(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+          // Kesintisiz dikey çizgi + hareket noktası
+          SizedBox(
+            width: _sutunGenisligi,
+            child: Stack(
               children: [
-                Text(
-                  '${_selectedIndices.length} ay seçildi',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colorScheme.onSurfaceVariant,
+                if (!ilkMi)
+                  Positioned(
+                    top: 0,
+                    height: _noktaUstBosluk,
+                    left: (_sutunGenisligi - 2) / 2,
+                    width: 2,
+                    child: ColoredBox(color: cizgiRengi),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _currencyFormat.format(_selectedTotal),
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
+                if (!sonMu)
+                  Positioned(
+                    top: _noktaUstBosluk + _noktaCapi,
+                    bottom: 0,
+                    left: (_sutunGenisligi - 2) / 2,
+                    width: 2,
+                    child: ColoredBox(color: cizgiRengi),
+                  ),
+                Positioned(
+                  top: _noktaUstBosluk,
+                  left: (_sutunGenisligi - _noktaCapi) / 2,
+                  width: _noktaCapi,
+                  height: _noktaCapi,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: renk,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          FilledButton.icon(
-            onPressed: _showPaymentSheet,
-            icon: const Icon(Icons.payment_rounded),
-            label: const Text('Ödeme Yap'),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.green,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+
+          Expanded(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(8, 14, 4, 14),
+                  decoration: BoxDecoration(
+                    border: sonSatirMi
+                        ? null
+                        : Border(
+                            bottom: BorderSide(
+                              color: colorScheme.outlineVariant
+                                  .withValues(alpha: 0.3),
+                            ),
+                          ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              baslik,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurface,
+                                height: 1.25,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              altBilgi,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        '${odemeMi ? '+' : '-'}${currencyFormat.format(hareket.tutar.abs())}',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: renk,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -491,303 +626,201 @@ class _MuhasebePageState extends State<MuhasebePage> {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                              Month Card Widget                             */
+/*                            Hareket Detay Sheet                             */
 /* -------------------------------------------------------------------------- */
 
-/* -------------------------------------------------------------------------- */
-/*                              Month Card Widget                             */
-/* -------------------------------------------------------------------------- */
-
-class _MonthCard extends StatelessWidget {
-  final MuhasebeOzetModel row;
-  final String monthName;
+class _HareketDetaySheet extends StatelessWidget {
+  final ParaHareketModel hareket;
   final NumberFormat currencyFormat;
-  final bool isSelected;
-  final bool isSelectionMode;
-  final bool hasMonthDebt;
-  final VoidCallback onTap;
-  final VoidCallback? onLongPress;
-  final ValueChanged<bool?>? onCheckChanged;
 
-  const _MonthCard({
-    required this.row,
-    required this.monthName,
+  const _HareketDetaySheet({
+    required this.hareket,
     required this.currencyFormat,
-    required this.isSelected,
-    required this.isSelectionMode,
-    required this.hasMonthDebt,
-    required this.onTap,
-    this.onLongPress,
-    this.onCheckChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
-    // Kalan'a göre vurgu rengi (sol rozet + sağ vurgu çizgisi için)
-    final Color accentColor;
-    if (row.kapanisBakiyesi > 0) {
-      accentColor = Colors.green.shade600;
-    } else if (row.kapanisBakiyesi < 0) {
-      accentColor = Colors.red.shade600;
-    } else {
-      accentColor = colorScheme.primary;
-    }
+    final odemeMi = hareket.odemeYonlu;
+    final renk = odemeMi ? Colors.green.shade600 : Colors.red.shade600;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isSelected
-            ? Colors.green.withValues(alpha: 0.08)
-            : colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isSelected
-              ? Colors.green.withValues(alpha: 0.5)
-              : colorScheme.outlineVariant.withValues(alpha: 0.3),
-          width: isSelected ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          onLongPress: onLongPress,
-          borderRadius: BorderRadius.circular(16),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Sol renkli vurgu çizgisi (Kalan rengine göre)
-                Container(
-                  width: 4,
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.6),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      bottomLeft: Radius.circular(16),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Text(
+                    '${odemeMi ? '+' : '-'}${currencyFormat.format(hareket.tutar.abs())}',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: renk,
                     ),
                   ),
-                ),
-
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: renk.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      hareket.hareketTuruLabel,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: renk,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest
+                          .withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color:
+                            colorScheme.outlineVariant.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Column(
                       children: [
-                        // Checkbox (sadece seçim modu + bu ayda borç varsa)
-                        if (isSelectionMode && hasMonthDebt)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: Checkbox(
-                              value: isSelected,
-                              onChanged: onCheckChanged,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              activeColor: Colors.green,
-                            ),
-                          ),
-
-                        // Ay rozeti (gradient + ay/yıl)
-                        Container(
-                          width: 56,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                accentColor.withValues(alpha: 0.18),
-                                accentColor.withValues(alpha: 0.08),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: accentColor.withValues(alpha: 0.25),
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                row.ay.toString().padLeft(2, '0'),
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  color: accentColor,
-                                  letterSpacing: -0.5,
-                                  height: 1.0,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                row.yil.toString(),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: accentColor.withValues(alpha: 0.75),
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            ],
-                          ),
+                        _DetaySatiri(
+                          label: 'Tarih',
+                          value: DateFormat('d MMMM yyyy', 'tr')
+                              .format(hareket.tarih),
                         ),
-
-                        const SizedBox(width: 12),
-
-                        // Orta: Ay adı + durum etiketi
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                monthName,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: colorScheme.onSurface,
-                                  letterSpacing: -0.3,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 6),
-                              _StatusBadge(
-                                kapanisBakiyesi: row.kapanisBakiyesi,
-                              ),
-                            ],
+                        if (hareket.borcTarihi != null)
+                          _DetaySatiri(
+                            label: 'Borç Tarihi',
+                            value: DateFormat('d MMMM yyyy', 'tr')
+                                .format(hareket.borcTarihi!),
                           ),
-                        ),
-
-                        const SizedBox(width: 8),
-
-                        // Sağ: 4 satır rakam
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _DataRow(
-                                label: 'Önceki',
-                                value: row.acilisBakiyesi,
-                                cf: currencyFormat,
-                                kind: _RowKind.signed,
-                              ),
-                              const SizedBox(height: 3),
-                              _DataRow(
-                                label: 'Borç',
-                                value: row.borc,
-                                cf: currencyFormat,
-                                kind: _RowKind.alwaysNegative,
-                              ),
-                              const SizedBox(height: 3),
-                              _DataRow(
-                                label: 'Ödeme',
-                                value: row.odeme,
-                                cf: currencyFormat,
-                                kind: _RowKind.alwaysPositive,
-                              ),
-                              const SizedBox(height: 6),
-                              Container(
-                                height: 1,
-                                color: colorScheme.outlineVariant
-                                    .withValues(alpha: 0.3),
-                              ),
-                              const SizedBox(height: 6),
-                              _DataRow(
-                                label: 'Kalan',
-                                value: row.kapanisBakiyesi,
-                                cf: currencyFormat,
-                                kind: _RowKind.signed,
-                                isHighlighted: true,
-                              ),
-                            ],
+                        if ((hareket.odemeSekli ?? '').isNotEmpty)
+                          _DetaySatiri(
+                            label: 'Ödeme Şekli',
+                            value: hareket.odemeSekli!,
                           ),
-                        ),
-
-                        if (!isSelectionMode) ...[
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            size: 20,
-                            color: colorScheme.onSurfaceVariant
-                                .withValues(alpha: 0.5),
+                        if ((hareket.referansKodu ?? '').isNotEmpty)
+                          _DetaySatiri(
+                            label: 'Referans',
+                            value: hareket.referansKodu!,
                           ),
-                        ],
                       ],
                     ),
                   ),
-                ),
-              ],
+                  if ((hareket.aciklama ?? '').trim().isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color:
+                              colorScheme.outlineVariant.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Açıklama',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            hareket.aciklama!.trim(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: colorScheme.onSurface,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.tonal(
+                      onPressed: () => Navigator.pop(context),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Kapat'),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+          ],
         ),
       ),
     );
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/*                            Status Badge                                    */
-/* -------------------------------------------------------------------------- */
+class _DetaySatiri extends StatelessWidget {
+  final String label;
+  final String value;
 
-class _StatusBadge extends StatelessWidget {
-  final double kapanisBakiyesi;
-
-  const _StatusBadge({required this.kapanisBakiyesi});
+  const _DetaySatiri({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final Color color;
-    final String label;
-    final IconData icon;
-
-    if (kapanisBakiyesi > 0) {
-      color = Colors.green.shade600;
-      label = 'Fazla';
-      icon = Icons.arrow_upward_rounded;
-    } else if (kapanisBakiyesi < 0) {
-      color = Colors.red.shade600;
-      label = 'Borç';
-      icon = Icons.arrow_downward_rounded;
-    } else {
-      color = colorScheme.onSurfaceVariant;
-      label = 'Borç Yok';
-      icon = Icons.check_rounded;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: color,
+              fontSize: 14,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const Spacer(),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
+              ),
             ),
           ),
         ],
@@ -797,117 +830,15 @@ class _StatusBadge extends StatelessWidget {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                              Data Row                                      */
+/*                            Ödeme Bilgi Sheet                               */
 /* -------------------------------------------------------------------------- */
 
-enum _RowKind {
-  /// Pozitif=yeşil, negatif=kırmızı (Önceki, Kalan için)
-  signed,
-
-  /// Her zaman kırmızı, "-" ile gösterilir (Borç için, ham değer pozitif gelir)
-  alwaysNegative,
-
-  /// Her zaman yeşil, "+" ile gösterilir (Ödeme için, ham değer pozitif gelir)
-  alwaysPositive,
-}
-
-class _DataRow extends StatelessWidget {
-  final String label;
-  final double value;
-  final NumberFormat cf;
-  final _RowKind kind;
-  final bool isHighlighted;
-
-  const _DataRow({
-    required this.label,
-    required this.value,
-    required this.cf,
-    required this.kind,
-    this.isHighlighted = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    // Renk ve gösterim metni
-    Color color;
-    String displayValue;
-
-    if (value == 0) {
-      color = colorScheme.onSurfaceVariant.withValues(alpha: 0.5);
-      displayValue = '—';
-    } else {
-      switch (kind) {
-        case _RowKind.signed:
-          if (value > 0) {
-            color = Colors.green.shade600;
-            displayValue =
-                '${isHighlighted ? '+' : ''}${cf.format(value.abs())}';
-          } else {
-            color = Colors.red.shade600;
-            displayValue = '-${cf.format(value.abs())}';
-          }
-          break;
-        case _RowKind.alwaysNegative:
-          color = Colors.red.shade600;
-          displayValue = '-${cf.format(value.abs())}';
-          break;
-        case _RowKind.alwaysPositive:
-          color = Colors.green.shade600;
-          displayValue = '${isHighlighted ? '+' : ''}${cf.format(value.abs())}';
-          break;
-      }
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Text(
-          '$label:',
-          style: TextStyle(
-            fontSize: isHighlighted ? 13 : 11.5,
-            fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.w400,
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Flexible(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            reverse: true, // taşınca sondan görünsün
-            physics: const ClampingScrollPhysics(),
-            child: Text(
-              displayValue,
-              style: TextStyle(
-                fontSize: isHighlighted ? 15 : 12.5,
-                fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w600,
-                color: color,
-                letterSpacing: -0.2,
-              ),
-              maxLines: 1,
-              softWrap: false,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/*                           Payment Info Sheet                               */
-/* -------------------------------------------------------------------------- */
-
-class _PaymentInfoSheet extends StatelessWidget {
-  final int selectedCount;
-  final double totalAmount;
+class _OdemeBilgiSheet extends StatelessWidget {
+  final double tutar;
   final NumberFormat currencyFormat;
 
-  const _PaymentInfoSheet({
-    required this.selectedCount,
-    required this.totalAmount,
+  const _OdemeBilgiSheet({
+    required this.tutar,
     required this.currencyFormat,
   });
 
@@ -969,14 +900,14 @@ class _PaymentInfoSheet extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Seçilen Tutar',
+                        'Kalan Borç',
                         style: TextStyle(
                           fontSize: 14,
                           color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       Text(
-                        currencyFormat.format(totalAmount),
+                        currencyFormat.format(tutar),
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
