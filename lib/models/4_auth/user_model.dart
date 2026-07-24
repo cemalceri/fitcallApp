@@ -1,3 +1,4 @@
+import 'package:fitcall/common/tarih_util.dart';
 import 'dart:convert';
 
 class UserModel {
@@ -41,7 +42,7 @@ class UserModel {
       isStaff: json['is_staff'] ?? false,
       isActive: json['is_active'] ?? false,
       dateJoined: json['date_joined'] != null
-          ? DateTime.parse(json['date_joined'])
+          ? parseApiTarihOrNow(json['date_joined'])
           : DateTime.now(),
       groups: List<int>.from(json['groups']),
       userPermissions: List<dynamic>.from(json['user_permissions']),

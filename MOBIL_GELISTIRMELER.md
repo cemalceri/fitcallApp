@@ -72,6 +72,18 @@ Backend değişiklikleri `C:\Django\tenis` reposundadır (branch: `feature/mobil
 
 ---
 
+## 🔧 Yönetici ders yönetimi + altyapı (2026-07-24) — KOD HAZIR, COMMIT/DEPLOY BEKLİYOR
+
+Tamamlandı ama **henüz commit edilmedi**. Deploy sırası: **önce mobil yayına, o çıkınca backend Heroku'ya** (aşağıdaki tarih-saat değişikliği eski mobil sürümü kırar).
+
+- **Yönetici mobilden ders yönetimi:** `lib/screens/7_yonetici/program/` — gün seçici + kort×saat ızgarası, oluştur/düzenle/iptal(4 mod)/sil. Backend'de web ile **ortak servis** (`calendarapp/services/etkinlik_kaydet_service.py` + `etkinlik_iptal_service.py`); web view'ları da bunları çağırıyor. Yeni uçlar `yoneticiHaftalikProgram` / `yoneticiEtkinlik*`.
+- **Güvenlik:** 8 yönetici API ucu kimlik doğrulamasız ve tenant'sızdı (iki işletme verisi karışıyordu) → `@token_user` + `@rol_gerekli("yonetici")`. **Deploy sonrası dashboard/rapor rakamları düşecek** (artık tek işletme) — beklenen.
+- **Tarih-saat sözleşmesi:** tek standart (`lib/common/tarih_util.dart` ↔ `calendarapp/utils/tarih_util.py`). `EtkinlikModelSerializer`'daki gizli `+3 saat` hack'i kaldırıldı → **eski mobil sürüm 3 saat kayar**, o yüzden deploy sırası önemli.
+- **Ölü signal düzeltmesi (backend):** `etkinlik_signals/` paketine `__init__.py` eklendi. ~5,5 aydır iptallerde telafi/paket iadesi/borç işlenmiyordu (sadece bildirim gidiyordu). **Deploy sonrası iptaller gerçek finansal kayıt üretmeye başlayacak** — ilk iptalleri gözle takip et. Geçmiş 5,5 ay geriye dönük işlenmez.
+- **Taşma altyapısı:** app geneli yazı ölçeği clamp'i (`lib/common/ui_scale.dart`), `test/support/tasma_yardimcisi.dart` + `test/tasma_ekranlar_test.dart` (boyut×ölçek matrisi). Düzeltilen taşmalar: üye/antrenör hafta şeridi, üye "sonraki ders" kartı, yönetici ders liste öğesi.
+- **Profil seçimi:** işletme adı gösteriliyor (`isletme_adi` serializer'a eklendi). Aynı kullanıcının iki işletme yönetici profili artık ayırt edilebiliyor.
+- **Test durumu:** mobil `flutter test` 274 geçiyor; backend `pytest --ds=eventcalendar.test_settings --nomigrations` 162 geçiyor / 19 kalıyor (19 = muhasebe refactor'ü öncesi eski testler, bu işle ilgisiz baseline).
+
 ## 🔍 Test geri bildirimi bekleyenler
 
 Faz 1 kullanıcı testi sonrası tespit edilen hata/düzeltmeler buraya işlenecek.

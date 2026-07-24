@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 // lib/models/kort_model.dart
 class KortModel {
   final int id;
@@ -31,7 +33,7 @@ class KortModel {
   });
 
   static DateTime _dt(String? v) =>
-      (v == null || v.isEmpty) ? DateTime.now() : DateTime.parse(v);
+      (v == null || v.isEmpty) ? DateTime.now() : parseApiTarihOrNow(v);
 
   factory KortModel.fromJson(Map<String, dynamic> json) => KortModel(
         id: json['id'] ?? 0,

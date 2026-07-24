@@ -43,6 +43,21 @@ All API endpoint URLs live in [lib/common/api_urls.dart](lib/common/api_urls.dar
 
 Firebase Cloud Messaging. `main.dart` initializes Firebase + `NotificationFCMService` and exposes a global `navigatorKey` so notification taps can navigate (deep-link pages live in `lib/screens/1_common/1_notification/pages/`). FCM token registration/refresh is handled by `initFCMTokenListener` in [lib/services/core/fcm_service.dart](lib/services/core/fcm_service.dart).
 
+### Date/time contract
+
+[lib/common/tarih_util.dart](lib/common/tarih_util.dart) is the single entry point for API date handling; backend counterpart is `calendarapp/utils/tarih_util.py`.
+
+- **Reading:** always `parseApiTarih(...)` (or `parseApiTarihOrNow` / `parseApiGun`), never raw `DateTime.parse`. The server sends local time with an offset (`"2026-07-23T10:00:00+03:00"`); Dart's `DateTime.parse` converts that to a UTC `DateTime`, so `.hour` and `DateFormat` would read 3 hours early. The helper applies `.toLocal()`.
+- **Writing:** always `formatApiTarih(...)` → offset-less local ISO (`"2026-07-23T10:00:00"`), which the backend interprets as Istanbul. Never send `.toUtc()`/`Z`.
+
+### Yönetici ders yönetimi
+
+`lib/screens/7_yonetici/program/` is the mobile counterpart of the web `/etkinlik-pilot` screen: day strip plus a horizontally scrollable court × hour grid, with create/edit/cancel/delete. It talks to `yoneticiHaftalikProgram` / `yoneticiEtkinlik*` through [yonetici_etkinlik_service.dart](lib/services/yonetici/yonetici_etkinlik_service.dart). Save and cancel run through shared backend services, so rules match the web exactly — validate there, not here.
+
+### Layout / overflow discipline
+
+App-wide text scale is clamped to `[1.0, 1.3]` ([lib/common/ui_scale.dart](lib/common/ui_scale.dart), wired via `MaterialApp.builder` in `main.dart`) so accessibility "huge font" (up to 2.0x) can't blow up dense layouts. New screens must not overflow within that range. [test/support/tasma_yardimcisi.dart](test/support/tasma_yardimcisi.dart) provides `tasmaTesti(...)` which renders a widget across a screen-size × text-scale matrix and fails on any RenderFlex overflow; [test/tasma_ekranlar_test.dart](test/tasma_ekranlar_test.dart) covers the yönetici/antrenör/üye components. Add every new presentational widget there. Because pages call APIs in `initState` they can't be pumped directly — extract the visual body into a data-fed widget (as `program/widgets/program_gorunumu.dart` does for the program page) so it's testable.
+
 ### Screens
 
 Page widgets live at the domain folder root; their subcomponents go in a sibling `widgets/` folder. Shared UI helpers (snackbar/message display, spinners, KVKK text) are in `lib/screens/1_common/widgets/`. The üye and antrenör calendars (`takvim/`) are parallel implementations with their own `timeline_view`, `lesson_block`, and `position_calculator` widgets — changes to one calendar often need mirroring in the other.

@@ -1,3 +1,4 @@
+import 'package:fitcall/common/tarih_util.dart';
 import 'dart:convert';
 
 class NotificationType {
@@ -68,7 +69,7 @@ class NotificationModel {
       displayData: json['display_data'] as Map<String, dynamic>?,
       actionToken: json['action_token'] as String?,
       isRead: json['is_read'] as bool? ?? false,
-      timestamp: DateTime.tryParse(json['timestamp']?.toString() ?? '') ??
+      timestamp: parseApiTarih(json['timestamp']?.toString() ?? '') ??
           DateTime.now(),
     );
   }

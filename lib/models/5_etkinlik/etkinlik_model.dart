@@ -1,5 +1,6 @@
 // lib/models/5_etkinlik/etkinlik_model.dart
 
+import 'package:fitcall/common/tarih_util.dart';
 import 'dart:convert';
 import 'package:fitcall/models/3_antrenor/ders_devir_talebi_model.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,7 @@ class UyeTeyit {
 
   factory UyeTeyit.fromMap(Map<String, dynamic> j) {
     DateTime? date(String? v) =>
-        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+        (v == null || v.isEmpty) ? null : parseApiTarihOrNow(v);
 
     return UyeTeyit(
       id: j['id'] ?? 0,
@@ -77,7 +78,7 @@ class AntrenorOnay {
 
   factory AntrenorOnay.fromMap(Map<String, dynamic> j) {
     DateTime? date(String? v) =>
-        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+        (v == null || v.isEmpty) ? null : parseApiTarihOrNow(v);
 
     return AntrenorOnay(
       id: j['id'] ?? 0,
@@ -122,7 +123,7 @@ class UyeDersOnay {
 
   factory UyeDersOnay.fromMap(Map<String, dynamic> j) {
     DateTime? date(String? v) =>
-        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+        (v == null || v.isEmpty) ? null : parseApiTarihOrNow(v);
 
     return UyeDersOnay(
       id: j['id'] ?? 0,
@@ -166,7 +167,7 @@ class YoneticiOnay {
 
   factory YoneticiOnay.fromMap(Map<String, dynamic> j) {
     DateTime? date(String? v) =>
-        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+        (v == null || v.isEmpty) ? null : parseApiTarihOrNow(v);
 
     return YoneticiOnay(
       id: j['id'] ?? 0,
@@ -312,7 +313,7 @@ class EtkinlikModel {
 
   factory EtkinlikModel.fromMap(Map<String, dynamic> j) {
     DateTime? date(String? v) =>
-        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+        (v == null || v.isEmpty) ? null : parseApiTarihOrNow(v);
     double? dbl(dynamic v) => v == null ? null : double.tryParse(v.toString());
     int? asIntN(dynamic v) =>
         (v == null) ? null : (v is int ? v : int.tryParse(v.toString()));
@@ -367,14 +368,14 @@ class EtkinlikModel {
       uyeList: uyeler,
       kortId: j['kort'],
       kortAdi: j['kort_adi']?.toString() ?? '',
-      baslangicTarihSaat: DateTime.parse(j['baslangic_tarih_saat']),
-      bitisTarihSaat: DateTime.parse(j['bitis_tarih_saat']),
+      baslangicTarihSaat: parseApiTarihOrNow(j['baslangic_tarih_saat']),
+      bitisTarihSaat: parseApiTarihOrNow(j['bitis_tarih_saat']),
       seviye: j['seviye']?.toString() ?? '',
       iptalMi: (j['iptal_mi'] ?? false) == true,
       isActive: (j['is_active'] ?? true) == true,
       isDeleted: (j['is_deleted'] ?? false) == true,
-      createdAt: DateTime.parse(j['olusturulma_zamani']),
-      updatedAt: DateTime.parse(j['guncellenme_zamani']),
+      createdAt: parseApiTarihOrNow(j['olusturulma_zamani']),
+      updatedAt: parseApiTarihOrNow(j['guncellenme_zamani']),
       haftalikPlanKodu:
           (j['sabit_plan'] ?? j['haftalik_plan_kodu'])?.toString(),
       urunId: asIntN(j['urun']),

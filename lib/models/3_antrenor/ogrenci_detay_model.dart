@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 // lib/models/3_antrenor/ogrenci_detay_model.dart
 
 /// Öğrenci detayı — profil bölümü
@@ -40,7 +42,7 @@ class OgrenciProfil {
       uyeNo: (json['uye_no'] as num?)?.toInt() ?? 0,
       telefon: json['telefon'],
       email: json['email'],
-      dogumTarihi: DateTime.tryParse(json['dogum_tarihi'] ?? ''),
+      dogumTarihi: parseApiTarih(json['dogum_tarihi'] ?? ''),
       cinsiyet: json['cinsiyet'],
       seviyeRengi: json['seviye_rengi'] ?? '',
       programTercihi: json['program_tercihi'],
@@ -112,7 +114,7 @@ class OgrenciIstatistik {
       yoklamaGirilen: (json['yoklama_girilen'] as num?)?.toInt() ?? 0,
       katildigiDers: (json['katildigi_ders'] as num?)?.toInt() ?? 0,
       katilimYuzdesi: (json['katilim_yuzdesi'] as num?)?.toInt(),
-      sonKatilimTarihi: DateTime.tryParse(json['son_katilim_tarihi'] ?? ''),
+      sonKatilimTarihi: parseApiTarih(json['son_katilim_tarihi'] ?? ''),
     );
   }
 }
@@ -141,8 +143,8 @@ class OgrenciPaket {
       urunAdi: json['urun_adi'] ?? '',
       toplamHak: (json['toplam_hak'] as num?)?.toInt(),
       kalanHak: (json['kalan_hak'] as num?)?.toDouble(),
-      baslangic: DateTime.tryParse(json['baslangic'] ?? ''),
-      bitis: DateTime.tryParse(json['bitis'] ?? ''),
+      baslangic: parseApiTarih(json['baslangic'] ?? ''),
+      bitis: parseApiTarih(json['bitis'] ?? ''),
     );
   }
 }
@@ -168,7 +170,7 @@ class OgrenciKatilim {
   factory OgrenciKatilim.fromJson(Map<String, dynamic> json) {
     return OgrenciKatilim(
       etkinlikId: (json['etkinlik_id'] as num?)?.toInt() ?? 0,
-      tarih: DateTime.tryParse(json['tarih'] ?? ''),
+      tarih: parseApiTarih(json['tarih'] ?? ''),
       kortAdi: json['kort_adi'] ?? '',
       katildi: json['katildi'] == true,
       planDisiMi: json['plan_disi_mi'] == true,
@@ -192,7 +194,7 @@ class OgrenciGorusmeNotu {
   factory OgrenciGorusmeNotu.fromJson(Map<String, dynamic> json) {
     return OgrenciGorusmeNotu(
       gorusenKisi: json['gorusen_kisi'] ?? '',
-      gorusmeTarihi: DateTime.tryParse(json['gorusme_tarihi'] ?? ''),
+      gorusmeTarihi: parseApiTarih(json['gorusme_tarihi'] ?? ''),
       notu: json['notu'] ?? '',
     );
   }

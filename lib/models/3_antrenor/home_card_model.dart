@@ -1,5 +1,6 @@
 // lib/screens/3_antrenor/home/models/home_card_model.dart
 
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:flutter/material.dart';
 
 /// Bilgi kartı türleri
@@ -57,7 +58,7 @@ class HomeCardModel {
       actionRoute: json['action_route'],
       actionParams: json['action_params'],
       value: json['value'],
-      createdAt: DateTime.tryParse(
+      createdAt: parseApiTarih(
           (json['olusturulma_zamani'] ?? json['created_at'] ?? '').toString()),
       dismissible: json['dismissible'] ?? false,
     );

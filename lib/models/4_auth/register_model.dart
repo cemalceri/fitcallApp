@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 // ignore_for_file: non_constant_identifier_names
 
 class TemelBilgilerModel {
@@ -98,7 +100,7 @@ class ProfilBilgilerModel {
   factory ProfilBilgilerModel.fromJson(Map<String, dynamic> json) {
     return ProfilBilgilerModel(
       dogum_tarihi: json['dogumTarihi'] != null
-          ? DateTime.parse(json['dogumTarihi'])
+          ? parseApiTarihOrNow(json['dogumTarihi'])
           : null,
       tenis_gecmisi_var_mi: json['tenisGecmisiVarMi'] ?? '',
       dogum_yeri: json['dogumYeri'] ?? '',

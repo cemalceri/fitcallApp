@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 /// Üye (sporcu) bilgilerini içeren model
 class UyeModel {
   final int id;
@@ -95,11 +97,11 @@ class UyeModel {
       id: json['id'] ?? 0,
       isActive: json['is_active'] ?? false,
       isDeleted: json['is_deleted'] ?? false,
-      createdAt: DateTime.tryParse(
+      createdAt: parseApiTarih(
               (json['olusturulma_zamani'] ?? json['created_at'] ?? '')
                   .toString()) ??
           DateTime.now(),
-      updatedAt: DateTime.tryParse(
+      updatedAt: parseApiTarih(
               (json['guncellenme_zamani'] ?? json['updated_at'] ?? '')
                   .toString()) ??
           DateTime.now(),
@@ -111,7 +113,7 @@ class UyeModel {
       telefon: json['telefon'],
       email: json['email'],
       dogumTarihi: json['dogum_tarihi'] != null
-          ? DateTime.tryParse(json['dogum_tarihi'])
+          ? parseApiTarih(json['dogum_tarihi'])
           : null,
       dogumYeri: json['dogum_yeri'],
       adres: json['adres'] ?? '',

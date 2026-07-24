@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 /// ÜyeUrunModel – Django ‹UyeUrunModel› eşlemesi
 class UyeUrunModel {
   /* -------------------------------------------------------------------------- */
@@ -37,7 +39,7 @@ class UyeUrunModel {
   /* -------------------------------------------------------------------------- */
   factory UyeUrunModel.fromJson(Map<String, dynamic> j) {
     DateTime? d(String? v) =>
-        (v == null || v.isEmpty) ? null : DateTime.parse(v);
+        (v == null || v.isEmpty) ? null : parseApiTarihOrNow(v);
     num? kalan = j['kalan_hak'] is num
         ? j['kalan_hak'] as num
         : num.tryParse('${j['kalan_hak'] ?? ''}');
@@ -50,7 +52,7 @@ class UyeUrunModel {
       urunAdi: j['urun_adi'] ?? '',
       toplamHak: (j['toplam_hak'] as num?)?.toInt(),
       kalanHak: kalan,
-      baslangic: DateTime.parse(j['baslangic']),
+      baslangic: parseApiTarihOrNow(j['baslangic']),
       bitis: d(j['bitis']),
       aktifMi: j['aktif_mi'] ?? true,
     );

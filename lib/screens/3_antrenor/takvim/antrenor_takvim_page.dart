@@ -1,5 +1,6 @@
 // lib/screens/3_antrenor/takvim/antrenor_takvim_page.dart
 
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -50,7 +51,7 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
     // gelinirse ilgili günü açıp dersin dialogunu gösterir
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is Map) {
-      final tarih = DateTime.tryParse(args['tarih']?.toString() ?? '');
+      final tarih = parseApiTarih(args['tarih']?.toString() ?? '');
       final dersId = int.tryParse(args['ders_id']?.toString() ?? '');
       if (tarih != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -5,6 +5,7 @@ import 'package:fitcall/screens/3_antrenor/takvim/antrenor_takvim_page.dart';
 import 'package:fitcall/screens/4_auth/forgot_password_page.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
 import 'package:fitcall/screens/7_yonetici/yonetici_main_page.dart';
+import 'package:fitcall/screens/7_yonetici/program/yonetici_program_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 
@@ -47,6 +48,7 @@ enum SayfaAdi {
   uyeDersTalepleri,
   bildirimler,
   yoneticiAnasayfa,
+  yoneticiProgram,
   dersTeyit,
   yardim,
 }
@@ -71,6 +73,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.uyeDersTalepleri: '/uyeDersTalepleri',
   SayfaAdi.bildirimler: '/bildirimler',
   SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
+  SayfaAdi.yoneticiProgram: '/yoneticiProgram',
   SayfaAdi.dersTeyit: '/dersTeyit',
   SayfaAdi.yardim: '/yardim',
 };
@@ -103,6 +106,7 @@ final Map<String, WidgetBuilder> routes = {
       ),
   routeEnums[SayfaAdi.bildirimler]!: (c) => NotificationPage(),
   routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiMainPage(),
+  routeEnums[SayfaAdi.yoneticiProgram]!: (c) => const YoneticiProgramPage(),
   routeEnums[SayfaAdi.dersTeyit]!: (c) => const DersTeyitPage(),
   routeEnums[SayfaAdi.yardim]!: (c) => const YardimPage(),
 };
@@ -131,6 +135,7 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.qrKodKayit]!: AccessRule.anyone,
   routeEnums[SayfaAdi.qrKodDogrula]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yardim]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.yoneticiProgram]!: AccessRule.anyone,
 };
 
 /* ------------------ 4) onGenerateRoute ------------------ */

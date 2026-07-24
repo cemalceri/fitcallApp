@@ -66,16 +66,23 @@ class WeekDaySelector extends StatelessWidget {
             onPageChanged(focusedDay.subtract(const Duration(days: 7)));
           },
         ),
-        const SizedBox(width: 16),
-        Text(
-          '$monthName $year',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
+        // Ay etiketi esnek: uzun ay adı + büyük yazıda taşmasın
+        Flexible(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              '$monthName $year',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
           ),
         ),
-        const SizedBox(width: 16),
         _NavButton(
           icon: Icons.chevron_right_rounded,
           onTap: () {
@@ -114,9 +121,12 @@ class WeekDaySelector extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Gün adı
+              // Gün adı — dar hücrede büyük yazıda taşmasın
               Text(
                 TimeUtils.shortDayName(day.weekday),
+                maxLines: 1,
+                overflow: TextOverflow.clip,
+                softWrap: false,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
@@ -129,6 +139,9 @@ class WeekDaySelector extends StatelessWidget {
               // Gün numarası
               Text(
                 '${day.day}',
+                maxLines: 1,
+                overflow: TextOverflow.clip,
+                softWrap: false,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

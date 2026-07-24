@@ -2,6 +2,7 @@
 // Django: calendarapp.models.concrete.para_hareket.ParaHareketiModel
 // Alanlar bire-bir; BaseAbstract alanları dâhil.
 
+import 'package:fitcall/common/tarih_util.dart';
 import 'dart:convert';
 
 class ParaHareketModel {
@@ -92,14 +93,14 @@ class ParaHareketModel {
 
   factory ParaHareketModel.fromJson(Map<String, dynamic> json) {
     DateTime? dtN(dynamic v) =>
-        (v == null || '$v'.isEmpty) ? null : DateTime.tryParse(v.toString());
+        (v == null || '$v'.isEmpty) ? null : parseApiTarih(v.toString());
 
     return ParaHareketModel(
       id: json['id'],
       isActive: json['is_active'],
       isDeleted: json['is_deleted'],
-      olusturulmaZamani: DateTime.parse(json['olusturulma_zamani']),
-      guncellenmeZamani: DateTime.parse(json['guncellenme_zamani']),
+      olusturulmaZamani: parseApiTarihOrNow(json['olusturulma_zamani']),
+      guncellenmeZamani: parseApiTarihOrNow(json['guncellenme_zamani']),
       isletme: json['isletme'],
       ekleyen: json['ekleyen'],
       guncelleyen: json['guncelleyen'],
@@ -107,7 +108,7 @@ class ParaHareketModel {
       hareketTuru: json['hareket_turu'],
       tutar: double.parse(json['tutar'].toString()),
       odemeSekli: json['odeme_sekli'],
-      tarih: DateTime.parse(json['tarih']),
+      tarih: parseApiTarihOrNow(json['tarih']),
       borcTarihi: dtN(json['borc_tarihi']),
       urun: json['urun'],
       uyeUrun: json['uye_urun'],

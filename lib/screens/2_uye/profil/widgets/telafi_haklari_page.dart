@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/2_uye/telafi_ders/telafi_ders_model.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
@@ -807,7 +808,7 @@ class _TelafiCard extends StatelessWidget {
 // *** YENİ: Tarih formatlama metodu ekle ***
   String _formatTarih(String isoDate) {
     try {
-      final date = DateTime.parse(isoDate);
+      final date = parseApiTarihOrNow(isoDate);
       return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
     } catch (e) {
       return isoDate;
@@ -1330,7 +1331,7 @@ class _TelafiDetailSheet extends StatelessWidget {
 
   String _formatDate(String sonGecerlilikTarihi) {
     try {
-      final date = DateTime.parse(sonGecerlilikTarihi);
+      final date = parseApiTarihOrNow(sonGecerlilikTarihi);
       return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
     } catch (e) {
       return sonGecerlilikTarihi; // Eğer tarih formatı beklenmedik şekilde gelirse, ham stringi döndür

@@ -1,4 +1,5 @@
 import 'package:fitcall/common/api_urls.dart';
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/dtos/paket_veri_response_dto.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
@@ -37,8 +38,11 @@ class DersTalepApiService {
     final payload = <String, dynamic>{
       'kort_id': kortId,
       'antrenor_id': antrenorId,
-      'baslangic_tarih_saat': baslangic.toUtc().toIso8601String(),
-      'bitis_tarih_saat': bitis.toUtc().toIso8601String(),
+      // Sözleşme: offset'siz yerel ISO gönderilir (bkz. lib/common/tarih_util.dart).
+      // Eskiden .toUtc() ile "Z"li gönderiliyordu; artık gelen tarihler
+      // parseApiTarih ile yerele çevrildiği için bu kayma yaratırdı.
+      'baslangic_tarih_saat': formatApiTarih(baslangic),
+      'bitis_tarih_saat': formatApiTarih(bitis),
       'aciklama': aciklama ?? '',
       if (urunId != null) 'urun_id': urunId,
       if (satinal != null) 'satinal': satinal,

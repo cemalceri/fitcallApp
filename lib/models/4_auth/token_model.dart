@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 /// Giriş sonucu dönen token
 class TokenModel {
   final String accessToken;
@@ -8,7 +10,7 @@ class TokenModel {
   factory TokenModel.fromMap(Map<String, dynamic> json) {
     return TokenModel(
       accessToken: json['access_token'] as String,
-      expireDate: DateTime.parse(json['expire_date'] as String),
+      expireDate: parseApiTarihOrNow(json['expire_date'] as String),
     );
   }
 

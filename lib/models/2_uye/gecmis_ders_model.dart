@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 // lib/models/2_uye/gecmis_ders_model.dart
 
 /// Geçmiş dersteki üye katılım kaydı (yoklama)
@@ -74,10 +76,10 @@ class GecmisDersModel {
     return GecmisDersModel(
       id: (json['id'] as num?)?.toInt() ?? 0,
       baslangicTarihSaat:
-          DateTime.tryParse(json['baslangic_tarih_saat'] ?? '') ??
+          parseApiTarih(json['baslangic_tarih_saat'] ?? '') ??
               DateTime.now(),
       bitisTarihSaat:
-          DateTime.tryParse(json['bitis_tarih_saat'] ?? '') ?? DateTime.now(),
+          parseApiTarih(json['bitis_tarih_saat'] ?? '') ?? DateTime.now(),
       kortAdi: json['kort_adi'] ?? '',
       antrenorAdi: json['antrenor_adi'] ?? '',
       urunAdi: json['urun_adi'] ?? '',
@@ -106,8 +108,8 @@ class GecmisDerslerResponse {
 
   factory GecmisDerslerResponse.fromJson(Map<String, dynamic> json) {
     return GecmisDerslerResponse(
-      baslangic: DateTime.tryParse(json['baslangic'] ?? ''),
-      bitis: DateTime.tryParse(json['bitis'] ?? ''),
+      baslangic: parseApiTarih(json['baslangic'] ?? ''),
+      bitis: parseApiTarih(json['bitis'] ?? ''),
       dersler: ((json['dersler'] as List?) ?? const [])
           .map((e) =>
               GecmisDersModel.fromJson((e as Map).cast<String, dynamic>()))

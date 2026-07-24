@@ -10,6 +10,8 @@ class KullaniciProfilModel {
   final UyeModel? uye; // rol=='uye' ise dolu
   final AntrenorModel? antrenor; // rol=='antrenor' ise dolu
   final bool anaHesap; // ana_hesap_mi
+  final int? isletmeId; // profilin bağlı olduğu işletme
+  final String? isletmeAdi; // işletme adı (profil seçiminde ayırt etmek için)
   bool isLoginSuccess;
 
   KullaniciProfilModel({
@@ -19,6 +21,8 @@ class KullaniciProfilModel {
     required this.uye,
     required this.antrenor,
     required this.anaHesap,
+    this.isletmeId,
+    this.isletmeAdi,
     this.isLoginSuccess = false,
   });
 
@@ -34,6 +38,8 @@ class KullaniciProfilModel {
           ? AntrenorModel.fromJson(json['antrenor'] as Map<String, dynamic>)
           : null,
       anaHesap: (json['ana_hesap_mi'] as bool?) ?? false,
+      isletmeId: json['isletme_id'] as int?,
+      isletmeAdi: (json['isletme_adi'] as String?)?.trim(),
     );
   }
 
@@ -45,6 +51,8 @@ class KullaniciProfilModel {
       'uye': uye?.toJson(),
       'antrenor': antrenor?.toJson(),
       'ana_hesap_mi': anaHesap,
+      'isletme_id': isletmeId,
+      'isletme_adi': isletmeAdi,
     };
   }
 

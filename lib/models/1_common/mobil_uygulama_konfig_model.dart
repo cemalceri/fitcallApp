@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 // lib/models/ayarlar/mobil_uygulama_konfig_model.dart
 
 class MobilUygulamaKonfigModel {
@@ -59,7 +61,7 @@ class MobilUygulamaKonfigModel {
   factory MobilUygulamaKonfigModel.fromMap(Map<String, dynamic> j) {
     DateTime? dt(dynamic v) => (v == null || (v is String && v.isEmpty))
         ? null
-        : DateTime.parse(v.toString());
+        : parseApiTarihOrNow(v.toString());
 
     return MobilUygulamaKonfigModel(
       id: j['id'] as int,
@@ -87,8 +89,8 @@ class MobilUygulamaKonfigModel {
       aktifMi: j['aktif_mi'] ?? true,
       isActive: j['is_active'] ?? true,
       isDeleted: j['is_deleted'] ?? false,
-      olusturulmaZamani: DateTime.parse(j['olusturulma_zamani']),
-      guncellenmeZamani: DateTime.parse(j['guncellenme_zamani']),
+      olusturulmaZamani: parseApiTarihOrNow(j['olusturulma_zamani']),
+      guncellenmeZamani: parseApiTarihOrNow(j['guncellenme_zamani']),
       direktif: j['direktif'],
     );
   }

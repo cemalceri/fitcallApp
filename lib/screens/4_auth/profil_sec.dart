@@ -230,6 +230,34 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     );
   }
 
+  Widget _buildAltBilgi(KullaniciProfilModel p, _RolTheme theme) {
+    final isletme = p.isletmeAdi;
+    // İşletme adı varsa onu göster (asıl ayırt edici bilgi). Rol zaten üstteki
+    // bölüm başlığında. İşletme boşsa role geri düş.
+    if (isletme == null || isletme.isEmpty) {
+      return Text(theme.label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 13, color: Colors.grey.shade600));
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.storefront_outlined, size: 13, color: theme.color),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(isletme,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: theme.color)),
+        ),
+      ],
+    );
+  }
+
   Widget _buildProfileCard(KullaniciProfilModel p, _RolTheme theme) {
     final ad = p.uye?.adi ?? p.antrenor?.adi ?? p.user.firstName;
     final soy = p.uye?.soyadi ?? p.antrenor?.soyadi ?? p.user.lastName;
@@ -285,15 +313,17 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF1E293B),
                               letterSpacing: -0.2)),
-                      const SizedBox(height: 2),
-                      Text(theme.label,
-                          style: TextStyle(
-                              fontSize: 13, color: Colors.grey.shade600)),
+                      const SizedBox(height: 3),
+                      // Alt satır: işletme adı (birden çok işletmede aynı
+                      // isim/rol ayırt edilebilsin). İşletme yoksa role düşer.
+                      _buildAltBilgi(p, theme),
                     ],
                   ),
                 ),

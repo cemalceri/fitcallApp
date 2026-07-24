@@ -1,5 +1,6 @@
 // lib/models/9_yonetici/uye_detay_models.dart
 
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:flutter/material.dart';
 
 double _toDouble(dynamic v) => double.tryParse(v?.toString() ?? '0') ?? 0;
@@ -136,7 +137,7 @@ class ParaHareketItem {
   factory ParaHareketItem.fromJson(Map<String, dynamic> json) {
     return ParaHareketItem(
       id: json['id'] ?? 0,
-      tarih: json['tarih'] != null ? DateTime.tryParse(json['tarih']) : null,
+      tarih: json['tarih'] != null ? parseApiTarih(json['tarih']) : null,
       hareketTuru: json['hareket_turu'] ?? '',
       hareketTuruLabel: json['hareket_turu_label'] ?? json['hareket_turu'] ?? '',
       tutar: _toDouble(json['tutar']),

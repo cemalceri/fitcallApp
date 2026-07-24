@@ -1,5 +1,6 @@
 // lib/models/9_yonetici/dashboard_models.dart
 
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:flutter/material.dart';
 
 // ==================== ENUMS ====================
@@ -77,7 +78,7 @@ class HaftalikCiroItem {
     return HaftalikCiroItem(
       gun: json['gun'] ?? '',
       gunKisa: json['gun_kisa'] ?? '',
-      tarih: DateTime.tryParse(json['tarih'] ?? '') ?? DateTime.now(),
+      tarih: parseApiTarih(json['tarih'] ?? '') ?? DateTime.now(),
       ciro: double.tryParse(json['ciro']?.toString() ?? '0') ?? 0,
     );
   }
@@ -132,7 +133,7 @@ class HaftalikTahsilatItem {
     return HaftalikTahsilatItem(
       gun: json['gun'] ?? '',
       gunKisa: json['gun_kisa'] ?? '',
-      tarih: DateTime.tryParse(json['tarih'] ?? '') ?? DateTime.now(),
+      tarih: parseApiTarih(json['tarih'] ?? '') ?? DateTime.now(),
       tahsilat: double.tryParse(json['tahsilat']?.toString() ?? '0') ?? 0,
     );
   }
@@ -379,7 +380,7 @@ class CiroRaporuItem {
 
   factory CiroRaporuItem.fromJson(Map<String, dynamic> json) {
     return CiroRaporuItem(
-      tarih: DateTime.tryParse(json['tarih'] ?? '') ?? DateTime.now(),
+      tarih: parseApiTarih(json['tarih'] ?? '') ?? DateTime.now(),
       ciro: double.tryParse(json['ciro']?.toString() ?? '0') ?? 0,
       dersSayisi: json['ders_sayisi'] ?? 0,
     );
@@ -400,7 +401,7 @@ class TahsilatRaporuItem {
 
   factory TahsilatRaporuItem.fromJson(Map<String, dynamic> json) {
     return TahsilatRaporuItem(
-      tarih: DateTime.tryParse(json['tarih'] ?? '') ?? DateTime.now(),
+      tarih: parseApiTarih(json['tarih'] ?? '') ?? DateTime.now(),
       tahsilat: double.tryParse(json['tahsilat']?.toString() ?? '0') ?? 0,
       islemSayisi: json['islem_sayisi'] ?? 0,
     );
@@ -580,7 +581,7 @@ class UyeListeItem {
       yas: json['yas'],
       bakiye: double.tryParse(json['bakiye']?.toString() ?? '0') ?? 0,
       sonDersTarihi: json['son_ders_tarihi'] != null
-          ? DateTime.tryParse(json['son_ders_tarihi'])
+          ? parseApiTarih(json['son_ders_tarihi'])
           : null,
       profilFotografi: json['profil_fotografi'],
     );
@@ -816,10 +817,10 @@ class DersListeItem {
     return DersListeItem(
       id: json['id'] ?? 0,
       baslangicTarihSaat:
-          DateTime.tryParse(json['baslangic_tarih_saat'] ?? '') ??
+          parseApiTarih(json['baslangic_tarih_saat'] ?? '') ??
               DateTime.now(),
       bitisTarihSaat:
-          DateTime.tryParse(json['bitis_tarih_saat'] ?? '') ?? DateTime.now(),
+          parseApiTarih(json['bitis_tarih_saat'] ?? '') ?? DateTime.now(),
       tarih: json['tarih'] ?? '',
       saat: json['saat'] ?? '',
       antrenorId: json['antrenor'],

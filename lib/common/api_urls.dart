@@ -126,3 +126,15 @@ const String yoneticiAntrenorler = "$baseUrl/yoneticiAntrenorler";
 const String yoneticiDersler = "$baseUrl/yoneticiDersler";
 const String yoneticiDersDetay = "$baseUrl/yoneticiDersDetay";
 const String yoneticiDolulukHaritasi = "$baseUrl/yoneticiDolulukHaritasi";
+
+// Yönetici - ders (etkinlik) yönetimi
+const String yoneticiHaftalikProgramUrl = "$baseUrl/yoneticiHaftalikProgram";
+const String yoneticiEtkinlikFormVerileriUrl =
+    "$baseUrl/yoneticiEtkinlikFormVerileri";
+const String yoneticiEtkinlikKaydetUrl = "$baseUrl/yoneticiEtkinlikKaydet";
+const String yoneticiEtkinlikIptalUrl = "$baseUrl/yoneticiEtkinlikIptal";
+const String yoneticiEtkinlikIptalGeriAlUrl =
+    "$baseUrl/yoneticiEtkinlikIptalGeriAl";
+const String yoneticiEtkinlikSilOnizlemeUrl =
+    "$baseUrl/yoneticiEtkinlikSilOnizleme";
+const String yoneticiEtkinlikSilUrl = "$baseUrl/yoneticiEtkinlikSil";

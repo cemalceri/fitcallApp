@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/common/ui_scale.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -46,6 +47,8 @@ class _MyAppState extends State<MyApp> {
       ),
       onGenerateRoute: myRouteGenerator,
       initialRoute: '/',
+      // Yazı ölçeğini uygulama genelinde makul üst sınıra çek (bkz. ui_scale.dart)
+      builder: yaziOlceginiSinirla,
     );
   }
 }

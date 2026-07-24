@@ -194,27 +194,34 @@ class _LessonContent extends StatelessWidget {
                         // Saat
                         Row(
                           children: [
-                            _InfoPill(
-                              icon: Icons.access_time_rounded,
-                              text:
-                                  '${tf.format(lesson.baslangicTarihSaat)} - ${tf.format(lesson.bitisTarihSaat)}',
+                            Flexible(
+                              child: _InfoPill(
+                                icon: Icons.access_time_rounded,
+                                text:
+                                    '${tf.format(lesson.baslangicTarihSaat)} - ${tf.format(lesson.bitisTarihSaat)}',
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 6),
 
-                        // Kort ve Antrenör
+                        // Kort ve Antrenör — her pill esnek (bounded) genişlikte:
+                        // uzun antrenör adı + büyük yazıda taşma yerine ellipsis.
                         Row(
                           children: [
-                            _InfoPill(
-                              icon: Icons.location_on_outlined,
-                              text: 'Kort ${lesson.kortAdi}',
+                            Flexible(
+                              child: _InfoPill(
+                                icon: Icons.location_on_outlined,
+                                text: 'Kort ${lesson.kortAdi}',
+                              ),
                             ),
                             if (lesson.antrenorAdi != null) ...[
                               const SizedBox(width: 8),
-                              _InfoPill(
-                                icon: Icons.person_outline_rounded,
-                                text: lesson.antrenorAdi!,
+                              Flexible(
+                                child: _InfoPill(
+                                  icon: Icons.person_outline_rounded,
+                                  text: lesson.antrenorAdi!,
+                                ),
                               ),
                             ],
                           ],
@@ -238,6 +245,7 @@ class _LessonContent extends StatelessWidget {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.touch_app_outlined,
@@ -245,11 +253,16 @@ class _LessonContent extends StatelessWidget {
                       color: colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      'Detayları görmek için dokunun',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
+                    // Büyük yazıda taşmasın diye esnek + tek satır
+                    Flexible(
+                      child: Text(
+                        'Detayları görmek için dokunun',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ],

@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 class GecisModel {
   final String kapsam;
   final String gecisTipi;
@@ -24,7 +26,7 @@ class GecisModel {
         gecisTipi: json['gecis_tipi'] as String,
         eventId: json['event_id'] as int?,
         code: json['code'] as String,
-        expiresAt: DateTime.parse(json['expires_at'] as String),
+        expiresAt: parseApiTarihOrNow(json['expires_at'] as String),
         iptalMi: json['iptal_mi'] as bool,
         label: json['label'] as String?,
         telefon: json['telefon'] as String?,

@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 // lib/models/antrenor_model.dart
 class AntrenorModel {
   final int id;
@@ -37,7 +39,7 @@ class AntrenorModel {
   });
 
   static DateTime _dt(String? v) =>
-      (v == null || v.isEmpty) ? DateTime.now() : DateTime.parse(v);
+      (v == null || v.isEmpty) ? DateTime.now() : parseApiTarihOrNow(v);
 
   factory AntrenorModel.fromJson(Map<String, dynamic> json) => AntrenorModel(
         id: json['id'] ?? 0,

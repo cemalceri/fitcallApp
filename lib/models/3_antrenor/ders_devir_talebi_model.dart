@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 class DevirRolu {
   static const ana = 'ANA';
   static const yardimci = 'YARDIMCI';
@@ -44,7 +46,7 @@ class AktifDevirTalebiModel {
       if (v == null) return null;
       final s = v.toString();
       if (s.isEmpty) return null;
-      return DateTime.tryParse(s);
+      return parseApiTarih(s);
     }
 
     int asInt(dynamic v) =>
@@ -203,7 +205,7 @@ class DevirTalebiTam {
     DateTime? parseDate(dynamic v) {
       if (v == null) return null;
       final s = v.toString();
-      return s.isEmpty ? null : DateTime.tryParse(s);
+      return s.isEmpty ? null : parseApiTarih(s);
     }
 
     int asInt(dynamic v) =>
@@ -259,8 +261,8 @@ class DevirTalebiEtkinlikInfo {
         v is int ? v : int.tryParse(v?.toString() ?? '') ?? 0;
     return DevirTalebiEtkinlikInfo(
       id: asInt(j['id']),
-      baslangicTarihSaat: DateTime.parse(j['baslangic_tarih_saat']),
-      bitisTarihSaat: DateTime.parse(j['bitis_tarih_saat']),
+      baslangicTarihSaat: parseApiTarihOrNow(j['baslangic_tarih_saat']),
+      bitisTarihSaat: parseApiTarihOrNow(j['bitis_tarih_saat']),
       tarih: j['tarih']?.toString() ?? '',
       saat: j['saat']?.toString() ?? '',
       kortAdi: j['kort_adi']?.toString() ?? '',

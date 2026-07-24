@@ -7,6 +7,7 @@ import 'package:fitcall/screens/7_yonetici/raporlar/raporlar_page.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/uyeler_page.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/antrenorler_page.dart';
 import 'package:fitcall/screens/7_yonetici/dersler/dersler_page.dart';
+import 'package:fitcall/screens/7_yonetici/program/yonetici_program_page.dart';
 
 class YoneticiMainPage extends StatefulWidget {
   const YoneticiMainPage({super.key});
@@ -29,6 +30,7 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
       const UyelerPage(),
       const AntrenorlerPage(),
       const DerslerPage(),
+      const YoneticiProgramPage(),
     ];
   }
 
@@ -61,6 +63,11 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
       icon: Icon(Icons.event_outlined),
       selectedIcon: Icon(Icons.event),
       label: 'Dersler',
+    ),
+    NavigationDestination(
+      icon: Icon(Icons.grid_view_outlined),
+      selectedIcon: Icon(Icons.grid_view),
+      label: 'Program',
     ),
   ];
 

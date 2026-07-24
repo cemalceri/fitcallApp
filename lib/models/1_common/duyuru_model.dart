@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 // lib/models/duyuru/duyuru_model.dart
 
 class DuyuruModel {
@@ -38,7 +40,7 @@ class DuyuruModel {
     if (value == null) return DateTime.now();
     if (value is DateTime) return value;
     if (value is String && value.isNotEmpty) {
-      return DateTime.tryParse(value) ?? DateTime.now();
+      return parseApiTarih(value) ?? DateTime.now();
     }
     return DateTime.now();
   }
@@ -47,7 +49,7 @@ class DuyuruModel {
     if (value == null) return null;
     if (value is DateTime) return value;
     if (value is String && value.isNotEmpty) {
-      return DateTime.tryParse(value);
+      return parseApiTarih(value);
     }
     return null;
   }

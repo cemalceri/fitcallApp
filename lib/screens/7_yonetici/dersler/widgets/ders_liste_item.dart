@@ -14,6 +14,13 @@ class DersListeItemWidget extends StatelessWidget {
     this.onTap,
   });
 
+  String _katilimciMetni() {
+    final sayi = '${ders.katilimciSayisi} katılımcı';
+    if (ders.katilimcilar.isEmpty) return sayi;
+    final isimler = ders.katilimcilar.map((k) => k.adSoyad).take(2).join(', ');
+    return '$sayi • $isimler';
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -82,11 +89,16 @@ class DersListeItemWidget extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                               color: colorScheme.onSurface,
                             ),
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        _DurumBadge(
-                            durum: ders.durum, durumText: ders.durumText),
+                        const SizedBox(width: 6),
+                        // Badge dar alanda taşmasın diye küçülebilir
+                        Flexible(
+                          child: _DurumBadge(
+                              durum: ders.durum, durumText: ders.durumText),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -113,33 +125,19 @@ class DersListeItemWidget extends StatelessWidget {
                         Icon(Icons.people,
                             size: 12, color: colorScheme.onSurfaceVariant),
                         const SizedBox(width: 4),
-                        Text(
-                          '${ders.katilimciSayisi} katılımcı',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colorScheme.onSurfaceVariant,
+                        // Sayı + isimler tek esnek metinde: yazı büyüse de Row
+                        // taşmaz, fazlası ellipsis'e düşer.
+                        Expanded(
+                          child: Text(
+                            _katilimciMetni(),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (ders.katilimcilar.isNotEmpty) ...[
-                          Text(
-                            ' • ',
-                            style:
-                                TextStyle(color: colorScheme.onSurfaceVariant),
-                          ),
-                          Expanded(
-                            child: Text(
-                              ders.katilimcilar
-                                  .map((k) => k.adSoyad)
-                                  .take(2)
-                                  .join(', '),
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                   ],
@@ -188,6 +186,8 @@ class _DurumBadge extends StatelessWidget {
       ),
       child: Text(
         durumText,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w600,

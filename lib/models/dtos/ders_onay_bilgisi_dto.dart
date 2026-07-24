@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 /* ------------------------------ DTO: Onay --------------------------------- */
 class DersOnayBilgisi {
   final bool? tamamlandi;
@@ -15,7 +17,7 @@ class DersOnayBilgisi {
     DateTime? dt;
     final raw = m['onay_tarihi'];
     if (raw is String && raw.isNotEmpty) {
-      dt = DateTime.tryParse(raw)?.toLocal();
+      dt = parseApiTarih(raw)?.toLocal();
     }
     return DersOnayBilgisi(
       tamamlandi: m['tamamlandi'] as bool?,

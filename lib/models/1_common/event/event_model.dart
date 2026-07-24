@@ -1,3 +1,5 @@
+import 'package:fitcall/common/tarih_util.dart';
+
 class EventModel {
   final int id;
   final String ad;
@@ -27,8 +29,8 @@ class EventModel {
     return EventModel(
       id: json['id'] as int,
       ad: json['ad'] as String,
-      baslangic: DateTime.parse(json['baslangic'] as String),
-      bitis: DateTime.parse(json['bitis'] as String),
+      baslangic: parseApiTarihOrNow(json['baslangic'] as String),
+      bitis: parseApiTarihOrNow(json['bitis'] as String),
       mekan: json['mekan'] as String?,
       maxMisafirKisiBasi: json['max_misafir_kisi_basi'] as int?,
       aktifMi: json['aktif_mi'] as bool? ?? true,
