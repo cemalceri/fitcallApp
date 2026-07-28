@@ -10,12 +10,17 @@
 // edilemiyor; bu yüzden veriyle beslenen sunum widget'ları test ediliyor.
 // Yönetici program sayfasının gövdesi bu amaçla ProgramGorunumu'na ayrıldı.
 
+import 'package:fitcall/models/2_uye/gecmis_ders_model.dart';
 import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
+import 'package:fitcall/screens/2_uye/home/widgets/uye_bottom_bar.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_ozet_serit.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_next_lesson_card.dart';
+import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_view.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
 import 'package:fitcall/screens/7_yonetici/dersler/widgets/ders_liste_item.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/ders_iptal_dialog.dart';
@@ -32,6 +37,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'support/tasma_yardimcisi.dart';
 
+import 'package:fitcall/screens/3_antrenor/eksik_yoklama/widgets/eksik_yoklama_listesi.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_block.dart'
     as antrenor_blok;
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/week_day_selector.dart'
@@ -348,6 +354,13 @@ void main() {
       () => antrenor_blok.LessonBlock(ders: _etkinlik(iptal: true), onTap: () {}),
       sar: (w) => Center(child: SizedBox(width: 140, height: 60, child: w)),
     );
+
+    tasmaTesti('EksikYoklamaListesi', () {
+      return EksikYoklamaListesi(
+        dersler: [_etkinlik(katilimci: 6), _etkinlik(katilimci: 1)],
+        onDersTap: (_) {},
+      );
+    });
   });
 
   /* ===================== ÜYE ===================== */
@@ -389,5 +402,87 @@ void main() {
 
     tasmaTesti('UyeNextLessonCard (ders yok)',
         () => const UyeNextLessonCard(nextLesson: null));
+
+    tasmaTesti('UyeBottomBar', () => const UyeBottomBar());
+
+    tasmaTesti(
+        'UyeUrunListView', () => UyeUrunListView(urunler: _uyeUrunler()));
+
+    tasmaTesti('GecmisDerslerListesi', () {
+      return GecmisDerslerListesi(
+        dersler: _gecmisDersler(),
+        onDegerlendir: (_) {},
+      );
+    });
   });
 }
+
+/* ============================== ÜYE ÖRNEK VERİ ============================== */
+
+List<UyeUrunModel> _uyeUrunler() => [
+      UyeUrunModel.fromJson(const {
+        'id': 1,
+        'uye': 1,
+        'urun': 1,
+        'urun_adi': 'Yetişkin Grup Paketi (12 Ders) Uzun Ad',
+        'urun_tipi': 'PAKET',
+        'toplam_hak': 12,
+        'kalan_hak': 8,
+        'baslangic': '2026-01-01',
+        'bitis': '2026-07-01',
+        'aktif_mi': true,
+      }),
+      UyeUrunModel.fromJson(const {
+        'id': 2,
+        'uye': 1,
+        'urun': 2,
+        'urun_adi': 'Aylık Aidat Aboneliği',
+        'urun_tipi': 'ABONELIK',
+        'baslangic': '2026-01-01',
+        'bitis': '2026-12-31',
+        'aktif_mi': true,
+      }),
+      UyeUrunModel.fromJson(const {
+        'id': 3,
+        'uye': 1,
+        'urun': 3,
+        'urun_adi': 'Yetişkin-Tek-Ders-Üçlü',
+        'urun_tipi': 'TEK_SEFERLIK',
+        'baslangic': '2026-07-20',
+        'aktif_mi': false,
+        'dersler': [
+          {
+            'etkinlik_id': 10,
+            'tarih': '2026-07-24T10:00:00+03:00',
+            'kort_adi': 'Kapalı Kort 1',
+            'antrenor_adi': 'Ayşe Yılmaz Öğretmen',
+          },
+        ],
+      }),
+    ];
+
+List<GecmisDersModel> _gecmisDersler() => [
+      GecmisDersModel.fromJson(const {
+        'id': 1,
+        'baslangic_tarih_saat': '2026-07-20T10:00:00+03:00',
+        'bitis_tarih_saat': '2026-07-20T11:00:00+03:00',
+        'kort_adi': 'Kapalı Kort 1',
+        'antrenor_adi': 'Ayşe Yılmaz Öğretmen',
+        'urun_adi': 'Grup Dersi Paketi',
+        'seviye': 'Kirmizi',
+        'iptal_mi': false,
+        'katilim': {'katildi': true, 'plan_disi_mi': false, 'not_metni': 'İyi bir ders oldu, forehand çalışıldı.'},
+        'puanim': {'puan': 4, 'yorum': 'Teşekkürler'},
+      }),
+      GecmisDersModel.fromJson(const {
+        'id': 2,
+        'baslangic_tarih_saat': '2026-06-18T13:00:00+03:00',
+        'bitis_tarih_saat': '2026-06-18T14:00:00+03:00',
+        'kort_adi': 'Açık Kort 3',
+        'antrenor_adi': 'Mehmet Demir',
+        'urun_adi': 'Özel Ders',
+        'seviye': 'Mavi',
+        'iptal_mi': false,
+        'katilim': {'katildi': false, 'plan_disi_mi': false},
+      }),
+    ];

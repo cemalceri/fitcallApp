@@ -42,6 +42,7 @@ String dersDevirTalebiGeriCekUrl = "$baseUrl/dersDevirTalebiGeriCek";
 String getDersIcinAntrenorListesiUrl = "$baseUrl/getDersIcinAntrenorListesi";
 String getDersDevirTalebiDetayUrl = "$baseUrl/getDersDevirTalebiDetay";
 String getAntrenorGunlukOzetUrl = "$baseUrl/getAntrenorGunlukOzet";
+String getAntrenorEksikYoklamalarUrl = "$baseUrl/getAntrenorEksikYoklamalar";
 String getAntrenorOgrenciDetayUrl = "$baseUrl/getAntrenorOgrenciDetay";
 String getAntrenorCalismaGunleriUrl = "$baseUrl/getAntrenorCalismaGunleri";
 String setAntrenorCalismaGunleriUrl = "$baseUrl/setAntrenorCalismaGunleri";

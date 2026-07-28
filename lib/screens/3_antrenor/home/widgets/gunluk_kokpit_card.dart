@@ -181,7 +181,7 @@ class GunlukKokpitCard extends StatelessWidget {
         onTap: () {
           HapticFeedback.lightImpact();
           Navigator.pushNamed(
-              context, routeEnums[SayfaAdi.antrenorDersler]!);
+              context, routeEnums[SayfaAdi.antrenorEksikYoklama]!);
         },
         borderRadius: BorderRadius.circular(12),
         child: Container(

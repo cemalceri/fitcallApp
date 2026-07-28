@@ -113,6 +113,21 @@ class AntrenorApiService {
     );
   }
 
+  /// Yoklaması eksik dersler (bitmiş, iptalsiz, antrenör onayı olmayan).
+  /// [gun] son kaç günü kapsayacağı (varsayılan 30, backend 1..90 arası).
+  static Future<ApiResult<List<EtkinlikModel>>> getAntrenorEksikYoklamalar({
+    int gun = 30,
+  }) {
+    return ApiClient.postParsed<List<EtkinlikModel>>(
+      getAntrenorEksikYoklamalarUrl,
+      {'gun': gun},
+      (json) => ApiParsing.parseList<EtkinlikModel>(
+        json,
+        (m) => EtkinlikModel.fromMap(m),
+      ),
+    );
+  }
+
   /// Öğrenci detayı (profil, istatistik, paketler, notlar)
   static Future<ApiResult<OgrenciDetayModel>> getOgrenciDetay(int uyeId) {
     return ApiClient.postParsed<OgrenciDetayModel>(

@@ -18,12 +18,15 @@ import 'package:fitcall/screens/1_common/qr_kod_dogrula_page.dart';
 
 import 'package:fitcall/screens/2_uye/gecmis_dersler/gecmis_dersler_page.dart';
 import 'package:fitcall/screens/2_uye/profil/profil_page.dart';
+import 'package:fitcall/screens/2_uye/profil/widgets/telafi_haklari_page.dart';
+import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_page.dart';
 import 'package:fitcall/screens/6_muhasebe/muhasebe_page.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_talep_page.dart';
 
 import 'package:fitcall/screens/3_antrenor/home/antrenor_home_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_ogrenciler_page.dart';
+import 'package:fitcall/screens/3_antrenor/eksik_yoklama/antrenor_eksik_yoklama_page.dart';
 
 import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
@@ -38,12 +41,15 @@ enum SayfaAdi {
   qrKodDogrula,
   uyeAnasayfa,
   profil,
+  uyelikPaket,
+  telafiHaklari,
   muhasebe,
   dersler,
   uyeGecmisDersler,
   antrenorAnasayfa,
   antrenorProfil,
   antrenorDersler,
+  antrenorEksikYoklama,
   antrenorOgrenciler,
   uyeDersTalepleri,
   bildirimler,
@@ -63,12 +69,15 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.qrKodDogrula: '/qrKodDogrula',
   SayfaAdi.uyeAnasayfa: '/uyeAnasayfa',
   SayfaAdi.profil: '/profil',
+  SayfaAdi.uyelikPaket: '/uyelikPaket',
+  SayfaAdi.telafiHaklari: '/telafiHaklari',
   SayfaAdi.muhasebe: '/muhasebe',
   SayfaAdi.dersler: '/dersler',
   SayfaAdi.uyeGecmisDersler: '/uyeGecmisDersler',
   SayfaAdi.antrenorAnasayfa: '/antrenorAnasayfa',
   SayfaAdi.antrenorProfil: '/antrenor_profil',
   SayfaAdi.antrenorDersler: '/antrenor_dersler',
+  SayfaAdi.antrenorEksikYoklama: '/antrenor_eksik_yoklama',
   SayfaAdi.antrenorOgrenciler: '/antrenor_ogrenciler',
   SayfaAdi.uyeDersTalepleri: '/uyeDersTalepleri',
   SayfaAdi.bildirimler: '/bildirimler',
@@ -88,12 +97,16 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.qrKodDogrula]!: (c) => const QRKodDogrulaPage(),
   routeEnums[SayfaAdi.uyeAnasayfa]!: (c) => UyeHomePage(),
   routeEnums[SayfaAdi.profil]!: (c) => const ProfilePage(),
+  routeEnums[SayfaAdi.uyelikPaket]!: (c) => const UyeUrunListPage(),
+  routeEnums[SayfaAdi.telafiHaklari]!: (c) => const TelafiHaklariPage(),
   routeEnums[SayfaAdi.muhasebe]!: (c) => const MuhasebePage(),
   routeEnums[SayfaAdi.dersler]!: (c) => const DersListesiPage(),
   routeEnums[SayfaAdi.uyeGecmisDersler]!: (c) => const GecmisDerslerPage(),
   routeEnums[SayfaAdi.antrenorAnasayfa]!: (c) => AntrenorHomePage(),
   routeEnums[SayfaAdi.antrenorProfil]!: (c) => AntrenorProfilPage(),
   routeEnums[SayfaAdi.antrenorDersler]!: (c) => AntrenorTakvimPage(),
+  routeEnums[SayfaAdi.antrenorEksikYoklama]!: (c) =>
+      const AntrenorEksikYoklamaPage(),
   routeEnums[SayfaAdi.antrenorOgrenciler]!: (c) => AntrenorOgrencilerPage(),
   routeEnums[SayfaAdi.uyeDersTalepleri]!: (context) => DersTalepPage(
         secimJson: const {
@@ -125,6 +138,8 @@ enum AccessRule { anyone, anaHesapOnly }
 /// Hangi rotanın ana hesap zorunlu olacağını buradan yönet.
 final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.profil]!: AccessRule.anaHesapOnly,
+  routeEnums[SayfaAdi.uyelikPaket]!: AccessRule.anaHesapOnly,
+  routeEnums[SayfaAdi.telafiHaklari]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.muhasebe]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.uyeDersTalepleri]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.bildirimler]!: AccessRule.anaHesapOnly,

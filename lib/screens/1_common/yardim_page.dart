@@ -12,45 +12,79 @@ class YardimPage extends StatelessWidget {
       icon: Icons.person_add_outlined,
       question: 'Uygulamaya nasıl kayıt olurum?',
       answer:
-          'Kulüp yönetiminden aldığınız "davet kodu" ile kayıt ekranındaki ilgili'
-          ' alana kodu girin ve formu doldurun. Ardından hesabınız onaylandığında'
-          ' giriş yapabilirsiniz.',
+          'Giriş ekranındaki "Kayıt ol" ile bilgilerinizi doldurabilir ya da kulüpten'
+          ' aldığınız QR kodu okutarak kaydınızı başlatabilirsiniz. Hesabınız kulüp'
+          ' tarafından onaylandıktan sonra giriş yapabilirsiniz.',
     ),
     _FAQ(
       icon: Icons.calendar_month_outlined,
-      question: 'Ders nasıl rezerve ederim?',
+      question: 'Derslerimi nereden görürüm?',
       answer:
-          'Derslerim > Takvim sayfasına gidin, müsait saat seçin ve "Ders Talep Et"'
-          ' butonuna tıklayın. Antrenörünüz talebi onayladığında bildirim alırsınız.',
+          'Alt menüdeki "Takvim" (Derslerim) ekranından haftalık ders programınızı'
+          ' görürsünüz. Bir güne dokunup o günün derslerini, bir derse dokunup detayını'
+          ' inceleyebilirsiniz. Bir sonraki dersiniz ana sayfada da gösterilir.',
     ),
     _FAQ(
-      icon: Icons.cancel_outlined,
-      question: 'Ders iptal politikası nedir?',
+      icon: Icons.event_busy_outlined,
+      question: 'Bir derse gelemeyeceğimi nasıl bildiririm?',
       answer:
-          'Ders saatinden en az 24 saat önce iptal ederseniz hak düşmez. Daha geç'
-          ' iptallerde ders hakkınız kullanılmış sayılır.',
+          'Takvimde ilgili derse dokunun ve "Gelemeyeceğim" seçeneğiyle katılım'
+          ' durumunuzu bildirin ya da iptal talebi oluşturun. İptal koşulları'
+          ' (telafi/hak düşümü) kulübünüzün kurallarına göre işletilir.',
     ),
     _FAQ(
-      icon: Icons.payment_outlined,
-      question: 'Ödemeleri nasıl yaparım?',
+      icon: Icons.confirmation_number_outlined,
+      question: 'Kalan haklarımı ve paketlerimi nereden görürüm?',
       answer:
-          'Ödeme/Borç ekranında açık bakiyenizi görebilir ve kredi kartı ile anında'
-          ' ödeme gerçekleştirebilirsiniz. Ayrıca kulüp resepsiyonundan nakit veya'
-          ' EFT ile de ödeme yapabilirsiniz.',
+          'Ana sayfadaki "Kalan Haklarım" kartına ya da menüdeki "Üyelik/Paket'
+          ' Bilgilerim" bölümüne dokunun. Kayıtlarınız Paket, Aidat ve Tek Ders'
+          ' başlıkları altında gruplanır; başlığa dokununca içindeki kayıtlar açılır.',
     ),
     _FAQ(
-      icon: Icons.swap_horiz_outlined,
-      question: 'Antrenörümü nasıl değiştirebilirim?',
+      icon: Icons.event_repeat_rounded,
+      question: 'Telafi derslerim nedir, nereden takip ederim?',
       answer:
-          'Profil > Antrenörüm bölümünden "Değiştir"e basın ve listeden uygun'
-          ' antrenörü seçin. Kulüp onayından sonra değişiklik aktif olur.',
+          'Uygun koşullarda iptal edilen derslerden kazandığınız telafi haklarınızı'
+          ' ana sayfadaki "Telafi Derslerim" kartından veya menüden takip edebilir;'
+          ' geçerlilik tarihlerini ve kullanılan/aktif telafileri görebilirsiniz.',
     ),
     _FAQ(
-      icon: Icons.autorenew_outlined,
-      question: 'Paket haklarım ne zaman yenilenir?',
+      icon: Icons.account_balance_wallet_outlined,
+      question: 'Bakiyemi ve hesap hareketlerimi nasıl görürüm?',
       answer:
-          'Aylık paketlerde haklar her 30 günde bir, paket başlangıç tarihine'
-          ' göre otomatik olarak yenilenir.',
+          'Ana sayfadaki "Bakiye" kartına dokunarak hesap hareketlerinizi zaman'
+          ' tünelinde görebilirsiniz. Ödemeler kulübünüzün belirlediği yöntemlerle'
+          ' yapılır; ayrıntı için kulüp yönetimine başvurabilirsiniz.',
+    ),
+    _FAQ(
+      icon: Icons.history_rounded,
+      question: 'Geçmiş derslerimi görüp değerlendirebilir miyim?',
+      answer:
+          'Menüdeki "Geçmiş Dersler" ekranında tamamlanan derslerinizi aya göre'
+          ' listeler, katılım durumunu görür ve dilerseniz derse puan/yorum'
+          ' bırakabilirsiniz.',
+    ),
+    _FAQ(
+      icon: Icons.qr_code_rounded,
+      question: 'QR Giriş ne işe yarar?',
+      answer:
+          'Tesise girişte "QR Giriş" ekranındaki kodu okutarak hızlı giriş'
+          ' yapabilirsiniz. Kulübünüzde etkin bir etkinlik/davet varsa ilgili buton'
+          ' da bu ekranda görünür.',
+    ),
+    _FAQ(
+      icon: Icons.notifications_active_outlined,
+      question: 'Bildirim gelmiyor, ne yapmalıyım?',
+      answer:
+          'Menü > Hesabım (Profil) > Bildirim İzni bölümünden iznin açık olduğundan'
+          ' emin olun. Kapalıysa telefon ayarlarından uygulamaya bildirim izni verin.',
+    ),
+    _FAQ(
+      icon: Icons.switch_account_outlined,
+      question: 'Birden fazla profilim var, nasıl geçiş yaparım?',
+      answer:
+          'Hesabınıza birden fazla üye/antrenör profili bağlıysa, üst köşedeki profil'
+          ' alanından "Profil Seç" ekranına giderek istediğiniz profile geçebilirsiniz.',
     ),
   ];
 

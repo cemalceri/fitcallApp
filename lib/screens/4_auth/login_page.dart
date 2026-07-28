@@ -25,6 +25,10 @@ class _LoginPageState extends State<LoginPage> {
   bool _yukleniyor = false;
   bool _sifreGizli = true;
 
+  /// Beni-hatırla ile sessiz otomatik giriş sürüyor: form gizlenir, tam ekran
+  /// "Giriş yapılıyor…" gösterilir. Manuel girişte false kalır.
+  bool _otomatikGiris = false;
+
   String? _surumYazi; // vX.Y.Z (build)
 
   // Güvenli depoda saklanacak anahtarlar
@@ -85,7 +89,11 @@ class _LoginPageState extends State<LoginPage> {
     final p = await SecureStorageService.getValue<String>(_kRememberPass);
     if (u == null || u.isEmpty || p == null || p.isEmpty) return;
 
-    setState(() => _yukleniyor = true);
+    // Otomatik giriş: formu gizle, tam ekran açılış göster.
+    setState(() {
+      _otomatikGiris = true;
+      _yukleniyor = true;
+    });
     try {
       final result = await AuthService.fetchMyMembers(u, p);
       final profiller = result.profiller;
@@ -97,8 +105,12 @@ class _LoginPageState extends State<LoginPage> {
       );
     } catch (_) {
       // oto login sessiz düşsün; kullanıcı manuel giriş yapabilir
-    } finally {
-      if (mounted) setState(() => _yukleniyor = false);
+      if (mounted) {
+        setState(() {
+          _otomatikGiris = false;
+          _yukleniyor = false;
+        });
+      }
     }
   }
 
@@ -178,13 +190,69 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: _buildGlassContainer(isDark),
+          child: _otomatikGiris
+              ? _buildGirisYapiliyor(isDark)
+              : Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: _buildGlassContainer(isDark),
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+
+  /// Beni-hatırla otomatik girişinde gösterilen tam ekran açılış.
+  Widget _buildGirisYapiliyor(bool isDark) {
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.white.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.2)
+                      : Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Image.asset(
+              'assets/images/logo.png',
+              width: 96,
+              height: 96,
             ),
           ),
-        ),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(textColor),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Giriş yapılıyor…',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -13,10 +13,15 @@ class UyeHeader extends StatelessWidget {
   final String uyeAdi;
   final bool hasMultipleProfiles;
 
+  /// Sol üstteki menü (hamburger) butonuna dokununca çağrılır. null ise buton
+  /// gizlenir.
+  final VoidCallback? onMenuTap;
+
   const UyeHeader({
     super.key,
     required this.uyeAdi,
     required this.hasMultipleProfiles,
+    this.onMenuTap,
   });
 
   String _getGreeting() {
@@ -53,9 +58,32 @@ class UyeHeader extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 8, 16),
+      padding: const EdgeInsets.fromLTRB(8, 12, 8, 16),
       child: Row(
         children: [
+          // Sol üst: Menü (hamburger)
+          if (onMenuTap != null)
+            IconButton(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                onMenuTap!.call();
+              },
+              tooltip: 'Menü',
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.menu_rounded,
+                  size: 22,
+                  color: colorScheme.primary,
+                ),
+              ),
+            ),
+          if (onMenuTap == null) const SizedBox(width: 12),
+
           // Sol: Karşılama
           Expanded(
             child: Column(

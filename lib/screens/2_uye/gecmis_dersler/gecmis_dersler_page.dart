@@ -4,13 +4,13 @@
 import 'package:fitcall/models/2_uye/gecmis_ders_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
+import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
 import 'package:fitcall/screens/2_uye/takvim/widgets/ders_degerlendirme_popup.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
 class GecmisDerslerPage extends StatefulWidget {
   const GecmisDerslerPage({super.key});
@@ -131,20 +131,10 @@ class _GecmisDerslerPageState extends State<GecmisDerslerPage> {
               onRefresh: _yukle,
               child: _dersler.isEmpty
                   ? _bosDurum(colorScheme)
-                  : ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _dersler.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == _dersler.length) {
-                          return _dahaEskiButonu(colorScheme);
-                        }
-                        return _DersKarti(
-                          ders: _dersler[index],
-                          onDegerlendir: () =>
-                              _degerlendirmeAc(_dersler[index]),
-                        );
-                      },
+                  : GecmisDerslerListesi(
+                      dersler: _dersler,
+                      onDegerlendir: _degerlendirmeAc,
+                      footer: _dahaEskiButonu(colorScheme),
                     ),
             ),
     );
@@ -197,188 +187,6 @@ class _GecmisDerslerPageState extends State<GecmisDerslerPage> {
                 icon: const Icon(Icons.expand_more_rounded),
                 label: const Text('Daha eski dersleri göster'),
               ),
-      ),
-    );
-  }
-}
-
-class _DersKarti extends StatelessWidget {
-  final GecmisDersModel ders;
-  final VoidCallback onDegerlendir;
-
-  const _DersKarti({required this.ders, required this.onDegerlendir});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final tarihFmt = DateFormat('d MMMM EEEE', 'tr_TR');
-    final saatFmt = DateFormat('HH:mm');
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${tarihFmt.format(ders.baslangicTarihSaat)} · '
-                  '${saatFmt.format(ders.baslangicTarihSaat)}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              _durumRozeti(),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            [
-              if (ders.kortAdi.isNotEmpty) ders.kortAdi,
-              if (ders.antrenorAdi.isNotEmpty) ders.antrenorAdi,
-              if (ders.urunAdi.isNotEmpty) ders.urunAdi,
-            ].join(' · '),
-            style: TextStyle(
-              fontSize: 13,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          if (ders.katilim?.notMetni != null &&
-              ders.katilim!.notMetni!.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest
-                    .withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.sticky_note_2_outlined,
-                      size: 16, color: colorScheme.onSurfaceVariant),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      ders.katilim!.notMetni!,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          if (!ders.iptalMi) ...[
-            const SizedBox(height: 10),
-            _degerlendirmeSatiri(colorScheme),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _durumRozeti() {
-    final String metin;
-    final Color renk;
-
-    if (ders.iptalMi) {
-      metin = 'İptal';
-      renk = const Color(0xFF94A3B8);
-    } else if (ders.katilim != null) {
-      if (ders.katilim!.katildi) {
-        metin = ders.katilim!.planDisiMi ? 'Katıldı (Plan dışı)' : 'Katıldı';
-        renk = const Color(0xFF10B981);
-      } else {
-        metin = 'Katılmadı';
-        renk = const Color(0xFFEF4444);
-      }
-    } else if (ders.dersYapildi == true) {
-      metin = 'Ders yapıldı';
-      renk = const Color(0xFF10B981);
-    } else if (ders.dersYapildi == false) {
-      metin = 'Ders yapılmadı';
-      renk = const Color(0xFFF59E0B);
-    } else {
-      metin = 'Sonuç girilmedi';
-      renk = const Color(0xFF94A3B8);
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: renk.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        metin,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: renk,
-        ),
-      ),
-    );
-  }
-
-  Widget _degerlendirmeSatiri(ColorScheme colorScheme) {
-    if (ders.puanim != null) {
-      return Row(
-        children: [
-          ...List.generate(5, (i) {
-            return Icon(
-              i < ders.puanim!.puan
-                  ? Icons.star_rounded
-                  : Icons.star_outline_rounded,
-              size: 18,
-              color: const Color(0xFFF59E0B),
-            );
-          }),
-          if (ders.puanim!.yorum != null &&
-              ders.puanim!.yorum!.isNotEmpty) ...[
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                ders.puanim!.yorum!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ],
-        ],
-      );
-    }
-
-    return Align(
-      alignment: Alignment.centerRight,
-      child: TextButton.icon(
-        onPressed: onDegerlendir,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        icon: const Icon(Icons.star_outline_rounded, size: 18),
-        label: const Text('Değerlendir', style: TextStyle(fontSize: 13)),
       ),
     );
   }

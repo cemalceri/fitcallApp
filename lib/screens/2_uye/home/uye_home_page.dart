@@ -11,8 +11,9 @@ import 'package:fitcall/models/1_common/event/event_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/duyuru_carousel.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_header.dart';
-import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_menu_grid.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_next_lesson_card.dart';
+import 'package:fitcall/screens/2_uye/home/widgets/uye_bottom_bar.dart';
+import 'package:fitcall/screens/2_uye/home/widgets/uye_drawer.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_ozet_serit.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/info_cards_carousel.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -32,6 +33,8 @@ class UyeHomePage extends StatefulWidget {
 }
 
 class _UyeHomePageState extends State<UyeHomePage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   // Haftalık ders verileri
   bool _loadingWeek = true;
   EtkinlikModel? _nextLesson;
@@ -187,6 +190,14 @@ class _UyeHomePageState extends State<UyeHomePage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: UyeDrawer(
+        uyeAdi: _uyeAdi,
+        aktifEvent: _aktifEvent,
+        userId: _userId,
+        onEventReturn: _checkAktifEvent,
+      ),
+      bottomNavigationBar: const UyeBottomBar(),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -210,6 +221,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
                   child: UyeHeader(
                     uyeAdi: _uyeAdi,
                     hasMultipleProfiles: _hasMultipleProfiles,
+                    onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
                 ),
 
@@ -234,18 +246,6 @@ class _UyeHomePageState extends State<UyeHomePage> {
                       title: 'Yapılacaklar',
                       hideWhenEmpty: true,
                       onCardTap: _onYapilacakKartTap,
-                    ),
-                  ),
-                ),
-
-                // ========== MENÜ GRID ==========
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: UyeMenuGrid(
-                      aktifEvent: _aktifEvent,
-                      userId: _userId,
-                      onEventReturn: _checkAktifEvent,
                     ),
                   ),
                 ),

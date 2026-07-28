@@ -1,7 +1,7 @@
 import 'package:fitcall/models/8_urun/uye_urun_model.dart';
+import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_view.dart';
 import 'package:fitcall/services/urun/urun_api_service.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 
@@ -33,53 +33,69 @@ class _UyeUrunListPageState extends State<UyeUrunListPage> {
     }
   }
 
+  Future<void> _refresh() async {
+    final f = _fetchUrunler();
+    setState(() => _future = f);
+    await f;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final dfDate = DateFormat('dd.MM.yyyy');
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Üyelik/Paket Bilgilerim')),
-      body: FutureBuilder<List<UyeUrunModel>>(
-        future: _future,
-        builder: (context, snap) {
-          if (snap.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snap.hasError) {
-            return Center(child: Text('Hata: ${snap.error}'));
-          } else if (snap.data == null || snap.data!.isEmpty) {
-            return const Center(child: Text('Kayıt bulunamadı'));
-          }
-
-          final list = snap.data!;
-          return ListView.separated(
-            padding: const EdgeInsets.all(12),
-            itemCount: list.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemBuilder: (_, i) {
-              final u = list[i];
-              final hakBilgi = (u.toplamHak != null)
-                  ? 'Kalan: ${u.kalanHak}/${u.toplamHak}'
-                  : 'Başlangıç Tarihi: ${dfDate.format(u.baslangic)}'
-                      ' - ${u.bitis != null ? dfDate.format(u.bitis!) : "-"}';
-
-              return ListTile(
-                leading: Icon(
-                  Icons.card_membership,
-                  color: u.aktifMi ? Colors.green : Colors.grey,
-                ),
-                title: Text(u.urunAdi),
-                subtitle: Text(hakBilgi),
-                trailing: Chip(
-                  label: Text(u.aktifMi ? 'Aktif' : 'Pasif'),
-                  backgroundColor:
-                      u.aktifMi ? Colors.green : Colors.grey.shade400,
-                  labelStyle: const TextStyle(color: Colors.white),
-                ),
-              );
-            },
-          );
-        },
+      backgroundColor: theme.colorScheme.surface,
+      appBar: AppBar(
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Üyelik/Paket Bilgilerim',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
       ),
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: FutureBuilder<List<UyeUrunModel>>(
+          future: _future,
+          builder: (context, snap) {
+            if (snap.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snap.hasError) {
+              return _buildHata(context, '${snap.error}');
+            }
+
+            final list = snap.data ?? const <UyeUrunModel>[];
+            // ListView içeriği boş olsa da RefreshIndicator çalışsın diye
+            // her durumda kaydırılabilir bir gövde döndürüyoruz.
+            return UyeUrunListView(urunler: list);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHata(BuildContext context, String mesaj) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return ListView(
+      children: [
+        const SizedBox(height: 80),
+        Icon(Icons.error_outline_rounded,
+            size: 56, color: colorScheme.error.withValues(alpha: 0.7)),
+        const SizedBox(height: 12),
+        Center(
+          child: Text('Bilgiler alınamadı',
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface)),
+        ),
+        const SizedBox(height: 4),
+        Center(
+          child: Text(mesaj,
+              style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+              textAlign: TextAlign.center),
+        ),
+      ],
     );
   }
 }
