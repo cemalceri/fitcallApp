@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 
 /// Üye ana sayfasının alt hızlı erişim barı.
 ///
-/// 5 buton: Takvim · Geçmiş Ders · [merkez] QR Giriş · Bilgilerim · Hesabım.
+/// 5 buton: Takvim · Geçmiş Ders · [merkez] QR Giriş · Hareketler · Hesabım.
 /// Yalnızca ana sayfada gösterilir; butonlar ilgili sayfaları named route ile
 /// açar (kalıcı sekme kabuğu değildir).
 class UyeBottomBar extends StatelessWidget {
@@ -61,10 +61,10 @@ class UyeBottomBar extends StatelessWidget {
                 onTap: () => _git(context, routeEnums[SayfaAdi.qrKodKayit]!),
               ),
               _BarItem(
-                icon: Icons.card_membership_rounded,
-                label: 'Bilgilerim',
-                color: const Color(0xFF6366F1),
-                onTap: () => _git(context, routeEnums[SayfaAdi.uyelikPaket]!),
+                icon: Icons.account_balance_wallet_rounded,
+                label: 'Hareketler',
+                color: const Color(0xFF0EA5E9),
+                onTap: () => _git(context, routeEnums[SayfaAdi.muhasebe]!),
               ),
               _BarItem(
                 icon: Icons.person_rounded,

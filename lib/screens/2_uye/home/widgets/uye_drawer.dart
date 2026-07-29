@@ -118,7 +118,7 @@ class UyeDrawer extends StatelessWidget {
                   ),
                   _DrawerItem(
                     icon: Icons.card_membership_rounded,
-                    title: 'Üyelik/Paket Bilgilerim',
+                    title: 'Üyelik & Paket Bilgilerim',
                     color: const Color(0xFF6366F1),
                     onTap: () =>
                         _git(context, routeEnums[SayfaAdi.uyelikPaket]!),

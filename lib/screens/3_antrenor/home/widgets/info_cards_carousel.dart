@@ -41,12 +41,18 @@ class InfoCardsCarousel extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Row(
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
+              // Flexible: dar ekran + büyük yazı ölçeğinde başlık taşmasın,
+              // sayaç rozetini itmeden kısalsın.
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -71,7 +77,7 @@ class InfoCardsCarousel extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 160,
+          height: infoCardYuksekligi(context),
           child: isLoading
               ? _buildLoadingState()
               : cards.isEmpty

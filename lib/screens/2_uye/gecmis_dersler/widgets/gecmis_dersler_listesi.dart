@@ -102,23 +102,28 @@ class _DersKarti extends StatelessWidget {
   const _DersKarti({required this.ders, required this.onDegerlendir});
 
   _DersDurum get _durum {
-    if (ders.iptalMi) return const _DersDurum('İptal', Color(0xFF94A3B8));
+    // İptal → kırmızı
+    if (ders.iptalMi) return const _DersDurum('İptal', Color(0xFFEF4444));
     if (ders.katilim != null) {
       if (ders.katilim!.katildi) {
+        // Katıldı / yapıldı → yeşil
         return _DersDurum(
           ders.katilim!.planDisiMi ? 'Katıldı (Plan dışı)' : 'Katıldı',
           const Color(0xFF10B981),
         );
       }
-      return const _DersDurum('Katılmadı', Color(0xFFEF4444));
+      // Üye katılmadı → gül (iptalin kırmızısından ayrışsın)
+      return const _DersDurum('Katılmadı', Color(0xFFF43F5E));
     }
     if (ders.dersYapildi == true) {
       return const _DersDurum('Ders yapıldı', Color(0xFF10B981));
     }
     if (ders.dersYapildi == false) {
-      return const _DersDurum('Ders yapılmadı', Color(0xFFF59E0B));
+      // Yöneticinin "yapılmadı" işareti → nötr gri
+      return const _DersDurum('Ders yapılmadı', Color(0xFF64748B));
     }
-    return const _DersDurum('Sonuç girilmedi', Color(0xFF94A3B8));
+    // Henüz sonuç girilmemiş → üye için "Kulüp onayında", sarı
+    return const _DersDurum('Kulüp onayında', Color(0xFFF59E0B));
   }
 
   @override

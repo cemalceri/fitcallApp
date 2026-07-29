@@ -87,6 +87,25 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
       groupedProfiles.putIfAbsent(p.rol, () => []).add(p);
     }
 
+    // Grupları sabit sırayla göster (Yönetici → Antrenör → Üye → Kafe → diğer);
+    // her grup içinde profilleri ada göre alfabetik sırala. Aksi halde gruplar
+    // en son eklenen veriye göre rastgele sırada geliyordu.
+    const rolSirasi = ['yonetici', 'antrenor', 'uye', 'cafe'];
+    int rolIndex(String r) {
+      final i = rolSirasi.indexOf(r);
+      return i == -1 ? rolSirasi.length : i;
+    }
+
+    final siraliRoller = groupedProfiles.keys.toList()
+      ..sort((a, b) {
+        final c = rolIndex(a).compareTo(rolIndex(b));
+        return c != 0 ? c : a.compareTo(b);
+      });
+    for (final list in groupedProfiles.values) {
+      list.sort((a, b) =>
+          _profilAdi(a).toLowerCase().compareTo(_profilAdi(b).toLowerCase()));
+    }
+
     final isEmpty = widget.kullaniciProfilList.isEmpty;
 
     return Scaffold(
@@ -152,8 +171,9 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                 Expanded(
                   child: ListView(
                     physics: const BouncingScrollPhysics(),
-                    children: groupedProfiles.entries
-                        .map((e) => _buildRoleSection(e.key, e.value))
+                    children: siraliRoller
+                        .map((rol) =>
+                            _buildRoleSection(rol, groupedProfiles[rol]!))
                         .toList(),
                   ),
                 ),
@@ -258,11 +278,15 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     );
   }
 
-  Widget _buildProfileCard(KullaniciProfilModel p, _RolTheme theme) {
+  String _profilAdi(KullaniciProfilModel p) {
     final ad = p.uye?.adi ?? p.antrenor?.adi ?? p.user.firstName;
     final soy = p.uye?.soyadi ?? p.antrenor?.soyadi ?? p.user.lastName;
     final tamAd = '$ad $soy'.trim();
-    final displayName = tamAd.isEmpty ? p.user.username : tamAd;
+    return tamAd.isEmpty ? p.user.username : tamAd;
+  }
+
+  Widget _buildProfileCard(KullaniciProfilModel p, _RolTheme theme) {
+    final displayName = _profilAdi(p);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

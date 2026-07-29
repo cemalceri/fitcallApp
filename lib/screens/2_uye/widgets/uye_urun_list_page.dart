@@ -49,7 +49,7 @@ class _UyeUrunListPageState extends State<UyeUrunListPage> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         title: const Text(
-          'Üyelik/Paket Bilgilerim',
+          'Üyelik & Paket Bilgilerim',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),

@@ -12,79 +12,118 @@ class YardimPage extends StatelessWidget {
       icon: Icons.person_add_outlined,
       question: 'Uygulamaya nasıl kayıt olurum?',
       answer:
-          'Giriş ekranındaki "Kayıt ol" ile bilgilerinizi doldurabilir ya da kulüpten'
-          ' aldığınız QR kodu okutarak kaydınızı başlatabilirsiniz. Hesabınız kulüp'
-          ' tarafından onaylandıktan sonra giriş yapabilirsiniz.',
+          'Giriş ekranındaki "Kayıt ol" bağlantısıyla bilgilerinizi doldurarak kayıt'
+          ' başvurusunda bulunabilirsiniz. Başvurunuz kulüp tarafından onaylandığında'
+          ' hesabınız aktifleşir; kullanıcı adınız ve şifreniz SMS ve e-posta yoluyla'
+          ' size iletilir.',
+    ),
+    _FAQ(
+      icon: Icons.dashboard_outlined,
+      question: 'Ana sayfada neler var, menüye nasıl ulaşırım?',
+      answer:
+          'En üstte bakiyenizi, kalan haklarınızı ve telafi derslerinizi özet'
+          ' kartlarında görürsünüz. "Yapılacaklar" bölümünde sizi bekleyen işlemler'
+          ' (katılım bildirimi, ödeme, ders değerlendirmesi) listelenir. Alttaki'
+          ' çubuktan Takvim, Geçmiş, QR, Hareketler ve Hesabım sayfalarına; sol'
+          ' üstteki ☰ menüsünden ise tüm sayfalara ve Yardım\'a ulaşabilirsiniz.',
     ),
     _FAQ(
       icon: Icons.calendar_month_outlined,
       question: 'Derslerimi nereden görürüm?',
       answer:
-          'Alt menüdeki "Takvim" (Derslerim) ekranından haftalık ders programınızı'
-          ' görürsünüz. Bir güne dokunup o günün derslerini, bir derse dokunup detayını'
-          ' inceleyebilirsiniz. Bir sonraki dersiniz ana sayfada da gösterilir.',
+          'Alttaki "Takvim" ekranından haftalar ve günler arasında gezinerek geçmiş'
+          ' ve planlanan derslerinizi görebilirsiniz. Bir güne dokunduğunuzda o günün'
+          ' dersleri, bir derse dokunduğunuzda dersin detayları açılır. Sıradaki'
+          ' dersiniz ana sayfada da gösterilir.',
+    ),
+    _FAQ(
+      icon: Icons.how_to_reg_outlined,
+      question: 'Bir derse katılıp katılmayacağımı nasıl bildiririm?',
+      answer:
+          'Kulüp bir ders için görüş istediğinde ana sayfada "Katılım geri bildirimi'
+          ' bekleniyor" kartı görünür. Bu karta dokunduğunuzda bekleyen dersleriniz'
+          ' listelenir; dersi seçip "Katılacağım" veya "Katılamayacağım" olarak'
+          ' durumunuzu bildirebilirsiniz. Aynı istek size bildirim olarak da'
+          ' ulaşabilir.',
     ),
     _FAQ(
       icon: Icons.event_busy_outlined,
-      question: 'Bir derse gelemeyeceğimi nasıl bildiririm?',
+      question: 'Bir derse katılamayacağımı nasıl bildiririm?',
       answer:
-          'Takvimde ilgili derse dokunun ve "Gelemeyeceğim" seçeneğiyle katılım'
-          ' durumunuzu bildirin ya da iptal talebi oluşturun. İptal koşulları'
-          ' (telafi/hak düşümü) kulübünüzün kurallarına göre işletilir.',
+          'Takvimde ilgili derse dokunup "Katılamayacağım" ile durumunuzu'
+          ' iletebilirsiniz. Ders saatinden en az 24 saat önce yapılan bildirimlerde'
+          ' telafi hakkı tanımlanır ve ders bir pakete dahilse paketinizden düşülmez.'
+          ' İstisnai durumlarda kulüple iletişime geçmeniz gerekir; telafi hakkının'
+          ' tanımlanması kulübün değerlendirmesindedir.',
+    ),
+    _FAQ(
+      icon: Icons.notifications_active_outlined,
+      question: 'Dersimi telefon takvimime ekleyebilir miyim?',
+      answer:
+          'Yaklaşan bir dersin detayında "Telefon Takvimine Ekle" butonuyla dersi'
+          ' cihazınızın takvimine kaydedebilirsiniz. Böylece telefonunuz ders'
+          ' öncesinde sizi hatırlatır.',
     ),
     _FAQ(
       icon: Icons.confirmation_number_outlined,
       question: 'Kalan haklarımı ve paketlerimi nereden görürüm?',
       answer:
-          'Ana sayfadaki "Kalan Haklarım" kartına ya da menüdeki "Üyelik/Paket'
-          ' Bilgilerim" bölümüne dokunun. Kayıtlarınız Paket, Aidat ve Tek Ders'
-          ' başlıkları altında gruplanır; başlığa dokununca içindeki kayıtlar açılır.',
+          'Ana sayfadaki "Kalan Haklarım" kartına ya da menüdeki "Üyelik & Paket'
+          ' Bilgilerim" bölümüne dokunabilirsiniz. Kayıtlarınız Paket, Aidat ve Tek'
+          ' Ders başlıkları altında gruplanır; bir başlığa dokunduğunuzda o gruptaki'
+          ' kayıtlar açılır.',
     ),
     _FAQ(
       icon: Icons.event_repeat_rounded,
       question: 'Telafi derslerim nedir, nereden takip ederim?',
       answer:
-          'Uygun koşullarda iptal edilen derslerden kazandığınız telafi haklarınızı'
-          ' ana sayfadaki "Telafi Derslerim" kartından veya menüden takip edebilir;'
-          ' geçerlilik tarihlerini ve kullanılan/aktif telafileri görebilirsiniz.',
+          'Uygun koşullarda katılamadığınız derslerden kazandığınız telafi'
+          ' haklarınızı ana sayfadaki "Telafi Derslerim" kartından veya menüden takip'
+          ' edebilirsiniz. Geçerlilik tarihlerini, kullanılan ve aktif telafilerinizi'
+          ' burada görürsünüz.',
     ),
     _FAQ(
       icon: Icons.account_balance_wallet_outlined,
       question: 'Bakiyemi ve hesap hareketlerimi nasıl görürüm?',
       answer:
-          'Ana sayfadaki "Bakiye" kartına dokunarak hesap hareketlerinizi zaman'
-          ' tünelinde görebilirsiniz. Ödemeler kulübünüzün belirlediği yöntemlerle'
-          ' yapılır; ayrıntı için kulüp yönetimine başvurabilirsiniz.',
+          'Ana sayfadaki "Bakiye" kartına ya da alttaki "Hareketler" butonuna'
+          ' dokunarak hesap hareketlerinizi zaman tüneli halinde görebilirsiniz.'
+          ' Ödemeler kulübünüzün belirlediği yöntemlerle yapılır; ayrıntılı bilgi için'
+          ' kulüp yönetimine başvurabilirsiniz.',
     ),
     _FAQ(
       icon: Icons.history_rounded,
       question: 'Geçmiş derslerimi görüp değerlendirebilir miyim?',
       answer:
-          'Menüdeki "Geçmiş Dersler" ekranında tamamlanan derslerinizi aya göre'
-          ' listeler, katılım durumunu görür ve dilerseniz derse puan/yorum'
-          ' bırakabilirsiniz.',
+          'Alttaki "Geçmiş" ekranında tamamlanan derslerinizi aya göre'
+          ' listeleyebilir, dilerseniz derse puan ve yorum bırakabilirsiniz. Ders'
+          ' durumları renklerle gösterilir: yeşil katıldığınız/yapılan dersler,'
+          ' kırmızı iptaller, sarı ise sonucu henüz girilmemiş (kulüp onayında)'
+          ' derslerdir.',
     ),
     _FAQ(
       icon: Icons.qr_code_rounded,
       question: 'QR Giriş ne işe yarar?',
       answer:
-          'Tesise girişte "QR Giriş" ekranındaki kodu okutarak hızlı giriş'
-          ' yapabilirsiniz. Kulübünüzde etkin bir etkinlik/davet varsa ilgili buton'
-          ' da bu ekranda görünür.',
+          'Tesise girişte alttaki "QR Giriş" ekranındaki kodu okutarak hızlıca giriş'
+          ' yapabilirsiniz. Kulübünüzde aktif bir etkinlik veya davet varsa, ilgili'
+          ' buton da bu ekranda görünür.',
     ),
     _FAQ(
-      icon: Icons.notifications_active_outlined,
+      icon: Icons.notifications_off_outlined,
       question: 'Bildirim gelmiyor, ne yapmalıyım?',
       answer:
-          'Menü > Hesabım (Profil) > Bildirim İzni bölümünden iznin açık olduğundan'
-          ' emin olun. Kapalıysa telefon ayarlarından uygulamaya bildirim izni verin.',
+          'Bildirimleri alabilmek için telefonunuzun ayarlarından uygulamaya bildirim'
+          ' izni verdiğinizden emin olun. İzin kapalıyken yaklaşan ders, katılım'
+          ' bildirimi ve duyuru bildirimleri size ulaşmaz.',
     ),
     _FAQ(
       icon: Icons.switch_account_outlined,
       question: 'Birden fazla profilim var, nasıl geçiş yaparım?',
       answer:
-          'Hesabınıza birden fazla üye/antrenör profili bağlıysa, üst köşedeki profil'
-          ' alanından "Profil Seç" ekranına giderek istediğiniz profile geçebilirsiniz.',
+          'Hesabınıza birden fazla üye veya antrenör profili bağlıysa, üst köşedeki'
+          ' profil alanından "Profil Seç" ekranına geçerek dilediğiniz profile geçiş'
+          ' yapabilirsiniz.',
     ),
   ];
 

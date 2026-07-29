@@ -4,6 +4,14 @@ import 'package:fitcall/models/3_antrenor/home_card_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// Yapılacaklar/özet kartının yüksekliği. Taban 172px; erişilebilirlik yazı
+/// ölçeğiyle (uygulama clamp'i [1.0, 1.3]) büyür ki 1.3x'te değer+başlık+alt
+/// başlık+aksiyon dizisi taşmasın. Kart ve carousel aynı değeri kullanır.
+double infoCardYuksekligi(BuildContext context) {
+  final olcek = MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.3);
+  return 172.0 * olcek;
+}
+
 class InfoCardItem extends StatelessWidget {
   final HomeCardModel card;
   final VoidCallback? onTap;
@@ -16,10 +24,9 @@ class InfoCardItem extends StatelessWidget {
     this.onDismiss,
   });
 
-  static const double _cardHeight = 160;
-
   @override
   Widget build(BuildContext context) {
+    final cardHeight = infoCardYuksekligi(context);
     return Container(
       width: 260,
       margin: const EdgeInsets.only(right: 12),
@@ -81,9 +88,10 @@ class InfoCardItem extends StatelessWidget {
                   ),
                 ),
 
-                // ✅ DÜZELTILDI - Taşma sorunu tamamen çözüldü
+                // Kart yüksekliği yazı ölçeğiyle büyür (bkz. infoCardYuksekligi)
+                // → 1.3x erişilebilirlik ayarında içerik taşmaz.
                 SizedBox(
-                  height: _cardHeight,
+                  height: cardHeight,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -251,7 +259,7 @@ class InfoCardItemSkeleton extends StatelessWidget {
 
     return Container(
       width: 260,
-      height: 160,
+      height: infoCardYuksekligi(context),
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),

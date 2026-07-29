@@ -16,8 +16,8 @@ class UyeUrunListView extends StatefulWidget {
 }
 
 class _UyeUrunListViewState extends State<UyeUrunListView> {
-  // Varsayılan: tüm gruplar açık.
-  final Set<String> _acikGruplar = {'PAKET', 'ABONELIK', 'TEK_SEFERLIK', 'DIGER'};
+  // Varsayılan: tüm gruplar kapalı (sayfa açıldığında liste kapalı gelir).
+  final Set<String> _acikGruplar = <String>{};
 
   @override
   Widget build(BuildContext context) {
@@ -247,8 +247,12 @@ class _UrunKart extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              _DurumRozet(aktif: urun.aktifMi),
+              // Tek derslerde Aktif/Pasif rozeti gösterme; kart zaten yapılan
+              // ders bilgisini listeler.
+              if (!urun.isTekDers) ...[
+                const SizedBox(width: 8),
+                _DurumRozet(aktif: urun.aktifMi),
+              ],
             ],
           ),
           const SizedBox(height: 10),

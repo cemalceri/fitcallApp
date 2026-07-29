@@ -4,6 +4,7 @@ import 'package:fitcall/screens/2_uye/takvim/uye_takvim_page.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/antrenor_takvim_page.dart';
 import 'package:fitcall/screens/4_auth/forgot_password_page.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
+import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
 import 'package:fitcall/screens/7_yonetici/yonetici_main_page.dart';
 import 'package:fitcall/screens/7_yonetici/program/yonetici_program_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
@@ -56,6 +57,7 @@ enum SayfaAdi {
   yoneticiAnasayfa,
   yoneticiProgram,
   dersTeyit,
+  teyitBekleyen,
   yardim,
 }
 
@@ -84,6 +86,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
   SayfaAdi.yoneticiProgram: '/yoneticiProgram',
   SayfaAdi.dersTeyit: '/dersTeyit',
+  SayfaAdi.teyitBekleyen: '/teyitBekleyen',
   SayfaAdi.yardim: '/yardim',
 };
 
@@ -121,6 +124,7 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiMainPage(),
   routeEnums[SayfaAdi.yoneticiProgram]!: (c) => const YoneticiProgramPage(),
   routeEnums[SayfaAdi.dersTeyit]!: (c) => const DersTeyitPage(),
+  routeEnums[SayfaAdi.teyitBekleyen]!: (c) => const TeyitBekleyenlerPage(),
   routeEnums[SayfaAdi.yardim]!: (c) => const YardimPage(),
 };
 

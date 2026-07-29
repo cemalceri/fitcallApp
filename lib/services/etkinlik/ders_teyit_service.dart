@@ -1,9 +1,40 @@
 // lib/services/etkinlik/ders_teyit_service.dart
 
 import 'package:fitcall/common/api_urls.dart';
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
+
+/// Teyit bekleyen (katılım bildirimi cevaplanmamış) tek ders satırı.
+class TeyitBekleyenDers {
+  final int etkinlikId;
+  final int uyeId;
+  final DateTime baslangic;
+  final DateTime bitis;
+  final String kortAdi;
+  final String antrenorAdi;
+
+  TeyitBekleyenDers({
+    required this.etkinlikId,
+    required this.uyeId,
+    required this.baslangic,
+    required this.bitis,
+    required this.kortAdi,
+    required this.antrenorAdi,
+  });
+
+  factory TeyitBekleyenDers.fromJson(Map<String, dynamic> j) {
+    return TeyitBekleyenDers(
+      etkinlikId: (j['etkinlik_id'] as num).toInt(),
+      uyeId: (j['uye_id'] as num?)?.toInt() ?? 0,
+      baslangic: parseApiTarihOrNow(j['baslangic_tarih_saat']),
+      bitis: parseApiTarihOrNow(j['bitis_tarih_saat']),
+      kortAdi: j['kort_adi']?.toString() ?? '',
+      antrenorAdi: j['antrenor_adi']?.toString() ?? '',
+    );
+  }
+}
 
 /// Ders teyit detay modeli
 class TeyitDetayModel {
@@ -162,6 +193,18 @@ class DersTeyitService {
       setTeyitOkundu,
       {'etkinlik_id': etkinlikId, 'uye_id': uyeId},
       (_) {},
+    );
+  }
+
+  /// Üyenin katılım bildirimi bekleyen (cevaplanmamış) gelecek derslerini getirir.
+  static Future<ApiResult<List<TeyitBekleyenDers>>> getTeyitBekleyenler() {
+    return ApiClient.postParsed<List<TeyitBekleyenDers>>(
+      getUyeTeyitBekleyenlerUrl,
+      const {},
+      (json) => ApiParsing.parseList<TeyitBekleyenDers>(
+        json,
+        (m) => TeyitBekleyenDers.fromJson(m),
+      ),
     );
   }
 }

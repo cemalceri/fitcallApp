@@ -25,6 +25,11 @@ class _LoginPageState extends State<LoginPage> {
   bool _yukleniyor = false;
   bool _sifreGizli = true;
 
+  /// Açılışta beni-hatırla durumu belirlenene kadar true; bu sürede form yerine
+  /// nötr açılış splash'ı gösterilir. Böylece beni-hatırla açıkken kullanıcı
+  /// adı/şifre formu bir an bile görünmez.
+  bool _hazirlaniyor = true;
+
   /// Beni-hatırla ile sessiz otomatik giriş sürüyor: form gizlenir, tam ekran
   /// "Giriş yapılıyor…" gösterilir. Manuel girişte false kalır.
   bool _otomatikGiris = false;
@@ -38,14 +43,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    _beniHatirlaYukle();
     _surumYukle();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Sadece zorunlu güncelleme kontrolü
-      await GuncellemeKoordinatoru.kontrolVeUygula(context);
-      // Güncelleme sonrası otomatik login dene (API'den profil çek)
-      await _tryAutoLoginFromApi();
-    });
+    _acilisAkisi();
   }
 
   @override
@@ -67,10 +66,25 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _beniHatirlaYukle() async {
-    // ❗️Tek yerden oku
-    final r = await StorageService.beniHatirlaIsaretlenmisMi();
-    if (mounted) setState(() => _beniHatirla = r);
+  /// Açılış akışı: beni-hatırla'yı erken okuyup formu mu yoksa nötr splash'ı mı
+  /// göstereceğimizi belirler. Kapalıysa form anında gelir; açıksa form HİÇ
+  /// çizilmez, doğrudan otomatik giriş açılışına geçilir (eski davranışta form
+  /// bir an görünüp kayboluyordu). Güncelleme kontrolü + otomatik giriş ilk
+  /// frame sonrasına ertelenir.
+  Future<void> _acilisAkisi() async {
+    final remember = await StorageService.beniHatirlaIsaretlenmisMi();
+    if (mounted) setState(() => _beniHatirla = remember);
+    if (remember != true) {
+      _formuGoster();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await GuncellemeKoordinatoru.kontrolVeUygula(context);
+      await _tryAutoLoginFromApi();
+    });
+  }
+
+  void _formuGoster() {
+    if (mounted && _hazirlaniyor) setState(() => _hazirlaniyor = false);
   }
 
   /// Beni hatırla açık ve kayıtlı krediler varsa profilleri **API'den** çeker ve yönlendirir.
@@ -83,11 +97,17 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     final remember = await StorageService.beniHatirlaIsaretlenmisMi();
-    if (remember != true) return;
+    if (remember != true) {
+      _formuGoster();
+      return;
+    }
 
     final u = await SecureStorageService.getValue<String>(_kRememberUser);
     final p = await SecureStorageService.getValue<String>(_kRememberPass);
-    if (u == null || u.isEmpty || p == null || p.isEmpty) return;
+    if (u == null || u.isEmpty || p == null || p.isEmpty) {
+      _formuGoster();
+      return;
+    }
 
     // Otomatik giriş: formu gizle, tam ekran açılış göster.
     setState(() {
@@ -104,11 +124,12 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
       );
     } catch (_) {
-      // oto login sessiz düşsün; kullanıcı manuel giriş yapabilir
+      // oto login sessiz düşsün; formu aç, kullanıcı manuel giriş yapabilir
       if (mounted) {
         setState(() {
           _otomatikGiris = false;
           _yukleniyor = false;
+          _hazirlaniyor = false;
         });
       }
     }
@@ -190,7 +211,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         child: SafeArea(
-          child: _otomatikGiris
+          child: (_hazirlaniyor || _otomatikGiris)
               ? _buildGirisYapiliyor(isDark)
               : Center(
                   child: SingleChildScrollView(
@@ -242,16 +263,20 @@ class _LoginPageState extends State<LoginPage> {
               valueColor: AlwaysStoppedAnimation<Color>(textColor),
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Giriş yapılıyor…',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: textColor,
-              letterSpacing: 0.2,
+          // "Giriş yapılıyor…" yalnızca gerçekten otomatik giriş sürerken;
+          // beni-hatırla durumunu belirlerken (kısa an) sadece logo + spinner.
+          if (_otomatikGiris) ...[
+            const SizedBox(height: 20),
+            Text(
+              'Giriş yapılıyor…',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: textColor,
+                letterSpacing: 0.2,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

@@ -56,6 +56,7 @@ String setGenelDersTalep = "$baseUrl/setGenelDersTalep";
 String getKortveAntrenorList = "$baseUrl/getKortveAntrenorList";
 String setTeyitOkundu = "$baseUrl/setTeyitOkundu";
 String getTeyitDetay = "$baseUrl/getTeyitDetay";
+String getUyeTeyitBekleyenlerUrl = "$baseUrl/getUyeTeyitBekleyenler";
 String setDersKatilimiUrl = "$baseUrl/setDersKatilimi";
 String getDersKatilimlariUrl = "$baseUrl/getDersKatilimlari";
 

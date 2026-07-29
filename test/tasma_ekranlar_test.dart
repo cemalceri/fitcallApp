@@ -21,6 +21,10 @@ import 'package:fitcall/screens/2_uye/home/widgets/uye_bottom_bar.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_ozet_serit.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_next_lesson_card.dart';
 import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_view.dart';
+import 'package:fitcall/models/3_antrenor/home_card_model.dart';
+import 'package:fitcall/screens/3_antrenor/home/widgets/info_cards_carousel.dart';
+import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
+import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
 import 'package:fitcall/screens/7_yonetici/dersler/widgets/ders_liste_item.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/ders_iptal_dialog.dart';
@@ -414,6 +418,21 @@ void main() {
         onDegerlendir: (_) {},
       );
     });
+
+    tasmaTesti('YapilacaklarKartlari', () {
+      return InfoCardsCarousel(
+        cards: _yapilacakKartlar(),
+        title: 'Yapılacaklar',
+        onCardTap: (_) {},
+      );
+    });
+
+    tasmaTesti('TeyitBekleyenListesi', () {
+      return TeyitBekleyenListesi(
+        dersler: _teyitBekleyenler(),
+        onTap: (_) {},
+      );
+    });
   });
 }
 
@@ -458,6 +477,46 @@ List<UyeUrunModel> _uyeUrunler() => [
             'antrenor_adi': 'Ayşe Yılmaz Öğretmen',
           },
         ],
+      }),
+    ];
+
+List<HomeCardModel> _yapilacakKartlar() => [
+      // Değer + başlık + alt başlık + aksiyon dolu, en yüksek içerikli kart.
+      HomeCardModel.fromJson(const {
+        'id': 1,
+        'type': 'teyit_bekleyen',
+        'title': 'Katılım geri bildirimi bekleniyor',
+        'subtitle': '2 ders için katılım durumunu bildirin',
+        'action_text': 'Katılım durumunu bildir',
+        'action_route': '/teyitBekleyen',
+        'value': 2,
+      }),
+      HomeCardModel.fromJson(const {
+        'id': 2,
+        'type': 'borc',
+        'title': 'Ödenmemiş bakiyeniz var',
+        'subtitle': 'Hesap hareketlerinizi görüntüleyin',
+        'action_text': 'Hesap hareketleri',
+        'value': 1250,
+      }),
+    ];
+
+List<TeyitBekleyenDers> _teyitBekleyenler() => [
+      TeyitBekleyenDers.fromJson(const {
+        'etkinlik_id': 1,
+        'uye_id': 364,
+        'baslangic_tarih_saat': '2026-07-24T18:30:00+03:00',
+        'bitis_tarih_saat': '2026-07-24T20:00:00+03:00',
+        'kort_adi': 'İkili Kapalı Kort B Çok Uzun Ad',
+        'antrenor_adi': 'Ayşe Yılmaz Öğretmen Uzun Soyadıyla',
+      }),
+      TeyitBekleyenDers.fromJson(const {
+        'etkinlik_id': 2,
+        'uye_id': 364,
+        'baslangic_tarih_saat': '2026-07-26T09:00:00+03:00',
+        'bitis_tarih_saat': '2026-07-26T10:00:00+03:00',
+        'kort_adi': '',
+        'antrenor_adi': '',
       }),
     ];
 
