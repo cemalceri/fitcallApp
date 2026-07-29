@@ -53,6 +53,8 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Uygulamada QR kod taratmak için kamera erişimine ihtiyaç duyulmaktadır.</string>
 	<key>NSUserNotificationsUsageDescription</key>
-	<string>Ders hatırlatmaları ve önemli bildirimler için izin gerekiyor.</string>	
+	<string>Ders hatırlatmaları ve önemli bildirimler için izin gerekiyor.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Etkinliklerinizi ve ders programınızı takviminize eklemek için takvim erişimi kullanılır.</string>
 </dict>
 </plist>
