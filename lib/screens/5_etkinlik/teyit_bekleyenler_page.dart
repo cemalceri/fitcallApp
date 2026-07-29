@@ -62,7 +62,7 @@ class _TeyitBekleyenlerPageState extends State<TeyitBekleyenlerPage> {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         title: const Text(
-          'Teyit Bekleyen Dersler',
+          'Ders Katılım Onayı',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
@@ -156,7 +156,8 @@ class _TeyitKart extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
             color: _renk.withValues(alpha: 0.06),
