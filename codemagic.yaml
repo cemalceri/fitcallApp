@@ -42,6 +42,9 @@ workflows:
         # App Store Connect > Uygulama > App Information > Apple ID
         APP_STORE_APPLE_ID: 6751735628
         GOOGLE_PLAY_TRACK: "production"
+        # Build makinesi UTC; testler +03:00 verisini yerel saate çevirip
+        # kontrol ettiği için makineyi İstanbul saatine sabitliyoruz.
+        TZ: "Europe/Istanbul"
         # iOS imzalama, "iOS imzalama profilleri" adımında app-store-connect
         # CLI ile yapılıyor (profil/sertifika yoksa üretiyor).
         BUNDLE_ID: "com.ceri.fitcall"
