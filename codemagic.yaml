@@ -42,13 +42,12 @@ workflows:
         # App Store Connect > Uygulama > App Information > Apple ID
         APP_STORE_APPLE_ID: 6751735628
         GOOGLE_PLAY_TRACK: "production"
+        # iOS imzalama, "iOS imzalama profilleri" adımında app-store-connect
+        # CLI ile yapılıyor (profil/sertifika yoksa üretiyor).
+        BUNDLE_ID: "com.ceri.fitcall"
 
       android_signing:
         - binay_keystore
-
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.ceri.fitcall
 
     triggering:
       events:
@@ -124,6 +123,13 @@ workflows:
       # -------------------------------------------------------------------- iOS
       - name: iOS imzalama profilleri
         script: |
+          set -e
+          keychain initialize
+          # Profil/sertifika yoksa Apple hesabında oluşturur.
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
           xcode-project use-profiles
 
       - name: CocoaPods
