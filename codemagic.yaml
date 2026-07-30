@@ -14,8 +14,6 @@
 # gerekmez. Sadece ekran görüntüsü / kategori / gizlilik metni gibi mağaza
 # vitrini bilgileri değişecekse konsola girilir.
 #
-# !!! KURULUM: Aşağıda "TODO" yazan 3 yeri doldurmadan çalışmaz.
-#     Detaylı adımlar için CODEMAGIC_KURULUM.md dosyasına bakın.
 # ============================================================================
 
 workflows:
@@ -26,9 +24,9 @@ workflows:
     max_build_duration: 120
 
     integrations:
-      # TODO(1): Codemagic > Teams > Integrations > App Store Connect altındaki
-      #          API key'in adı. Zaten ekli olan iOS key'inin adını yazın.
-      app_store_connect: Binay App Store Connect
+      # Codemagic > Personal account settings > Integrations > App Store Connect
+      # altındaki API key'in adı.
+      app_store_connect: fitcallApp_AppStore
 
     environment:
       flutter: stable
@@ -37,21 +35,15 @@ workflows:
       java: 17
 
       groups:
-        # TODO(2): Codemagic > Environment variables altında bu isimde bir grup
-        #          açıp içine GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
-        #          değişkenini (service account JSON, secure) ekleyin.
         - google_play
 
       vars:
         PACKAGE_NAME: "com.ceri.fitcall"
-        # TODO(3): App Store Connect > Uygulama > App Information > Apple ID
-        #          alanındaki sayısal değer.
-        APP_STORE_APPLE_ID: 0000000000
+        # App Store Connect > Uygulama > App Information > Apple ID
+        APP_STORE_APPLE_ID: 6751735628
         GOOGLE_PLAY_TRACK: "production"
 
       android_signing:
-        # TODO(2b): Codemagic > Teams > Code signing identities > Android
-        #           keystores altına upload ettiğiniz keystore'un reference adı.
         - binay_keystore
 
       ios_signing:
