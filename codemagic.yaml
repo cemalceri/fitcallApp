@@ -36,6 +36,8 @@ workflows:
 
       groups:
         - google_play
+        # CERTIFICATE_PRIVATE_KEY -> iOS dagitim sertifikasinin private key'i
+        - ios_signing
 
       vars:
         PACKAGE_NAME: "com.ceri.fitcall"
@@ -69,6 +71,11 @@ workflows:
       #       source: true
       # Uyarı: bu durumda main'e atılan HER commit mağaza incelemesine gider.
       # ---------------------------------------------------------------------
+      # manuel tetiklemek için:
+      # kodu commitle
+      # git tag v3.5.1 tag ver
+      # git push origin v3.5.1 ile hem kodu hem tag'i push et
+      # build tetiklenir ve mağazalara yüklenir.
 
     cache:
       cache_paths:
@@ -131,6 +138,7 @@ workflows:
           # Profil/sertifika yoksa Apple hesabında oluşturur.
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
+            --certificate-key=@env:CERTIFICATE_PRIVATE_KEY \
             --create
           keychain add-certificates
           xcode-project use-profiles
