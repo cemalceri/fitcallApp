@@ -2,7 +2,6 @@
 
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/tarih_util.dart';
-import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
@@ -136,17 +135,6 @@ class TeyitDurum {
 }
 
 class DersTeyitService {
-  /// Bildirim detayını getirir
-  static Future<ApiResult<NotificationModel>> getBildirim(String bildirimId) {
-    return ApiClient.postParsed<NotificationModel>(
-      getBildirimById,
-      {'notification_id': bildirimId},
-      (json) => ApiParsing.parseObject<NotificationModel>(
-        json,
-        (m) => NotificationModel.fromJson(m),
-      ),
-    );
-  }
 
   /// Teyit detayını getirir (etkinlik + üye + teyit durumu)
   static Future<ApiResult<TeyitDetayModel>> getTeyitDetayBilgisi({

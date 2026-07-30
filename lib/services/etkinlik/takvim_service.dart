@@ -162,43 +162,6 @@ class TakvimService {
     );
   }
 
-  static Future<ApiResult<List<Map<String, dynamic>>>> getIptalTalepleri({
-    String? durum,
-    int? dersId,
-  }) async {
-    final body = <String, dynamic>{};
-    if (durum != null) body['durum'] = durum;
-    if (dersId != null) body['ders_id'] = dersId;
-
-    final r = await ApiClient.postParsed<List<dynamic>>(
-      getIptalTalepleriUrl,
-      body,
-      (json) => (json as List),
-    );
-    final list =
-        (r.data ?? []).map((e) => (e as Map).cast<String, dynamic>()).toList();
-    return ApiResult<List<Map<String, dynamic>>>(mesaj: r.mesaj, data: list);
-  }
-
-  static Future<ApiResult<Map<String, dynamic>>> setIptalTalebiIslem({
-    required int talepId,
-    required int userId,
-    required String islem,
-    String? aciklama,
-  }) {
-    final body = {
-      'talep_id': talepId,
-      'user_id': userId,
-      'islem': islem,
-      if (aciklama != null && aciklama.isNotEmpty) 'aciklama': aciklama,
-    };
-    return ApiClient.postParsed<Map<String, dynamic>>(
-      setIptalTalebiIslemUrl,
-      body,
-      (json) => (json as Map).cast<String, dynamic>(),
-    );
-  }
-
   static Future<ApiResult<List<Map<String, dynamic>>>>
       getKullaniciIptalTalepleri({
     required int userId,
@@ -252,33 +215,6 @@ class TakvimService {
         json,
         (m) => EtkinlikModel.fromMap(m),
       ),
-    );
-  }
-
-  // ==================== GERİYE UYUMLULUK ====================
-
-  static Future<ApiResult<Map<String, dynamic>>> getDersYapildiBilgisiApi({
-    required int dersId,
-    required int userId,
-  }) {
-    return getDersOnayBilgisi(dersId: dersId, userId: userId);
-  }
-
-  static Future<ApiResult<Map<String, dynamic>>> setDersYapildiBilgisiApi({
-    required int dersId,
-    required int userId,
-    required String rol,
-    required bool tamamlandi,
-    required String aciklama,
-    String? onayRedIptalNedeni,
-  }) {
-    return setDersOnayBilgisi(
-      dersId: dersId,
-      userId: userId,
-      rol: rol,
-      tamamlandi: tamamlandi,
-      aciklama: aciklama,
-      onayRedIptalNedeni: onayRedIptalNedeni,
     );
   }
 

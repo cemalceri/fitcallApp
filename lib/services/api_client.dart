@@ -9,6 +9,15 @@ import 'api_result.dart';
 class ApiClient {
   static const _defaultTimeout = Duration(seconds: 20);
 
+  /// Tüm istekler için tek paylaşılan client.
+  ///
+  /// `http.get`/`http.post` gibi üst düzey fonksiyonlar her çağrıda yeni bir
+  /// [http.Client] açıp kapatır; bu da her istekte yeniden TCP + TLS el sıkışması
+  /// demektir. Ana sayfa açılışta 6 istek attığı için bu maliyet katlanıyordu.
+  /// Tek client ile keep-alive devreye girer, bağlantı yeniden kullanılır.
+  /// Uygulama ömrü boyunca yaşadığı için kapatılmaz.
+  static final http.Client _client = http.Client();
+
   static Future<Map<String, String>> _buildHeaders({
     Map<String, String>? headers,
     bool auth = false,
@@ -34,7 +43,7 @@ class ApiClient {
     Duration? timeout,
   }) async {
     try {
-      final res = await http
+      final res = await _client
           .post(
             Uri.parse(url),
             headers: {
@@ -83,7 +92,7 @@ class ApiClient {
     Duration? timeout,
   }) async {
     try {
-      final res = await http
+      final res = await _client
           .get(Uri.parse(url), headers: headers)
           .timeout(timeout ?? _defaultTimeout);
       final status = res.statusCode;
@@ -168,52 +177,36 @@ class ApiClient {
   }
 
   static Never _throwWithBody(int status, String text) {
-    try {
-      if (text.isNotEmpty) {
-        final j = jsonDecode(text);
-        final code = (j is Map && j['code'] is String)
-            ? j['code'] as String
-            : 'HTTP_ERROR';
+    // DİKKAT: throw eskiden try bloğunun İÇİNDEYDİ; fırlatılan ApiException
+    // kendi catch'ine düşüyor ve backend'in 'code' alanı daima 'HTTP_ERROR'
+    // ile eziliyordu (ör. ders_teyit_page'deki TEYIT_DEGISTIRME_YASAK kontrolü
+    // hiç eşleşemiyordu). Artık ayrıştırma try içinde, throw dışında.
+    // Mesaj sırası eskisiyle aynı: message → detail → gövde metni → varsayılan.
+    String code = 'HTTP_ERROR';
+    String? msg;
 
-        // Öncelikle backend'den gelen 'message' veya 'detail'
-        final msg = (j is Map &&
-                j['message'] is String &&
-                j['message']!.trim().isNotEmpty)
-            ? j['message'] as String
-            : (j is Map &&
-                    j['detail'] is String &&
-                    j['detail']!.trim().isNotEmpty)
-                ? j['detail'] as String
-                : 'İşlem başarısız.';
-
-        throw ApiException(code, msg, statusCode: status);
-      } else {
-        throw ApiException('HTTP_ERROR', 'İşlem başarısız.',
-            statusCode: status);
-      }
-    } catch (_) {
-      // JSON parse veya diğer hatalarda
-      final fallbackMsg =
-          text.trim().isNotEmpty ? text.trim() : 'İşlem başarısız.';
-
-      String parsedMsg = fallbackMsg;
+    if (text.trim().isNotEmpty) {
+      msg = text.trim();
       try {
-        final parsed = jsonDecode(fallbackMsg);
-        if (parsed is Map) {
-          if (parsed['message'] is String &&
-              parsed['message'].trim().isNotEmpty) {
-            parsedMsg = parsed['message'];
-          } else if (parsed['detail'] is String &&
-              parsed['detail'].trim().isNotEmpty) {
-            parsedMsg = parsed['detail'];
+        final j = jsonDecode(text);
+        if (j is Map) {
+          if (j['code'] is String) {
+            code = j['code'] as String;
+          }
+          if (j['message'] is String &&
+              (j['message'] as String).trim().isNotEmpty) {
+            msg = j['message'] as String;
+          } else if (j['detail'] is String &&
+              (j['detail'] as String).trim().isNotEmpty) {
+            msg = j['detail'] as String;
           }
         }
       } catch (_) {
-        // fallbackMsg JSON değilse olduğu gibi kullan
+        // Gövde JSON değilse düz metin olarak kullanılır (eski davranış).
       }
-
-      throw ApiException('HTTP_ERROR', parsedMsg, statusCode: status);
     }
+
+    throw ApiException(code, msg ?? 'İşlem başarısız.', statusCode: status);
   }
 
   static Future<ApiResult<T>> postParsed<T>(
@@ -226,7 +219,7 @@ class ApiClient {
   }) async {
     try {
       final effHeaders = await _buildHeaders(headers: headers, auth: auth);
-      final res = await http
+      final res = await _client
           .post(
             Uri.parse(url),
             headers: effHeaders,
@@ -258,7 +251,7 @@ class ApiClient {
   }) async {
     try {
       final effHeaders = await _buildHeaders(headers: headers, auth: auth);
-      final res = await http
+      final res = await _client
           .get(Uri.parse(url), headers: effHeaders)
           .timeout(timeout ?? _defaultTimeout);
       final status = res.statusCode;

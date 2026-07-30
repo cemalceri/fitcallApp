@@ -10,8 +10,12 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await initializeDateFormatting('tr', null);
+  // Tarih formatları Firebase'den bağımsız; ilk kareyi geciktirmemek için
+  // ikisi paralel başlatılır. FCM init Firebase'e bağlı olduğu için sonra gelir.
+  await Future.wait([
+    Firebase.initializeApp(),
+    initializeDateFormatting('tr', null),
+  ]);
   await NotificationFCMService.instance.initialize();
   initFCMTokenListener();
   runApp(const MyApp());

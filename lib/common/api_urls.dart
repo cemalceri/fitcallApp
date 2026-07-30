@@ -14,10 +14,7 @@ String uyeSifreDegistir = "$baseUrl/uyeSifreDegistir";
 String uyeKullaniciSil = "$baseUrl/uyeKullaniciSil";
 
 // =================== ÜYE ===================
-String uyeKaydet = "$baseUrl/uyeKaydet";
 String getUyeDersProgramiUrl = "$baseUrl/getUyeDersProgrami";
-String getUyedersTalepListesi = "$baseUrl/getUyedersTalepListesi";
-String silUyedersTalebi = "$baseUrl/silUyedersTalebi";
 String getUyeUrunList = "$baseUrl/getUyeUrunList";
 String getHaftalikDersBilgilerim = "$baseUrl/getHaftalikDersBilgilerim";
 String getUrunListesiVeUyePaketleri = "$baseUrl/getUrunListesiVeUyePaketleri";
@@ -32,7 +29,6 @@ String getAntrenorHaftalikEtkinlikler =
     "$baseUrl/getAntrenorHaftalikEtkinlikler";
 String antrenorDersYapildiBilgisi = "$baseUrl/antrenorDersYapildiBilgisi";
 String getAntrenorOgrenciler = "$baseUrl/getAntrenorOgrenciler";
-String getAntrenorUygunSaatleri = "$baseUrl/getAntrenorUygunSaatleri";
 String getAntrenorHomeCardsUrl = "$baseUrl/getAntrenorHomeCards";
 String dismissAntrenorHomeCardUrl = "$baseUrl/dismissAntrenorHomeCard";
 String getAntrenorSonrakiDersUrl = "$baseUrl/getAntrenorSonrakiDers";
@@ -48,12 +44,8 @@ String getAntrenorCalismaGunleriUrl = "$baseUrl/getAntrenorCalismaGunleri";
 String setAntrenorCalismaGunleriUrl = "$baseUrl/setAntrenorCalismaGunleri";
 
 // =================== ETKİNLİK ===================
-String setDersYapildiBilgisi = "$baseUrl/setDersYapildiBilgisi";
-String getDersYapildiBilgisi = "$baseUrl/getDersYapildiBilgisi";
 String setDersTeyit = "$baseUrl/setDersTeyit";
 String setDersTalep = "$baseUrl/setDersTalep";
-String setGenelDersTalep = "$baseUrl/setGenelDersTalep";
-String getKortveAntrenorList = "$baseUrl/getKortveAntrenorList";
 String setTeyitOkundu = "$baseUrl/setTeyitOkundu";
 String getTeyitDetay = "$baseUrl/getTeyitDetay";
 String getUyeTeyitBekleyenlerUrl = "$baseUrl/getUyeTeyitBekleyenler";
@@ -64,7 +56,6 @@ String getDersKatilimlariUrl = "$baseUrl/getDersKatilimlari";
 String getNotifications = "$baseUrl/getNotifications";
 String setNotificationsRead = "$baseUrl/setNotificationsRead";
 String getUnreadNotificationCount = "$baseUrl/getUnreadNotificationCount";
-String getBildirimById = "$baseUrl/getBildirimById";
 String notificationAction = "$baseUrl/n/"; // + token
 
 // =================== MUHASEBE ===================
@@ -91,8 +82,11 @@ String listeleTesisMisafirPass = "$baseUrl/listeleTesisMisafirPass";
 String olusturTesisMisafirPass = "$baseUrl/olusturTesisMisafirPass";
 String silTesisMisafirPass = "$baseUrl/silTesisMisafirPass";
 
+// =================== ÖDÜL (TURNİKE SADAKAT SAYACI) ===================
+String getUyeOdulDurumuUrl = "$baseUrl/getUyeOdulDurumu";
+String odulTalepEtUrl = "$baseUrl/odulTalepEt";
+
 // =================== DİĞER ===================
-String getGaleriImages = "$baseUrl/getGaleriImages";
 String getMobilConfigs = "$baseUrl/getMobilConfigs";
 String mobilLogKaydet = "$baseUrl/mobilLogKaydet";
 String getAktifDuyurularUrl = "$baseUrl/getAktifDuyurular";
@@ -111,9 +105,6 @@ const String getDersTumDegerlendirmelerUrl =
 
 // İptal Talebi
 const String createIptalTalebiUrl = "$baseUrl/etkinlikIptalTalebiOlustur";
-const String getIptalTalepleriUrl = "$baseUrl/getEtkinlikIptalTalepleri";
-const String setIptalTalebiIslemUrl =
-    "$baseUrl/setYoneticiIptalTalebiOnaylaReddet";
 const String getKullaniciIptalTalepleriUrl =
     "$baseUrl/getKullaniciIptalTalepleri";
 const String getDersIptalTalebiUrl = "$baseUrl/getDersIptalTalebi";
@@ -126,7 +117,6 @@ const String yoneticiUyeler = "$baseUrl/yoneticiUyeler";
 const String yoneticiUyeDetay = "$baseUrl/yoneticiUyeDetay";
 const String yoneticiAntrenorler = "$baseUrl/yoneticiAntrenorler";
 const String yoneticiDersler = "$baseUrl/yoneticiDersler";
-const String yoneticiDersDetay = "$baseUrl/yoneticiDersDetay";
 const String yoneticiDolulukHaritasi = "$baseUrl/yoneticiDolulukHaritasi";
 
 // Yönetici - ders (etkinlik) yönetimi

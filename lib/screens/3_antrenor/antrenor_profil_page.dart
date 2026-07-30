@@ -1,6 +1,7 @@
 // lib/screens/3_antrenor/antrenor_profil_page.dart
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/screens/1_common/widgets/kvkk.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -254,8 +255,9 @@ class _ProfileHeader extends StatelessWidget {
                   child: ClipOval(
                     child: antrenor.profileImageUrl != null &&
                             antrenor.profileImageUrl!.trim().isNotEmpty
-                        ? Image.network(
-                            antrenor.profileImageUrl!.trim(),
+                        ? Image(
+                            image: CachedNetworkImageProvider(
+                                antrenor.profileImageUrl!.trim()),
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) =>
                                 _buildAvatarPlaceholder(colorScheme),

@@ -1,0 +1,191 @@
+# ============================================================================
+# Binay Akademi (fitcall) - uçtan uca yayın hattı
+# ----------------------------------------------------------------------------
+# Tetikleyici : "v" ile başlayan bir git tag'i push etmek.
+#                 git tag v3.6.0
+#                 git push origin v3.6.0
+#
+# Sonuç       : Android -> Google Play "production" track'ine yüklenir ve
+#                          incelemeye gider.
+#               iOS     -> App Store Connect'e yüklenir, incelemeye gönderilir
+#                          ve Apple onaylayınca OTOMATİK yayınlanır.
+#
+# Market konsollarında (Play Console / App Store Connect) hiçbir işlem
+# gerekmez. Sadece ekran görüntüsü / kategori / gizlilik metni gibi mağaza
+# vitrini bilgileri değişecekse konsola girilir.
+#
+# !!! KURULUM: Aşağıda "TODO" yazan 3 yeri doldurmadan çalışmaz.
+#     Detaylı adımlar için CODEMAGIC_KURULUM.md dosyasına bakın.
+# ============================================================================
+
+workflows:
+  yayin:
+    name: Yayin (Android + iOS)
+    instance_type: mac_mini_m2
+    # App Store işleme + inceleme gönderimi beklendiği için uzun tutuldu.
+    max_build_duration: 120
+
+    integrations:
+      # TODO(1): Codemagic > Teams > Integrations > App Store Connect altındaki
+      #          API key'in adı. Zaten ekli olan iOS key'inin adını yazın.
+      app_store_connect: Binay App Store Connect
+
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      java: 17
+
+      groups:
+        # TODO(2): Codemagic > Environment variables altında bu isimde bir grup
+        #          açıp içine GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+        #          değişkenini (service account JSON, secure) ekleyin.
+        - google_play
+
+      vars:
+        PACKAGE_NAME: "com.ceri.fitcall"
+        # TODO(3): App Store Connect > Uygulama > App Information > Apple ID
+        #          alanındaki sayısal değer.
+        APP_STORE_APPLE_ID: 0000000000
+        GOOGLE_PLAY_TRACK: "production"
+
+      android_signing:
+        # TODO(2b): Codemagic > Teams > Code signing identities > Android
+        #           keystores altına upload ettiğiniz keystore'un reference adı.
+        - binay_keystore
+
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.ceri.fitcall
+
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'v*'
+          include: true
+      cancel_previous_builds: true
+      # ---------------------------------------------------------------------
+      # Her main push'unda yayına çıkmak isterseniz yukarıdaki tag bloğu yerine:
+      #   events:
+      #     - push
+      #   branch_patterns:
+      #     - pattern: main
+      #       include: true
+      #       source: true
+      # Uyarı: bu durumda main'e atılan HER commit mağaza incelemesine gider.
+      # ---------------------------------------------------------------------
+
+    cache:
+      cache_paths:
+        - ~/.pub-cache
+        - $HOME/Library/Caches/CocoaPods
+
+    scripts:
+      - name: Flutter paketleri
+        script: |
+          flutter pub get
+
+      - name: Statik analiz
+        # Uyarılar yayını engellemesin diye hata durumunda build durmuyor.
+        ignore_failure: true
+        script: |
+          flutter analyze
+
+      - name: Testler
+        script: |
+          flutter test
+
+      # ---------------------------------------------------------------- ANDROID
+      - name: Android imzalama dosyasi (key.properties)
+        script: |
+          cat > "$CM_BUILD_DIR/android/key.properties" <<EOF
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyPassword=$CM_KEY_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          storeFile=$CM_KEYSTORE_PATH
+          EOF
+
+      - name: Android AAB uret
+        script: |
+          set -e
+          # Sürüm adı pubspec.yaml'dan okunur (tek elle güncellenen yer).
+          VERSION_NAME=$(sed -n 's/^version: *\([0-9][0-9.]*\).*/\1/p' pubspec.yaml)
+          # Build numarası Google Play'deki en yüksek değerin bir fazlası.
+          LATEST=$(google-play get-latest-build-number --package-name "$PACKAGE_NAME")
+          BUILD_NUMBER=$((LATEST + 1))
+          echo "Android: $VERSION_NAME+$BUILD_NUMBER (Play'deki son: $LATEST)"
+
+          # settings.gradle flutter.sdk'yi local.properties'ten okuyor,
+          # versionCode/versionName de oradan geliyor -> hepsini yazıyoruz.
+          FLUTTER_SDK=${FLUTTER_ROOT:-$(dirname "$(dirname "$(command -v flutter)")")}
+          cat > "$CM_BUILD_DIR/android/local.properties" <<EOF
+          flutter.sdk=$FLUTTER_SDK
+          flutter.versionCode=$BUILD_NUMBER
+          flutter.versionName=$VERSION_NAME
+          EOF
+
+          flutter build appbundle --release \
+            --build-name="$VERSION_NAME" \
+            --build-number="$BUILD_NUMBER"
+
+      # -------------------------------------------------------------------- iOS
+      - name: iOS imzalama profilleri
+        script: |
+          xcode-project use-profiles
+
+      - name: CocoaPods
+        script: |
+          cd "$CM_BUILD_DIR/ios" && pod install
+
+      - name: iOS IPA uret
+        script: |
+          set -e
+          VERSION_NAME=$(sed -n 's/^version: *\([0-9][0-9.]*\).*/\1/p' pubspec.yaml)
+          # Build numarası App Store Connect'teki en yüksek değerin bir fazlası.
+          LATEST=$(app-store-connect get-latest-build-number "$APP_STORE_APPLE_ID")
+          BUILD_NUMBER=$((LATEST + 1))
+          echo "iOS: $VERSION_NAME+$BUILD_NUMBER (ASC'deki son: $LATEST)"
+
+          flutter build ipa --release \
+            --build-name="$VERSION_NAME" \
+            --build-number="$BUILD_NUMBER" \
+            --export-options-plist=/Users/builder/export_options.plist
+
+    artifacts:
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        # Build'i App Store incelemesine gönderir.
+        submit_to_app_store: true
+        # Beklemede duran eski gönderim varsa iptal eder.
+        cancel_previous_submissions: true
+        # Apple onaylayınca otomatik yayınlanır (elle "Release" gerekmez).
+        release_type: AFTER_APPROVAL
+        copyright: 2026 Binay Akademi
+        # Kademeli yayın istenirse:
+        # phased_release: true
+        # TestFlight'a da dağıtmak isterseniz:
+        # submit_to_testflight: true
+        # beta_groups:
+        #   - Ic Test
+
+      google_play:
+        credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+        track: $GOOGLE_PLAY_TRACK
+        # Kademeli yayın istenirse (0-1 arası):
+        # rollout_fraction: 0.25
+        # in_app_update paketi kullanıldığı için öncelik verilebilir (0-5):
+        # in_app_update_priority: 3
+
+      email:
+        recipients:
+          - cemalceri26@gmail.com
+        notify:
+          success: true
+          failure: true

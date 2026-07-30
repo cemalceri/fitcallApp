@@ -56,31 +56,4 @@ class DersTalepApiService {
     );
   }
 
-  /// Genel ders talebi gönderir (çoklu saat)
-  /// Opsiyonel: urun_id, satinal, uye_id, kort_id, antrenor_id
-  static Future<ApiResult<Map<String, dynamic>>> gonderGenelDersTalep({
-    required Map<String, List<String>> saatler,
-    String? aciklama,
-    int? kortId,
-    int? antrenorId,
-    int? urunId,
-    bool? satinal,
-    int? uyeId,
-  }) {
-    final payload = <String, dynamic>{
-      'saatler': saatler,
-      'aciklama': aciklama ?? '',
-      if (kortId != null) 'kort_id': kortId,
-      if (antrenorId != null) 'antrenor_id': antrenorId,
-      if (urunId != null) 'urun_id': urunId,
-      if (satinal != null) 'satinal': satinal,
-      if (uyeId != null) 'uye_id': uyeId,
-    };
-
-    return ApiClient.postParsed<Map<String, dynamic>>(
-      setGenelDersTalep,
-      payload,
-      (json) => (json as Map).cast<String, dynamic>(),
-    );
-  }
 }

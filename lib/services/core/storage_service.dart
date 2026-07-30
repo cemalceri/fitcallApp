@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/models/4_auth/group_model.dart';
-import 'package:fitcall/models/4_auth/user_model.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -45,11 +44,6 @@ class StorageService {
       return GroupModel.fromJson(parsed.first);
     }
     return null;
-  }
-
-  static Future<UserModel?> userBilgileriniGetir() async {
-    final s = await SecureStorageService.getValue<String>('user');
-    return s == null ? null : UserModel.fromJson(json.decode(s));
   }
 
   static Future<bool> beniHatirlaIsaretlenmisMi() async {

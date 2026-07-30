@@ -1,5 +1,6 @@
 // lib/screens/5_etkinlik/widgets/duyuru_detay_sheet.dart
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/services/api_result.dart';
 import 'package:fitcall/services/core/duyuru_api_service.dart';
@@ -316,8 +317,8 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
   }
 
   Widget _buildImage(String url) {
-    return Image.network(
-      url,
+    return Image(
+      image: CachedNetworkImageProvider(url),
       fit: BoxFit.cover, // contain yerine cover
       width: double.infinity,
       height: double.infinity,
@@ -482,8 +483,8 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
                 minScale: 0.5,
                 maxScale: 4.0,
                 child: Center(
-                  child: Image.network(
-                    widget.resimler[index],
+                  child: Image(
+                    image: CachedNetworkImageProvider(widget.resimler[index]),
                     fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) => const Icon(
                       Icons.broken_image_rounded,

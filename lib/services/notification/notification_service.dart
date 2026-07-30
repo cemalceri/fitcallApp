@@ -39,12 +39,4 @@ class NotificationService {
         setNotificationsRead, {'ids': ids}, (_) => true);
   }
 
-  static Future<ApiResult<NotificationModel>> getNotificationById(int id) {
-    return ApiClient.postParsed<NotificationModel>(
-      getBildirimById,
-      {'notification_id': id},
-      (json) => ApiParsing.parseObject<NotificationModel>(
-          json, (m) => NotificationModel.fromJson(m)),
-    );
-  }
 }

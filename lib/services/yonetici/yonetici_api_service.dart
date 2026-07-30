@@ -122,16 +122,4 @@ class YoneticiApiService {
       auth: true,
     );
   }
-
-  /// Tek ders detayını getirir
-  static Future<ApiResult<DersListeItem>> getDersDetay({
-    required int dersId,
-  }) {
-    return ApiClient.postParsed<DersListeItem>(
-      yoneticiDersDetay,
-      {'ders_id': dersId},
-      (json) => DersListeItem.fromJson(json as Map<String, dynamic>),
-      auth: true,
-    );
-  }
 }

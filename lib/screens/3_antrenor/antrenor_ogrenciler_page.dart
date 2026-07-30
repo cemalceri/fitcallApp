@@ -1,6 +1,7 @@
 // lib/screens/5_etkinlik/antrenor_ogrenciler_page.dart
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/3_antrenor/ogrenci_detay/antrenor_ogrenci_detay_page.dart';
@@ -655,8 +656,9 @@ class _StudentCard extends StatelessWidget {
                           child: ClipOval(
                             child: student.profilFotografi != null &&
                                     student.profilFotografi!.isNotEmpty
-                                ? Image.network(
-                                    student.profilFotografi!,
+                                ? Image(
+                                    image: CachedNetworkImageProvider(
+                                        student.profilFotografi!),
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, __, ___) =>
                                         _buildAvatarPlaceholder(colorScheme),

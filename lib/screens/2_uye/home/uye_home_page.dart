@@ -4,6 +4,7 @@
 import 'dart:convert';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
+import 'package:fitcall/models/2_uye/uye_odul_model.dart';
 import 'package:fitcall/models/3_antrenor/home_card_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
@@ -14,6 +15,7 @@ import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_header.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_next_lesson_card.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_bottom_bar.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_drawer.dart';
+import 'package:fitcall/screens/2_uye/home/widgets/uye_odul_sayaci.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_ozet_serit.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/info_cards_carousel.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -23,6 +25,7 @@ import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:fitcall/services/etkinlik/etkinlik_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
+import 'package:fitcall/services/uye/uye_odul_service.dart';
 import 'package:flutter/material.dart';
 
 class UyeHomePage extends StatefulWidget {
@@ -55,6 +58,10 @@ class _UyeHomePageState extends State<UyeHomePage> {
   UyeHomeOzetModel? _homeOzet;
   bool _loadingOzet = true;
 
+  // Turnike geçiş sayacı (kahve ödülü)
+  OdulDurumModel? _odulDurum;
+  bool _loadingOdul = true;
+
   @override
   void initState() {
     super.initState();
@@ -70,7 +77,40 @@ class _UyeHomePageState extends State<UyeHomePage> {
       _fetchWeek(),
       _fetchDuyurular(),
       _fetchHomeOzet(),
+      _fetchOdulDurumu(),
     ]);
+  }
+
+  Future<void> _fetchOdulDurumu() async {
+    try {
+      final result = await UyeOdulService.getOdulDurumu();
+      if (!mounted) return;
+      setState(() {
+        _odulDurum = result.data;
+        _loadingOdul = false;
+      });
+    } catch (_) {
+      // Sayaç alınamazsa kart gizlenir; ana sayfa çalışmaya devam eder
+      if (!mounted) return;
+      setState(() => _loadingOdul = false);
+    }
+  }
+
+  /// "Ödülü al": kod üretilir, kart bekleyen kod durumuna geçer.
+  Future<void> _odulAl() async {
+    try {
+      final result = await UyeOdulService.odulTalepEt();
+      if (!mounted) return;
+      setState(() => _odulDurum = result.data);
+      ShowMessage.success(context, result.mesaj);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ShowMessage.error(context, e.message);
+      await _fetchOdulDurumu();
+    } catch (e) {
+      if (!mounted) return;
+      ShowMessage.error(context, 'Ödül alınamadı: $e');
+    }
   }
 
   Future<void> _fetchHomeOzet() async {
@@ -182,6 +222,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
       _fetchDuyurular(),
       _checkAktifEvent(),
       _fetchHomeOzet(),
+      _fetchOdulDurumu(),
     ]);
   }
 
@@ -232,6 +273,18 @@ class _UyeHomePageState extends State<UyeHomePage> {
                     child: UyeOzetSerit(
                       ozet: _homeOzet?.ozet,
                       isLoading: _loadingOzet,
+                    ),
+                  ),
+                ),
+
+                // ========== TURNİKE SAYACI (KAHVE ÖDÜLÜ) ==========
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: UyeOdulSayaci(
+                      durum: _odulDurum,
+                      isLoading: _loadingOdul,
+                      onOdulAl: _odulAl,
                     ),
                   ),
                 ),

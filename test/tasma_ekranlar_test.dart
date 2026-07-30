@@ -12,12 +12,14 @@
 
 import 'package:fitcall/models/2_uye/gecmis_ders_model.dart';
 import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
+import 'package:fitcall/models/2_uye/uye_odul_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_bottom_bar.dart';
+import 'package:fitcall/screens/2_uye/home/widgets/uye_odul_sayaci.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_ozet_serit.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_next_lesson_card.dart';
 import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_view.dart';
@@ -401,6 +403,18 @@ void main() {
     tasmaTesti('UyeOzetSerit (yükleniyor)',
         () => const UyeOzetSerit(isLoading: true));
 
+    tasmaTesti(
+        'UyeOdulSayaci (sayıyor)', () => UyeOdulSayaci(durum: _odul(sayac: 14)));
+
+    tasmaTesti('UyeOdulSayaci (hak edildi)',
+        () => UyeOdulSayaci(durum: _odul(sayac: 20), onOdulAl: () async {}));
+
+    tasmaTesti(
+        'UyeOdulSayaci (kod hazır)', () => UyeOdulSayaci(durum: _odul(kod: true)));
+
+    tasmaTesti('UyeOdulSayaci (yükleniyor)',
+        () => const UyeOdulSayaci(isLoading: true));
+
     tasmaTesti('UyeNextLessonCard',
         () => UyeNextLessonCard(nextLesson: _etkinlik()));
 
@@ -545,3 +559,23 @@ List<GecmisDersModel> _gecmisDersler() => [
         'katilim': {'katildi': false, 'plan_disi_mi': false},
       }),
     ];
+
+OdulDurumModel _odul({int sayac = 14, bool kod = false}) =>
+    OdulDurumModel.fromJson({
+      'aktif': true,
+      'odul_adi': 'Kahve',
+      'ikon': 'kahve',
+      'esik': 20,
+      'sayac': sayac,
+      'kalan': 20 - sayac,
+      'hak_edildi': sayac >= 20 || kod,
+      'bekleyen_odul': kod
+          ? const {
+              'kod': 'BK-7F3Q',
+              'durum': 'BEKLIYOR',
+              'kazanma_zamani': '2026-07-29T14:32:00+03:00',
+              'son_kullanma': '2026-08-05T14:32:00+03:00',
+              'son_kullanma_metin': '05.08.2026',
+            }
+          : null,
+    });

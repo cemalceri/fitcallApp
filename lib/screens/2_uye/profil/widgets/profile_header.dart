@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:flutter/material.dart';
 
@@ -67,8 +68,9 @@ class ProfileHeader extends StatelessWidget {
                   child: ClipOval(
                     child: uye.profilFotografi != null &&
                             uye.profilFotografi!.isNotEmpty
-                        ? Image.network(
-                            uye.profilFotografi!,
+                        ? Image(
+                            image: CachedNetworkImageProvider(
+                                uye.profilFotografi!),
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) =>
                                 _buildAvatarPlaceholder(colorScheme),
