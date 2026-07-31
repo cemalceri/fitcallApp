@@ -1,13 +1,16 @@
 // lib/screens/7_yonetici/yonetici_main_page.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/yonetici_dashboard_page.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/raporlar_page.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/uyeler_page.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/antrenorler_page.dart';
 import 'package:fitcall/screens/7_yonetici/dersler/dersler_page.dart';
 import 'package:fitcall/screens/7_yonetici/program/yonetici_program_page.dart';
+import 'package:fitcall/screens/7_yonetici/widgets/yonetici_ad.dart';
+import 'package:fitcall/screens/7_yonetici/widgets/yonetici_bottom_bar.dart';
+import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 
 class YoneticiMainPage extends StatefulWidget {
   const YoneticiMainPage({super.key});
@@ -17,7 +20,10 @@ class YoneticiMainPage extends StatefulWidget {
 }
 
 class _YoneticiMainPageState extends State<YoneticiMainPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   int _selectedIndex = 0;
+  String _yoneticiAdi = '';
 
   late final List<Widget> _pages;
 
@@ -25,70 +31,44 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
   void initState() {
     super.initState();
     _pages = [
-      YoneticiDashboardPage(onTabChange: _goTab),
+      YoneticiDashboardPage(
+        onTabChange: _goTab,
+        onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+      ),
       const RaporlarPage(),
       const UyelerPage(),
       const AntrenorlerPage(),
       const DerslerPage(),
       const YoneticiProgramPage(),
     ];
+    _yoneticiAdiYukle();
+  }
+
+  Future<void> _yoneticiAdiYukle() async {
+    final profil = await StorageService.uyeProfilBilgileriniGetir();
+    if (profil == null || !mounted) return;
+    setState(() => _yoneticiAdi = yoneticiGorunenAd(profil.user));
   }
 
   void _goTab(int index) {
     setState(() => _selectedIndex = index);
   }
 
-  final List<NavigationDestination> _destinations = const [
-    NavigationDestination(
-      icon: Icon(Icons.dashboard_outlined),
-      selectedIcon: Icon(Icons.dashboard),
-      label: 'Dashboard',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.bar_chart_outlined),
-      selectedIcon: Icon(Icons.bar_chart),
-      label: 'Raporlar',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.people_outline),
-      selectedIcon: Icon(Icons.people),
-      label: 'Üyeler',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.sports_tennis_outlined),
-      selectedIcon: Icon(Icons.sports_tennis),
-      label: 'Antrenörler',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.event_outlined),
-      selectedIcon: Icon(Icons.event),
-      label: 'Dersler',
-    ),
-    NavigationDestination(
-      icon: Icon(Icons.grid_view_outlined),
-      selectedIcon: Icon(Icons.grid_view),
-      label: 'Program',
-    ),
-  ];
-
-  void _onDestinationSelected(int index) {
-    HapticFeedback.lightImpact();
-    setState(() => _selectedIndex = index);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: YoneticiDrawer(
+        yoneticiAdi: _yoneticiAdi,
+        onTabSelected: _goTab,
+      ),
       body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: YoneticiBottomBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: _onDestinationSelected,
-        destinations: _destinations,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        height: 65,
+        onTabSelected: _goTab,
       ),
     );
   }

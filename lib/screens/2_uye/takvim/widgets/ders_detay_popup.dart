@@ -390,7 +390,9 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                     color: Colors.red.shade700,
                   ),
                 ),
-                if (widget.ders.iptalEden != null) ...[
+                // Ad soyad `iptal_eden_adi`'nda geliyor; `iptal_eden` id
+                // olduğu için koşul da ada bakmalı (yoksa "null" yazıyordu).
+                if ((widget.ders.iptalEdenAdi ?? '').isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
                     'İptal eden: ${widget.ders.iptalEdenAdi}',

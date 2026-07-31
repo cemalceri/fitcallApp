@@ -37,6 +37,8 @@ import 'package:fitcall/screens/7_yonetici/program/widgets/program_gorunumu.dart
 import 'package:fitcall/screens/7_yonetici/program/widgets/program_gun_seridi.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/program_izgara.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/uye_secim_sheet.dart';
+import 'package:fitcall/screens/7_yonetici/widgets/yonetici_bottom_bar.dart';
+import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -330,6 +332,21 @@ void main() {
         ikon: Icons.trending_up,
         ikonRenk: Colors.green,
         degisimYuzdesi: 12.5,
+      );
+    });
+
+    // Alt bar 6 sekmelik NavigationBar iken "Antrenörler" etiketi alt satıra
+    // taşıyordu; üye barıyla aynı 4 sekme + merkez QR düzenine geçildi.
+    for (var i = 0; i < 4; i++) {
+      tasmaTesti('YoneticiBottomBar (sekme $i)', () {
+        return YoneticiBottomBar(selectedIndex: i, onTabSelected: (_) {});
+      });
+    }
+
+    tasmaTesti('YoneticiDrawer', () {
+      return YoneticiDrawer(
+        yoneticiAdi: 'Mehmet Yılmazoğulları',
+        onTabSelected: (_) {},
       );
     });
   });

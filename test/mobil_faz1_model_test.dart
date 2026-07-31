@@ -115,6 +115,7 @@ void main() {
             'urun_adi': '',
             'seviye': '',
             'iptal_mi': true,
+            'iptal_eden_adi': ' Ayşe Yılmaz ',
             'katilim': null,
             'ders_yapildi': null,
             'puanim': null,
@@ -133,8 +134,12 @@ void main() {
       expect(ilk.dersYapildi, true);
       expect(ilk.puanim?.puan, 4);
 
+      // iptal_eden_adi göndermeyen (eski) cevapta alan boş kalmalı
+      expect(ilk.iptalEdenAdi, '');
+
       final ikinci = res.dersler[1];
       expect(ikinci.iptalMi, true);
+      expect(ikinci.iptalEdenAdi, 'Ayşe Yılmaz');
       expect(ikinci.katilim, isNull);
       expect(ikinci.dersYapildi, isNull);
       expect(ikinci.puanim, isNull);

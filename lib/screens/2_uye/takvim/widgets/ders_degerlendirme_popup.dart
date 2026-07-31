@@ -232,6 +232,19 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+                        // İptali kimin yaptığı (ad soyad). Sistem/otomatik
+                        // iptalde ad gelmez, satır da görünmez.
+                        if ((widget.ders.iptalEdenAdi ?? '').isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            'İptal eden: ${widget.ders.iptalEdenAdi}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.red.shade800,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

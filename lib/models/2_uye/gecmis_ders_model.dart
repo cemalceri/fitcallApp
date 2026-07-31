@@ -49,6 +49,9 @@ class GecmisDersModel {
   final String seviye;
   final bool iptalMi;
 
+  /// İptal edilen derste iptali yapan kişinin ad soyadı; yoksa boş.
+  final String iptalEdenAdi;
+
   /// Üyenin yoklama kaydı; yoklama girilmemişse null.
   final GecmisDersKatilim? katilim;
 
@@ -67,6 +70,7 @@ class GecmisDersModel {
     required this.urunAdi,
     required this.seviye,
     required this.iptalMi,
+    this.iptalEdenAdi = '',
     this.katilim,
     this.dersYapildi,
     this.puanim,
@@ -85,6 +89,7 @@ class GecmisDersModel {
       urunAdi: json['urun_adi'] ?? '',
       seviye: json['seviye'] ?? '',
       iptalMi: json['iptal_mi'] == true,
+      iptalEdenAdi: (json['iptal_eden_adi'] as String?)?.trim() ?? '',
       katilim: json['katilim'] != null
           ? GecmisDersKatilim.fromJson(
               (json['katilim'] as Map).cast<String, dynamic>())

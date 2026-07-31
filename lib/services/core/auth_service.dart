@@ -15,6 +15,25 @@ import 'package:fitcall/services/api_result.dart';
 import 'package:fitcall/services/api_exception.dart';
 
 class AuthService {
+  /// Profil değiştirme ekranını besleyen yerel önbellek anahtarı.
+  static const _kKullaniciProfiller = 'kullanici_profiller';
+
+  /// Profilleri güvenli depoya yazar. Uygulama içi "profil değiştir" akışı
+  /// (header butonları) API'yi tekrar çağıramadığı için buradan okur; bu yüzden
+  /// her profil çekiminde tazelenmesi gerekir. Aksi halde önbellek, alanların
+  /// (örn. isletme_adi) eklenmesinden önceki hâliyle kalır.
+  static Future<void> _profilleriOnbellekleAt(
+      List<KullaniciProfilModel> profiller) async {
+    try {
+      await SecureStorageService.setValue<String>(
+        _kKullaniciProfiller,
+        jsonEncode(profiller.map((e) => e.toJson()).toList()),
+      );
+    } catch (_) {
+      // Önbellek yazılamazsa giriş akışı bozulmasın
+    }
+  }
+
   /* ============== API: Üyelik İlişkileri ============== */
   static Future<KullaniciProfilleriResult> fetchMyMembers(
     String username,
@@ -45,6 +64,7 @@ class AuthService {
           await SecureStorageService.setValue<int>('user_id', user.id);
         } catch (_) {}
       }
+      await _profilleriOnbellekleAt(profiller);
       return KullaniciProfilleriResult(user: user, profiller: profiller);
     }
 
@@ -65,6 +85,7 @@ class AuthService {
               ))
           .toList();
 
+      await _profilleriOnbellekleAt(profiller);
       return KullaniciProfilleriResult(user: user, profiller: profiller);
     }
 

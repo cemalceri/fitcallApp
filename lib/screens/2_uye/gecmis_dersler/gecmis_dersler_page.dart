@@ -107,6 +107,7 @@ class _GecmisDerslerPageState extends State<GecmisDerslerPage> {
       updatedAt: now,
       antrenorAdi: ders.antrenorAdi,
       urunAdi: ders.urunAdi,
+      iptalEdenAdi: ders.iptalEdenAdi.isEmpty ? null : ders.iptalEdenAdi,
     );
     DersDegerlendirmePopup.show(
       context: context,

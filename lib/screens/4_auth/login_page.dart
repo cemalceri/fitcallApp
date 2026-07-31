@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously
-import 'dart:convert';
 import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
@@ -158,12 +157,6 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final result = await AuthService.fetchMyMembers(u, p);
       final profiller = result.profiller;
-
-      // Profilleri lokal saklamak zorunlu değil; istersen referans için tut
-      await SecureStorageService.setValue<String>(
-        'kullanici_profiller',
-        jsonEncode(profiller.map((e) => e.toJson()).toList()),
-      );
 
       // Beni hatırla tercihini ve kredileri yönet
       StorageService.setBeniHatirla(_beniHatirla);

@@ -15,10 +15,14 @@ import 'package:fitcall/screens/7_yonetici/dashboard/widgets/daily_summary_card.
 import 'package:fitcall/screens/7_yonetici/widgets/skeleton.dart';
 
 class YoneticiDashboardPage extends StatefulWidget {
-  /// Alt sekmeler arası geçiş (0:Dashboard 1:Raporlar 2:Üyeler 3:Antrenör 4:Dersler)
+  /// Sekmeler arası geçiş
+  /// (0:Dashboard 1:Raporlar 2:Üyeler 3:Antrenör 4:Dersler 5:Program)
   final void Function(int index)? onTabChange;
 
-  const YoneticiDashboardPage({super.key, this.onTabChange});
+  /// Header'daki hamburger; ana kabuğun drawer'ını açar. null ise gizlenir.
+  final VoidCallback? onMenuTap;
+
+  const YoneticiDashboardPage({super.key, this.onTabChange, this.onMenuTap});
 
   @override
   State<YoneticiDashboardPage> createState() => _YoneticiDashboardPageState();
@@ -147,7 +151,7 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            const DashboardHeader(),
+            DashboardHeader(onMenuTap: widget.onMenuTap),
             const SizedBox(height: 20),
 
             // Dönem filtresi

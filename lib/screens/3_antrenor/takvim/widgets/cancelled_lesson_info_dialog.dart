@@ -292,11 +292,13 @@ class CancelledLessonInfoDialog extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // İptal eden
-          if (ders.iptalEden != null && ders.iptalEden!.isNotEmpty) ...[
+          // İptal eden: API'nin `iptal_eden` alanı kullanıcı id'si, ad soyad
+          // `iptal_eden_adi`'nda geliyor. Ad gelmiyorsa satırı hiç gösterme
+          // (id yazmak kullanıcıya bir şey ifade etmiyor).
+          if (ders.iptalEdenAdi != null && ders.iptalEdenAdi!.isNotEmpty) ...[
             _CancelInfoRow(
               label: 'İptal Eden',
-              value: ders.iptalEden!,
+              value: ders.iptalEdenAdi!,
             ),
             const SizedBox(height: 10),
           ],
