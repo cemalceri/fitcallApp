@@ -72,9 +72,9 @@ workflows:
       # Uyarı: bu durumda main'e atılan HER commit mağaza incelemesine gider.
       # ---------------------------------------------------------------------
       # manuel tetiklemek için:
-      # kodu commitle
+      # kodu commitle ve pushla
       # git tag v3.5.1 tag ver
-      # git push origin v3.5.1 ile hem kodu hem tag'i push et
+      # git push origin v3.5.1 ile tag'i pushla
       # build tetiklenir ve mağazalara yüklenir.
 
     cache:
