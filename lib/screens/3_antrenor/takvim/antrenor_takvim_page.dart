@@ -26,8 +26,8 @@ class AntrenorTakvimPage extends StatefulWidget {
 
 class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
   bool _isLoading = false;
-  DateTime _focusedDay = DateTime.now();
-  DateTime _selectedDay = DateTime.now();
+  DateTime _focusedDay = simdiKulup();
+  DateTime _selectedDay = simdiKulup();
 
   final Set<DateTime> _yuklenenGunler = {};
   final Map<DateTime, List<EtkinlikModel>> _gunlukDersler = {};
@@ -76,7 +76,7 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
 
   Future<void> _prepare() async {
     setState(() => _isLoading = true);
-    final today = TimeUtils.normalizeDate(DateTime.now());
+    final today = TimeUtils.normalizeDate(simdiKulup());
     await _loadDay(today);
     setState(() => _isLoading = false);
   }
@@ -165,7 +165,7 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
       ders.bitisTarihSaat.hour,
       ders.bitisTarihSaat.minute,
     );
-    final isPast = bitisSaati.isBefore(DateTime.now());
+    final isPast = bitisSaati.isBefore(simdiKulup());
 
     if (!mounted) return;
 

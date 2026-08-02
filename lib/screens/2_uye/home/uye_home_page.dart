@@ -27,6 +27,7 @@ import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:fitcall/services/uye/uye_odul_service.dart';
 import 'package:flutter/material.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class UyeHomePage extends StatefulWidget {
   const UyeHomePage({super.key});
@@ -176,7 +177,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
       final result = await EtkinlikService.getirHaftalikDersBilgilerim();
       final list = result.data ?? [];
 
-      final now = DateTime.now();
+      final now = simdiKulup();
       final filtered =
           list.where((e) => e.baslangicTarihSaat.isAfter(now)).toList();
       final next = filtered.isEmpty

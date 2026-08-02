@@ -78,7 +78,7 @@ class HaftalikCiroItem {
     return HaftalikCiroItem(
       gun: json['gun'] ?? '',
       gunKisa: json['gun_kisa'] ?? '',
-      tarih: parseApiTarih(json['tarih'] ?? '') ?? DateTime.now(),
+      tarih: parseApiTarih(json['tarih'] ?? '') ?? simdiKulup(),
       ciro: double.tryParse(json['ciro']?.toString() ?? '0') ?? 0,
     );
   }
@@ -133,7 +133,7 @@ class HaftalikTahsilatItem {
     return HaftalikTahsilatItem(
       gun: json['gun'] ?? '',
       gunKisa: json['gun_kisa'] ?? '',
-      tarih: parseApiTarih(json['tarih'] ?? '') ?? DateTime.now(),
+      tarih: parseApiTarih(json['tarih'] ?? '') ?? simdiKulup(),
       tahsilat: double.tryParse(json['tahsilat']?.toString() ?? '0') ?? 0,
     );
   }
@@ -380,7 +380,7 @@ class CiroRaporuItem {
 
   factory CiroRaporuItem.fromJson(Map<String, dynamic> json) {
     return CiroRaporuItem(
-      tarih: parseApiTarih(json['tarih'] ?? '') ?? DateTime.now(),
+      tarih: parseApiTarih(json['tarih'] ?? '') ?? simdiKulup(),
       ciro: double.tryParse(json['ciro']?.toString() ?? '0') ?? 0,
       dersSayisi: json['ders_sayisi'] ?? 0,
     );
@@ -401,7 +401,7 @@ class TahsilatRaporuItem {
 
   factory TahsilatRaporuItem.fromJson(Map<String, dynamic> json) {
     return TahsilatRaporuItem(
-      tarih: parseApiTarih(json['tarih'] ?? '') ?? DateTime.now(),
+      tarih: parseApiTarih(json['tarih'] ?? '') ?? simdiKulup(),
       tahsilat: double.tryParse(json['tahsilat']?.toString() ?? '0') ?? 0,
       islemSayisi: json['islem_sayisi'] ?? 0,
     );
@@ -818,9 +818,9 @@ class DersListeItem {
       id: json['id'] ?? 0,
       baslangicTarihSaat:
           parseApiTarih(json['baslangic_tarih_saat'] ?? '') ??
-              DateTime.now(),
+              simdiKulup(),
       bitisTarihSaat:
-          parseApiTarih(json['bitis_tarih_saat'] ?? '') ?? DateTime.now(),
+          parseApiTarih(json['bitis_tarih_saat'] ?? '') ?? simdiKulup(),
       tarih: json['tarih'] ?? '',
       saat: json['saat'] ?? '',
       antrenorId: json['antrenor'],

@@ -18,6 +18,7 @@ import 'widgets/gunluk_kokpit_card.dart';
 import 'widgets/quick_access_grid.dart';
 import 'widgets/next_lesson_card.dart';
 import 'widgets/info_cards_carousel.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class AntrenorHomePage extends StatefulWidget {
   const AntrenorHomePage({super.key});
@@ -105,7 +106,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
         final result = await TakvimService.getirAntrenorHaftalikDersBilgileri();
         final list = result.data ?? [];
 
-        final now = DateTime.now();
+        final now = simdiKulup();
         final filtered = list
             .where((e) => e.baslangicTarihSaat.isAfter(now) && !e.iptalMi)
             .toList();

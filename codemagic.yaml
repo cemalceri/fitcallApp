@@ -44,9 +44,11 @@ workflows:
         # App Store Connect > Uygulama > App Information > Apple ID
         APP_STORE_APPLE_ID: 6751735628
         GOOGLE_PLAY_TRACK: "production"
-        # Build makinesi UTC; testler +03:00 verisini yerel saate çevirip
-        # kontrol ettiği için makineyi İstanbul saatine sabitliyoruz.
-        TZ: "Europe/Istanbul"
+        # NOT: Burada TZ sabitlemeyin. Eskiden TZ="Europe/Istanbul" yazıyordu;
+        # testler cihaz saat dilimine bağımlı olduğu için makine İstanbul'a
+        # sabitlenmişti. Sonuç: saat dilimi farklı telefonlarda dersin 3 saat
+        # kaymasına yol açan hata (2026-08-02) CI'da hiç görünmedi. Testler
+        # artık "Testler" adımında birden çok saat diliminde koşuyor.
         # iOS imzalama, "iOS imzalama profilleri" adımında app-store-connect
         # CLI ile yapılıyor (profil/sertifika yoksa üretiyor).
         BUNDLE_ID: "com.ceri.fitcall"
@@ -94,8 +96,16 @@ workflows:
           flutter analyze
 
       - name: Testler
+        # Ders saatleri KULÜP saatidir (Europe/Istanbul), cihazın saati değil.
+        # Bu yüzden paket birden çok saat diliminde koşulur: saat dilimine
+        # bağımlı bir beklenti geri sızarsa build burada kırılır.
+        # (2026-08-02: UTC+6 bir telefonda 08:30 ders 11:30 görünüyordu.)
         script: |
-          flutter test
+          set -e
+          for tz in "Europe/Istanbul" "UTC" "Asia/Almaty" "America/New_York"; do
+            echo "=== flutter test  (TZ=$tz) ==="
+            TZ="$tz" flutter test
+          done
 
       # ---------------------------------------------------------------- ANDROID
       - name: Android imzalama dosyasi (key.properties)

@@ -18,6 +18,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:fitcall/models/4_auth/group_model.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class QRKodKayitPage extends StatefulWidget {
   const QRKodKayitPage({super.key});
@@ -91,7 +92,7 @@ class _QRKodKayitPageState extends State<QRKodKayitPage>
       final liste = lstRes.data ?? <GecisModel>[];
 
       // Süresi geçmiş misafirleri filtrele
-      final now = DateTime.now();
+      final now = simdiKulup();
       final aktifListe = liste.where((p) => p.expiresAt.isAfter(now)).toList();
 
       setState(() {
@@ -119,7 +120,7 @@ class _QRKodKayitPageState extends State<QRKodKayitPage>
       DateFormat("dd MMM, HH:mm", "tr_TR").format(dt.toLocal());
 
   Duration _kalanSure(DateTime expiresAt) {
-    return expiresAt.difference(DateTime.now());
+    return expiresAt.difference(simdiKulup());
   }
 
   String _kalanSureText(DateTime expiresAt) {
@@ -257,7 +258,7 @@ class _QRKodKayitPageState extends State<QRKodKayitPage>
         final lstRes =
             await QrCodeApiService.listeleTesisMisafirPassApi(userId: userId);
         if (lstRes.data != null) {
-          final now = DateTime.now();
+          final now = simdiKulup();
           final aktifListe =
               lstRes.data!.where((p) => p.expiresAt.isAfter(now)).toList();
           setState(() => _davetliler = aktifListe);
@@ -301,7 +302,7 @@ class _QRKodKayitPageState extends State<QRKodKayitPage>
       final lstRes =
           await QrCodeApiService.listeleTesisMisafirPassApi(userId: userId);
       if (lstRes.data != null) {
-        final now = DateTime.now();
+        final now = simdiKulup();
         final aktifListe =
             lstRes.data!.where((p) => p.expiresAt.isAfter(now)).toList();
         setState(() => _davetliler = aktifListe);

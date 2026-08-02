@@ -81,9 +81,9 @@ class GecmisDersModel {
       id: (json['id'] as num?)?.toInt() ?? 0,
       baslangicTarihSaat:
           parseApiTarih(json['baslangic_tarih_saat'] ?? '') ??
-              DateTime.now(),
+              simdiKulup(),
       bitisTarihSaat:
-          parseApiTarih(json['bitis_tarih_saat'] ?? '') ?? DateTime.now(),
+          parseApiTarih(json['bitis_tarih_saat'] ?? '') ?? simdiKulup(),
       kortAdi: json['kort_adi'] ?? '',
       antrenorAdi: json['antrenor_adi'] ?? '',
       urunAdi: json['urun_adi'] ?? '',

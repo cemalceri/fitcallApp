@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 
 import 'program_constants.dart';
 import 'program_ders_blok.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 /// Aynı kortta çakışan dersleri yan yana yerleştirmek için hesaplanan konum.
 class _Yerlesim {
@@ -218,7 +219,7 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
   }
 
   bool get _bugunMu {
-    final bugun = DateTime.now();
+    final bugun = simdiKulup();
     return widget.secilenGun.year == bugun.year &&
         widget.secilenGun.month == bugun.month &&
         widget.secilenGun.day == bugun.day;
@@ -396,7 +397,7 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
   }
 
   Widget _simdiCizgisi(int basSaat, double genislik) {
-    final simdi = DateTime.now();
+    final simdi = simdiKulup();
     final ust = ProgramZaman.zamandanPiksel(simdi, basSaat);
     if (ust < 0) return const SizedBox.shrink();
 

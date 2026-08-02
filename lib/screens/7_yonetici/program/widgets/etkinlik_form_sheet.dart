@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'uye_secim_sheet.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class EtkinlikFormSonucu {
   final EtkinlikKaydetIstegi istek;
@@ -106,7 +107,7 @@ class _EtkinlikFormSheetState extends State<EtkinlikFormSheet> {
   }
 
   DateTime _varsayilanBaslangic() {
-    final s = widget.onSecilenBaslangic ?? DateTime.now();
+    final s = widget.onSecilenBaslangic ?? simdiKulup();
     // 30 dakikanın katına yuvarla (backend kuralı)
     final dakika = s.minute < 30 ? 0 : 30;
     return DateTime(s.year, s.month, s.day, s.hour, dakika);
@@ -126,8 +127,8 @@ class _EtkinlikFormSheetState extends State<EtkinlikFormSheet> {
     final secilen = await showDatePicker(
       context: context,
       initialDate: _baslangic,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      firstDate: simdiKulup().subtract(const Duration(days: 365)),
+      lastDate: simdiKulup().add(const Duration(days: 365)),
     );
     if (secilen == null) return;
     setState(() {

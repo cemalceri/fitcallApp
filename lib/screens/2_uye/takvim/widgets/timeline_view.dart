@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'takvim_constants.dart';
 import 'position_calculator.dart';
 import 'lesson_block.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class TimelineView extends StatefulWidget {
   final List<EtkinlikModel> dersler;
@@ -25,7 +26,7 @@ class TimelineView extends StatefulWidget {
 
 class _TimelineViewState extends State<TimelineView> {
   Timer? _timer;
-  DateTime _currentTime = DateTime.now();
+  DateTime _currentTime = simdiKulup();
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -34,7 +35,7 @@ class _TimelineViewState extends State<TimelineView> {
     // Her dakika güncelle
     _timer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) {
-        setState(() => _currentTime = DateTime.now());
+        setState(() => _currentTime = simdiKulup());
       }
     });
 
@@ -49,7 +50,7 @@ class _TimelineViewState extends State<TimelineView> {
     super.didUpdateWidget(oldWidget);
     // Gün değiştiğinde scroll'u ayarla
     if (!TimeUtils.isSameDay(oldWidget.selectedDay, widget.selectedDay)) {
-      if (TimeUtils.isSameDay(widget.selectedDay, DateTime.now())) {
+      if (TimeUtils.isSameDay(widget.selectedDay, simdiKulup())) {
         _scrollToCurrentTime();
       } else {
         _scrollToFirstLesson();
@@ -58,9 +59,9 @@ class _TimelineViewState extends State<TimelineView> {
   }
 
   void _scrollToCurrentTime() {
-    if (!TimeUtils.isSameDay(widget.selectedDay, DateTime.now())) return;
+    if (!TimeUtils.isSameDay(widget.selectedDay, simdiKulup())) return;
 
-    final now = DateTime.now();
+    final now = simdiKulup();
     final targetScroll = TimeUtils.timeToPixel(now) - 150;
 
     if (_scrollController.hasClients) {
@@ -100,7 +101,7 @@ class _TimelineViewState extends State<TimelineView> {
   @override
   Widget build(BuildContext context) {
     final result = PositionCalculator.calculate(widget.dersler);
-    final isToday = TimeUtils.isSameDay(widget.selectedDay, DateTime.now());
+    final isToday = TimeUtils.isSameDay(widget.selectedDay, simdiKulup());
 
     return LayoutBuilder(
       builder: (context, constraints) {

@@ -1,0 +1,6 @@
+Ders saatleri artık her telefonda kulüp saatiyle (Türkiye saati) gösteriliyor.
+
+• Saat dilimi farklı olan telefonlarda ders saatleri kaymıyor.
+• Bildirimde yazan saat ile takvimde görünen saat her zaman aynı.
+• "Takvime ekle" ile eklenen ders, telefon takviminde doğru saate ve hatırlatıcıya düşüyor.
+• Geçmiş/gelecek ders ayrımı, "bugün" işareti ve teyit ekranları saat dilimi farkından etkilenmiyor.

@@ -9,6 +9,7 @@ import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class AntrenorOgrencilerPage extends StatefulWidget {
   const AntrenorOgrencilerPage({super.key});
@@ -93,7 +94,7 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage>
 
   int _calculateAge(DateTime? birthDate) {
     if (birthDate == null) return 0;
-    final now = DateTime.now();
+    final now = simdiKulup();
     int age = now.year - birthDate.year;
     if (now.month < birthDate.month ||
         (now.month == birthDate.month && now.day < birthDate.day)) {

@@ -8,6 +8,7 @@ import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class DersDetayPopup extends StatefulWidget {
   final EtkinlikModel ders;
@@ -63,12 +64,18 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
       if (ders.urunAdi != null && ders.urunAdi!.isNotEmpty)
         'Program: ${ders.urunAdi}',
     ];
+    // Add2Calendar tarihi epoch milisaniye olarak gönderir; yani GERÇEK an
+    // gerekir. Uygulamadaki tarihler kulüp duvar saati olduğu için önce
+    // kulupAnI() ile gerçek ana çevriliyor, saat dilimi de açıkça belirtiliyor.
+    // Aksi halde saat dilimi Europe/Istanbul olmayan bir telefonun takviminde
+    // ders yanlış zamana düşer (hatırlatıcı da yanlış saatte çalar).
     final event = Event(
       title: 'Tenis Dersi — ${ders.kortAdi}',
       description: aciklamaParcalari.join('\n'),
       location: ders.kortAdi,
-      startDate: ders.baslangicTarihSaat,
-      endDate: ders.bitisTarihSaat,
+      startDate: kulupAnI(ders.baslangicTarihSaat),
+      endDate: kulupAnI(ders.bitisTarihSaat),
+      timeZone: 'Europe/Istanbul',
       iosParams: const IOSParams(reminder: Duration(hours: 1)),
     );
     Add2Calendar.addEvent2Cal(event);
@@ -191,7 +198,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                   ],
                   if (!iptalEdildi &&
                       widget.ders.baslangicTarihSaat
-                          .isAfter(DateTime.now())) ...[
+                          .isAfter(simdiKulup())) ...[
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(

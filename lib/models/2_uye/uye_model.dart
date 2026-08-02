@@ -100,11 +100,11 @@ class UyeModel {
       createdAt: parseApiTarih(
               (json['olusturulma_zamani'] ?? json['created_at'] ?? '')
                   .toString()) ??
-          DateTime.now(),
+          simdiKulup(),
       updatedAt: parseApiTarih(
               (json['guncellenme_zamani'] ?? json['updated_at'] ?? '')
                   .toString()) ??
-          DateTime.now(),
+          simdiKulup(),
       isletme: json['isletme'] ?? 0,
       adi: json['adi'] ?? '',
       soyadi: json['soyadi'] ?? '',

@@ -3,6 +3,7 @@
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:flutter/material.dart';
 import 'takvim_constants.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class LessonBlock extends StatelessWidget {
   final EtkinlikModel ders;
@@ -16,7 +17,7 @@ class LessonBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isPast = ders.bitisTarihSaat.isBefore(DateTime.now());
+    final isPast = ders.bitisTarihSaat.isBefore(simdiKulup());
     final isIptal = ders.iptalMi;
 
     // Durum rengini belirle

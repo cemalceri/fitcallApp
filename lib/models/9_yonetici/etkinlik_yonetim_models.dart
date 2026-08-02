@@ -258,7 +258,7 @@ class ProgramGunu {
   });
 
   factory ProgramGunu.fromJson(Map<String, dynamic> j) => ProgramGunu(
-        tarih: parseApiGun(j['tarih']) ?? DateTime.now(),
+        tarih: parseApiGun(j['tarih']) ?? simdiKulup(),
         tarihMetin: j['tarih']?.toString() ?? '',
         gunAdi: j['gun_adi']?.toString() ?? '',
         gunKisa: j['gun_kisa']?.toString() ?? '',
@@ -284,9 +284,9 @@ class HaftalikProgram {
   });
 
   factory HaftalikProgram.fromJson(Map<String, dynamic> j) => HaftalikProgram(
-        haftaBaslangic: parseApiGun(j['hafta_baslangic']) ?? DateTime.now(),
-        haftaBitis: parseApiGun(j['hafta_bitis']) ?? DateTime.now(),
-        bugun: parseApiGun(j['bugun']) ?? DateTime.now(),
+        haftaBaslangic: parseApiGun(j['hafta_baslangic']) ?? simdiKulup(),
+        haftaBitis: parseApiGun(j['hafta_bitis']) ?? simdiKulup(),
+        bugun: parseApiGun(j['bugun']) ?? simdiKulup(),
         gunler: (j['gunler'] as List? ?? const [])
             .map((e) => ProgramGunu.fromJson((e as Map).cast<String, dynamic>()))
             .toList(),

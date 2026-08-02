@@ -39,7 +39,7 @@ class AntrenorModel {
   });
 
   static DateTime _dt(String? v) =>
-      (v == null || v.isEmpty) ? DateTime.now() : parseApiTarihOrNow(v);
+      (v == null || v.isEmpty) ? simdiKulup() : parseApiTarihOrNow(v);
 
   factory AntrenorModel.fromJson(Map<String, dynamic> json) => AntrenorModel(
         id: json['id'] ?? 0,
@@ -93,7 +93,7 @@ class AntrenorModel {
         ekleyen: null,
         guncelleyen: null,
         isletme: null,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: simdiKulup(),
+        updatedAt: simdiKulup(),
       );
 }

@@ -14,6 +14,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:flutter/material.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class DersListesiPage extends StatefulWidget {
   const DersListesiPage({super.key});
@@ -48,7 +49,7 @@ class _DersListesiPageState extends State<DersListesiPage>
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
+    final now = simdiKulup();
     _focusedDay = now;
     _selectedDay = TimeUtils.normalizeDate(now);
 
@@ -207,7 +208,7 @@ class _DersListesiPageState extends State<DersListesiPage>
     // İPTAL EDİLDİ KONTROLÜ KALDIRILDI - Artık iptal edilen derslere de tıklanabilir
     // İptal durumu popup içinde gösterilecek
 
-    final isPast = ders.bitisTarihSaat.isBefore(DateTime.now());
+    final isPast = ders.bitisTarihSaat.isBefore(simdiKulup());
 
     if (isPast) {
       // Geçmiş ders - değerlendirme popup'ı
@@ -251,7 +252,7 @@ class _DersListesiPageState extends State<DersListesiPage>
           // Bugüne git butonu
           IconButton(
             onPressed: () {
-              final today = DateTime.now();
+              final today = simdiKulup();
               _onPageChanged(today);
               _onDaySelected(today);
             },
@@ -304,7 +305,7 @@ class _DersListesiPageState extends State<DersListesiPage>
   }
 
   Widget _buildDayHeader(ThemeData theme) {
-    final isToday = TimeUtils.isSameDay(_selectedDay, DateTime.now());
+    final isToday = TimeUtils.isSameDay(_selectedDay, simdiKulup());
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),

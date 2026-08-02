@@ -5,6 +5,7 @@ import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 /// Sonraki ders kartı widget'ı
 class UyeNextLessonCard extends StatelessWidget {
@@ -132,7 +133,7 @@ class _LessonContent extends StatelessWidget {
     final df = DateFormat('d MMMM EEEE', 'tr_TR');
 
     // Geri sayım hesapla
-    final now = DateTime.now();
+    final now = simdiKulup();
     final diff = lesson.baslangicTarihSaat.difference(now);
     final (countdown, countdownColor) = _getCountdown(diff);
 

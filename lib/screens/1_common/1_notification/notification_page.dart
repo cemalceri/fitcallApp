@@ -10,6 +10,7 @@ import 'package:fitcall/services/notification/notification_router.dart';
 import 'package:fitcall/main.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
@@ -150,7 +151,7 @@ class _NotificationPageState extends State<NotificationPage> {
     final thisWeek = <NotificationModel>[];
     final thisMonth = <NotificationModel>[];
     final older = <NotificationModel>[];
-    final now = DateTime.now();
+    final now = simdiKulup();
 
     for (final n in _notifications) {
       final d = now.difference(n.timestamp).inDays;
@@ -448,7 +449,7 @@ class _BildirimSatiri extends StatelessWidget {
   }
 
   String _formatTime(DateTime dt) {
-    final now = DateTime.now();
+    final now = simdiKulup();
     final diff = now.difference(dt);
     if (diff.inMinutes < 1) return 'Şimdi';
     if (diff.inMinutes < 60) return '${diff.inMinutes}d';

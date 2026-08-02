@@ -43,7 +43,7 @@ class UserModel {
       isActive: json['is_active'] ?? false,
       dateJoined: json['date_joined'] != null
           ? parseApiTarihOrNow(json['date_joined'])
-          : DateTime.now(),
+          : simdiKulup(),
       groups: List<int>.from(json['groups']),
       userPermissions: List<dynamic>.from(json['user_permissions']),
     );

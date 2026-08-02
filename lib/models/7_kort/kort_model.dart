@@ -33,7 +33,7 @@ class KortModel {
   });
 
   static DateTime _dt(String? v) =>
-      (v == null || v.isEmpty) ? DateTime.now() : parseApiTarihOrNow(v);
+      (v == null || v.isEmpty) ? simdiKulup() : parseApiTarihOrNow(v);
 
   factory KortModel.fromJson(Map<String, dynamic> json) => KortModel(
         id: json['id'] ?? 0,
@@ -76,7 +76,7 @@ class KortModel {
         ekleyen: null,
         guncelleyen: null,
         isletme: null,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        createdAt: simdiKulup(),
+        updatedAt: simdiKulup(),
       );
 }

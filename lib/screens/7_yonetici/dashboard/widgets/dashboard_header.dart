@@ -9,6 +9,7 @@ import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class DashboardHeader extends StatefulWidget {
   /// Sol üstteki menü (hamburger) butonuna dokununca çağrılır. null ise buton
@@ -53,7 +54,7 @@ class _DashboardHeaderState extends State<DashboardHeader> {
   }
 
   String _getGreeting() {
-    final hour = DateTime.now().hour;
+    final hour = simdiKulup().hour;
     if (hour < 12) return 'Günaydın';
     if (hour < 18) return 'İyi günler';
     return 'İyi akşamlar';

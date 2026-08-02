@@ -8,6 +8,7 @@ import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class HomeHeader extends StatelessWidget {
   final String antrenorAdi;
@@ -20,7 +21,7 @@ class HomeHeader extends StatelessWidget {
   });
 
   String _getGreeting() {
-    final hour = DateTime.now().hour;
+    final hour = simdiKulup().hour;
     if (hour < 12) return 'Günaydın';
     if (hour < 18) return 'İyi günler';
     return 'İyi akşamlar';

@@ -31,6 +31,7 @@ import 'package:fitcall/screens/3_antrenor/eksik_yoklama/antrenor_eksik_yoklama_
 
 import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 /// Uygulama genelinde kullanacağımız sayfaların enum değerleri
 enum SayfaAdi {
@@ -118,7 +119,7 @@ final Map<String, WidgetBuilder> routes = {
           "kort_adi": "",
           "antrenor_adi": ""
         },
-        baslangic: DateTime.now(),
+        baslangic: simdiKulup(),
       ),
   routeEnums[SayfaAdi.bildirimler]!: (c) => NotificationPage(),
   routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiMainPage(),

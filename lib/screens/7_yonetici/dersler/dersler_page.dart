@@ -8,6 +8,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/7_yonetici/dersler/widgets/ders_istatistik_kartlar.dart';
 import 'package:fitcall/screens/7_yonetici/dersler/widgets/ders_liste_item.dart';
 import 'package:intl/intl.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class DerslerPage extends StatefulWidget {
   const DerslerPage({super.key});
@@ -21,7 +22,7 @@ class _DerslerPageState extends State<DerslerPage> {
   bool _loading = true;
   String? _errorMessage;
 
-  DateTime _secilenTarih = DateTime.now();
+  DateTime _secilenTarih = simdiKulup();
   String _filtre = 'tumu';
 
   @override
@@ -73,8 +74,8 @@ class _DerslerPageState extends State<DerslerPage> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _secilenTarih,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      firstDate: simdiKulup().subtract(const Duration(days: 365)),
+      lastDate: simdiKulup().add(const Duration(days: 365)),
     );
     if (picked != null) {
       setState(() => _secilenTarih = picked);
@@ -94,7 +95,7 @@ class _DerslerPageState extends State<DerslerPage> {
   }
 
   void _goToToday() {
-    setState(() => _secilenTarih = DateTime.now());
+    setState(() => _secilenTarih = simdiKulup());
     _loadData();
   }
 

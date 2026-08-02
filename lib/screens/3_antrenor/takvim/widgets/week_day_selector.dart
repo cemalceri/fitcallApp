@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class WeekDaySelector extends StatelessWidget {
   final DateTime selectedDay;
@@ -96,7 +97,7 @@ class WeekDaySelector extends StatelessWidget {
 
   Widget _buildDayItem(BuildContext context, ThemeData theme, DateTime day) {
     final isSelected = _isSameDay(day, selectedDay);
-    final isToday = _isSameDay(day, DateTime.now());
+    final isToday = _isSameDay(day, simdiKulup());
     final normalizedDay = TimeUtils.normalizeDate(day);
     final lessonCount = lessonCounts[normalizedDay] ?? 0;
 

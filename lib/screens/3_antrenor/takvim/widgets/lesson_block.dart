@@ -3,6 +3,7 @@
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:flutter/material.dart';
 import 'takvim_constants.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 /// Ders durumu enum
 enum LessonStatus {
@@ -212,7 +213,7 @@ class LessonBlock extends StatelessWidget {
     if (ders.iptalMi) return LessonStatus.cancelled;
 
     // Geçmiş mi gelecek mi?
-    final now = DateTime.now();
+    final now = simdiKulup();
     final isPast = ders.bitisTarihSaat.isBefore(now);
 
     if (!isPast) return LessonStatus.future;

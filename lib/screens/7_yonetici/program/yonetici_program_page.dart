@@ -19,6 +19,7 @@ import 'widgets/ders_islem_sheet.dart';
 import 'widgets/ders_sil_dialog.dart';
 import 'widgets/etkinlik_form_sheet.dart';
 import 'widgets/program_gorunumu.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class YoneticiProgramPage extends StatefulWidget {
   const YoneticiProgramPage({super.key});
@@ -33,7 +34,7 @@ class _YoneticiProgramPageState extends State<YoneticiProgramPage> {
   bool _islemDevamEdiyor = false;
   String? _hata;
 
-  DateTime _secilenGun = DateTime.now();
+  DateTime _secilenGun = simdiKulup();
 
   @override
   void initState() {
@@ -87,7 +88,7 @@ class _YoneticiProgramPageState extends State<YoneticiProgramPage> {
   }
 
   void _bugune() {
-    final bugun = DateTime.now();
+    final bugun = simdiKulup();
     final ayniHafta = _program != null &&
         !bugun.isBefore(_program!.haftaBaslangic) &&
         !bugun.isAfter(_program!.haftaBitis.add(const Duration(days: 1)));

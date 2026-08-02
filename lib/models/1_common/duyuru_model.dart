@@ -37,12 +37,12 @@ class DuyuruModel {
 
   // Helper: DateTime parse
   static DateTime _parseDate(dynamic value) {
-    if (value == null) return DateTime.now();
+    if (value == null) return simdiKulup();
     if (value is DateTime) return value;
     if (value is String && value.isNotEmpty) {
-      return parseApiTarih(value) ?? DateTime.now();
+      return parseApiTarih(value) ?? simdiKulup();
     }
-    return DateTime.now();
+    return simdiKulup();
   }
 
   static DateTime? _parseDateNullable(dynamic value) {
@@ -120,8 +120,8 @@ class DuyuruModel {
   static DuyuruModel empty() => DuyuruModel(
         id: 0,
         baslik: '',
-        yayinBaslangic: DateTime.now(),
-        olusturulmaZamani: DateTime.now(),
+        yayinBaslangic: simdiKulup(),
+        olusturulmaZamani: simdiKulup(),
       );
 
   @override

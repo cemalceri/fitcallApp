@@ -70,7 +70,7 @@ class NotificationModel {
       actionToken: json['action_token'] as String?,
       isRead: json['is_read'] as bool? ?? false,
       timestamp: parseApiTarih(json['timestamp']?.toString() ?? '') ??
-          DateTime.now(),
+          simdiKulup(),
     );
   }
 
@@ -107,7 +107,7 @@ class NotificationModel {
       displayData: displayData,
       actionToken: data['action_token']?.toString(),
       isRead: false,
-      timestamp: DateTime.now(),
+      timestamp: simdiKulup(),
     );
   }
 

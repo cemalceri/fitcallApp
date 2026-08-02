@@ -10,6 +10,7 @@ import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:fitcall/services/notification/notification_action_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class DersTeyitBildirimPage extends StatefulWidget {
   final NotificationModel notification;
@@ -75,7 +76,7 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
       if (tarihStr != null) {
         final lessonDate =
             _parseLessonDate(tarihStr.toString(), saatStr?.toString());
-        if (lessonDate != null && lessonDate.isBefore(DateTime.now())) {
+        if (lessonDate != null && lessonDate.isBefore(simdiKulup())) {
           setState(() {
             _isLessonPast = true;
             _checkingStatus = false;

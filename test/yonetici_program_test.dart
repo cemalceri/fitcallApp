@@ -4,6 +4,7 @@
 // ve uzun isimlerle çalışıyor. Flutter test ortamında RenderFlex overflow bir
 // istisna olarak raporlanır; aşağıdaki testler o istisnanın oluşmadığını doğrular.
 
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/program_gun_seridi.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/program_izgara.dart';
@@ -105,15 +106,22 @@ void main() {
       expect(p.dersler.length, 1);
     });
 
-    test('ders saati yerel duvar saati olarak okunur', () {
+    test('ders saati kulüp duvar saati olarak okunur', () {
       // Sunucu +03:00 gönderiyor; ham DateTime.parse 07:00 verirdi.
+      // Beklenti CİHAZIN saat diliminden bağımsız yazılmıştır: eskiden
+      // millisecondsSinceEpoch ile karşılaştırılıyordu, o da yalnızca +03:00
+      // makinede geçiyordu (bkz. 2026-08-02 saat kayması düzeltmesi).
       final p = HaftalikProgram.fromJson(_programJson());
       final ders = p.dersler.first;
 
       expect(ders.saat, '10:00');
       expect(ders.baslangic.isUtc, isFalse);
+      expect(ders.baslangic.hour, 10);
+      expect(ders.baslangic.minute, 0);
+      expect(ders.baslangic.day, 23);
+      // Gerçek an (telefon takvimi/alarm için) her cihazda aynı olmalı.
       expect(
-        ders.baslangic.millisecondsSinceEpoch,
+        kulupAnI(ders.baslangic).millisecondsSinceEpoch,
         DateTime.parse('2026-07-23T10:00:00+03:00').millisecondsSinceEpoch,
       );
     });

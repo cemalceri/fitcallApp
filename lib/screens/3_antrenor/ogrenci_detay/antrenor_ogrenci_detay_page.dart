@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class AntrenorOgrenciDetayPage extends StatefulWidget {
   final int uyeId;
@@ -212,7 +213,7 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
   Widget _profilKarti(ColorScheme colorScheme) {
     final p = _detay!.profil;
     final yasFmt = p.dogumTarihi != null
-        ? '${(DateTime.now().difference(p.dogumTarihi!).inDays / 365.25).floor()} yaş'
+        ? '${(simdiKulup().difference(p.dogumTarihi!).inDays / 365.25).floor()} yaş'
         : null;
 
     return Container(

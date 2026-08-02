@@ -11,6 +11,7 @@ import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class GecmisDerslerPage extends StatefulWidget {
   const GecmisDerslerPage({super.key});
@@ -90,7 +91,7 @@ class _GecmisDerslerPageState extends State<GecmisDerslerPage> {
 
   void _degerlendirmeAc(GecmisDersModel ders) {
     HapticFeedback.lightImpact();
-    final now = DateTime.now();
+    final now = simdiKulup();
     // Popup EtkinlikModel bekliyor; geçmiş ders kaydından asgari model kurulur
     final etkinlik = EtkinlikModel(
       id: ders.id,

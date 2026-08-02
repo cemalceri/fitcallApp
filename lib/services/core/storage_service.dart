@@ -4,13 +4,14 @@ import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/models/4_auth/group_model.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fitcall/common/tarih_util.dart';
 
 class StorageService {
   /* ================== TOKEN & STORAGE ================== */
   static Future<bool> tokenGecerliMi() async {
     final exp = await SecureStorageService.getValue<String>('token_exp');
     final dt = exp != null ? DateTime.tryParse(exp) : null;
-    return dt != null && dt.isAfter(DateTime.now());
+    return dt != null && dt.isAfter(simdiKulup());
   }
 
   static Future<String?> getToken() =>
