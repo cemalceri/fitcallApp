@@ -13,9 +13,10 @@ import 'package:flutter/material.dart';
 
 // Widgets
 import 'package:fitcall/models/3_antrenor/gunluk_ozet_model.dart';
+import 'widgets/antrenor_bottom_bar.dart';
+import 'widgets/antrenor_drawer.dart';
 import 'widgets/home_header.dart';
 import 'widgets/gunluk_kokpit_card.dart';
-import 'widgets/quick_access_grid.dart';
 import 'widgets/next_lesson_card.dart';
 import 'widgets/info_cards_carousel.dart';
 import 'package:fitcall/common/tarih_util.dart';
@@ -28,6 +29,8 @@ class AntrenorHomePage extends StatefulWidget {
 }
 
 class _AntrenorHomePageState extends State<AntrenorHomePage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   // State
   bool _isLoading = true;
   bool _hasMultipleProfiles = false;
@@ -184,6 +187,9 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: AntrenorDrawer(antrenorAdi: _antrenorAdi),
+      bottomNavigationBar: const AntrenorBottomBar(),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -207,6 +213,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
                   child: HomeHeader(
                     antrenorAdi: _antrenorAdi,
                     hasMultipleProfiles: _hasMultipleProfiles,
+                    onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
                   ),
                 ),
 
@@ -218,14 +225,6 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
                       ozet: _gunlukOzet,
                       isLoading: _isLoading,
                     ),
-                  ),
-                ),
-
-                // Hızlı Erişim Menüsü
-                const SliverPadding(
-                  padding: EdgeInsets.fromLTRB(16, 20, 16, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: QuickAccessGrid(),
                   ),
                 ),
 

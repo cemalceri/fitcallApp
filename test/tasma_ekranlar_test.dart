@@ -46,6 +46,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'support/tasma_yardimcisi.dart';
 
 import 'package:fitcall/screens/3_antrenor/eksik_yoklama/widgets/eksik_yoklama_listesi.dart';
+import 'package:fitcall/screens/3_antrenor/home/widgets/antrenor_bottom_bar.dart';
+import 'package:fitcall/screens/3_antrenor/home/widgets/antrenor_drawer.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_block.dart'
     as antrenor_blok;
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/week_day_selector.dart'
@@ -384,6 +386,15 @@ void main() {
         onDersTap: (_) {},
       );
     });
+  });
+
+  /* ===================== ANTRENÖR — ANA SAYFA KABUĞU ===================== */
+
+  group('Antrenör ana sayfa', () {
+    tasmaTesti('AntrenorBottomBar', () => const AntrenorBottomBar());
+
+    tasmaTesti('AntrenorDrawer',
+        () => const AntrenorDrawer(antrenorAdi: 'Ayşe Yılmazoğulları'));
   });
 
   /* ===================== ÜYE ===================== */

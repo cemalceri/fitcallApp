@@ -14,10 +14,15 @@ class HomeHeader extends StatelessWidget {
   final String antrenorAdi;
   final bool hasMultipleProfiles;
 
+  /// Sol üstteki menü (hamburger) butonuna dokununca çağrılır. null ise buton
+  /// gizlenir.
+  final VoidCallback? onMenuTap;
+
   const HomeHeader({
     super.key,
     required this.antrenorAdi,
     required this.hasMultipleProfiles,
+    this.onMenuTap,
   });
 
   String _getGreeting() {
@@ -32,9 +37,31 @@ class HomeHeader extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 8, 16),
+      padding: EdgeInsets.fromLTRB(onMenuTap == null ? 20 : 8, 12, 8, 16),
       child: Row(
         children: [
+          // Sol üst: Menü (hamburger)
+          if (onMenuTap != null)
+            IconButton(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                onMenuTap!.call();
+              },
+              tooltip: 'Menü',
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.menu_rounded,
+                  size: 22,
+                  color: colorScheme.primary,
+                ),
+              ),
+            ),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
