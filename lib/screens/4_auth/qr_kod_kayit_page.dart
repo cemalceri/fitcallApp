@@ -5,9 +5,11 @@ import 'dart:ui' as ui;
 import 'dart:math' as math;
 
 import 'package:fitcall/models/1_common/event/gecis_model.dart';
+import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/api_result.dart';
+import 'package:fitcall/services/core/ekran_parlaklik_service.dart';
 import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +42,10 @@ class _QRKodKayitPageState extends State<QRKodKayitPage>
   final ScrollController _guestCtrl = ScrollController();
   late AnimationController _pulseController;
 
+  // QR okuyucuya gösterilirken ekran en parlak seviyede olsun; sayfadan
+  // çıkınca kullanıcının ayarına geri dönülür.
+  final EkranParlaklikKontrolu _parlaklik = EkranParlaklikKontrolu();
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +53,7 @@ class _QRKodKayitPageState extends State<QRKodKayitPage>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+    _parlaklik.baslat();
     _init();
   }
 
@@ -54,6 +61,7 @@ class _QRKodKayitPageState extends State<QRKodKayitPage>
   void dispose() {
     _guestCtrl.dispose();
     _pulseController.dispose();
+    _parlaklik.birak();
     super.dispose();
   }
 
@@ -679,33 +687,7 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
               const SizedBox(height: 16),
 
               // İpucu
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.amber.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.lightbulb_outline_rounded,
-                      size: 20,
-                      color: Colors.amber.shade700,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Ekran parlaklığını artırarak QR kodun daha kolay okunmasını sağlayın.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.amber.shade800,
-                          height: 1.3,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ParlaklikIpucu(maksimumda: _parlaklik.maksimumda),
             ],
           ),
         ),

@@ -18,6 +18,7 @@ import 'package:fitcall/models/5_etkinlik/misafir_model.dart';
 import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
 import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_bottom_bar.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_odul_sayaci.dart';
@@ -579,6 +580,15 @@ void main() {
         onTap: (_) {},
       );
     });
+  });
+
+  group('QR sayfaları', () {
+    // Metin iki durumda da farklı uzunlukta; ikisi de test edilir.
+    tasmaTesti('ParlaklikIpucu (otomatik artırıldı)',
+        () => ParlaklikIpucu(maksimumda: ValueNotifier<bool>(true)));
+
+    tasmaTesti('ParlaklikIpucu (manuel yönerge)',
+        () => ParlaklikIpucu(maksimumda: ValueNotifier<bool>(false)));
   });
 }
 
