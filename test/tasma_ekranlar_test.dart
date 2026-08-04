@@ -48,8 +48,10 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'support/tasma_yardimcisi.dart';
 
 import 'package:fitcall/screens/3_antrenor/eksik_yoklama/widgets/eksik_yoklama_listesi.dart';
+import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_header.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/antrenor_bottom_bar.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/antrenor_drawer.dart';
+import 'package:fitcall/screens/3_antrenor/home/widgets/home_header.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_block.dart'
     as antrenor_blok;
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/week_day_selector.dart'
@@ -452,6 +454,17 @@ void main() {
 
     tasmaTesti('AntrenorDrawer',
         () => const AntrenorDrawer(antrenorAdi: 'Ayşe Yılmazoğulları'));
+
+    // Header'lar üç aksiyon butonu + uzun ad taşıyor; profil değiştirme
+    // butonu eklenip çıkarıldığında taşma riski buradaydı, kapsama alındı.
+    tasmaTesti(
+      'HomeHeader (çok profilli)',
+      () => HomeHeader(
+        antrenorAdi: 'Ayşe Yılmazoğulları Kandemir',
+        hasMultipleProfiles: true,
+        onMenuTap: () {},
+      ),
+    );
   });
 
   /* ===================== ÜYE ===================== */
@@ -532,6 +545,15 @@ void main() {
         () => const UyeNextLessonCard(nextLesson: null));
 
     tasmaTesti('UyeBottomBar', () => const UyeBottomBar());
+
+    tasmaTesti(
+      'UyeHeader (çok profilli)',
+      () => UyeHeader(
+        uyeAdi: 'Mehmet Yılmazoğulları Kandemir',
+        hasMultipleProfiles: true,
+        onMenuTap: () {},
+      ),
+    );
 
     tasmaTesti(
         'UyeUrunListView', () => UyeUrunListView(urunler: _uyeUrunler()));
