@@ -6,6 +6,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "fitcall" is the Binay Akademi mobile app (Flutter) for a sports academy. It serves three user roles — üye (member), antrenör (trainer), and yönetici (manager) — against a REST backend at `https://www.binay.fit/api`. The entire codebase (identifiers, comments, UI text) is in Turkish; follow that convention in new code.
 
+## Documentation map
+
+Read by need, not all at once — only `CLAUDE.md` is loaded automatically.
+
+| File | Read it when |
+|---|---|
+| [MOBIL_GELISTIRMELER.md](MOBIL_GELISTIRMELER.md) | **Start of any feature or planning session.** The single status doc: current state (version, test count, what's deployed), open items, the next-phase backlog, and an archive of solved critical bugs. Update it when a round of work lands or an item is closed — do not create a second "pending work" file. |
+| [SURUM_NOTLARI.md](SURUM_NOTLARI.md) | Cutting a release. Store "what's new" text (tr-TR + en-US) plus a technical summary, newest first. Add a section whenever `version:` in `pubspec.yaml` is bumped. |
+| [CODEMAGIC_KURULUM.md](CODEMAGIC_KURULUM.md) | Touching `codemagic.yaml` or the release pipeline. One-time setup of Play/App Store credentials, keystore, webhook. |
+
+`README.md` is unmodified Flutter boilerplate — ignore it.
+
+### Backend repo
+
+The Django backend lives at `C:\Django\tenis` (branch `master`, deployed to Heroku). Two of its docs matter for mobile work:
+
+- `history.md` — dated changelog (problem → solution, newest first) covering **both** repos. Read it for historical context instead of digging through git log; append a short entry there after a significant cross-cutting change.
+- `MODEL_ILISKILERI.md` — every model, its FKs, unique constraints, and key flows. Read before any task that reasons about backend data relationships.
+
 ## Commands
 
 ```powershell
