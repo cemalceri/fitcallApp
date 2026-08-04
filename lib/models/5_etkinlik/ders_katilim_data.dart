@@ -1,6 +1,7 @@
 // lib/models/5_etkinlik/ders_katilim_data.dart
 
 import 'package:fitcall/models/5_etkinlik/katilim_model.dart';
+import 'package:fitcall/models/5_etkinlik/misafir_model.dart';
 
 /// getDersKatilimlari endpoint'inden dönen veri
 class DersKatilimDto {
@@ -9,15 +10,21 @@ class DersKatilimDto {
   final AntrenorOnayBilgisi? antrenorOnayi;
   final List<KatilimModel> katilimlar;
 
+  /// Üye olmayan katılımcılar. `katilimlar` uye_id anahtarlı olduğu için
+  /// misafirler ayrı dizide taşınır.
+  final List<MisafirModel> misafirler;
+
   const DersKatilimDto({
     required this.dersId,
     required this.kilitliMi,
     this.antrenorOnayi,
     required this.katilimlar,
+    this.misafirler = const [],
   });
 
   factory DersKatilimDto.fromMap(Map<String, dynamic> m) {
     final katilimlarRaw = (m['katilimlar'] as List?) ?? const [];
+    final misafirlerRaw = (m['misafirler'] as List?) ?? const [];
     return DersKatilimDto(
       dersId: m['ders_id'] as int,
       kilitliMi: m['kilitli_mi'] == true,
@@ -28,6 +35,9 @@ class DersKatilimDto {
             ),
       katilimlar: katilimlarRaw
           .map((e) => KatilimModel.fromMap((e as Map).cast<String, dynamic>()))
+          .toList(),
+      misafirler: misafirlerRaw
+          .map((e) => MisafirModel.fromMap((e as Map).cast<String, dynamic>()))
           .toList(),
     );
   }

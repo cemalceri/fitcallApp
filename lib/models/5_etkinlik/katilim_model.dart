@@ -8,6 +8,10 @@ class KatilimModel {
   final bool planDisiMi;
   final String? notMetni;
 
+  /// Yönetici parasal kararı verdiyse (borç yazıldı / paketten düşüldü /
+  /// ücretsiz denildi) antrenör bu satırı listeden çıkaramaz.
+  final bool kararVerildiMi;
+
   const KatilimModel({
     required this.uyeId,
     required this.adSoyad,
@@ -15,6 +19,7 @@ class KatilimModel {
     this.katildi,
     this.planDisiMi = false,
     this.notMetni,
+    this.kararVerildiMi = false,
   });
 
   factory KatilimModel.fromMap(Map<String, dynamic> m) {
@@ -25,6 +30,7 @@ class KatilimModel {
       katildi: m['katildi'] as bool?,
       planDisiMi: m['plan_disi_mi'] == true,
       notMetni: m['not_metni']?.toString(),
+      kararVerildiMi: m['karar_verildi_mi'] == true,
     );
   }
 
@@ -49,6 +55,7 @@ class KatilimModel {
       katildi: katildi ?? this.katildi,
       planDisiMi: planDisiMi,
       notMetni: clearNot ? null : (notMetni ?? this.notMetni),
+      kararVerildiMi: kararVerildiMi,
     );
   }
 }

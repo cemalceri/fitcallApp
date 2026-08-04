@@ -4,11 +4,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
+import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_ad.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
-import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
 class DashboardHeader extends StatefulWidget {
@@ -58,21 +58,6 @@ class _DashboardHeaderState extends State<DashboardHeader> {
     if (hour < 12) return 'Günaydın';
     if (hour < 18) return 'İyi günler';
     return 'İyi akşamlar';
-  }
-
-  Future<void> _switchProfile() async {
-    HapticFeedback.lightImpact();
-    final jsonStr =
-        await SecureStorageService.getValue<String>('kullanici_profiller');
-    if (jsonStr == null) return;
-    final profiles = (jsonDecode(jsonStr) as List)
-        .map((e) => KullaniciProfilModel.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
-    if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => ProfilSecPage(profiles)),
-    );
   }
 
   @override
@@ -143,13 +128,7 @@ class _DashboardHeaderState extends State<DashboardHeader> {
         Row(
           children: [
             const NotificationsBell(),
-            if (_hasMultipleProfiles)
-              _HeaderActionButton(
-                icon: Icons.swap_horiz_rounded,
-                tooltip: 'Profil değiştir',
-                color: const Color(0xFF8B5CF6),
-                onTap: _switchProfile,
-              ),
+            if (_hasMultipleProfiles) const ProfilDegistirButonu(),
             _HeaderActionButton(
               icon: Icons.logout_rounded,
               tooltip: 'Çıkış yap',

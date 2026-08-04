@@ -41,7 +41,10 @@ class _AntrenorEksikYoklamaPageState extends State<AntrenorEksikYoklamaPage> {
       final res = await AntrenorApiService.getAntrenorEksikYoklamalar();
       if (!mounted) return;
       setState(() {
-        _dersler = res.data ?? [];
+        // İptal edilen dersin yoklaması olmaz. Backend zaten iptallileri
+        // dışarıda bırakıyor; buradaki eleme, liste çekildikten sonra iptal
+        // edilen ders için ekranın yanlış bilgi göstermemesi için.
+        _dersler = (res.data ?? []).where((d) => !d.iptalMi).toList();
         _isLoading = false;
       });
     } on ApiException catch (e) {

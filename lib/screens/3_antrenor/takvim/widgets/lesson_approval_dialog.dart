@@ -3,8 +3,10 @@
 import 'package:fitcall/models/5_etkinlik/ders_katilim_data.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/5_etkinlik/katilim_model.dart';
+import 'package:fitcall/models/5_etkinlik/misafir_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/katilim_not_dialog.dart';
+import 'package:fitcall/screens/3_antrenor/takvim/widgets/misafir_ekle_sheet.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/plan_disi_uye_secim_sheet.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
@@ -66,6 +68,16 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
   // uyeId -> KatilimModel
   final Map<int, KatilimModel> _katilimMap = {};
 
+  // Misafirler ayrı listede: üye kimlikleri yok, _katilimMap uye_id anahtarlı.
+  final List<MisafirModel> _misafirler = [];
+
+  /// Hızlı onay ekranından detaya geçildi mi?
+  ///
+  /// Antrenörün en sık yaşadığı durum "ders oldu, herkes geldi". Bu tek
+  /// dokunuşla bitiyor; sapma varsa detay açılıyor. Kalabalık ikinci adıma
+  /// taşındığı için %90 durumda hiç görülmüyor.
+  bool _detayAcik = false;
+
   static const _yapildiNedenleri = [
     {'code': 'YPL_PLAN', 'label': 'Planlanan ders yapıldı'},
     {'code': 'YPL_TELAFI', 'label': 'Telafi dersi yapıldı'},
@@ -107,6 +119,9 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
           for (final k in data.katilimlar) {
             _katilimMap[k.uyeId] = k;
           }
+          _misafirler
+            ..clear()
+            ..addAll(data.misafirler);
 
           // Antrenör onayı varsa form alanlarını doldur
           final ao = data.antrenorOnayi;
@@ -114,6 +129,9 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
             _secilenDurum = ao!.tamamlandi! ? 'yapildi' : 'yapilmadi';
             _secilenNeden = ao.onayRedIptalNedeni;
             _aciklamaCtrl.text = ao.aciklama ?? '';
+            // Daha önce kaydedilmiş ders doğrudan detayda açılır: antrenör
+            // düzeltmeye geliyordur, hızlı onay ekranı yolu uzatır.
+            _detayAcik = true;
           }
         }
       });
@@ -147,7 +165,9 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
             ? _buildLoadingView()
             : _kilitli
                 ? _buildKilitliView()
-                : _buildFormView(),
+                : _detayAcik
+                    ? _buildFormView()
+                    : _buildHizliOnayView(),
       ),
     );
   }
@@ -337,6 +357,135 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
   /*                              FORM VIEW                                     */
   /* -------------------------------------------------------------------------- */
 
+  /* -------------------------------------------------------------------------- */
+  /*                              HIZLI ONAY                                    */
+  /* -------------------------------------------------------------------------- */
+
+  /// Dialog'un açılış ekranı: en sık senaryo tek dokunuş.
+  Widget _buildHizliOnayView() {
+    final planliSayi = _katilimMap.length;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildHeader(TakvimColors.primary, 'Ders Onayı'),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Column(
+            children: [
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _isSaving ? null : _hepsiGeldiKaydet,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    decoration: BoxDecoration(
+                      color: TakvimColors.completed.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: TakvimColors.completed.withValues(alpha: 0.45),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        _isSaving
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : Icon(Icons.check_circle_rounded,
+                                color: TakvimColors.completed, size: 26),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Ders yapıldı, herkes geldi',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: TakvimColors.completed,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          planliSayi > 0 ? '$planliSayi kişi' : 'Planlı katılımcı yok',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: TakvimColors.completed,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() {
+                      _detayAcik = true;
+                      _secilenDurum = 'yapildi';
+                      _secilenNeden = 'YPL_PLAN';
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text('Eksik ya da fazla var',
+                              style: TextStyle(fontSize: 14)),
+                        ),
+                        Icon(Icons.chevron_right_rounded,
+                            color: TakvimColors.textMuted),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              TextButton(
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  setState(() {
+                    _detayAcik = true;
+                    _secilenDurum = 'yapilmadi';
+                    _secilenNeden = null;
+                  });
+                },
+                child: Text(
+                  'Ders yapılmadı',
+                  style: TextStyle(color: TakvimColors.textSecondary),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Tek dokunuşla: herkes katıldı, planlanan ders yapıldı, kaydet.
+  Future<void> _hepsiGeldiKaydet() async {
+    setState(() {
+      _secilenDurum = 'yapildi';
+      _secilenNeden = 'YPL_PLAN';
+      for (final entry in _katilimMap.entries.toList()) {
+        _katilimMap[entry.key] = entry.value.copyWith(katildi: true);
+      }
+    });
+    await _kaydet();
+  }
+
   Widget _buildFormView() {
     final hasOnceden = _katilimData?.antrenorOnayi?.tamamlandi != null;
 
@@ -403,19 +552,29 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
             ),
             const Spacer(),
+            // Üye ile misafir ayrı: biri listeden seçilir, diğerinin adı yazılır.
             TextButton.icon(
               onPressed: _planDisiEkle,
               icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
-              label: const Text('Plan Dışı Ekle'),
+              label: const Text('Üye'),
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: _misafirEkle,
+              icon: const Icon(Icons.person_add_alt_rounded, size: 18),
+              label: const Text('Misafir'),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
                 visualDensity: VisualDensity.compact,
               ),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        if (entries.isEmpty)
+        if (entries.isEmpty && _misafirler.isEmpty)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -446,10 +605,127 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
               ],
             ),
           )
-        else
+        else ...[
           ...entries.map((k) => _buildKatilimRow(k)),
+          ..._misafirler.map((m) => _buildMisafirRow(m)),
+        ],
       ],
     );
+  }
+
+  Widget _buildMisafirRow(MisafirModel m) {
+    final kilitli = m.kararVerildiMi;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        m.adSoyad,
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'Misafir',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if ((m.notMetni ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    m.notMetni!,
+                    style: TextStyle(
+                        fontSize: 11, color: TakvimColors.textMuted),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                if (kilitli) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.lock_rounded,
+                          size: 12, color: TakvimColors.textMuted),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Yönetici karar verdi',
+                        style: TextStyle(
+                            fontSize: 11, color: TakvimColors.textMuted),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (!kilitli) ...[
+            IconButton(
+              icon: Icon(Icons.edit_outlined,
+                  size: 19, color: Colors.grey.shade600),
+              onPressed: () => _misafirDuzenle(m),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              tooltip: 'Düzenle',
+            ),
+            IconButton(
+              icon: Icon(Icons.delete_outline_rounded,
+                  size: 20, color: Colors.red.shade400),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                setState(() => _misafirler.remove(m));
+              },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              tooltip: 'Sil',
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _misafirEkle() async {
+    HapticFeedback.lightImpact();
+    final yeni = await MisafirEkleSheet.goster(context);
+    if (yeni == null) return;
+    setState(() => _misafirler.add(yeni));
+  }
+
+  Future<void> _misafirDuzenle(MisafirModel m) async {
+    final guncel = await MisafirEkleSheet.goster(context, mevcut: m);
+    if (guncel == null) return;
+    setState(() {
+      final i = _misafirler.indexOf(m);
+      if (i >= 0) _misafirler[i] = guncel;
+    });
   }
 
   Widget _buildKatilimRow(KatilimModel k) {
@@ -580,18 +856,26 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
               ),
             ],
           ),
-          // Plan dışı için sil butonu
+          // Plan dışı için sil butonu — yönetici karar verdiyse kilitli:
+          // arkasında borç ya da paket düşümü var, silinirse öksüz kalır.
           if (k.planDisiMi)
-            IconButton(
-              icon: Icon(Icons.delete_outline_rounded,
-                  size: 20, color: Colors.red.shade400),
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                setState(() => _katilimMap.remove(k.uyeId));
-              },
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            ),
+            k.kararVerildiMi
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Icon(Icons.lock_rounded,
+                        size: 18, color: TakvimColors.textMuted),
+                  )
+                : IconButton(
+                    icon: Icon(Icons.delete_outline_rounded,
+                        size: 20, color: Colors.red.shade400),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      setState(() => _katilimMap.remove(k.uyeId));
+                    },
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
+                  ),
         ],
       ),
     );
@@ -605,7 +889,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
         return a.adSoyad.compareTo(b.adSoyad);
       });
 
-    if (entries.isEmpty) return const SizedBox.shrink();
+    if (entries.isEmpty && _misafirler.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -668,6 +952,36 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
             ),
           );
         }),
+        ..._misafirler.map((m) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Icon(Icons.person_outline_rounded,
+                      color: Colors.orange, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(m.adSoyad,
+                        style: const TextStyle(fontSize: 13)),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Misafir',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )),
       ],
     );
   }
@@ -975,6 +1289,9 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
         aciklama: _aciklamaCtrl.text.trim(),
         onayRedIptalNedeni: _secilenNeden,
         katilimlar: katilimList,
+        // "Yapılmadı"da misafir gönderilmez; backend kararsız kayıtları siler,
+        // karar verilmiş kayıt varsa isteği reddeder.
+        misafirler: tamamlandi ? _misafirler : const [],
       );
 
       if (mounted) {

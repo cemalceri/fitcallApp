@@ -2,6 +2,7 @@ import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/5_etkinlik/ders_katilim_data.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/5_etkinlik/katilim_model.dart';
+import 'package:fitcall/models/5_etkinlik/misafir_model.dart';
 import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
@@ -249,6 +250,7 @@ class TakvimService {
     required int userId,
     required bool tamamlandi,
     required List<KatilimModel> katilimlar,
+    List<MisafirModel> misafirler = const [],
     String? aciklama,
     String? onayRedIptalNedeni,
   }) {
@@ -260,6 +262,7 @@ class TakvimService {
       if (onayRedIptalNedeni != null)
         'onay_red_iptal_nedeni': onayRedIptalNedeni,
       'katilimlar': katilimlar.map((k) => k.toRequestMap()).toList(),
+      'misafirler': misafirler.map((m) => m.toRequestMap()).toList(),
     };
     return ApiClient.postParsed<Map<String, dynamic>>(
       setDersKatilimiUrl,

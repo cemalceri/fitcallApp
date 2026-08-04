@@ -14,6 +14,7 @@ import 'package:fitcall/models/2_uye/gecmis_ders_model.dart';
 import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
 import 'package:fitcall/models/2_uye/uye_odul_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/models/5_etkinlik/misafir_model.dart';
 import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
@@ -27,6 +28,7 @@ import 'package:fitcall/models/3_antrenor/home_card_model.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/info_cards_carousel.dart';
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
+import 'package:fitcall/screens/3_antrenor/takvim/widgets/misafir_ekle_sheet.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
 import 'package:fitcall/screens/7_yonetici/dersler/widgets/ders_liste_item.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/ders_iptal_dialog.dart';
@@ -52,10 +54,14 @@ import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_block.dart'
     as antrenor_blok;
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/week_day_selector.dart'
     as antrenor_serit;
+import 'package:fitcall/screens/3_antrenor/takvim/widgets/timeline_view.dart'
+    as antrenor_timeline;
 import 'package:fitcall/screens/2_uye/takvim/widgets/lesson_block.dart'
     as uye_blok;
 import 'package:fitcall/screens/2_uye/takvim/widgets/week_day_selector.dart'
     as uye_serit;
+import 'package:fitcall/screens/2_uye/takvim/widgets/timeline_view.dart'
+    as uye_timeline;
 
 /* ============================== ÖRNEK VERİ ============================== */
 
@@ -89,9 +95,18 @@ Map<String, dynamic> _etkinlikJson({
   };
 }
 
-EtkinlikModel _etkinlik({bool iptal = false, int katilimci = 3}) =>
-    EtkinlikModel.fromMap(
-        _etkinlikJson(iptal: iptal, katilimciSayisi: katilimci));
+EtkinlikModel _etkinlik({
+  bool iptal = false,
+  int katilimci = 3,
+  String bas = '2026-07-23T10:00:00+03:00',
+  String bit = '2026-07-23T11:00:00+03:00',
+}) =>
+    EtkinlikModel.fromMap(_etkinlikJson(
+      iptal: iptal,
+      katilimciSayisi: katilimci,
+      bas: bas,
+      bit: bit,
+    ));
 
 Map<String, dynamic> _programJson({int kortSayisi = 6, int dersSayisi = 6}) => {
       'hafta_baslangic': '2026-07-20',
@@ -386,6 +401,48 @@ void main() {
         onDersTap: (_) {},
       );
     });
+
+    // Aynı saatte 3 ders olunca kart 3 kolona bölünür; en dar kart durum
+    // rozetini sıkıştırıp taşıyordu (bkz. LessonBlock üst satırı).
+    tasmaTesti('TimelineView (3 çakışan ders)', () {
+      return antrenor_timeline.TimelineView(
+        dersler: [
+          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T15:30:00+03:00'),
+          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T16:30:00+03:00'),
+          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T16:30:00+03:00'),
+        ],
+        selectedDay: DateTime(2026, 7, 23),
+        onLessonTap: (_) {},
+      );
+    });
+
+    // Kısa dersler kartı alçaltıp kompakt moda düşürür (ayrı düzen).
+    tasmaTesti('TimelineView (3 çakışan kısa ders)', () {
+      return antrenor_timeline.TimelineView(
+        dersler: [
+          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T14:50:00+03:00'),
+          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T15:05:00+03:00'),
+          _etkinlik(bas: '2026-07-23T14:35:00+03:00', bit: '2026-07-23T15:10:00+03:00'),
+        ],
+        selectedDay: DateTime(2026, 7, 23),
+        onLessonTap: (_) {},
+      );
+    });
+
+    // Misafir ekleme formu: iki metin alanı + iki buton. Uzun etiketler büyük
+    // yazı ölçeğinde buton satırını taşırabilir.
+    tasmaTesti('MisafirEkleSheet (yeni kayıt)', () => const MisafirEkleSheet());
+
+    tasmaTesti(
+      'MisafirEkleSheet (düzenleme, uzun not)',
+      () => const MisafirEkleSheet(
+        mevcut: MisafirModel(
+          id: 12,
+          adSoyad: 'Mehmet Kaya',
+          notMetni: 'Ayşe Demir’in arkadaşı, telefon 0532 000 00 00, ilk kez geldi',
+        ),
+      ),
+    );
   });
 
   /* ===================== ANTRENÖR — ANA SAYFA KABUĞU ===================== */
@@ -417,6 +474,31 @@ void main() {
       () => uye_blok.LessonBlock(ders: _etkinlik(katilimci: 6), onTap: () {}),
       sar: (w) => Center(child: SizedBox(width: 300, height: 90, child: w)),
     );
+
+    // Antrenör takvimiyle aynı senaryo: çakışan dersler kartı daraltır.
+    tasmaTesti('TimelineView (3 çakışan ders)', () {
+      return uye_timeline.TimelineView(
+        dersler: [
+          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T15:30:00+03:00'),
+          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T16:30:00+03:00'),
+          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T16:30:00+03:00'),
+        ],
+        selectedDay: DateTime(2026, 7, 23),
+        onLessonTap: (_) {},
+      );
+    });
+
+    tasmaTesti('TimelineView (3 çakışan kısa ders)', () {
+      return uye_timeline.TimelineView(
+        dersler: [
+          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T14:50:00+03:00'),
+          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T15:05:00+03:00'),
+          _etkinlik(bas: '2026-07-23T14:35:00+03:00', bit: '2026-07-23T15:10:00+03:00'),
+        ],
+        selectedDay: DateTime(2026, 7, 23),
+        onLessonTap: (_) {},
+      );
+    });
 
     tasmaTesti('UyeOzetSerit', () {
       return UyeOzetSerit(
