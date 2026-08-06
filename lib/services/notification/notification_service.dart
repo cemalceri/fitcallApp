@@ -39,4 +39,19 @@ class NotificationService {
         setNotificationsRead, {'ids': ids}, (_) => true);
   }
 
+  /// Profilin TÜM okunmamışlarını okundu yapar.
+  ///
+  /// Liste ucu son 50 kaydı döndüğü için id göndermek yetmiyor; 50'nin dışında
+  /// kalan eski okunmamışlar zilde asılı kalıyordu. İşi sunucu tarafında,
+  /// sayacın kullandığı kapsamın aynısıyla yapıyoruz.
+  static Future<ApiResult<bool>> markAllNotificationsRead() {
+    return ApiClient.postParsed<bool>(
+        setNotificationsRead, {'tumu': true}, (_) => true);
+  }
+
+  /// Profilin tüm bildirimlerini siler (backend'de soft delete).
+  static Future<ApiResult<bool>> deleteAllNotifications() {
+    return ApiClient.postParsed<bool>(
+        setNotificationsDeleted, {'tumu': true}, (_) => true);
+  }
 }

@@ -120,28 +120,68 @@ class _NotificationPageState extends State<NotificationPage> {
     }
   }
 
+  /// Sunucu tarafında toplu işaretleme yapar.
+  ///
+  /// Eskiden ekrandaki okunmamışların id'leri gönderiliyordu; liste ucu son 50
+  /// kaydı döndüğü için daha eski okunmamışlar işaretlenmiyor ve zildeki sayı
+  /// (tüm okunmamışları sayar) "9+" olarak takılı kalıyordu.
   Future<void> _markAllRead() async {
-    final ids =
-        _notifications.where((n) => !n.isRead).map((e) => e.id).toList();
-    if (ids.isEmpty) return;
+    if (_unreadCount == 0) return;
     setState(() => _isLoading = true);
     try {
-      final res = await NotificationService.markNotificationsRead(ids);
-      final ok = res.data == true;
+      await NotificationService.markAllNotificationsRead();
       setState(() {
-        if (ok) {
-          _notifications =
-              _notifications.map((e) => e.copyWith(isRead: true)).toList();
-        }
+        _notifications =
+            _notifications.map((e) => e.copyWith(isRead: true)).toList();
         _isLoading = false;
       });
-      NotificationService.refreshUnreadCount();
+      await NotificationService.refreshUnreadCount();
     } on ApiException catch (e) {
       setState(() => _isLoading = false);
       ShowMessage.error(context, e.message);
     } catch (e) {
       setState(() => _isLoading = false);
       ShowMessage.error(context, 'Bildirim durumu güncellenemedi: $e');
+    }
+  }
+
+  Future<void> _deleteAll() async {
+    final onay = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Tüm bildirimler silinsin mi?'),
+        content: const Text(
+            'Bu profildeki tüm bildirimler listeden kaldırılacak. Bu işlem geri alınamaz.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Vazgeç'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sil', style: TextStyle(color: Color(0xFFEF4444))),
+          ),
+        ],
+      ),
+    );
+    if (onay != true) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await NotificationService.deleteAllNotifications();
+      setState(() {
+        _notifications = const [];
+        _isLoading = false;
+      });
+      await NotificationService.refreshUnreadCount();
+      if (!mounted) return;
+      ShowMessage.success(context, 'Tüm bildirimler silindi.');
+    } on ApiException catch (e) {
+      setState(() => _isLoading = false);
+      ShowMessage.error(context, e.message);
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ShowMessage.error(context, 'Bildirimler silinemedi: $e');
     }
   }
 
@@ -241,17 +281,44 @@ class _NotificationPageState extends State<NotificationPage> {
               ),
             ),
           ),
-          if (_unreadCount > 0)
-            GestureDetector(
-              onTap: _markAllRead,
-              child: const Text(
-                'Tümünü Okundu Yap',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: BildirimRenkleri.anaMavi,
+          if (_notifications.isNotEmpty)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert_rounded,
+                  size: 22, color: BildirimRenkleri.yaziAna),
+              tooltip: 'Bildirim işlemleri',
+              onSelected: (secim) {
+                if (secim == 'okundu') {
+                  _markAllRead();
+                } else if (secim == 'sil') {
+                  _deleteAll();
+                }
+              },
+              itemBuilder: (_) => [
+                if (_unreadCount > 0)
+                  const PopupMenuItem(
+                    value: 'okundu',
+                    child: Row(
+                      children: [
+                        Icon(Icons.done_all_rounded,
+                            size: 20, color: BildirimRenkleri.anaMavi),
+                        SizedBox(width: 12),
+                        Text('Tümünü okundu yap'),
+                      ],
+                    ),
+                  ),
+                const PopupMenuItem(
+                  value: 'sil',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outline_rounded,
+                          size: 20, color: Color(0xFFEF4444)),
+                      SizedBox(width: 12),
+                      Text('Tümünü sil',
+                          style: TextStyle(color: Color(0xFFEF4444))),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
         ],
       ),

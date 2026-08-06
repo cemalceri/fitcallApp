@@ -100,6 +100,20 @@ Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan 
 - Alt bar (Takvim · Geçmiş · QR · Hareketler · Hesabım) + drawer; eski menü grid'i silindi.
 - Login "beni hatırla" tam ekran overlay'i; profil sıralaması Yönetici > Antrenör > Üye.
 
+### Bildirim zili sayacı + tümünü sil (2026-08-06)
+- **Bug:** "Tümünü Okundu Yap" sonrası zil "9+" kalıyordu. `getNotifications` son **50** kaydı
+  döndürüyor, `getUnreadNotificationCount` ise okunmamışların **tamamını** sayıyordu; mobil de
+  ekrandaki id'leri gönderdiği için 50'nin dışındaki eski okunmamışlar hiç işaretlenmiyordu.
+  (Model dosyasındaki nota göre en aktif alıcıda ~1.948 bildirim var.)
+- **Çözüm:** Backend'de üç uç ortak `profil_bildirimleri(request)` kapsamını kullanıyor;
+  `setNotificationsRead` artık `tumu: true` ile profilin tüm okunmamışlarını işaretliyor.
+- **Yeni:** `setNotificationsDeleted` — `tumu: true` ya da `ids` ile **soft delete**
+  (`is_deleted=True, is_active=False`). `TenantQuerySet` zaten `is_deleted=False` süzdüğü için
+  silinenler listeden ve sayaçtan otomatik düşer, veri saklanır.
+- **Mobil:** Bildirimler başlığındaki uzun metin butonu ⋮ menüsüne dönüştü — "Tümünü okundu yap"
+  (okunmamış varken) + "Tümünü sil" (onay dialogu ile).
+- Testler: `tests/api/test_bildirim_api.py` (8 test — kapsam taşması, profil izolasyonu, soft delete).
+
 ### Saat dilimi bağımsızlığı (2026-08-02, sürüm 3.6.0)
 
 Ders saatleri artık cihazın saat diliminden bağımsız, kulüp duvar saatiyle gösteriliyor.

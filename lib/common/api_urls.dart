@@ -55,6 +55,7 @@ String getDersKatilimlariUrl = "$baseUrl/getDersKatilimlari";
 // =================== BİLDİRİM ===================
 String getNotifications = "$baseUrl/getNotifications";
 String setNotificationsRead = "$baseUrl/setNotificationsRead";
+String setNotificationsDeleted = "$baseUrl/setNotificationsDeleted";
 String getUnreadNotificationCount = "$baseUrl/getUnreadNotificationCount";
 String notificationAction = "$baseUrl/n/"; // + token
 
