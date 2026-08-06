@@ -2,11 +2,14 @@ import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
+import 'package:fitcall/services/notification/app_badge_service.dart';
 import 'package:flutter/material.dart';
 
 class NotificationService {
   static final ValueNotifier<int> unreadCount = ValueNotifier<int>(0);
 
+  /// Okunmamış sayısını sunucudan tazeler; hem uygulama içi zili hem uygulama
+  /// simgesindeki rozeti besleyen tek nokta.
   static Future<ApiResult<int>> refreshUnreadCount() async {
     final res = await ApiClient.postParsed<int>(
         getUnreadNotificationCount, const {}, (json) {
@@ -18,7 +21,11 @@ class NotificationService {
       if (json is int) return json;
       return 0;
     });
-    unreadCount.value = res.data ?? 0;
+    final sayi = res.data ?? 0;
+    unreadCount.value = sayi;
+    // Sayı değişmese bile senkronlanır: arka planda gelen bildirim rozeti
+    // tahmini olarak artırmış olabilir.
+    await AppBadgeService.senkronla(sayi);
     return res;
   }
 

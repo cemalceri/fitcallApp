@@ -8,12 +8,12 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-08-04)
+## 📌 Şu anki durum (2026-08-06)
 
 | | |
 |---|---|
 | Mobil | `main` = `origin/main` (push edilmiş), `pubspec` sürümü **3.6.0+39** |
-| Testler | `flutter test` **523 geçiyor**, `flutter analyze` temiz |
+| Testler | `flutter test` **532 geçiyor**, `flutter analyze` temiz |
 | Backend | `master` = `origin/master` = `heroku/master` (`6a0f6fd`) → **canlıda** |
 | Mağaza | Son yayınlanan sürüm **3.6.0**; sonrasındaki 4 commit henüz yayınlanmadı |
 
@@ -99,6 +99,25 @@ Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan 
 - Antrenör Eksik Yoklamalar ekranı (`antrenor_eksik_yoklama_page.dart` + `getAntrenorEksikYoklamalar`).
 - Alt bar (Takvim · Geçmiş · QR · Hareketler · Hesabım) + drawer; eski menü grid'i silindi.
 - Login "beni hatırla" tam ekran overlay'i; profil sıralaması Yönetici > Antrenör > Üye.
+
+### Uygulama simgesi rozeti — okunmamış bildirim (2026-08-06)
+- **İstek:** Okunmamış bildirim varken uygulama simgesinde sayı/işaret görünsün.
+- **Mobil:** `app_badge_plus` paketi + `services/notification/app_badge_service.dart`.
+  Tek giriş noktası `NotificationService.refreshUnreadCount`: sunucudan gelen sayı hem zile hem
+  simge rozetine yazılır (sayı değişmese bile senkronlanır — arka planda tahmini artırılmış
+  olabilir). Tazeleme noktaları: üye/antrenör/yönetici ana sayfa açılışı, `main.dart`'taki
+  lifecycle observer ile arka plandan dönüş, önplandaki FCM mesajı, bildirim sayfası kapanışı.
+  Çıkışta rozet temizlenir (`AuthService.logout`).
+- **Uygulama kapalıyken:** FCM background handler API'ye gidemediği için saklanan sayacı bir
+  artırır (`AppBadgeService.artir`) ve Android bildirimine `number` olarak iliştirir; uygulama
+  açılınca gerçek değer düzeltir.
+- **Backend:** `notification_tasks.py` → `okunmamis_sayisi()` + FCM mesajına
+  `apns.aps.badge` ve `android.notification.notification_count`. iOS'ta uygulama tamamen
+  kapalıyken rozeti **yalnızca** APNs payload'ı güncelleyebiliyor. Sayacın kapsamı bilinçli olarak
+  `getUnreadNotificationCount` ile aynı (profil bazlı) — ayrışsa simge ile zil farklı sayı gösterir.
+- **Android:** `AndroidManifest.xml`'e launcher rozet izinleri (Samsung/Huawei/Sony/HTC/Apex/Solid).
+  Rozeti desteklemeyen launcher'larda (ör. stok Pixel) sayı yerine Android 8+ bildirim noktası çıkar.
+- Testler: `test/app_badge_service_test.dart` (11), `tests/utils/test_bildirim_rozeti.py` (8).
 
 ### Bildirim zili sayacı + tümünü sil (2026-08-06)
 - **Bug:** "Tümünü Okundu Yap" sonrası zil "9+" kalıyordu. `getNotifications` son **50** kaydı

@@ -4,6 +4,8 @@ import 'package:fitcall/models/4_auth/user_model.dart';
 import 'package:fitcall/models/dtos/kullanici_profilleri_result_dto.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/services/notification/app_badge_service.dart';
+import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/api_urls.dart';
@@ -151,6 +153,10 @@ class AuthService {
 
   /* ============== Logout ============== */
   static Future<void> logout(BuildContext context) async {
+    // Rozet önce temizlenir: clearAll saklanan sayacı da sildiği için sıra
+    // tersine dönerse simgede eski sayı asılı kalır.
+    NotificationService.unreadCount.value = 0;
+    await AppBadgeService.temizle();
     await StorageService.clearAll();
     disposeFCMTokenListener();
     if (context.mounted) {

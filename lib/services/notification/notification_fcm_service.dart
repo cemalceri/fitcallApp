@@ -3,12 +3,19 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fitcall/services/notification/app_badge_service.dart';
 import 'package:fitcall/services/notification/notification_router.dart';
+import 'package:fitcall/services/notification/notification_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await NotificationFCMService.instance.setupFlutterNotifications();
-  await NotificationFCMService.instance.showNotification(message);
+  // Uygulama kapalı/arka planda: token'a erişip sunucudaki gerçek sayıyı
+  // sormak yerine saklanan sayaç bir artırılır. Uygulama açılınca
+  // refreshUnreadCount gerçek değeri yazar.
+  final rozet = await AppBadgeService.artir();
+  await NotificationFCMService.instance
+      .showNotification(message, rozetSayisi: rozet);
 }
 
 class NotificationFCMService {
@@ -96,7 +103,10 @@ class NotificationFCMService {
     }
   }
 
-  Future<void> showNotification(RemoteMessage message) async {
+  /// [rozetSayisi] > 0 ise Android bildirimine okunmamış adedi iliştirilir;
+  /// launcher simge rozetini bu değerden okur.
+  Future<void> showNotification(RemoteMessage message,
+      {int rozetSayisi = 0}) async {
     final notification = message.notification;
     final android = notification?.android;
 
@@ -111,15 +121,16 @@ class NotificationFCMService {
         notification.hashCode,
         notification.title,
         notification.body,
-        const NotificationDetails(
+        NotificationDetails(
           android: AndroidNotificationDetails(
             'high_importance_channel',
             'High Importance Notifications',
             importance: Importance.high,
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
+            number: rozetSayisi > 0 ? rozetSayisi : null,
           ),
-          iOS: DarwinNotificationDetails(),
+          iOS: const DarwinNotificationDetails(),
         ),
         payload: jsonEncode(payloadData),
       );
@@ -128,10 +139,28 @@ class NotificationFCMService {
 
   void _setupMessageHandlers() {
     // Uygulama açıkken gelen bildirimler
-    FirebaseMessaging.onMessage.listen(showNotification);
+    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
     // Bildirime tıklanınca (uygulama arka planda)
     FirebaseMessaging.onMessageOpenedApp.listen(_handleRemoteMessage);
+  }
+
+  /// Uygulama önplandayken gelen bildirim: sunucudaki gerçek okunmamış sayısı
+  /// alınabildiği için rozet ondan beslenir.
+  Future<void> _handleForegroundMessage(RemoteMessage message) async {
+    final rozet = await _okunmamisSayisiniTazele();
+    await showNotification(message, rozetSayisi: rozet);
+  }
+
+  Future<int> _okunmamisSayisiniTazele() async {
+    try {
+      // refreshUnreadCount rozeti de senkronlar.
+      final res = await NotificationService.refreshUnreadCount();
+      return res.data ?? NotificationService.unreadCount.value;
+    } catch (_) {
+      // Ağ/oturum sorunu: sayaç en azından bir artırılır.
+      return AppBadgeService.artir();
+    }
   }
 
   Future<void> _handleRemoteMessage(RemoteMessage message) async {

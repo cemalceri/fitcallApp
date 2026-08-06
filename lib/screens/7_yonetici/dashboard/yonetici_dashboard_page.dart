@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/borclu_uyeler_page.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/dashboard_header.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
@@ -37,6 +38,8 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
   @override
   void initState() {
     super.initState();
+    // Üye/antrenör ana sayfalarındaki gibi: zil ve simge rozeti beslensin.
+    NotificationService.refreshUnreadCount();
     _loadData();
   }
 

@@ -1,5 +1,7 @@
 import 'package:fitcall/services/core/fcm_service.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_fcm_service.dart';
+import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -28,15 +30,40 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Navigator hazır olduktan sonra FCM'i kaydet ve initial message'ı işle
     WidgetsBinding.instance.addPostFrameCallback((_) {
       NotificationFCMService.instance.registerNavigatorKey(navigatorKey);
       NotificationFCMService.instance.handleInitialMessage();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Arka plandayken gelen bildirimler rozeti tahmini olarak artırmıştı;
+    // dönüşte sunucudaki gerçek sayı ile düzeltilir.
+    if (state == AppLifecycleState.resumed) {
+      _okunmamisSayisiniTazele();
+    }
+  }
+
+  Future<void> _okunmamisSayisiniTazele() async {
+    if (!await StorageService.tokenGecerliMi()) return;
+    try {
+      await NotificationService.refreshUnreadCount();
+    } catch (_) {
+      // Ağ yoksa mevcut rozet olduğu gibi korunur.
+    }
   }
 
   @override

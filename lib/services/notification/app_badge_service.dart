@@ -1,0 +1,69 @@
+import 'package:app_badge_plus/app_badge_plus.dart';
+import 'package:fitcall/services/core/storage_service.dart';
+import 'package:flutter/foundation.dart';
+
+/// Rozeti fiilen yazan ve son değeri saklayan katman.
+///
+/// Platform kanalı testlerde çağrılamadığı için tek sınıfa toplandı;
+/// [AppBadgeService.kanal] üzerinden sahtesiyle değiştirilebilir.
+class RozetKanali {
+  const RozetKanali();
+
+  static const _kayitAnahtari = 'bildirim_rozet_sayisi';
+
+  /// Simge rozetini günceller. 0 gönderilirse rozet kaldırılır.
+  Future<void> rozetiYaz(int sayi) => AppBadgePlus.updateBadge(sayi);
+
+  /// En son yazılan rozet değeri. Uygulama kapalıyken bildirim geldiğinde
+  /// sunucuya gidilemediği için sayaç buradan devam ettirilir.
+  Future<int> sonSayiyiOku() async =>
+      await SecureStorageService.getValue<int>(_kayitAnahtari) ?? 0;
+
+  Future<void> sonSayiyiYaz(int sayi) =>
+      SecureStorageService.setValue<int>(_kayitAnahtari, sayi);
+}
+
+/// Okunmamış bildirim sayısını uygulama simgesindeki rozete yansıtır.
+///
+/// Tek giriş noktası `NotificationService.refreshUnreadCount`: sunucudan gelen
+/// sayı hem uygulama içi zile hem buraya yazılır. Uygulama kapalıyken gelen
+/// bildirimde API'ye gidilemediği için [artir] kullanılır; uygulama açılınca
+/// gerçek değer rozeti düzeltir.
+///
+/// iOS'ta uygulama tamamen kapalıyken rozeti yalnızca APNs payload'ındaki
+/// `badge` alanı günceller; backend tarafı `notification_tasks.py` içinde
+/// bu alanı dolduruyor.
+class AppBadgeService {
+  AppBadgeService._();
+
+  @visibleForTesting
+  static RozetKanali kanal = const RozetKanali();
+
+  /// Rozeti [sayi] ile günceller ve değeri sonraki açılış için saklar.
+  static Future<void> senkronla(int sayi) async {
+    final deger = sayi < 0 ? 0 : sayi;
+    try {
+      await kanal.sonSayiyiYaz(deger);
+      await kanal.rozetiYaz(deger);
+    } catch (_) {
+      // Rozeti desteklemeyen launcher/platform: sessizce geçilir, rozet
+      // olmaması uygulamanın çalışmasını etkilemez.
+    }
+  }
+
+  /// Arka planda bildirim geldiğinde çağrılır: saklanan sayacı bir artırır ve
+  /// yeni değeri döndürür (yerel bildirimin `number` alanı için).
+  static Future<int> artir() async {
+    var deger = 1;
+    try {
+      deger = (await kanal.sonSayiyiOku()) + 1;
+    } catch (_) {
+      // Kayıt okunamadıysa 1'den devam edilir.
+    }
+    await senkronla(deger);
+    return deger;
+  }
+
+  /// Çıkışta rozeti kaldırır.
+  static Future<void> temizle() => senkronla(0);
+}
