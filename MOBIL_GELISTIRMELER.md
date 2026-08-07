@@ -12,13 +12,15 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 | | |
 |---|---|
-| Mobil | `main`, `pubspec` sürümü **3.6.0+39**; hakediş saatleri **commit edilmedi** |
+| Mobil | `main` = `origin/main` (`e452e33`), `pubspec` sürümü **3.6.0+39** |
 | Testler | `flutter test` **586 geçiyor**, `flutter analyze` temiz |
-| Backend | `master` = `origin/master` = `heroku/master` (`6a0f6fd`) → **canlıda**; hakediş uçları (5 adet) + migration `0080` henüz deploy edilmedi |
+| Backend | `master` = `origin/master` (`e43bd4b`); **`heroku/master` hâlâ `6a0f6fd`** → hakediş uçları + migration `0080` canlıda değil |
 | Mağaza | Son yayınlanan sürüm **3.6.0**; sonrasındaki commit'ler henüz yayınlanmadı |
 
-> Hakediş saatleri özelliği iki repoda da yalnız çalışma kopyasında. Mobil ekran backend uçları
-> canlıya çıkmadan işe yaramaz — **önce backend deploy, sonra mobil sürüm**.
+**Sıradaki adım — hakediş saatleri yayını.** Kod iki repoda da push edildi ama hiçbiri canlıda değil.
+Mobil ekran backend uçları olmadan çalışmaz, o yüzden sıra şu:
+1. `git push heroku master` (migration `0080` dahil) — deploy kullanıcının işi
+2. `pubspec.yaml` `version:` bump + Codemagic, `SURUM_NOTLARI.md`'ye yeni bölüm
 
 Codemagic sürüm adını `pubspec.yaml`'daki `version:` alanından, build numarasını mağazadaki
 son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `version:` bump'lanır**.
