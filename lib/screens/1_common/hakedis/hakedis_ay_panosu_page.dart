@@ -32,12 +32,19 @@ class HakedisAyPanosuPage extends StatefulWidget {
   /// Yöneticide açık (liste eskiyse ad düzelsin), antrenörde kapalı.
   final bool baslikVeridenGuncellensin;
 
+  /// Açılışta seçili olacak ayın sırası (0 = içinde bulunulan ay).
+  ///
+  /// Yönetici listeden bir aya bakarken antrenöre dokunduğunda pano aynı ayda
+  /// açılsın diye var; kullanıcı ay seçimini iki kez yapmasın.
+  final int baslangicAyIndex;
+
   const HakedisAyPanosuPage({
     super.key,
     required this.kaynak,
     required this.baslik,
     this.altBaslik = 'Hakediş saatleri',
     this.baslikVeridenGuncellensin = false,
+    this.baslangicAyIndex = 0,
   });
 
   @override
@@ -48,7 +55,7 @@ class _HakedisAyPanosuPageState extends State<HakedisAyPanosuPage> {
   HakedisOzet? _ozet;
   bool _yukleniyor = true;
   String? _hata;
-  int _seciliIndex = 0;
+  late int _seciliIndex = widget.baslangicAyIndex;
 
   @override
   void initState() {

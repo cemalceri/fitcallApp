@@ -6,14 +6,14 @@
 // Ayrılmasının sebebi CLAUDE.md'deki kural: sayfa initState'te API çağırdığı
 // için widget testinde render edilemiyor, bu yüzden taşma testine giremiyordu.
 //
-// Yerleşim: ay şeridi → seçili ayın iki özet kutusu → rol kartları.
-// Rol kartındaki her satır bir gruptur (hakediş alacak / bekliyor / hakediş
-// dışı) ve dokunulunca o grubun ders listesi açılır.
+// Yerleşim: ay ızgarası (4×3) → seçili ayın özet kutuları + oran çubuğu →
+// rol kartları. Rol kartındaki her satır bir gruptur (hakediş alacak /
+// bekliyor / hakediş dışı) ve dokunulunca o grubun ders listesi açılır.
 
 import 'package:fitcall/models/1_common/hakedis_models.dart';
 import 'package:flutter/material.dart';
 
-import 'hakedis_ay_seridi.dart';
+import 'hakedis_ay_izgarasi.dart';
 import 'hakedis_stil.dart';
 
 class HakedisAyPanosu extends StatelessWidget {
@@ -37,16 +37,52 @@ class HakedisAyPanosu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final renk = Theme.of(context).colorScheme;
     final ay = ozet.aylar[seciliIndex];
 
     final liste = ListView(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
       children: [
-        _OzetKutulari(ay: ay),
-        const SizedBox(height: 14),
+        HakedisAyIzgarasi(
+          aylar: ozet.aylar.map((a) => a.hucre).toList(),
+          seciliIndex: seciliIndex,
+          onAySec: onAySec,
+        ),
+        const SizedBox(height: 20),
+
+        // Seçili ayın başlığı — ızgarada hangi hücrede olduğumuz kaybolmasın.
+        // Yan yana Row değil: büyük yazı ölçeğinde toplam metni taşırıyordu.
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              ay.etiket,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: renk.onSurface,
+              ),
+            ),
+            if (!ay.bos)
+              Text(
+                '${ay.dersSayisi} ders · ${saatMetni(ay.dakika)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 13, color: renk.onSurfaceVariant),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
         if (ay.bos)
           _BosAy(etiket: ay.etiket)
-        else
+        else ...[
+          _OzetKutulari(ay: ay),
+          const SizedBox(height: 12),
+          _OranCubugu(ay: ay),
+          const SizedBox(height: 18),
           ...ay.doluRoller.map(
             (rol) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -56,24 +92,13 @@ class HakedisAyPanosu extends StatelessWidget {
               ),
             ),
           ),
+        ],
       ],
     );
 
-    return Column(
-      children: [
-        HakedisAySeridi(
-          aylar: ozet.aylar,
-          seciliIndex: seciliIndex,
-          onAySec: onAySec,
-        ),
-        const Divider(height: 1),
-        Expanded(
-          child: onYenile == null
-              ? liste
-              : RefreshIndicator(onRefresh: onYenile!, child: liste),
-        ),
-      ],
-    );
+    return onYenile == null
+        ? liste
+        : RefreshIndicator(onRefresh: onYenile!, child: liste);
   }
 }
 
@@ -128,13 +153,14 @@ class _OzetKutusu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vurgu = hakedisRengi(context, durum);
+    final r = hakedisRengi(context, durum);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: vurgu.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(14),
+        color: r.dolgu,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: r.kenar),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,23 +168,31 @@ class _OzetKutusu extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(hakedisIkonu(durum), size: 15, color: vurgu),
-              const SizedBox(width: 5),
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: r.ana.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(hakedisIkonu(durum), size: 14, color: r.metin),
+              ),
+              const SizedBox(width: 7),
               Expanded(
                 child: Text(
                   HakedisDurumu.etiket(durum),
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 12,
+                    height: 1.2,
                     fontWeight: FontWeight.w600,
-                    color: vurgu,
+                    color: r.metin,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
@@ -166,20 +200,114 @@ class _OzetKutusu extends StatelessWidget {
               saatMetni(dakika),
               maxLines: 1,
               style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: vurgu,
+                fontSize: 26,
+                height: 1.05,
+                fontWeight: FontWeight.w700,
+                color: r.metin,
+                letterSpacing: -0.5,
               ),
             ),
           ),
+          const SizedBox(height: 2),
           Text(
             '$dersSayisi ders',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 12, color: vurgu),
+            style: TextStyle(
+              fontSize: 12,
+              color: r.metin.withValues(alpha: 0.75),
+            ),
           ),
         ],
       ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              ORAN ÇUBUĞU                                   */
+/* -------------------------------------------------------------------------- */
+
+/// Ayın dakikalarının hakediş / bekleyen / dışı dağılımı — tek bakışta oran.
+class _OranCubugu extends StatelessWidget {
+  final HakedisAy ay;
+
+  const _OranCubugu({required this.ay});
+
+  @override
+  Widget build(BuildContext context) {
+    final renk = Theme.of(context).colorScheme;
+    final toplam = ay.hakedisDakika + ay.bekleyenDakika + ay.disiDakika;
+    if (toplam <= 0) return const SizedBox.shrink();
+
+    final parcalar = <(String, int)>[
+      (HakedisDurumu.hakedis, ay.hakedisDakika),
+      (HakedisDurumu.bekliyor, ay.bekleyenDakika),
+      (HakedisDurumu.disi, ay.disiDakika),
+    ].where((p) => p.$2 > 0).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: SizedBox(
+            height: 7,
+            child: Row(
+              children: [
+                for (final (durum, dakika) in parcalar)
+                  Expanded(
+                    flex: dakika,
+                    child: Container(
+                      color: hakedisRengi(context, durum).ana,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Gösterge alt alta: Wrap içindeki Row'lar sınırsız genişlik aldığı
+        // için büyük yazı ölçeğinde taşıyordu (Flexible orada işe yaramaz).
+        for (final (durum, dakika) in parcalar)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              children: [
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: hakedisRengi(context, durum).ana,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    HakedisDurumu.etiket(durum),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: renk.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  saatMetni(dakika),
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: renk.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }
@@ -198,41 +326,53 @@ class _RolKarti extends StatelessWidget {
   Widget build(BuildContext context) {
     final renk = Theme.of(context).colorScheme;
     final gruplar = rol.doluGruplar;
+    final vurgu = hakedisRenkSeti(
+      context,
+      rol.rol == HakedisRolu.yardimci ? hakedisMavi : const Color(0xFF6366F1),
+    );
 
-    return Container(
-      decoration: BoxDecoration(
-        color: renk.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: renk.outlineVariant.withValues(alpha: 0.4),
-        ),
-      ),
+    return HakedisKart(
       child: Column(
         children: [
           // Başlık
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-            decoration: BoxDecoration(
-              color: renk.surfaceContainerHighest.withValues(alpha: 0.4),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(13),
-              ),
-            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 13, 14, 11),
             child: Row(
               children: [
-                Icon(hakedisRolIkonu(rol.rol),
-                    size: 17, color: renk.onSurfaceVariant),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: vurgu.dolgu,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(hakedisRolIkonu(rol.rol),
+                      size: 16, color: vurgu.metin),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                    HakedisRolu.etiket(rol.rol),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: renk.onSurface,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        HakedisRolu.etiket(rol.rol),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                          color: renk.onSurface,
+                        ),
+                      ),
+                      Text(
+                        '${rol.dersSayisi} ders',
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: renk.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -240,17 +380,29 @@ class _RolKarti extends StatelessWidget {
                   saatMetni(rol.dakika),
                   maxLines: 1,
                   style: TextStyle(
-                    fontSize: 13,
-                    color: renk.onSurfaceVariant,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: renk.onSurface,
                   ),
                 ),
               ],
             ),
           ),
+          Divider(
+            height: 1,
+            color: renk.outlineVariant.withValues(alpha: 0.5),
+          ),
           for (var i = 0; i < gruplar.length; i++) ...[
-            if (i > 0) Divider(height: 1, indent: 14, endIndent: 14),
+            if (i > 0)
+              Divider(
+                height: 1,
+                indent: 14,
+                endIndent: 14,
+                color: renk.outlineVariant.withValues(alpha: 0.35),
+              ),
             _GrupSatiri(
               grup: gruplar[i],
+              sonMu: i == gruplar.length - 1,
               onTap: () => onGrupTap(gruplar[i].durum),
             ),
           ],
@@ -262,48 +414,80 @@ class _RolKarti extends StatelessWidget {
 
 class _GrupSatiri extends StatelessWidget {
   final HakedisGrubu grup;
+  final bool sonMu;
   final VoidCallback onTap;
 
-  const _GrupSatiri({required this.grup, required this.onTap});
+  const _GrupSatiri({
+    required this.grup,
+    required this.sonMu,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final renk = Theme.of(context).colorScheme;
-    final vurgu = hakedisRengi(context, grup.durum);
+    final r = hakedisRengi(context, grup.durum);
 
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-        child: Row(
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(color: vurgu, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                HakedisDurumu.etiket(grup.durum),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 13, color: renk.onSurfaceVariant),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: sonMu
+            ? const BorderRadius.vertical(bottom: Radius.circular(15))
+            : BorderRadius.zero,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: r.dolgu,
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: Icon(hakedisIkonu(grup.durum), size: 13, color: r.metin),
               ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '${grup.dersSayisi} · ${saatMetni(grup.dakika)}',
-              maxLines: 1,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: renk.onSurface,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  HakedisDurumu.etiket(grup.durum),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w500,
+                    color: renk.onSurface,
+                  ),
+                ),
               ),
-            ),
-            Icon(Icons.chevron_right_rounded,
-                size: 19, color: renk.onSurfaceVariant),
-          ],
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    saatMetni(grup.dakika),
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: r.metin,
+                    ),
+                  ),
+                  Text(
+                    '${grup.dersSayisi} ders',
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: renk.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              Icon(Icons.chevron_right_rounded,
+                  size: 20, color: renk.onSurfaceVariant),
+            ],
+          ),
         ),
       ),
     );
@@ -320,20 +504,21 @@ class _BosAy extends StatelessWidget {
     final renk = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 34),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 36),
       decoration: BoxDecoration(
-        color: renk.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(14),
+        color: renk.surfaceContainerHighest.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
           Icon(Icons.event_busy_rounded,
-              size: 34, color: renk.onSurfaceVariant),
+              size: 32, color: renk.onSurfaceVariant),
           const SizedBox(height: 10),
           Text(
             '$etiket ayında ders yok',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: renk.onSurfaceVariant),
+            style: TextStyle(fontSize: 13.5, color: renk.onSurfaceVariant),
           ),
         ],
       ),

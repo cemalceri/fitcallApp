@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `main` = `origin/main` (`e452e33`), `pubspec` sürümü **3.6.0+39** |
-| Testler | `flutter test` **586 geçiyor**, `flutter analyze` temiz |
+| Testler | `flutter test` **650 geçiyor**, `flutter analyze` temiz |
 | Backend | `master` = `origin/master` (`e43bd4b`); **`heroku/master` hâlâ `6a0f6fd`** → hakediş uçları + migration `0080` canlıda değil |
 | Mağaza | Son yayınlanan sürüm **3.6.0**; sonrasındaki commit'ler henüz yayınlanmadı |
 
@@ -109,9 +109,12 @@ Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan 
 - **İstek:** Yönetici, bir antrenörün ana/yardımcı antrenör olarak girdiği ders saatlerini ay ay
   görsün; hakediş alacağı dersler ile karar bekleyenler ayrışsın, gruba dokununca o derslerin özeti
   açılsın. Antrenör de aynı ekranı görsün ama **yalnız kendi** hakedişini.
-- **Akış (yönetici, 3 ekran):** antrenör seçimi → ay panosu → ders listesi. Giriş iki yerden:
-  yönetici drawer'ındaki "Hakediş Saatleri" ve Antrenörler sekmesindeki listeye dokunma (o zaman
-  seçim adımı atlanır).
+- **Akış (yönetici, 3 ekran):** **ay seç → o ayın antrenör listesi** → antrenör panosu → ders
+  listesi. İlk ekranda üstte 4×3 ay ızgarası var; altındaki liste seçili aya göre süzülüyor ve her
+  satır o antrenörün **o aydaki** saatlerini gösteriyor (12 ay toplamı değil). Antrenöre
+  dokununca pano **aynı ayda** açılıyor, içeride diğer aylara geçilebiliyor. Giriş iki yerden:
+  drawer'daki "Hakediş Saatleri" ve Antrenörler sekmesindeki listeye dokunma (o zaman ay seçim
+  adımı atlanır, içinde bulunulan aydan başlar).
 - **Akış (antrenör, 2 ekran):** drawer'daki "Hakediş Saatlerim" → doğrudan kendi ay panosu → ders
   listesi. Antrenör seçim adımı yok.
 - **Dosya düzeni:** ay panosu ve ders listesi ekranları iki rolde **ortak** —
@@ -138,10 +141,40 @@ Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan 
 - **Backend:** `yoneticiHakedisAntrenorler` / `yoneticiHakedisOzet` / `yoneticiHakedisDersler` +
   `antrenorHakedisOzet` / `antrenorHakedisDersler`, migration `0080` (yardımcı antrenör indeksi).
   İki rolün yanıt gövdesi aynı. Ayrıntı `tenis/history.md` 2026-08-07 girdisi.
-- **Not — antrenör ne görüyor:** ekran birebir aynı olduğu için antrenör "hakediş dışı" grubunu ve
-  yöneticinin onay açıklaması/nedenini de görüyor (ör. "Yapılmadı · hava muhalefeti"). Şeffaflık
-  amaçlı; yöneticinin oraya iç not yazması durumunda gözden geçirilmeli.
-- Testler: `tests/api/test_hakedis.py` (33), taşma testine 6 yeni bileşen eklendi.
+- **Ay seçimi 4×3 ızgara** (`hakedis_ay_izgarasi.dart`), yatay kaydırmalı şerit değil — kaydırmadan
+  görünmeyen aylar gözden kaçıyordu. Hücre yüksekliği sabit değil: `GridView` + `childAspectRatio`
+  1.3 ölçekte taşıyordu, onun yerine `IntrinsicHeight`'lı satırlar kullanılıyor.
+- **Renk sistemi** `hakedis_stil.dart`'ta `HakedisRenk` (dolgu + kenar + metin üçlüsü) olarak
+  toplandı. İlk sürümde her şey `%10 alfa` yıkamasıydı ve ekran soluk çıkıyordu; artık metin rengi
+  dolgunun üstünde okunacak koyulukta ayrı hesaplanıyor, koyu temada açılıyor. Doğrudan
+  `ana.withValues(...)` yazmayın.
+- **İptal paneli:** iptal edilen ders kartında kim iptal etti, ne zaman, sebep ve açıklama ayrı bir
+  kırmızı panelde. İptaller "hakediş dışı" grubunda çıktığı için o satırın karşılığı buradan
+  okunuyor.
+- **Not — antrenör ne görüyor:** ekran birebir aynı olduğu için antrenör "hakediş dışı" grubunu,
+  iptal panelini ve yöneticinin onay açıklaması/nedenini de görüyor. Şeffaflık amaçlı; yöneticinin
+  oraya iç not yazması durumunda gözden geçirilmeli.
+- Testler: `tests/api/test_hakedis.py` (39), taşma testine 7 bileşen. Ders kartı testleri
+  `SingleChildScrollView` ile sarılı — kart gerçekte listede duruyor, çıplak Scaffold'da uzun kart
+  ekran boyunu aşıp gerçekte oluşmayan bir dikey taşma üretiyordu.
+
+### Plan dışı katılımcı → ofis bildirimi (2026-08-07)
+- **İstek:** Antrenör derse plan dışı üye ya da misafir eklediğinde ofis grubundaki kullanıcılara
+  otomatik bildirim gitsin.
+- **Backend (asıl iş):** `SetDersKatilimiApiView` kaydetmeden önce ve sonra dersin plan dışı
+  tablosunu fotoğraflayıp farkı tek bildirime çeviriyor (`calendarapp/utils/plan_disi_bildirim.py`).
+  Antrenör aynı yoklamayı tekrar kaydederse fark çıkmadığı için bildirim de üretilmiyor. Ekleme
+  kadar **çıkarma** da bildiriliyor: kişiyi listeden çıkarmak ya da dersi "yapılmadı"ya çevirmek
+  ofisin karar kuyruğundan kayıt düşürüyor. Alıcı yalnız `rol=ofis`, isteğin işletmesinde.
+  Yeni tip `OFIS_PLAN_DISI_KATILIM`, migration `0081` (yalnız choices).
+- **Mobil:** Bildirim tipi sabiti + listede kendi ikonu (`person_add_alt_1`) ve turuncu rengi —
+  plan dışı kayıtlar antrenör/yönetici ekranlarında da turuncu "Plan Dışı" etiketiyle gösteriliyor.
+  Detay sheet'inde ders künyesi + eklenen/çıkarılan kişi listesi (`PlanDisiBildirimOzeti`); sheet
+  içeriği artık kaydırılabilir, değişken uzunluktaki liste küçük ekranda taşmasın diye.
+- **Not:** `Roller` enum'unda `ofis` yok — ofis kullanıcısı mobile giriş yapamıyor, bildirimi web
+  zilinde görüyor. Mobil taraf, ofis rolü mobile açılırsa ya da bildirimi gören yönetici için hazır.
+- Testler: `tests/api/test_plan_disi_ofis_bildirimi.py` (19, gerçek uç üzerinden),
+  `test/bildirim_plan_disi_test.dart` (10), taşma testine 4 bileşen (36 kombinasyon).
 
 ### Uygulama simgesi rozeti — okunmamış bildirim (2026-08-06)
 - **İstek:** Okunmamış bildirim varken uygulama simgesinde sayı/işaret görünsün.

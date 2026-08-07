@@ -1,9 +1,14 @@
 // lib/screens/7_yonetici/hakedis/hakedis_antrenor_secim_page.dart
 //
-// Hakediş saatleri akışının 1. adımı: antrenör seçimi.
+// Hakediş saatleri akışının 1. adımı: ay seç → o ayın antrenör listesi.
 //
-// Drawer'daki "Hakediş Saatleri" bu sayfayı açar. Antrenörler sekmesinden bir
-// antrenöre dokunulduğunda bu adım atlanır, doğrudan ay panosu açılır.
+// Drawer'daki "Hakediş Saatleri" bu sayfayı açar. Üstteki 4×3 ızgaradan bir ay
+// seçilir, altındaki liste o aya göre süzülür. Antrenöre dokunulduğunda ay
+// panosu AYNI AYDA açılır (kullanıcı ay seçimini iki kez yapmasın); panonun
+// içinde diğer aylara geçmek yine mümkün.
+//
+// Antrenörler sekmesinden bir antrenöre dokunulduğunda bu adım atlanır,
+// doğrudan ay panosu açılır (o zaman içinde bulunulan aydan başlar).
 
 import 'package:fitcall/models/1_common/hakedis_models.dart';
 import 'package:fitcall/screens/1_common/hakedis/hakedis_ay_panosu_page.dart';
@@ -29,6 +34,9 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
   String _filtre = 'aktif';
   String _arama = '';
 
+  /// Seçili ayın listedeki sırası — 0 = içinde bulunulan ay.
+  int _seciliAy = 0;
+
   @override
   void initState() {
     super.initState();
@@ -43,8 +51,11 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
     try {
       final sonuc = await YoneticiHakedisService.antrenorler(filtre: _filtre);
       if (!mounted) return;
+      final gelen = sonuc.data;
       setState(() {
-        _veri = sonuc.data;
+        _veri = gelen;
+        // Backend penceresi değişirse seçili index taşmasın.
+        if (gelen != null && _seciliAy >= gelen.aylar.length) _seciliAy = 0;
         _yukleniyor = false;
       });
     } on ApiException catch (e) {
@@ -72,9 +83,7 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
     final tumu = _veri?.antrenorler ?? const <HakedisAntrenorOzeti>[];
     final anahtar = _arama.trim().toLowerCase();
     if (anahtar.isEmpty) return tumu;
-    return tumu
-        .where((a) => a.adSoyad.toLowerCase().contains(anahtar))
-        .toList();
+    return tumu.where((a) => a.adSoyad.toLowerCase().contains(anahtar)).toList();
   }
 
   void _antrenorAc(HakedisAntrenorOzeti antrenor) {
@@ -84,6 +93,8 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
           kaynak: YoneticiHakedisKaynagi(antrenor.antrenorId),
           baslik: antrenor.adSoyad,
           baslikVeridenGuncellensin: true,
+          // Listede hangi aya bakılıyorsa pano da orada açılsın.
+          baslangicAyIndex: _seciliAy,
         ),
       ),
     );
@@ -92,6 +103,7 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
   @override
   Widget build(BuildContext context) {
     final renk = Theme.of(context).colorScheme;
+    final veri = _veri;
 
     return Scaffold(
       appBar: AppBar(
@@ -106,18 +118,10 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Son 12 ay · antrenör seçin',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: renk.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
                   TextField(
                     decoration: const InputDecoration(
                       isDense: true,
@@ -136,16 +140,20 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
               child: HakedisDurumGovdesi(
                 yukleniyor: _yukleniyor,
                 hata: _hata,
-                bosMu: _suzulmus.isEmpty,
-                bosMesaj: _arama.isEmpty
-                    ? 'Antrenör bulunamadı'
-                    : '"$_arama" ile eşleşen antrenör yok',
+                bosMu: veri == null || veri.aylar.isEmpty,
+                bosMesaj: 'Kayıt bulunamadı',
                 bosIkon: Icons.person_search_rounded,
                 onTekrarDene: _yukle,
                 icerik: (_) => HakedisAntrenorListesiGorunumu(
+                  aylar: veri!.aylar,
+                  seciliIndex: _seciliAy,
+                  onAySec: (i) => setState(() => _seciliAy = i),
                   antrenorler: _suzulmus,
                   onAntrenorTap: _antrenorAc,
                   onYenile: _yukle,
+                  bosMesaj: _arama.isEmpty
+                      ? 'Antrenör bulunamadı'
+                      : '"$_arama" ile eşleşen antrenör yok',
                 ),
               ),
             ),
@@ -179,24 +187,34 @@ class _Filtreler extends StatelessWidget {
           final aktif = girdi.key == secili;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: GestureDetector(
-              onTap: () => onSec(girdi.key),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: aktif
-                      ? renk.primary
-                      : renk.surfaceContainerHighest.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  girdi.value,
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: aktif ? FontWeight.w600 : FontWeight.w500,
-                    color: aktif ? renk.onPrimary : renk.onSurfaceVariant,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => onSec(girdi.key),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: aktif
+                        ? renk.primary
+                        : renk.surfaceContainerHighest.withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: aktif
+                          ? renk.primary
+                          : renk.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Text(
+                    girdi.value,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: aktif ? FontWeight.w700 : FontWeight.w500,
+                      color:
+                          aktif ? renk.onPrimary : renk.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),

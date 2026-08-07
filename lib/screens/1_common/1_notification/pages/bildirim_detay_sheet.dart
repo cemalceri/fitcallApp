@@ -1,5 +1,6 @@
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
+import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
 import 'package:flutter/material.dart';
 
 /// Action gerektirmeyen veya tanınmayan bildirimler için bottom sheet.
@@ -41,78 +42,87 @@ class BildirimDetaySheetWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    _buildTipIkonu(),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            notification.title,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: BildirimRenkleri.yaziAna,
+          // Gövde metni ve tipe özel özet blokları değişken uzunlukta; küçük
+          // ekranda büyük yazı ölçeğiyle sabit yükseklik taşardı.
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      _buildTipIkonu(),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              notification.title,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: BildirimRenkleri.yaziAna,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _formatTarihSaat(notification.timestamp),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: BildirimRenkleri.yaziIkincil,
+                            const SizedBox(height: 4),
+                            Text(
+                              _formatTarihSaat(notification.timestamp),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: BildirimRenkleri.yaziIkincil,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (_planDisiMi) ...[
+                    PlanDisiBildirimOzeti(
+                        displayData: notification.displayData!),
+                    const SizedBox(height: 16),
                   ],
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFAFAFA),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    notification.body,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      height: 1.6,
-                      color: BildirimRenkleri.yaziAna,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAFAFA),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFFF5F5F5),
-                      foregroundColor: BildirimRenkleri.yaziAna,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    child: Text(
+                      notification.body,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 1.6,
+                        color: BildirimRenkleri.yaziAna,
                       ),
                     ),
-                    child: const Text(
-                      'Kapat',
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: TextButton.styleFrom(
+                        backgroundColor: const Color(0xFFF5F5F5),
+                        foregroundColor: BildirimRenkleri.yaziAna,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Kapat',
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           SizedBox(height: MediaQuery.of(context).padding.bottom),
@@ -120,6 +130,11 @@ class BildirimDetaySheetWidget extends StatelessWidget {
       ),
     );
   }
+
+  /// Plan dışı katılımcı bildirimi mi — ve gösterilecek verisi var mı?
+  bool get _planDisiMi =>
+      notification.notificationType == NotificationType.ofisPlanDisiKatilim &&
+      notification.displayData != null;
 
   Widget _buildTipIkonu() {
     final iconData =

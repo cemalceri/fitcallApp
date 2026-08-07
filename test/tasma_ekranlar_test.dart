@@ -18,6 +18,9 @@ import 'package:fitcall/models/5_etkinlik/misafir_model.dart';
 import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/models/notification/notification_model.dart';
+import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_sheet.dart';
+import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
 import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_bottom_bar.dart';
@@ -39,7 +42,7 @@ import 'package:fitcall/screens/7_yonetici/program/widgets/etkinlik_form_sheet.d
 import 'package:fitcall/models/1_common/hakedis_models.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_antrenor_listesi.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ay_panosu.dart';
-import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ay_seridi.dart';
+import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ay_izgarasi.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ders_karti.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/program_gorunumu.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/program_gun_seridi.dart';
@@ -367,28 +370,60 @@ void main() {
       );
     });
 
-    tasmaTesti('HakedisAySeridi', () {
-      return HakedisAySeridi(
-        aylar: _hakedisOzet().aylar,
+    tasmaTesti('HakedisAyIzgarasi (4x3)', () {
+      return HakedisAyIzgarasi(
+        aylar: _hakedisOzet().aylar.map((a) => a.hucre).toList(),
         seciliIndex: 0,
         onAySec: (_) {},
       );
     });
 
-    tasmaTesti('HakedisAntrenorListesiGorunumu', () {
+    tasmaTesti('HakedisAntrenorListesiGorunumu (dolu ay)', () {
+      final veri = _hakedisAntrenorListesi();
       return HakedisAntrenorListesiGorunumu(
-        antrenorler: _hakedisAntrenorler(),
+        aylar: veri.aylar,
+        seciliIndex: 0,
+        onAySec: (_) {},
+        antrenorler: veri.antrenorler,
         onAntrenorTap: (_) {},
       );
     });
 
-    tasmaTesti('HakedisDersKarti (kalabalık grup)', () {
-      return HakedisDersKarti(ders: _hakedisDers());
+    tasmaTesti('HakedisAntrenorListesiGorunumu (dersi olmayan ay)', () {
+      // Seçili ayda kimsenin dersi yoksa satırlar "Bu ayda ders yok" der.
+      final veri = _hakedisAntrenorListesi();
+      return HakedisAntrenorListesiGorunumu(
+        aylar: veri.aylar,
+        seciliIndex: 5,
+        onAySec: (_) {},
+        antrenorler: veri.antrenorler,
+        onAntrenorTap: (_) {},
+      );
     });
 
-    tasmaTesti('HakedisDersKarti (yapılmadı, hakediş verildi)', () {
-      return HakedisDersKarti(ders: _hakedisDersYapilmadi());
-    });
+    // Ders kartları gerçekte kaydırılabilir bir listede duruyor; çıplak
+    // Scaffold'a konunca uzun kart ekran boyunu aştığı için dikey taşma
+    // veriyor — bu gerçekte oluşmayan bir durum. Kaydırıcıyla sarılınca test
+    // yine kartın kendi içindeki yatay/dikey taşmaları yakalar.
+    Widget kaydirilabilir(Widget w) => SingleChildScrollView(child: w);
+
+    tasmaTesti(
+      'HakedisDersKarti (kalabalık grup)',
+      () => HakedisDersKarti(ders: _hakedisDers()),
+      sar: kaydirilabilir,
+    );
+
+    tasmaTesti(
+      'HakedisDersKarti (yapılmadı, hakediş verildi)',
+      () => HakedisDersKarti(ders: _hakedisDersYapilmadi()),
+      sar: kaydirilabilir,
+    );
+
+    tasmaTesti(
+      'HakedisDersKarti (iptal edilmiş ders)',
+      () => HakedisDersKarti(ders: _hakedisDersIptal()),
+      sar: kaydirilabilir,
+    );
   });
 
   /* ===================== YÖNETİCİ — MEVCUT BİLEŞENLER ===================== */
@@ -643,7 +678,74 @@ void main() {
     tasmaTesti('ParlaklikIpucu (manuel yönerge)',
         () => ParlaklikIpucu(maksimumda: ValueNotifier<bool>(false)));
   });
+
+  group('Bildirimler', () {
+    tasmaTesti(
+      'PlanDisiBildirimOzeti (ekleme)',
+      () => PlanDisiBildirimOzeti(displayData: _planDisiVeri()),
+    );
+
+    tasmaTesti(
+      'PlanDisiBildirimOzeti (ekleme + çıkarma)',
+      () => PlanDisiBildirimOzeti(
+        displayData: _planDisiVeri(
+          cikarilanlar: 'Deniz Ayşegül Arslanoğulları (üye)',
+        ),
+      ),
+    );
+
+    tasmaTesti(
+      'BildirimDetaySheet (plan dışı)',
+      () => BildirimDetaySheetWidget(
+        notification: _planDisiBildirimi(),
+      ),
+    );
+
+    tasmaTesti(
+      'BildirimDetaySheet (düz bildirim)',
+      () => BildirimDetaySheetWidget(
+        notification: _duzBildirim(),
+      ),
+    );
+  });
 }
+
+/* ========================== BİLDİRİM ÖRNEK VERİ ========================== */
+
+Map<String, dynamic> _planDisiVeri({String cikarilanlar = ''}) => {
+      'etkinlik_id': 42,
+      'tarih': '07.08.2026',
+      'saat': '14:00',
+      'kort_adi': 'Kapalı Kort 3 (Kuzey)',
+      'antrenor_adi': 'Ahmet Kandemiroğulları',
+      'eklenenler':
+          'Deniz Ayşegül Arslanoğulları (üye), Mehmet Kaya Yılmazoğlu (misafir)',
+      'cikarilanlar': cikarilanlar,
+    };
+
+NotificationModel _planDisiBildirimi() => NotificationModel(
+      id: 1,
+      notificationType: NotificationType.ofisPlanDisiKatilim,
+      title: 'Plan Dışı Katılımcı',
+      body: 'Ahmet Kandemiroğulları, 7 Ağustos 2026 Cuma saat 14:00 Kapalı '
+          'Kort 3 (Kuzey) kortundaki ders için plan dışı Deniz Ayşegül '
+          'Arslanoğulları (üye), Mehmet Kaya Yılmazoğlu (misafir) ekledi.',
+      actionType: ActionType.navigateToScreen,
+      actionScreen: 'bildirim_detay',
+      displayData: _planDisiVeri(),
+      isRead: false,
+      timestamp: DateTime(2026, 8, 7, 14, 5),
+    );
+
+NotificationModel _duzBildirim() => NotificationModel(
+      id: 2,
+      notificationType: NotificationType.genel,
+      title: 'Bildirim',
+      body: 'Kulüp 15 Ağustos Pazar günü bakım nedeniyle kapalı olacaktır.',
+      actionType: ActionType.noAction,
+      isRead: true,
+      timestamp: DateTime(2026, 8, 7, 9, 0),
+    );
 
 /* ============================== ÜYE ÖRNEK VERİ ============================== */
 
@@ -882,26 +984,80 @@ HakedisOzet _hakedisOzet() => HakedisOzet.fromJson({
       ],
     });
 
-List<HakedisAntrenorOzeti> _hakedisAntrenorler() => [
-      HakedisAntrenorOzeti.fromJson(const {
-        'antrenor_id': 7,
-        'ad_soyad': 'Abdurrahman Çelebioğlu Karahanoğulları',
-        'aktif_mi': true,
-        'hakedis_ders_sayisi': 284,
-        'hakedis_dakika': 25680,
-        'bekleyen_ders_sayisi': 12,
-        'bekleyen_dakika': 900,
-      }),
-      HakedisAntrenorOzeti.fromJson(const {
-        'antrenor_id': 8,
-        'ad_soyad': 'Ali Vural',
-        'aktif_mi': true,
-        'hakedis_ders_sayisi': 96,
-        'hakedis_dakika': 5760,
-        'bekleyen_ders_sayisi': 0,
-        'bekleyen_dakika': 0,
-      }),
+/// Bir antrenörün 12 aylık dizisi — ilk ay dolu, ikincisi bekleyenli, gerisi boş.
+List<Map<String, dynamic>> _hakedisAylikDizi({
+  required int hakedisDakika,
+  required int bekleyenDers,
+}) =>
+    [
+      for (var i = 0; i < 12; i++)
+        {
+          'yil': i == 0 ? 2026 : 2025,
+          'ay': 12 - i,
+          'ders_sayisi': i == 0 ? 24 : (i == 1 ? 8 : 0),
+          'dakika': i == 0 ? hakedisDakika : (i == 1 ? 480 : 0),
+          'hakedis_ders_sayisi': i == 0 ? 20 : 0,
+          'hakedis_dakika': i == 0 ? hakedisDakika : 0,
+          'bekleyen_ders_sayisi': i == 1 ? bekleyenDers : 0,
+          'bekleyen_dakika': i == 1 ? 480 : 0,
+          'disi_ders_sayisi': 0,
+          'disi_dakika': 0,
+        }
     ];
+
+/// Ay ızgarası + antrenör listesi tek yanıtta — yönetici seçim ekranının verisi.
+HakedisAntrenorListesi _hakedisAntrenorListesi() =>
+    HakedisAntrenorListesi.fromJson({
+      'ay_sayisi': 12,
+      'aylar': [
+        for (var i = 0; i < 12; i++)
+          {
+            'yil': i == 0 ? 2026 : 2025,
+            'ay': 12 - i,
+            'etiket': 'Ay ${12 - i} ${i == 0 ? 2026 : 2025}',
+            'kisa_etiket': 'Ağu ${i == 0 ? 2026 : 2025}',
+            'ders_sayisi': i < 2 ? 32 : 0,
+            'dakika': i < 2 ? 2880 : 0,
+            'hakedis_ders_sayisi': i == 0 ? 28 : 0,
+            'hakedis_dakika': i == 0 ? 2400 : 0,
+            'bekleyen_ders_sayisi': i == 1 ? 8 : 0,
+            'bekleyen_dakika': i == 1 ? 480 : 0,
+            'disi_ders_sayisi': 0,
+            'disi_dakika': 0,
+          }
+      ],
+      'antrenorler': [
+        {
+          'antrenor_id': 7,
+          'ad_soyad': 'Abdurrahman Çelebioğlu Karahanoğulları',
+          'aktif_mi': true,
+          'ders_sayisi': 296,
+          'dakika': 26580,
+          'hakedis_ders_sayisi': 284,
+          'hakedis_dakika': 25680,
+          'bekleyen_ders_sayisi': 12,
+          'bekleyen_dakika': 900,
+          'disi_ders_sayisi': 0,
+          'disi_dakika': 0,
+          'aylar':
+              _hakedisAylikDizi(hakedisDakika: 25680, bekleyenDers: 12),
+        },
+        {
+          'antrenor_id': 8,
+          'ad_soyad': 'Ali Vural',
+          'aktif_mi': false,
+          'ders_sayisi': 96,
+          'dakika': 5760,
+          'hakedis_ders_sayisi': 96,
+          'hakedis_dakika': 5760,
+          'bekleyen_ders_sayisi': 0,
+          'bekleyen_dakika': 0,
+          'disi_ders_sayisi': 0,
+          'disi_dakika': 0,
+          'aylar': _hakedisAylikDizi(hakedisDakika: 5760, bekleyenDers: 0),
+        },
+      ],
+    });
 
 /// Uzun isimli, plan dışı katılımcı içeren kalabalık grup dersi.
 HakedisDers _hakedisDers() => HakedisDers.fromJson(const {
@@ -941,6 +1097,37 @@ HakedisDers _hakedisDers() => HakedisDers.fromJson(const {
         {
           'uye_id': 4,
           'ad_soyad': 'Mehmet Ali Şahin',
+          'katilim_durum': null,
+          'plan_disi_mi': false,
+        },
+      ],
+    });
+
+/// İptal edilmiş ders — "hakediş dışı" grubunda çıkar, iptal paneli render edilir.
+HakedisDers _hakedisDersIptal() => HakedisDers.fromJson(const {
+      'id': 43,
+      'baslangic': '2026-07-21T20:00:00+03:00',
+      'bitis': '2026-07-21T21:00:00+03:00',
+      'dakika': 60,
+      'rol': 'ana',
+      'durum': 'disi',
+      'kort_adi': 'Kapalı Kort 2',
+      'urun_adi': 'Performans Grup Dersi Paketi',
+      'urun_tipi': 'PAKET',
+      'iptal_mi': true,
+      'yonetici_tamamlandi': false,
+      'onay_nedeni': 'Hava koşulları',
+      'onay_aciklamasi': null,
+      'iptal_eden': 'Mehmet Ali Şahinoğulları Yönetici',
+      'iptal_tarihi': '2026-07-20T14:35:00+03:00',
+      'iptal_sebebi': 'Hava koşulları',
+      'iptal_aciklamasi':
+          'Sağanak yağış nedeniyle kortlar kullanılamadı, tüm akşam programı '
+              'iptal edildi ve üyelere telafi hakkı tanındı.',
+      'katilimcilar': [
+        {
+          'uye_id': 1,
+          'ad_soyad': 'Deniz Ayşegül Arslanoğulları',
           'katilim_durum': null,
           'plan_disi_mi': false,
         },

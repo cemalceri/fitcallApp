@@ -2,10 +2,15 @@
 //
 // Ders listesindeki tek ders kartı.
 //
-// Gösterdikleri: tarih/saat + süre, ürün · kort, katılımcılar (katıldı /
+// Gösterdikleri: gün/saat bloğu + süre, ürün · kort, katılımcılar (katıldı /
 // katılmadı / yoklama alınmamış, plan dışı eklenenler ayrı işaretli) ve
-// yöneticinin onay açıklaması — özellikle "ders yapılmadı ama hakediş verildi"
-// durumunun gerekçesi görünsün diye.
+// duruma göre bir açıklama paneli:
+//
+//   iptal edilen ders → kim iptal etti, ne zaman, sebep ve açıklama
+//   yapılmadı işaretli → neden yapılmadı, hakediş verildiyse o da yazar
+//
+// İptal edilen dersler "hakediş dışı" grubunda çıkıyor; o satırın karşılığını
+// yönetici ancak bu panelden görebiliyor.
 
 import 'package:fitcall/models/1_common/hakedis_models.dart';
 import 'package:flutter/material.dart';
@@ -18,27 +23,13 @@ class HakedisDersKarti extends StatelessWidget {
 
   const HakedisDersKarti({super.key, required this.ders});
 
-  String get _zamanMetni {
-    final bas = ders.baslangic;
-    if (bas == null) return '';
-    return '${DateFormat('d MMM EEE', 'tr_TR').format(bas)} · '
-        '${DateFormat('HH:mm').format(bas)}';
-  }
-
   @override
   Widget build(BuildContext context) {
     final renk = Theme.of(context).colorScheme;
     final altBaslik = ders.altBaslik;
 
-    return Container(
+    return HakedisKart(
       padding: const EdgeInsets.all(13),
-      decoration: BoxDecoration(
-        color: renk.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: renk.outlineVariant.withValues(alpha: 0.35),
-        ),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -46,45 +37,67 @@ class HakedisDersKarti extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _ZamanBlogu(baslangic: ders.baslangic),
+              const SizedBox(width: 12),
               Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _saatMetni,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: renk.onSurface,
+                      ),
+                    ),
+                    if (altBaslik.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        altBaslik,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: renk.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                    if (ders.iptalMi) ...[
+                      const SizedBox(height: 6),
+                      HakedisRozet(
+                        metin: 'İptal edildi',
+                        ikon: Icons.event_busy_rounded,
+                        taban: hakedisKirmizi,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                decoration: BoxDecoration(
+                  color: renk.surfaceContainerHighest.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(9),
+                ),
                 child: Text(
-                  _zamanMetni,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  saatMetni(ders.dakika),
+                  maxLines: 1,
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
                     color: renk.onSurface,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                saatMetni(ders.dakika),
-                maxLines: 1,
-                style: TextStyle(fontSize: 13, color: renk.onSurfaceVariant),
-              ),
             ],
           ),
-          if (altBaslik.isNotEmpty) ...[
-            const SizedBox(height: 3),
-            Text(
-              altBaslik,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 12.5, color: renk.onSurfaceVariant),
-            ),
-          ],
-          if (ders.iptalMi) ...[
-            const SizedBox(height: 6),
-            _Etiket(
-              metin: 'İptal edildi',
-              renk: renk.error,
-              ikon: Icons.event_busy_rounded,
-            ),
-          ],
           if (ders.katilimcilar.isNotEmpty) ...[
-            const SizedBox(height: 9),
+            const SizedBox(height: 11),
             Wrap(
               spacing: 6,
               runSpacing: 6,
@@ -93,8 +106,11 @@ class HakedisDersKarti extends StatelessWidget {
                   .toList(),
             ),
           ],
-          if (ders.yapilmadiNotuVar || _aciklamaVar) ...[
-            const SizedBox(height: 9),
+          if (ders.iptalBilgisiVar) ...[
+            const SizedBox(height: 11),
+            _IptalPaneli(ders: ders),
+          ] else if (ders.yapilmadiNotuVar || _aciklamaVar) ...[
+            const SizedBox(height: 11),
             _OnayNotu(ders: ders),
           ],
         ],
@@ -102,10 +118,77 @@ class HakedisDersKarti extends StatelessWidget {
     );
   }
 
+  String get _saatMetni {
+    final bas = ders.baslangic;
+    final bit = ders.bitis;
+    if (bas == null) return '';
+    final basMetin = DateFormat('HH:mm').format(bas);
+    if (bit == null) return basMetin;
+    return '$basMetin – ${DateFormat('HH:mm').format(bit)}';
+  }
+
   bool get _aciklamaVar => ders.onayAciklamasi?.isNotEmpty == true;
 }
 
 /* -------------------------------------------------------------------------- */
+
+/// Kartın solundaki gün bloğu — "12" üstte, "Tem Paz" altta.
+class _ZamanBlogu extends StatelessWidget {
+  final DateTime? baslangic;
+
+  const _ZamanBlogu({required this.baslangic});
+
+  @override
+  Widget build(BuildContext context) {
+    final renk = Theme.of(context).colorScheme;
+    final bas = baslangic;
+    if (bas == null) return const SizedBox.shrink();
+
+    return Container(
+      width: 46,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 7),
+      decoration: BoxDecoration(
+        color: renk.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(11),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            DateFormat('d', 'tr_TR').format(bas),
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: 18,
+              height: 1.05,
+              fontWeight: FontWeight.w700,
+              color: renk.onSurface,
+            ),
+          ),
+          Text(
+            DateFormat('MMM', 'tr_TR').format(bas),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11,
+              height: 1.15,
+              color: renk.onSurfaceVariant,
+            ),
+          ),
+          Text(
+            DateFormat('EEE', 'tr_TR').format(bas),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10,
+              height: 1.15,
+              color: renk.onSurfaceVariant.withValues(alpha: 0.8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _KatilimciRozeti extends StatelessWidget {
   final HakedisKatilimci katilimci;
@@ -114,22 +197,23 @@ class _KatilimciRozeti extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vurgu = katilimRengi(context, katilimci);
+    final r = hakedisRenkSeti(context, katilimTabanRengi(katilimci));
     final ad = katilimci.planDisiMi
         ? '${katilimci.adSoyad} · plan dışı'
         : katilimci.adSoyad;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      constraints: const BoxConstraints(maxWidth: 240),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      constraints: const BoxConstraints(maxWidth: 250),
       decoration: BoxDecoration(
-        color: vurgu.withValues(alpha: 0.12),
+        color: r.dolgu,
         borderRadius: BorderRadius.circular(9),
+        border: Border.all(color: r.kenar),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(katilimIkonu(katilimci), size: 13, color: vurgu),
+          Icon(katilimIkonu(katilimci), size: 13, color: r.metin),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
@@ -139,10 +223,90 @@ class _KatilimciRozeti extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: vurgu,
+                color: r.metin,
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// İptal edilen dersin künyesi: kim, ne zaman, neden.
+class _IptalPaneli extends StatelessWidget {
+  final HakedisDers ders;
+
+  const _IptalPaneli({required this.ders});
+
+  @override
+  Widget build(BuildContext context) {
+    final r = hakedisRenkSeti(context, hakedisKirmizi);
+
+    final satirlar = <(IconData, String)>[
+      if (ders.iptalSebebi?.isNotEmpty == true)
+        (Icons.label_outline_rounded, ders.iptalSebebi!),
+      if (ders.iptalEden?.isNotEmpty == true)
+        (Icons.person_outline_rounded, '${ders.iptalEden!} iptal etti'),
+      if (ders.iptalTarihi != null)
+        (
+          Icons.schedule_rounded,
+          DateFormat('d MMMM y · HH:mm', 'tr_TR').format(ders.iptalTarihi!),
+        ),
+      if (ders.iptalAciklamasi?.isNotEmpty == true)
+        (Icons.notes_rounded, ders.iptalAciklamasi!),
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(11, 10, 11, 10),
+      decoration: BoxDecoration(
+        color: r.dolgu,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: r.kenar),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.event_busy_rounded, size: 15, color: r.metin),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Ders iptal edildi',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: r.metin,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          for (final (ikon, metin) in satirlar) ...[
+            const SizedBox(height: 6),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(ikon, size: 13, color: r.metin.withValues(alpha: 0.75)),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    metin,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.35,
+                      color: r.metin.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -154,7 +318,7 @@ class _OnayNotu extends StatelessWidget {
 
   const _OnayNotu({required this.ders});
 
-  /// "Yapılmadı · yağmur — Hakediş verildi." biçiminde tek satır.
+  /// "Yapılmadı · Hava şartları · Hakediş verildi" biçiminde tek satır.
   String _metin() {
     final parcalar = <String>[];
     if (ders.yoneticiTamamlandi == false) parcalar.add('Yapılmadı');
@@ -162,7 +326,8 @@ class _OnayNotu extends StatelessWidget {
     if (ders.onayAciklamasi?.isNotEmpty == true) {
       parcalar.add(ders.onayAciklamasi!);
     }
-    if (ders.yoneticiTamamlandi == false && ders.durum == HakedisDurumu.hakedis) {
+    if (ders.yoneticiTamamlandi == false &&
+        ders.durum == HakedisDurumu.hakedis) {
       parcalar.add('Hakediş verildi');
     }
     return parcalar.join(' · ');
@@ -170,61 +335,28 @@ class _OnayNotu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vurgu = ders.yoneticiTamamlandi == false
-        ? hakedisRengi(context, HakedisDurumu.bekliyor)
-        : Theme.of(context).colorScheme.onSurfaceVariant;
+    final r = hakedisRenkSeti(
+      context,
+      ders.yoneticiTamamlandi == false ? hakedisTuruncu : hakedisGri,
+    );
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
       decoration: BoxDecoration(
-        color: vurgu.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(9),
+        color: r.dolgu,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: r.kenar),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, size: 14, color: vurgu),
-          const SizedBox(width: 6),
+          Icon(Icons.info_outline_rounded, size: 14, color: r.metin),
+          const SizedBox(width: 7),
           Expanded(
             child: Text(
               _metin(),
-              style: TextStyle(fontSize: 12, height: 1.35, color: vurgu),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Etiket extends StatelessWidget {
-  final String metin;
-  final Color renk;
-  final IconData ikon;
-
-  const _Etiket({required this.metin, required this.renk, required this.ikon});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: renk.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(9),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(ikon, size: 13, color: renk),
-          const SizedBox(width: 4),
-          Text(
-            metin,
-            maxLines: 1,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: renk,
+              style: TextStyle(fontSize: 12, height: 1.35, color: r.metin),
             ),
           ),
         ],

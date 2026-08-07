@@ -50,6 +50,8 @@ class BildirimGorselYardimci {
       case NotificationType.antrenorDevirRed:
       case NotificationType.antrenorDevirGeriCekildi:
         return Icons.swap_horiz_rounded;
+      case NotificationType.ofisPlanDisiKatilim:
+        return Icons.person_add_alt_1_rounded;
       default:
         return Icons.notifications_rounded;
     }
@@ -72,6 +74,9 @@ class BildirimGorselYardimci {
       case NotificationType.antrenorDegisikligi:
       case NotificationType.antrenorDevirTeklifi:
       case NotificationType.antrenorDevirGeriCekildi:
+      // Plan dışı kayıtlar antrenör ve yönetici ekranlarında da turuncu
+      // "Plan Dışı" etiketiyle gösteriliyor; bildirim aynı dili konuşsun.
+      case NotificationType.ofisPlanDisiKatilim:
         return BildirimRenkleri.uyariTuruncu;
       case NotificationType.paketHakGuncelleme:
       case NotificationType.uyelikTanimlandi:

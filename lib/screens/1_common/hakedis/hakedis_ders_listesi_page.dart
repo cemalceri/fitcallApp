@@ -122,24 +122,33 @@ class _HakedisDersListesiPageState extends State<HakedisDersListesiPage> {
             Container(
               width: double.infinity,
               margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
               decoration: BoxDecoration(
-                color: vurgu.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(12),
+                color: vurgu.dolgu,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: vurgu.kenar),
               ),
               child: Row(
                 children: [
-                  Icon(hakedisIkonu(widget.durum), size: 17, color: vurgu),
-                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: vurgu.ana.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(hakedisIkonu(widget.durum),
+                        size: 15, color: vurgu.metin),
+                  ),
+                  const SizedBox(width: 9),
                   Expanded(
                     child: Text(
                       HakedisDurumu.etiket(widget.durum),
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                        color: vurgu,
+                        fontWeight: FontWeight.w700,
+                        color: vurgu.metin,
                       ),
                     ),
                   ),
@@ -150,8 +159,8 @@ class _HakedisDersListesiPageState extends State<HakedisDersListesiPage> {
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: vurgu,
+                        fontWeight: FontWeight.w700,
+                        color: vurgu.metin,
                       ),
                     ),
                   ],

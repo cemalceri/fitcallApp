@@ -21,6 +21,9 @@ class NotificationType {
   static const antrenorDevirKabul = 'ANTRENOR_DEVIR_KABUL';
   static const antrenorDevirRed = 'ANTRENOR_DEVIR_RED';
   static const antrenorDevirGeriCekildi = 'ANTRENOR_DEVIR_GERI_CEKILDI';
+
+  /// Ofise gider: antrenör derse plan dışı üye/misafir ekledi ya da eklediğini sildi.
+  static const ofisPlanDisiKatilim = 'OFIS_PLAN_DISI_KATILIM';
 }
 
 class ActionType {
@@ -69,8 +72,8 @@ class NotificationModel {
       displayData: json['display_data'] as Map<String, dynamic>?,
       actionToken: json['action_token'] as String?,
       isRead: json['is_read'] as bool? ?? false,
-      timestamp: parseApiTarih(json['timestamp']?.toString() ?? '') ??
-          simdiKulup(),
+      timestamp:
+          parseApiTarih(json['timestamp']?.toString() ?? '') ?? simdiKulup(),
     );
   }
 
