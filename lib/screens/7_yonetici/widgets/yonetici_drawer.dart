@@ -138,6 +138,13 @@ class YoneticiDrawer extends StatelessWidget {
                   ),
                   const Divider(height: 16, indent: 16, endIndent: 16),
                   _DrawerItem(
+                    icon: Icons.schedule_rounded,
+                    title: 'Hakediş Saatleri',
+                    color: const Color(0xFF0D9488),
+                    onTap: () =>
+                        _git(context, routeEnums[SayfaAdi.yoneticiHakedis]!),
+                  ),
+                  _DrawerItem(
                     icon: Icons.account_balance_wallet_rounded,
                     title: 'Borçlu Üyeler',
                     color: const Color(0xFFEF4444),

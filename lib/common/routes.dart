@@ -6,6 +6,8 @@ import 'package:fitcall/screens/4_auth/forgot_password_page.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
 import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
 import 'package:fitcall/screens/7_yonetici/yonetici_main_page.dart';
+import 'package:fitcall/screens/3_antrenor/hakedis/antrenor_hakedis_page.dart';
+import 'package:fitcall/screens/7_yonetici/hakedis/hakedis_antrenor_secim_page.dart';
 import 'package:fitcall/screens/7_yonetici/program/yonetici_program_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
@@ -52,11 +54,13 @@ enum SayfaAdi {
   antrenorProfil,
   antrenorDersler,
   antrenorEksikYoklama,
+  antrenorHakedis,
   antrenorOgrenciler,
   uyeDersTalepleri,
   bildirimler,
   yoneticiAnasayfa,
   yoneticiProgram,
+  yoneticiHakedis,
   dersTeyit,
   teyitBekleyen,
   yardim,
@@ -81,11 +85,13 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.antrenorProfil: '/antrenor_profil',
   SayfaAdi.antrenorDersler: '/antrenor_dersler',
   SayfaAdi.antrenorEksikYoklama: '/antrenor_eksik_yoklama',
+  SayfaAdi.antrenorHakedis: '/antrenorHakedis',
   SayfaAdi.antrenorOgrenciler: '/antrenor_ogrenciler',
   SayfaAdi.uyeDersTalepleri: '/uyeDersTalepleri',
   SayfaAdi.bildirimler: '/bildirimler',
   SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
   SayfaAdi.yoneticiProgram: '/yoneticiProgram',
+  SayfaAdi.yoneticiHakedis: '/yoneticiHakedis',
   SayfaAdi.dersTeyit: '/dersTeyit',
   SayfaAdi.teyitBekleyen: '/teyitBekleyen',
   SayfaAdi.yardim: '/yardim',
@@ -111,6 +117,7 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.antrenorDersler]!: (c) => AntrenorTakvimPage(),
   routeEnums[SayfaAdi.antrenorEksikYoklama]!: (c) =>
       const AntrenorEksikYoklamaPage(),
+  routeEnums[SayfaAdi.antrenorHakedis]!: (c) => const AntrenorHakedisPage(),
   routeEnums[SayfaAdi.antrenorOgrenciler]!: (c) => AntrenorOgrencilerPage(),
   routeEnums[SayfaAdi.uyeDersTalepleri]!: (context) => DersTalepPage(
         secimJson: const {
@@ -124,6 +131,8 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.bildirimler]!: (c) => NotificationPage(),
   routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiMainPage(),
   routeEnums[SayfaAdi.yoneticiProgram]!: (c) => const YoneticiProgramPage(),
+  routeEnums[SayfaAdi.yoneticiHakedis]!: (c) =>
+      const HakedisAntrenorSecimPage(),
   routeEnums[SayfaAdi.dersTeyit]!: (c) => const DersTeyitPage(),
   routeEnums[SayfaAdi.teyitBekleyen]!: (c) => const TeyitBekleyenlerPage(),
   routeEnums[SayfaAdi.yardim]!: (c) => const YardimPage(),
@@ -156,6 +165,8 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.qrKodDogrula]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yardim]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yoneticiProgram]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.yoneticiHakedis]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.antrenorHakedis]!: AccessRule.anyone,
 };
 
 /* ------------------ 4) onGenerateRoute ------------------ */

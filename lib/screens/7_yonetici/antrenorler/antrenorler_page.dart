@@ -7,6 +7,8 @@ import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_istatistik_kartlar.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart';
+import 'package:fitcall/screens/1_common/hakedis/hakedis_ay_panosu_page.dart';
+import 'package:fitcall/screens/1_common/hakedis/hakedis_veri_kaynagi.dart';
 
 class AntrenorlerPage extends StatefulWidget {
   const AntrenorlerPage({super.key});
@@ -61,6 +63,20 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
   void _onFiltreChanged(String filtre) {
     setState(() => _filtre = filtre);
     _loadData();
+  }
+
+  /// Antrenöre dokununca hakediş saatleri panosu — drawer'daki "Hakediş
+  /// Saatleri" ile aynı ekran, antrenör seçim adımı atlanmış hâli.
+  void _hakedisAc(AntrenorListeItem antrenor) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => HakedisAyPanosuPage(
+          kaynak: YoneticiHakedisKaynagi(antrenor.id),
+          baslik: antrenor.adSoyad,
+          baslikVeridenGuncellensin: true,
+        ),
+      ),
+    );
   }
 
   @override
@@ -198,10 +214,13 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
               child: AntrenorIstatistikKartlar(data: _data!.istatistikler),
             );
           }
+          final antrenor = _data!.antrenorler[index - 1];
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: AntrenorListeItemWidget(
-                antrenor: _data!.antrenorler[index - 1]),
+              antrenor: antrenor,
+              onTap: () => _hakedisAc(antrenor),
+            ),
           );
         },
       ),

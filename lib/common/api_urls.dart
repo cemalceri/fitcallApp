@@ -43,6 +43,10 @@ String getAntrenorOgrenciDetayUrl = "$baseUrl/getAntrenorOgrenciDetay";
 String getAntrenorCalismaGunleriUrl = "$baseUrl/getAntrenorCalismaGunleri";
 String setAntrenorCalismaGunleriUrl = "$baseUrl/setAntrenorCalismaGunleri";
 
+// Antrenörün kendi hakediş saatleri — antrenör id'si TAŞIMAZ, backend token'dan çözer
+const String antrenorHakedisOzetUrl = "$baseUrl/antrenorHakedisOzet";
+const String antrenorHakedisDerslerUrl = "$baseUrl/antrenorHakedisDersler";
+
 // =================== ETKİNLİK ===================
 String setDersTeyit = "$baseUrl/setDersTeyit";
 String setDersTalep = "$baseUrl/setDersTalep";
@@ -131,3 +135,9 @@ const String yoneticiEtkinlikIptalGeriAlUrl =
 const String yoneticiEtkinlikSilOnizlemeUrl =
     "$baseUrl/yoneticiEtkinlikSilOnizleme";
 const String yoneticiEtkinlikSilUrl = "$baseUrl/yoneticiEtkinlikSil";
+
+// Yönetici - antrenör hakediş saatleri
+const String yoneticiHakedisAntrenorlerUrl =
+    "$baseUrl/yoneticiHakedisAntrenorler";
+const String yoneticiHakedisOzetUrl = "$baseUrl/yoneticiHakedisOzet";
+const String yoneticiHakedisDerslerUrl = "$baseUrl/yoneticiHakedisDersler";

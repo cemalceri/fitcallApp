@@ -8,14 +8,17 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-08-06)
+## 📌 Şu anki durum (2026-08-07)
 
 | | |
 |---|---|
-| Mobil | `main` = `origin/main` (push edilmiş), `pubspec` sürümü **3.6.0+39** |
-| Testler | `flutter test` **532 geçiyor**, `flutter analyze` temiz |
-| Backend | `master` = `origin/master` = `heroku/master` (`6a0f6fd`) → **canlıda** |
-| Mağaza | Son yayınlanan sürüm **3.6.0**; sonrasındaki 4 commit henüz yayınlanmadı |
+| Mobil | `main`, `pubspec` sürümü **3.6.0+39**; hakediş saatleri **commit edilmedi** |
+| Testler | `flutter test` **586 geçiyor**, `flutter analyze` temiz |
+| Backend | `master` = `origin/master` = `heroku/master` (`6a0f6fd`) → **canlıda**; hakediş uçları (5 adet) + migration `0080` henüz deploy edilmedi |
+| Mağaza | Son yayınlanan sürüm **3.6.0**; sonrasındaki commit'ler henüz yayınlanmadı |
+
+> Hakediş saatleri özelliği iki repoda da yalnız çalışma kopyasında. Mobil ekran backend uçları
+> canlıya çıkmadan işe yaramaz — **önce backend deploy, sonra mobil sürüm**.
 
 Codemagic sürüm adını `pubspec.yaml`'daki `version:` alanından, build numarasını mağazadaki
 son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `version:` bump'lanır**.
@@ -99,6 +102,44 @@ Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan 
 - Antrenör Eksik Yoklamalar ekranı (`antrenor_eksik_yoklama_page.dart` + `getAntrenorEksikYoklamalar`).
 - Alt bar (Takvim · Geçmiş · QR · Hareketler · Hesabım) + drawer; eski menü grid'i silindi.
 - Login "beni hatırla" tam ekran overlay'i; profil sıralaması Yönetici > Antrenör > Üye.
+
+### Hakediş saatleri — yönetici + antrenör (2026-08-07)
+- **İstek:** Yönetici, bir antrenörün ana/yardımcı antrenör olarak girdiği ders saatlerini ay ay
+  görsün; hakediş alacağı dersler ile karar bekleyenler ayrışsın, gruba dokununca o derslerin özeti
+  açılsın. Antrenör de aynı ekranı görsün ama **yalnız kendi** hakedişini.
+- **Akış (yönetici, 3 ekran):** antrenör seçimi → ay panosu → ders listesi. Giriş iki yerden:
+  yönetici drawer'ındaki "Hakediş Saatleri" ve Antrenörler sekmesindeki listeye dokunma (o zaman
+  seçim adımı atlanır).
+- **Akış (antrenör, 2 ekran):** drawer'daki "Hakediş Saatlerim" → doğrudan kendi ay panosu → ders
+  listesi. Antrenör seçim adımı yok.
+- **Dosya düzeni:** ay panosu ve ders listesi ekranları iki rolde **ortak** —
+  `lib/screens/1_common/hakedis/`, modeller `lib/models/1_common/hakedis_models.dart`. Rol farkı
+  `HakedisVeriKaynagi` soyutlamasında: `YoneticiHakedisKaynagi(antrenorId)` vs
+  `AntrenorHakedisKaynagi()`. Ekranlar rolden habersiz, çatallanmıyor. Role özel tek ekran yönetici
+  antrenör seçimi (`lib/screens/7_yonetici/hakedis/`) ve antrenör giriş sarmalayıcısı
+  (`lib/screens/3_antrenor/hakedis/`).
+- **Yetki:** antrenör uçları antrenör id'si taşımaz; backend kimliği token'dan çözer
+  (`request.antrenor`), istekteki id'ye hiç bakmaz. Yani antrenör başkasının hakedişini isteyemez.
+- **Ay panosu:** üstte son 12 ayın yatay şeridi (program ekranındaki gün şeridiyle aynı dil; karar
+  bekleyen dersi olan ay turuncu çerçeveli), altında seçili ayın iki özet kutusu ve rol kartları.
+  Rol kartındaki her satır bir gruptur — dokununca ders listesi açılır.
+- **Üç durum:** *hakediş alacak* (yeşil), *bekliyor* (turuncu), *hakediş dışı* (gri). Üçüncüsü
+  yöneticinin açıkça "almaz" dediği ve iptal edilen dersleri taşır; gizlenmiyor ki ay toplamı tutsun.
+- **Kural backend'de** (`api/yonetici/hakedis_servis.hakedis_durumu`): hakediş bayrağı ders onayını
+  ezer, bayrak yoksa yöneticinin ders onayına düşülür. Yani ders yapılmadığı halde hakediş
+  verilebiliyor — o derslerde onay nedeni/açıklaması ders kartında not olarak gösteriliyor.
+- **Ders kartı:** tarih/saat + süre, ürün · kort, katılımcılar (katıldı / katılmadı / yoklama
+  alınmamış, plan dışı eklenenler ayrı renk ve "plan dışı" etiketiyle), onay notu.
+- **Performans:** 12 ayın tamamı tek istekte gelir, ay değiştirmek yeni istek atmaz. Özet uçları
+  backend'de 5 dk cache'li, ders/onay yazıldığında sayaçla geçersizleşir. Ders listesi ayrı uçta —
+  katılımcı sorgusu ancak o ekrana girilince çalışsın diye.
+- **Backend:** `yoneticiHakedisAntrenorler` / `yoneticiHakedisOzet` / `yoneticiHakedisDersler` +
+  `antrenorHakedisOzet` / `antrenorHakedisDersler`, migration `0080` (yardımcı antrenör indeksi).
+  İki rolün yanıt gövdesi aynı. Ayrıntı `tenis/history.md` 2026-08-07 girdisi.
+- **Not — antrenör ne görüyor:** ekran birebir aynı olduğu için antrenör "hakediş dışı" grubunu ve
+  yöneticinin onay açıklaması/nedenini de görüyor (ör. "Yapılmadı · hava muhalefeti"). Şeffaflık
+  amaçlı; yöneticinin oraya iç not yazması durumunda gözden geçirilmeli.
+- Testler: `tests/api/test_hakedis.py` (33), taşma testine 6 yeni bileşen eklendi.
 
 ### Uygulama simgesi rozeti — okunmamış bildirim (2026-08-06)
 - **İstek:** Okunmamış bildirim varken uygulama simgesinde sayı/işaret görünsün.

@@ -123,6 +123,13 @@ class AntrenorDrawer extends StatelessWidget {
                     onTap: () => _calismaSaatleri(context),
                   ),
                   _DrawerItem(
+                    icon: Icons.access_time_filled_rounded,
+                    title: 'Hakediş Saatlerim',
+                    color: const Color(0xFF0D9488),
+                    onTap: () =>
+                        _git(context, routeEnums[SayfaAdi.antrenorHakedis]!),
+                  ),
+                  _DrawerItem(
                     icon: Icons.person_rounded,
                     title: 'Bilgilerim (Profil)',
                     color: const Color(0xFF6366F1),

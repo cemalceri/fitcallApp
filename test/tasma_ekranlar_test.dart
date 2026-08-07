@@ -36,6 +36,11 @@ import 'package:fitcall/screens/7_yonetici/program/widgets/ders_iptal_dialog.dar
 import 'package:fitcall/screens/7_yonetici/program/widgets/ders_islem_sheet.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/ders_sil_dialog.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/etkinlik_form_sheet.dart';
+import 'package:fitcall/models/1_common/hakedis_models.dart';
+import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_antrenor_listesi.dart';
+import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ay_panosu.dart';
+import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ay_seridi.dart';
+import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ders_karti.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/program_gorunumu.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/program_gun_seridi.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/program_izgara.dart';
@@ -335,6 +340,54 @@ void main() {
     tasmaTesti('DersIslemSheet', () {
       final p = _program();
       return DersIslemSheet(ders: p.dersler.first);
+    });
+  });
+
+  /* ===================== HAKEDİŞ SAATLERİ (ORTAK) ===================== */
+  // Bu bileşenler yönetici ve antrenör ekranlarında ORTAK kullanılıyor
+  // (screens/1_common/hakedis/), tek bir taşma taraması ikisini de kapsar.
+
+  group('Hakediş saatleri', () {
+    tasmaTesti('HakedisAyPanosu (dolu ay)', () {
+      return HakedisAyPanosu(
+        ozet: _hakedisOzet(),
+        seciliIndex: 0,
+        onAySec: (_) {},
+        onGrupTap: (_, __, ___) {},
+      );
+    });
+
+    tasmaTesti('HakedisAyPanosu (dersi olmayan ay)', () {
+      // Boş ayda rol kartı yerine "ders yok" kutusu render edilir.
+      return HakedisAyPanosu(
+        ozet: _hakedisOzet(),
+        seciliIndex: 2,
+        onAySec: (_) {},
+        onGrupTap: (_, __, ___) {},
+      );
+    });
+
+    tasmaTesti('HakedisAySeridi', () {
+      return HakedisAySeridi(
+        aylar: _hakedisOzet().aylar,
+        seciliIndex: 0,
+        onAySec: (_) {},
+      );
+    });
+
+    tasmaTesti('HakedisAntrenorListesiGorunumu', () {
+      return HakedisAntrenorListesiGorunumu(
+        antrenorler: _hakedisAntrenorler(),
+        onAntrenorTap: (_) {},
+      );
+    });
+
+    tasmaTesti('HakedisDersKarti (kalabalık grup)', () {
+      return HakedisDersKarti(ders: _hakedisDers());
+    });
+
+    tasmaTesti('HakedisDersKarti (yapılmadı, hakediş verildi)', () {
+      return HakedisDersKarti(ders: _hakedisDersYapilmadi());
     });
   });
 
@@ -701,6 +754,224 @@ List<GecmisDersModel> _gecmisDersler() => [
         'katilim': {'katildi': false, 'plan_disi_mi': false},
       }),
     ];
+
+/* ---------------------- HAKEDİŞ SAATLERİ FIXTURE'LARI --------------------- */
+
+Map<String, dynamic> _hakedisGrup(String durum, int sayi, int dakika) => {
+      'durum': durum,
+      'ders_sayisi': sayi,
+      'dakika': dakika,
+    };
+
+/// Üç ayı da kapsayan özet: dolu ay, kısmi ay, hiç dersi olmayan ay.
+HakedisOzet _hakedisOzet() => HakedisOzet.fromJson({
+      'antrenor': {
+        'id': 7,
+        'ad_soyad': 'Abdurrahman Çelebioğlu Karahanoğulları',
+        'aktif_mi': true,
+      },
+      'aylar': [
+        {
+          'yil': 2026,
+          'ay': 7,
+          'etiket': 'Temmuz 2026',
+          'kisa_etiket': 'Tem 2026',
+          'ders_sayisi': 31,
+          'dakika': 2310,
+          'hakedis_ders_sayisi': 27,
+          'hakedis_dakika': 2040,
+          'bekleyen_ders_sayisi': 3,
+          'bekleyen_dakika': 210,
+          'disi_ders_sayisi': 1,
+          'disi_dakika': 60,
+          'roller': [
+            {
+              'rol': 'ana',
+              'ders_sayisi': 24,
+              'dakika': 1680,
+              'gruplar': [
+                _hakedisGrup('hakedis', 20, 1410),
+                _hakedisGrup('bekliyor', 3, 210),
+                _hakedisGrup('disi', 1, 60),
+              ],
+            },
+            {
+              'rol': 'yardimci',
+              'ders_sayisi': 7,
+              'dakika': 630,
+              'gruplar': [
+                _hakedisGrup('hakedis', 7, 630),
+                _hakedisGrup('bekliyor', 0, 0),
+                _hakedisGrup('disi', 0, 0),
+              ],
+            },
+          ],
+        },
+        {
+          'yil': 2026,
+          'ay': 6,
+          'etiket': 'Haziran 2026',
+          'kisa_etiket': 'Haz 2026',
+          'ders_sayisi': 12,
+          'dakika': 720,
+          'hakedis_ders_sayisi': 12,
+          'hakedis_dakika': 720,
+          'bekleyen_ders_sayisi': 0,
+          'bekleyen_dakika': 0,
+          'disi_ders_sayisi': 0,
+          'disi_dakika': 0,
+          'roller': [
+            {
+              'rol': 'ana',
+              'ders_sayisi': 12,
+              'dakika': 720,
+              'gruplar': [
+                _hakedisGrup('hakedis', 12, 720),
+                _hakedisGrup('bekliyor', 0, 0),
+                _hakedisGrup('disi', 0, 0),
+              ],
+            },
+            {
+              'rol': 'yardimci',
+              'ders_sayisi': 0,
+              'dakika': 0,
+              'gruplar': [
+                _hakedisGrup('hakedis', 0, 0),
+                _hakedisGrup('bekliyor', 0, 0),
+                _hakedisGrup('disi', 0, 0),
+              ],
+            },
+          ],
+        },
+        {
+          'yil': 2026,
+          'ay': 5,
+          'etiket': 'Mayıs 2026',
+          'kisa_etiket': 'May 2026',
+          'ders_sayisi': 0,
+          'dakika': 0,
+          'hakedis_ders_sayisi': 0,
+          'hakedis_dakika': 0,
+          'bekleyen_ders_sayisi': 0,
+          'bekleyen_dakika': 0,
+          'disi_ders_sayisi': 0,
+          'disi_dakika': 0,
+          'roller': [
+            {
+              'rol': 'ana',
+              'ders_sayisi': 0,
+              'dakika': 0,
+              'gruplar': [
+                _hakedisGrup('hakedis', 0, 0),
+                _hakedisGrup('bekliyor', 0, 0),
+                _hakedisGrup('disi', 0, 0),
+              ],
+            },
+            {
+              'rol': 'yardimci',
+              'ders_sayisi': 0,
+              'dakika': 0,
+              'gruplar': [
+                _hakedisGrup('hakedis', 0, 0),
+                _hakedisGrup('bekliyor', 0, 0),
+                _hakedisGrup('disi', 0, 0),
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+List<HakedisAntrenorOzeti> _hakedisAntrenorler() => [
+      HakedisAntrenorOzeti.fromJson(const {
+        'antrenor_id': 7,
+        'ad_soyad': 'Abdurrahman Çelebioğlu Karahanoğulları',
+        'aktif_mi': true,
+        'hakedis_ders_sayisi': 284,
+        'hakedis_dakika': 25680,
+        'bekleyen_ders_sayisi': 12,
+        'bekleyen_dakika': 900,
+      }),
+      HakedisAntrenorOzeti.fromJson(const {
+        'antrenor_id': 8,
+        'ad_soyad': 'Ali Vural',
+        'aktif_mi': true,
+        'hakedis_ders_sayisi': 96,
+        'hakedis_dakika': 5760,
+        'bekleyen_ders_sayisi': 0,
+        'bekleyen_dakika': 0,
+      }),
+    ];
+
+/// Uzun isimli, plan dışı katılımcı içeren kalabalık grup dersi.
+HakedisDers _hakedisDers() => HakedisDers.fromJson(const {
+      'id': 41,
+      'baslangic': '2026-07-14T18:00:00+03:00',
+      'bitis': '2026-07-14T19:30:00+03:00',
+      'dakika': 90,
+      'rol': 'ana',
+      'durum': 'hakedis',
+      'kort_adi': 'Kapalı Kort 1',
+      'urun_adi': 'Performans Grup Dersi Paketi',
+      'urun_tipi': 'PAKET',
+      'iptal_mi': false,
+      'yonetici_tamamlandi': true,
+      'onay_nedeni': null,
+      'onay_aciklamasi': null,
+      'katilimcilar': [
+        {
+          'uye_id': 1,
+          'ad_soyad': 'Deniz Ayşegül Arslanoğulları',
+          'katilim_durum': 'katildi',
+          'plan_disi_mi': false,
+        },
+        {
+          'uye_id': 2,
+          'ad_soyad': 'Ece Bulut',
+          'katilim_durum': 'katilmadi',
+          'plan_disi_mi': false,
+        },
+        {
+          'uye_id': 3,
+          'ad_soyad': 'Kaan Özdemir',
+          'katilim_durum': 'katildi',
+          'plan_disi_mi': true,
+          'not_metni': 'Arkadaşıyla geldi',
+        },
+        {
+          'uye_id': 4,
+          'ad_soyad': 'Mehmet Ali Şahin',
+          'katilim_durum': null,
+          'plan_disi_mi': false,
+        },
+      ],
+    });
+
+/// Ders yapılmamış ama hakediş verilmiş kayıt — onay notu satırı render edilir.
+HakedisDers _hakedisDersYapilmadi() => HakedisDers.fromJson(const {
+      'id': 42,
+      'baslangic': '2026-07-19T09:00:00+03:00',
+      'bitis': '2026-07-19T10:30:00+03:00',
+      'dakika': 90,
+      'rol': 'yardimci',
+      'durum': 'hakedis',
+      'kort_adi': 'Açık Kort 3',
+      'urun_adi': 'Özel Ders',
+      'urun_tipi': 'TEK_SEFERLIK',
+      'iptal_mi': true,
+      'yonetici_tamamlandi': false,
+      'onay_nedeni': 'Hava muhalefeti',
+      'onay_aciklamasi':
+          'Yağmur nedeniyle ders yapılamadı, antrenör kortta hazır bekledi.',
+      'katilimcilar': [
+        {
+          'uye_id': 1,
+          'ad_soyad': 'Deniz Ayşegül Arslanoğulları',
+          'katilim_durum': null,
+          'plan_disi_mi': false,
+        },
+      ],
+    });
 
 OdulDurumModel _odul({int sayac = 14, bool kod = false}) =>
     OdulDurumModel.fromJson({
