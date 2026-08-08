@@ -8,19 +8,19 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-08-07)
+## 📌 Şu anki durum (2026-08-08)
 
 | | |
 |---|---|
-| Mobil | `main` = `origin/main` (`e452e33`), `pubspec` sürümü **3.6.0+39** |
+| Mobil | `main` = `origin/main`, `pubspec` sürümü **3.7.0+40** — sürüm notları yazıldı |
 | Testler | `flutter test` **650 geçiyor**, `flutter analyze` temiz |
-| Backend | `master` = `origin/master` (`e43bd4b`); **`heroku/master` hâlâ `6a0f6fd`** → hakediş uçları + migration `0080` canlıda değil |
-| Mağaza | Son yayınlanan sürüm **3.6.0**; sonrasındaki commit'ler henüz yayınlanmadı |
+| Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
+| Mağaza | Son yayınlanan sürüm **3.6.0**; 3.7.0 build'i Codemagic'te alınacak |
 
-**Sıradaki adım — hakediş saatleri yayını.** Kod iki repoda da push edildi ama hiçbiri canlıda değil.
-Mobil ekran backend uçları olmadan çalışmaz, o yüzden sıra şu:
-1. `git push heroku master` (migration `0080` dahil) — deploy kullanıcının işi
-2. `pubspec.yaml` `version:` bump + Codemagic, `SURUM_NOTLARI.md`'ye yeni bölüm
+**Sıradaki adım — 3.7.0 yayını.** Mobil hakediş ekranı backend uçları olmadan çalışmaz
+("Beklenmeyen bir hata oluştu" + boş antrenör listesi = uçlar canlıda yok demektir), o yüzden sıra şu:
+1. `git push heroku master` (migration `0080`/`0081` dahil) — deploy kullanıcının işi
+2. Codemagic build'i (`version:` zaten 3.7.0), mağaza metni `SURUM_NOTLARI.md`'de hazır
 
 Codemagic sürüm adını `pubspec.yaml`'daki `version:` alanından, build numarasını mağazadaki
 son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `version:` bump'lanır**.
@@ -29,22 +29,16 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 
 ## 🔴 Açık işler
 
-### 1. Sürüm çıkarma — plan dışı katılımcı / misafir özelliği
-`b660f7d` (3.6.0) sonrası 4 commit yayınlanmadı: plan dışı katılımcı mobil tarafı, antrenör ana
-sayfa düzeni, profil değiştirme butonu, ekran parlaklığı. **Backend tarafı canlıda** (`6a0f6fd`),
-mobil taraf mağazada değil — yani özellik şu an kullanıcıda yok.
-→ `pubspec.yaml` `version:` bump + Codemagic. Mağaza metni için `SURUM_NOTLARI.md`'ye yeni bölüm.
-
-### 2. SSS/Yardım metni onayı
+### 1. SSS/Yardım metni onayı
 `lib/screens/1_common/yardim_page.dart` içindeki soru-cevap içeriği **taslak**; kullanıcı onayı /
 düzeltmesi bekliyor. Son dokunuş `f5d1d62`.
 
-### 3. Heroku Scheduler doğrulaması
+### 2. Heroku Scheduler doğrulaması
 Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan doğrulanamaz):
 - `python manage.py ders_bildirimleri` — 10 dakikada bir
 - `python manage.py paket_bitis_bildirim` — günlük
 
-### 4. Deploy sonrası gözlem (backend canlıya çıktı, izlenmeli)
+### 3. Deploy sonrası gözlem (backend canlıya çıktı, izlenmeli)
 - **İptal signal'ları:** `etkinlik_signals/` paketine `__init__.py` eklenmesiyle ~5,5 aydır işlemeyen
   telafi/paket iadesi/borç mantığı devreye girdi. İlk iptallerin finansal kayıtları gözle kontrol
   edilmeli. Geçmiş 5,5 ay geriye dönük işlenmiyor.
@@ -115,6 +109,11 @@ Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan 
   dokununca pano **aynı ayda** açılıyor, içeride diğer aylara geçilebiliyor. Giriş iki yerden:
   drawer'daki "Hakediş Saatleri" ve Antrenörler sekmesindeki listeye dokunma (o zaman ay seçim
   adımı atlanır, içinde bulunulan aydan başlar).
+- **Ay sırası (2026-08-08):** ızgara **eskiden yeniye** akıyor, içinde bulunulan ay **son hücrede**
+  ve açılışta seçili. Sırayı backend veriyor (`hakedis_servis.ay_listesi` listeyi ters çeviriyor);
+  mobil diziyi olduğu gibi çiziyor, yeniden sıralamıyor. Antrenör satırlarındaki `aylar` dizisi
+  aynı listeyle index eşleşiyor — sıra değişirse iki ekran birden kayar. Seçili index veri gelmeden
+  çözülemediği için nullable tutuluyor, ilk yüklemede son hücreye sabitleniyor.
 - **Akış (antrenör, 2 ekran):** drawer'daki "Hakediş Saatlerim" → doğrudan kendi ay panosu → ders
   listesi. Antrenör seçim adımı yok.
 - **Dosya düzeni:** ay panosu ve ders listesi ekranları iki rolde **ortak** —
@@ -125,9 +124,11 @@ Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan 
   (`lib/screens/3_antrenor/hakedis/`).
 - **Yetki:** antrenör uçları antrenör id'si taşımaz; backend kimliği token'dan çözer
   (`request.antrenor`), istekteki id'ye hiç bakmaz. Yani antrenör başkasının hakedişini isteyemez.
-- **Ay panosu:** üstte son 12 ayın yatay şeridi (program ekranındaki gün şeridiyle aynı dil; karar
-  bekleyen dersi olan ay turuncu çerçeveli), altında seçili ayın iki özet kutusu ve rol kartları.
-  Rol kartındaki her satır bir gruptur — dokununca ders listesi açılır.
+- **Ay panosu:** üstte son 12 ayın 4×3 ızgarası (karar bekleyen dersi olan ay noktalı), altında
+  seçili ayın iki özet kutusu, oran çubuğu ve rol kartları. Rol kartındaki her satır bir gruptur —
+  dokununca ders listesi açılır. Izgara yatay şerit değil: kaydırmadan görünmeyen aylar gözden
+  kaçıyordu. Sabit `childAspectRatio` 1.3 yazı ölçeğinde taştığı için `GridView` yerine
+  `IntrinsicHeight`'lı `Row`'lar var.
 - **Üç durum:** *hakediş alacak* (yeşil), *bekliyor* (turuncu), *hakediş dışı* (gri). Üçüncüsü
   yöneticinin açıkça "almaz" dediği ve iptal edilen dersleri taşır; gizlenmiyor ki ay toplamı tutsun.
 - **Kural backend'de** (`api/yonetici/hakedis_servis.hakedis_durumu`): hakediş bayrağı ders onayını
