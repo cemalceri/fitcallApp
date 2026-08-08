@@ -1,7 +1,12 @@
 # Sürüm Notları
 
-> Mağaza vitrinine girilecek "Yenilikler / What's New" metinleri ve teknik özet.
+> Mağaza vitrinine girilecek "Yenilikler" metni ve teknik özet.
 > Yeni sürüm en üste eklenir.
+>
+> **Yalnızca tr-TR yazılır.** İngilizce metin eklenmez: mağazaya bir en-US
+> yerelleştirmesi girildiği anda Apple o dil için ekran görüntüsü, açıklama ve
+> gizlilik metni de istiyor — çıkmak istemediğimiz bir bakım yükü.
+> (3.6.0 ve öncesindeki en-US bölümleri tarihsel kayıt olarak duruyor.)
 
 ## 3.7.0 — 2026-08-08
 
@@ -19,21 +24,6 @@ Hakediş saatleri ekranı geldi; antrenör ve yönetici ders saatlerini ay ay g�
 - **Antrenör ana sayfası** üye ve yönetici ekranlarıyla aynı düzene geçti: alt bar + yan menü.
 - **QR ekranları:** QR gösterirken ekran parlaklığı otomatik olarak yükseliyor, turnikede okutmak
   kolaylaşıyor.
-
-### Store text (en-US)
-
-New earnings-hours screen: trainers and managers can now review lesson hours month by month.
-
-- **Earnings hours:** Trainers see their own lesson hours and managers see any trainer's, month by
-  month across the last 12 months. Lessons that earn, lessons awaiting a decision and excluded
-  lessons are listed separately; tapping a group opens those lessons with their participants.
-- **Unplanned participants:** Trainers can add an unplanned member or guest while taking
-  attendance, and the office is notified immediately.
-- **Notifications:** The app icon now shows a badge for unread notifications. "Mark all as read"
-  really covers all of them, and "Delete all" was added.
-- **Trainer home** now uses the same layout as the member and manager screens: bottom bar + drawer.
-- **QR screens:** Screen brightness rises automatically while a QR code is shown, so turnstile
-  scans go through faster.
 
 ### Teknik
 
