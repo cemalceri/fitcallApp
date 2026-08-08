@@ -32,11 +32,15 @@ class HakedisAyPanosuPage extends StatefulWidget {
   /// Yöneticide açık (liste eskiyse ad düzelsin), antrenörde kapalı.
   final bool baslikVeridenGuncellensin;
 
-  /// Açılışta seçili olacak ayın sırası (0 = içinde bulunulan ay).
+  /// Açılışta seçili olacak ayın sırası; `null` → içinde bulunulan ay.
+  ///
+  /// Aylar eskiden yeniye geldiği için içinde bulunulan ay listenin SONUNDA.
+  /// Kaç ay döneceği veri gelmeden bilinmediğinden varsayılan `null` bırakıldı;
+  /// gerçek index yükleme bitince çözülüyor.
   ///
   /// Yönetici listeden bir aya bakarken antrenöre dokunduğunda pano aynı ayda
   /// açılsın diye var; kullanıcı ay seçimini iki kez yapmasın.
-  final int baslangicAyIndex;
+  final int? baslangicAyIndex;
 
   const HakedisAyPanosuPage({
     super.key,
@@ -44,7 +48,7 @@ class HakedisAyPanosuPage extends StatefulWidget {
     required this.baslik,
     this.altBaslik = 'Hakediş saatleri',
     this.baslikVeridenGuncellensin = false,
-    this.baslangicAyIndex = 0,
+    this.baslangicAyIndex,
   });
 
   @override
@@ -55,7 +59,9 @@ class _HakedisAyPanosuPageState extends State<HakedisAyPanosuPage> {
   HakedisOzet? _ozet;
   bool _yukleniyor = true;
   String? _hata;
-  late int _seciliIndex = widget.baslangicAyIndex;
+
+  /// Ay sayısı veri gelmeden bilinmediği için seçim ilk yüklemede kesinleşir.
+  int? _seciliIndex;
 
   @override
   void initState() {
@@ -74,9 +80,13 @@ class _HakedisAyPanosuPageState extends State<HakedisAyPanosuPage> {
       final gelen = sonuc.data;
       setState(() {
         _ozet = gelen;
-        // Ay sayısı değişirse (backend penceresi) seçili index taşmasın.
-        if (gelen != null && _seciliIndex >= gelen.aylar.length) {
-          _seciliIndex = 0;
+        if (gelen != null && gelen.aylar.isNotEmpty) {
+          // Aylar eskiden yeniye; içinde bulunulan ay SON hücre ve varsayılan
+          // seçim o. Yenilemede kullanıcının seçimi korunur, yalnız backend
+          // penceresi daralırsa taşmasın diye kırpılır.
+          final son = gelen.aylar.length - 1;
+          final istek = _seciliIndex ?? widget.baslangicAyIndex ?? son;
+          _seciliIndex = (istek < 0 || istek > son) ? son : istek;
         }
         _yukleniyor = false;
       });
@@ -160,7 +170,7 @@ class _HakedisAyPanosuPageState extends State<HakedisAyPanosuPage> {
           onTekrarDene: _yukle,
           icerik: (_) => HakedisAyPanosu(
             ozet: ozet!,
-            seciliIndex: _seciliIndex,
+            seciliIndex: _seciliIndex ?? ozet.aylar.length - 1,
             onAySec: (i) => setState(() => _seciliIndex = i),
             onGrupTap: _grupAc,
             onYenile: _yukle,

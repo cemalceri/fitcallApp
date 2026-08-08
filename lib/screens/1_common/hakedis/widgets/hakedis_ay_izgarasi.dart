@@ -5,6 +5,10 @@
 // Yatay kaydırmalı şerit değil: kaydırmadan görünmeyen aylar gözden kaçıyordu.
 // Tümü tek bakışta duruyor ve dokunulan ay altındaki içeriği süzüyor.
 //
+// SIRA: aylar eskiden yeniye, takvim gibi soldan sağa akar; içinde bulunulan
+// ay EN SON hücrededir (sağ alt). Diziyi backend bu sırada gönderiyor
+// (`hakedis_servis.ay_listesi`), burada yeniden sıralanmaz.
+//
 // TAŞMA: hücre yüksekliği sabit DEĞİL — yazı ölçeği büyüdükçe satır uzar.
 // Bu yüzden GridView + childAspectRatio yerine IntrinsicHeight'lı Row'lar
 // kullanılıyor (sabit oran 1.3 ölçekte taşıyordu).

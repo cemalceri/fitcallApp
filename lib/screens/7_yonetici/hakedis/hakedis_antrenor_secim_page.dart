@@ -3,7 +3,8 @@
 // Hakediş saatleri akışının 1. adımı: ay seç → o ayın antrenör listesi.
 //
 // Drawer'daki "Hakediş Saatleri" bu sayfayı açar. Üstteki 4×3 ızgaradan bir ay
-// seçilir, altındaki liste o aya göre süzülür. Antrenöre dokunulduğunda ay
+// seçilir (ızgara eskiden yeniye sıralı; içinde bulunulan ay SON hücrede ve
+// açılışta seçili), altındaki liste o aya göre süzülür. Antrenöre dokunulduğunda ay
 // panosu AYNI AYDA açılır (kullanıcı ay seçimini iki kez yapmasın); panonun
 // içinde diğer aylara geçmek yine mümkün.
 //
@@ -34,8 +35,10 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
   String _filtre = 'aktif';
   String _arama = '';
 
-  /// Seçili ayın listedeki sırası — 0 = içinde bulunulan ay.
-  int _seciliAy = 0;
+  /// Seçili ayın listedeki sırası. Aylar eskiden yeniye geldiği için içinde
+  /// bulunulan ay listenin SONUNDA; kaç ay döneceği veri gelmeden bilinmediği
+  /// için varsayılan seçim ilk yüklemede kesinleşir.
+  int? _seciliAy;
 
   @override
   void initState() {
@@ -54,8 +57,13 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
       final gelen = sonuc.data;
       setState(() {
         _veri = gelen;
-        // Backend penceresi değişirse seçili index taşmasın.
-        if (gelen != null && _seciliAy >= gelen.aylar.length) _seciliAy = 0;
+        if (gelen != null && gelen.aylar.isNotEmpty) {
+          // Varsayılan seçim son hücre = içinde bulunulan ay. Filtre
+          // değiştirildiğinde seçim korunur; pencere daralırsa kırpılır.
+          final son = gelen.aylar.length - 1;
+          final istek = _seciliAy ?? son;
+          _seciliAy = (istek < 0 || istek > son) ? son : istek;
+        }
         _yukleniyor = false;
       });
     } on ApiException catch (e) {
@@ -146,7 +154,7 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
                 onTekrarDene: _yukle,
                 icerik: (_) => HakedisAntrenorListesiGorunumu(
                   aylar: veri!.aylar,
-                  seciliIndex: _seciliAy,
+                  seciliIndex: _seciliAy ?? veri.aylar.length - 1,
                   onAySec: (i) => setState(() => _seciliAy = i),
                   antrenorler: _suzulmus,
                   onAntrenorTap: _antrenorAc,

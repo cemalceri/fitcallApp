@@ -204,7 +204,7 @@ class HakedisAntrenorOzeti {
 class HakedisAntrenorListesi {
   final int aySayisi;
 
-  /// Ay ızgarasının hücreleri, yeniden eskiye.
+  /// Ay ızgarasının hücreleri, ESKİDEN YENİYE — son eleman içinde bulunulan ay.
   final List<HakedisListeAyi> aylar;
 
   final List<HakedisAntrenorOzeti> antrenorler;
@@ -386,8 +386,8 @@ class HakedisAy {
 class HakedisOzet {
   final HakedisAntrenor antrenor;
 
-  /// Son 12 ay, yeniden eskiye. Tamamı tek istekte gelir — ay şeridinde
-  /// gezinirken yeniden sorgu atılmasın diye.
+  /// Son 12 ay, ESKİDEN YENİYE — son eleman içinde bulunulan ay. Tamamı tek
+  /// istekte gelir; ay ızgarasında gezinirken yeniden sorgu atılmasın diye.
   final List<HakedisAy> aylar;
 
   const HakedisOzet({required this.antrenor, required this.aylar});
