@@ -30,9 +30,15 @@ void main() {
   setUp(() {
     kanal = _SahteKanal();
     AppBadgeService.kanal = kanal;
+    // Varsayılan: pozitif rozet yazan platform (iOS). Android davranışı ayrı
+    // grupta doğrulanıyor.
+    AppBadgeService.pozitifRozetYazilir = true;
   });
 
-  tearDown(() => AppBadgeService.kanal = const RozetKanali());
+  tearDown(() {
+    AppBadgeService.kanal = const RozetKanali();
+    AppBadgeService.pozitifRozetYazilir = true;
+  });
 
   group('AppBadgeService.senkronla', () {
     test('sayıyı hem rozete hem kalıcı kayda yazar', () async {
@@ -108,5 +114,47 @@ void main() {
 
     expect(kanal.yazilanRozetler, [0]);
     expect(kanal.saklanan, 0);
+  });
+
+  // app_badge_plus Xiaomi/HyperOS'ta rozeti N adet SAHTE BİLDİRİM göndererek
+  // kuruyor; okunmamışı 15 olan kullanıcıya 15 satır düşüyordu. Android'de
+  // pozitif değer plugin'e hiç gitmemeli.
+  group('Android: pozitif rozet plugin\'e yazılmaz', () {
+    setUp(() => AppBadgeService.pozitifRozetYazilir = false);
+
+    test('pozitif sayı plugin\'e gitmez ama kayda yazılır', () async {
+      await AppBadgeService.senkronla(15);
+
+      expect(kanal.yazilanRozetler, isEmpty);
+      expect(kanal.saklanan, 15);
+    });
+
+    test('sıfır yine gönderilir — rozeti temizlemenin tek yolu', () async {
+      await AppBadgeService.senkronla(9);
+      await AppBadgeService.senkronla(0);
+
+      expect(kanal.yazilanRozetler, [0]);
+      expect(kanal.saklanan, 0);
+    });
+
+    test('temizle Android\'de de çalışır', () async {
+      kanal.saklanan = 7;
+
+      await AppBadgeService.temizle();
+
+      expect(kanal.yazilanRozetler, [0]);
+    });
+
+    test('artir sayacı sürdürür, rozet bildirimi üretmez', () async {
+      kanal.saklanan = 4;
+
+      final sonuc = await AppBadgeService.artir();
+
+      // Dönen değer yerel bildirimin `number` alanına gidiyor; rozet oradan
+      // beslendiği için plugin çağrısına gerek yok.
+      expect(sonuc, 5);
+      expect(kanal.saklanan, 5);
+      expect(kanal.yazilanRozetler, isEmpty);
+    });
   });
 }

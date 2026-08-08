@@ -194,7 +194,15 @@ Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan 
   `getUnreadNotificationCount` ile aynı (profil bazlı) — ayrışsa simge ile zil farklı sayı gösterir.
 - **Android:** `AndroidManifest.xml`'e launcher rozet izinleri (Samsung/Huawei/Sony/HTC/Apex/Solid).
   Rozeti desteklemeyen launcher'larda (ör. stok Pixel) sayı yerine Android 8+ bildirim noktası çıkar.
-- Testler: `test/app_badge_service_test.dart` (11), `tests/utils/test_bildirim_rozeti.py` (8).
+- **Xiaomi düzeltmesi (2026-08-08, 3.7.0'DA YOK — sonraki sürümde çıkacak):** `app_badge_plus`
+  Xiaomi/Redmi/POCO'da (MIUI + HyperOS) rozeti "aktif bildirim sayısı" üzerinden kuruyor, yani
+  **N için N adet sahte bildirim** gönderiyor (`MiUIBadge` →
+  `NotificationBadgeHelper.updateMiuiBadgeHyperOs`; başlık uygulama adı, gövde 1..N). Okunmamışı 15
+  olan antrenör uygulamayı açınca gölgeye 15 satır düştü. Artık Android'de plugin'e **yalnız 0**
+  gönderiliyor (`AppBadgeService.pozitifRozetYazilir`); pozitif sayıyı gerçek bildirim taşıyor
+  (backend `notification_count` + `AndroidNotificationDetails.number`). 0 gönderimi şart: plugin
+  bıraktığı bildirimleri o çağrıda siliyor. iOS etkilenmiyor, rozet APNs'ten geliyor.
+- Testler: `test/app_badge_service_test.dart` (15), `tests/utils/test_bildirim_rozeti.py` (8).
 
 ### Bildirim zili sayacı + tümünü sil (2026-08-06)
 - **Bug:** "Tümünü Okundu Yap" sonrası zil "9+" kalıyordu. `getNotifications` son **50** kaydı

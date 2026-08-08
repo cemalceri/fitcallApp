@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:app_badge_plus/app_badge_plus.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/foundation.dart';
@@ -33,18 +35,40 @@ class RozetKanali {
 /// iOS'ta uygulama tamamen kapalıyken rozeti yalnızca APNs payload'ındaki
 /// `badge` alanı günceller; backend tarafı `notification_tasks.py` içinde
 /// bu alanı dolduruyor.
+///
+/// ANDROID'DE POZİTİF SAYI PLUGIN'E YAZILMAZ — yalnız sıfırlama gönderilir.
+/// `app_badge_plus`, Xiaomi/Redmi/POCO'da (MIUI + HyperOS) rozeti "aktif
+/// bildirim sayısı" üzerinden kuruyor: N için **N adet sahte bildirim**
+/// gönderiyor (`MiUIBadge` → `NotificationBadgeHelper.updateMiuiBadgeHyperOs`;
+/// başlık uygulama adı, gövde 1..N). Okunmamışı 15 olan kullanıcı uygulamayı
+/// açtığında bildirim gölgesine "Binay Akademi / 1"… "/ 15" diye 15 satır
+/// düşüyordu (2026-08-08, Redmi Note 11). Gerçek sayıyı zaten bildirimin
+/// kendisi taşıyor — backend `notification_count`, mobil tarafta
+/// `AndroidNotificationDetails.number` — dolayısıyla plugin'e ihtiyaç yok.
+/// 0 gönderimi korunuyor: plugin o durumda bildirim üretmiyor, aksine
+/// bıraktıklarını siliyor ve rozeti temizlemenin başka yolu yok.
 class AppBadgeService {
   AppBadgeService._();
 
   @visibleForTesting
   static RozetKanali kanal = const RozetKanali();
 
+  /// Pozitif rozet değeri plugin'e yazılabilir mi? Android'de hayır
+  /// (bkz. sınıf açıklaması). Test edilebilsin diye alan.
+  @visibleForTesting
+  static bool pozitifRozetYazilir = !Platform.isAndroid;
+
   /// Rozeti [sayi] ile günceller ve değeri sonraki açılış için saklar.
+  ///
+  /// Saklanan değer platformdan bağımsız yazılır: arka plandaki bildirimin
+  /// `number` alanını besleyen sayaç ([artir]) buradan devam ediyor.
   static Future<void> senkronla(int sayi) async {
     final deger = sayi < 0 ? 0 : sayi;
     try {
       await kanal.sonSayiyiYaz(deger);
-      await kanal.rozetiYaz(deger);
+      if (deger == 0 || pozitifRozetYazilir) {
+        await kanal.rozetiYaz(deger);
+      }
     } catch (_) {
       // Rozeti desteklemeyen launcher/platform: sessizce geçilir, rozet
       // olmaması uygulamanın çalışmasını etkilemez.
