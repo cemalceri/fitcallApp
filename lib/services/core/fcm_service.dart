@@ -8,6 +8,8 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/services/api_client.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 StreamSubscription<String>? _tokenRefreshSubscription;
 
@@ -140,6 +142,8 @@ Future<void> sendFCMDevice() async {
     log.bilgiEkle('device_type', deviceInfo['device_type']);
     log.bilgiEkle('device_model', deviceInfo['device_model']);
     log.bilgiEkle('os_version', deviceInfo['os_version']);
+    log.bilgiEkle('app_version', deviceInfo['app_version']);
+    log.bilgiEkle('bildirim_izni', deviceInfo['bildirim_izni']);
 
     log.adimEkle('Backend API çağrısı yapılıyor');
     final bodyData = {
@@ -196,6 +200,7 @@ Future<Map<String, String>> _collectDeviceInfo() async {
   String deviceModel = "unknown";
   String osVersion = "unknown";
   String deviceType = "android";
+  String marka = "";
 
   try {
     final deviceInfo = DeviceInfoPlugin();
@@ -205,12 +210,14 @@ Future<Map<String, String>> _collectDeviceInfo() async {
       deviceId = info.id;
       deviceModel = info.model;
       osVersion = info.version.release;
+      marka = info.manufacturer;
       deviceType = "android";
     } else if (Platform.isIOS) {
       final info = await deviceInfo.iosInfo;
       deviceId = info.identifierForVendor ?? "unknown_ios";
       deviceModel = info.utsname.machine;
       osVersion = info.systemVersion;
+      marka = "Apple";
       deviceType = "ios";
     }
   } catch (e) {
@@ -222,7 +229,83 @@ Future<Map<String, String>> _collectDeviceInfo() async {
     "device_type": deviceType,
     "device_model": deviceModel,
     "os_version": osVersion,
+    "marka": marka,
+    "app_version": await _uygulamaSurumu(),
+    ...await izinDurumlari(),
   };
+}
+
+/// Uygulama sürümü — "3.7.0+40"
+Future<String> _uygulamaSurumu() async {
+  try {
+    final info = await PackageInfo.fromPlatform();
+    return "${info.version}+${info.buildNumber}";
+  } catch (e) {
+    return "";
+  }
+}
+
+/// Kullanılan izinlerin anlık durumu. Yalnızca sorgular, izin istemez —
+/// bu yüzden token yenilemede de güvenle çağrılabilir.
+Future<Map<String, String>> izinDurumlari() async {
+  return {
+    "bildirim_izni": await _bildirimIzni(),
+    "kamera_izni": await _izinOku(Permission.camera),
+    "takvim_izni": await _takvimIzni(),
+  };
+}
+
+/// Bildirim izni. iOS'ta Firebase kullanılır: "hiç sorulmadı" ile "reddedildi"yi
+/// yalnız o ayırt ediyor (permission_handler ikisine de denied diyor). Android'de
+/// ise tersi geçerli, "kalıcı red"i yalnız permission_handler görüyor.
+Future<String> _bildirimIzni() async {
+  try {
+    if (Platform.isIOS) {
+      final ayar = await FirebaseMessaging.instance.getNotificationSettings();
+      switch (ayar.authorizationStatus) {
+        case AuthorizationStatus.authorized:
+          return "izinli";
+        case AuthorizationStatus.denied:
+          return "reddedildi";
+        case AuthorizationStatus.notDetermined:
+          return "sorulmadi";
+        case AuthorizationStatus.provisional:
+          return "gecici";
+      }
+    }
+    return _izinOku(Permission.notification);
+  } catch (e) {
+    return "bilinmiyor";
+  }
+}
+
+/// Takvim izni yalnız iOS'ta anlamlı: Android'de add_2_calendar takvim
+/// uygulamasını intent ile açtığı için uygulamanın izne ihtiyacı yok.
+Future<String> _takvimIzni() async {
+  if (!Platform.isIOS) return "uygulanamaz";
+  return _izinOku(Permission.calendarWriteOnly);
+}
+
+/// permission_handler durumunu backend'in IzinDurumu değerlerine eşler.
+Future<String> _izinOku(Permission izin) async {
+  try {
+    final durum = await izin.status;
+    switch (durum) {
+      case PermissionStatus.granted:
+        return "izinli";
+      case PermissionStatus.denied:
+        return "reddedildi";
+      case PermissionStatus.permanentlyDenied:
+        return "kalici_red";
+      case PermissionStatus.restricted:
+      case PermissionStatus.limited:
+        return "kisitli";
+      case PermissionStatus.provisional:
+        return "gecici";
+    }
+  } catch (e) {
+    return "bilinmiyor";
+  }
 }
 
 /// Token'ı backend sunucusuna gönder

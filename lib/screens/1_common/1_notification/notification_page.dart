@@ -4,6 +4,7 @@ import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/services/core/fcm_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/services/notification/notification_router.dart';
@@ -39,6 +40,9 @@ class _NotificationPageState extends State<NotificationPage> {
 
     if (status.isDenied) {
       await Permission.notification.request();
+      // İzin verilmiş olabilir: hem iOS'ta token ancak izinden sonra geliyor
+      // hem de cihaz kaydındaki bildirim_izni alanı böylece güncel kalıyor.
+      await sendFCMDevice();
       return;
     }
 

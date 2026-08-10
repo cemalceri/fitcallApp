@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `main` = `origin/main`, `pubspec` sürümü **3.7.0+40** — sürüm notları yazıldı |
-| Testler | `flutter test` **650 geçiyor**, `flutter analyze` temiz |
+| Testler | `flutter test` **672 geçiyor**, `flutter analyze` temiz |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
 | Mağaza | Son yayınlanan sürüm **3.6.0**; 3.7.0 build'i Codemagic'te alınacak |
 
@@ -49,6 +49,25 @@ Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan 
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Cihaz kaydına izin durumları + uygulama sürümü (2026-08-10)
+
+`FCMDevice` artık teşhis için gerekeni tutuyor: `marka`, `app_version` (`3.7.0+40`) ve
+kullanılan üç iznin her biri ayrı kolonda — `bildirim_izni`, `kamera_izni`, `takvim_izni`.
+"Bildirim gitmiyor" şikâyetinde izin kapalı mı, hangi sürüm, hangi marka artık admin'den
+filtrelenerek görülüyor.
+
+- `lib/services/core/fcm_service.dart` — `_collectDeviceInfo` bu alanları da yolluyor.
+  İzinler yalnız **sorgulanıyor**, istenmiyor; token yenilemede de güvenle çağrılıyor.
+- Bildirim izni iOS'ta Firebase'den okunuyor ("hiç sorulmadı"yı yalnız o ayırt ediyor),
+  Android'de permission_handler'dan ("kalıcı red"i yalnız o görüyor). Takvim Android'de
+  `uygulanamaz` — orada `add_2_calendar` intent kullanıyor, izin gerekmiyor.
+- `notification_page.dart` izin istedikten sonra cihaz kaydını tazeliyor; yoksa alan bir
+  sonraki girişe kadar bayat kalıyordu.
+- Backend: migration `auths/0009`, `tests/api/test_cihaz_kaydi_izinler.py` (5 test).
+  Uç hoşgörülü — tanınmayan izin değeri 400 vermek yerine `bilinmiyor`a çekiliyor.
+
+**Deploy sırası: önce backend, sonra mobil.** Ters sırada yeni alanlar sessizce düşer.
 
 ### Faz 1 — üye & antrenör (2026-07-02)
 
