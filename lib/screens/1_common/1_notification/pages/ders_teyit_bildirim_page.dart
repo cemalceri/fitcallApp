@@ -8,6 +8,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:fitcall/services/notification/notification_action_service.dart';
+import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/common/tarih_util.dart';
@@ -49,10 +50,23 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
     super.dispose();
   }
 
+  /// Okundu işareti.
+  ///
+  /// Oturum açıkken auth'lu uç kullanılır: `/api/n/<token>/` login'siz akış için
+  /// var ve token'ı 72 saatlik aksiyon penceresine tabi — üç günden eski bir
+  /// bildirimi açmak sunucuda gereksiz bir 410 (ve bir WARNING log satırı)
+  /// üretiyordu. Token ucu yalnızca oturum yokken (FCM'den gelip giriş
+  /// yapılmamış durumda) yedek olarak kalıyor.
   Future<void> _markAsRead() async {
-    if (!notif.hasAction) return;
     try {
-      await NotificationActionService.markAsRead(notif.actionToken!);
+      if (notif.id > 0 && await StorageService.tokenGecerliMi()) {
+        await NotificationService.markNotificationsRead([notif.id]);
+        NotificationService.refreshUnreadCount();
+        return;
+      }
+      if (notif.hasAction) {
+        await NotificationActionService.markAsRead(notif.actionToken!);
+      }
     } catch (_) {}
   }
 
