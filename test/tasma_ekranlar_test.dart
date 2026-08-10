@@ -20,6 +20,7 @@ import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_sheet.dart';
+import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
 import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
@@ -705,6 +706,32 @@ void main() {
       'BildirimDetaySheet (düz bildirim)',
       () => BildirimDetaySheetWidget(
         notification: _duzBildirim(),
+      ),
+    );
+
+    // Ders teyit sayfasının tüm bitiş durumları bu widget'a düşüyor; en uzun
+    // metin "Bildirim Süresi Doldu" hâli, dar ekran + 1.3x'te sınırı o zorluyor.
+    tasmaTesti(
+      'BildirimDurumGorunumu (süresi dolmuş bildirim)',
+      () => BildirimDurumGorunumWidget(
+        icon: Icons.timer_off_rounded,
+        color: BildirimRenkleri.uyariTuruncu,
+        title: 'Bildirim Süresi Doldu',
+        subtitle: 'Bu bildirim üç günden eski. Uygulamaya giriş yapıp '
+            'takviminizden katılım bildirebilirsiniz.',
+        onClose: () {},
+      ),
+    );
+
+    tasmaTesti(
+      'BildirimDurumGorunumu (teyit verilmiş + ipucu)',
+      () => BildirimDurumGorunumWidget(
+        icon: Icons.check_circle_rounded,
+        color: BildirimRenkleri.basariYesil,
+        title: 'Katılacaksınız',
+        subtitle: 'Bu ders için daha önce cevap verdiniz.',
+        showChangeHint: true,
+        onClose: () {},
       ),
     );
   });

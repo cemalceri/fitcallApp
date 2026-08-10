@@ -141,81 +141,93 @@ class BildirimDurumGorunumWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(flex: 2),
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 40),
+    // İçerik sığdığında ortalanır, sığmadığında kayar. Sabit Spacer'lı düz
+    // Column, 320x568 + 1.3x metin ölçeğinde taşıyordu (ikon 80 + başlık +
+    // uzun alt metin + ipucu kutusu + Kapat butonu sığmıyor).
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: (constraints.maxHeight - 48).clamp(0.0, double.infinity),
           ),
-          const SizedBox(height: 24),
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: BildirimRenkleri.yaziAna),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 8),
-          Text(subtitle,
-              style: const TextStyle(
-                  fontSize: 15,
-                  color: BildirimRenkleri.yaziIkincil,
-                  height: 1.4),
-              textAlign: TextAlign.center),
-          if (showChangeHint) ...[
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.info_outline_rounded,
-                      size: 18, color: TakvimColors.primary),
-                  const SizedBox(width: 8),
-                  const Flexible(
-                    child: Text(
-                      'Değiştirmek için kulüp ile iletişime geçin',
-                      style: TextStyle(
-                          fontSize: 13, color: BildirimRenkleri.yaziIkincil),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          const Spacer(flex: 3),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: onClose,
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                side: BorderSide(
-                    color: BildirimRenkleri.yaziIkincil.withValues(alpha: 0.3)),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text('Kapat',
-                  style: TextStyle(
-                      color: BildirimRenkleri.yaziAna,
-                      fontWeight: FontWeight.w600)),
-            ),
-          ),
-          const SizedBox(height: 16),
-        ],
+          child: IntrinsicHeight(child: _govde()),
+        ),
       ),
+    );
+  }
+
+  Widget _govde() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Spacer(flex: 2),
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: 40),
+        ),
+        const SizedBox(height: 24),
+        Text(title,
+            style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: BildirimRenkleri.yaziAna),
+            textAlign: TextAlign.center),
+        const SizedBox(height: 8),
+        Text(subtitle,
+            style: const TextStyle(
+                fontSize: 15, color: BildirimRenkleri.yaziIkincil, height: 1.4),
+            textAlign: TextAlign.center),
+        if (showChangeHint) ...[
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.info_outline_rounded,
+                    size: 18, color: TakvimColors.primary),
+                const SizedBox(width: 8),
+                const Flexible(
+                  child: Text(
+                    'Değiştirmek için kulüp ile iletişime geçin',
+                    style: TextStyle(
+                        fontSize: 13, color: BildirimRenkleri.yaziIkincil),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        const Spacer(flex: 3),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: onClose,
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              side: BorderSide(
+                  color: BildirimRenkleri.yaziIkincil.withValues(alpha: 0.3)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Kapat',
+                style: TextStyle(
+                    color: BildirimRenkleri.yaziAna,
+                    fontWeight: FontWeight.w600)),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

@@ -33,9 +33,15 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
   bool? _previousKatilacakMi;
   bool _isLessonPast = false;
   bool _isLessonCancelled = false;
+  bool _tokenSuresiDoldu = false;
+
+  /// Ön kontrolde bir kez çözülüp saklanır: teyit hangi uçtan gönderilecek?
+  bool _oturumGecerli = false;
+  String? _uyeId;
 
   NotificationModel get notif => widget.notification;
   Map<String, dynamic> get displayData => notif.displayData ?? {};
+  String? get _etkinlikId => displayData['etkinlik_id']?.toString();
 
   @override
   void initState() {
@@ -99,21 +105,22 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
         }
       }
 
-      final oturumGecerli = await StorageService.tokenGecerliMi();
-      if (etkinlikId != null && oturumGecerli) {
-        final uye = await StorageService.uyeBilgileriniGetir();
-        if (uye != null) {
-          final res = await DersTeyitService.getTeyitDetayBilgisi(
-            etkinlikId: etkinlikId.toString(),
-            uyeId: uye.id.toString(),
-          );
-          final data = res.data;
-          if (data != null && data.teyit?.katilacakMi != null) {
-            setState(() {
-              _previouslyConfirmed = true;
-              _previousKatilacakMi = data.teyit?.katilacakMi == true;
-            });
-          }
+      _oturumGecerli = await StorageService.tokenGecerliMi();
+      if (_oturumGecerli) {
+        _uyeId = (await StorageService.uyeBilgileriniGetir())?.id.toString();
+      }
+
+      if (etkinlikId != null && _uyeId != null) {
+        final res = await DersTeyitService.getTeyitDetayBilgisi(
+          etkinlikId: etkinlikId.toString(),
+          uyeId: _uyeId!,
+        );
+        final data = res.data;
+        if (data != null && data.teyit?.katilacakMi != null) {
+          setState(() {
+            _previouslyConfirmed = true;
+            _previousKatilacakMi = data.teyit?.katilacakMi == true;
+          });
         }
       }
     } on ApiException catch (e) {
@@ -185,16 +192,60 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
     return null;
   }
 
+  /// Teyidi gönderir.
+  ///
+  /// Oturum açıkken auth'lu uç kullanılır. Token ucu (`/api/n/<token>/`)
+  /// login'siz akış için var ve 72 saatlik pencereye tabi: üye üç günden eski
+  /// bir teyit bildirimini açtığında, ders hâlâ gelecekte olsa bile cevap
+  /// veremiyor, yalnızca "Bildirim süresi dolmuş." hatası alıyordu. Auth'lu
+  /// uçta böyle bir pencere yok ve yazdığı kayıt aynı (`EtkinlikTeyitModel`).
+  Future<void> _teyitGonder(bool katilacak, {String aciklama = ''}) async {
+    final etkinlikId = _etkinlikId;
+    if (_oturumGecerli && _uyeId != null && etkinlikId != null) {
+      await DersTeyitService.setDersTeyitBilgisi(
+        uyeId: _uyeId!,
+        etkinlikId: etkinlikId,
+        durum: katilacak,
+        aciklama: aciklama.isEmpty ? null : aciklama,
+      );
+      return;
+    }
+
+    if (!notif.hasAction) {
+      throw ApiException('NO_ACTION', 'Bu bildirim için işlem yapılamıyor.');
+    }
+    await NotificationActionService.executeAction(
+      notif.actionToken!,
+      katilacak ? 'katilacak' : 'katilmayacak',
+      aciklama: aciklama,
+    );
+  }
+
+  /// Hata gösterimi.
+  ///
+  /// Eskiden `e.toString()` basılıyordu; kullanıcı "Hata kodu:(TOKEN_EXPIRED):
+  /// Bildirim süresi dolmuş." gibi teknik bir metin görüyordu. `ApiException`ın
+  /// kendi `message`'ı zaten Türkçe ve kullanıcıya dönük. Süresi dolmuş token
+  /// ise hata değil bir durum: sayfanın kendi durum görünümüne geçilir.
+  void _hatayiGoster(Object e) {
+    if (e is ApiException) {
+      if (e.code == 'TOKEN_EXPIRED' || e.statusCode == 410) {
+        setState(() => _tokenSuresiDoldu = true);
+        return;
+      }
+      ShowMessage.error(context, e.message);
+      return;
+    }
+    ShowMessage.error(context, 'İşlem tamamlanamadı. Lütfen tekrar deneyin.');
+  }
+
   Future<void> _katilacagim() async {
     if (_showKatilacagimLoading) return;
     setState(() => _showKatilacagimLoading = true);
     HapticFeedback.mediumImpact();
 
     try {
-      await NotificationActionService.executeAction(
-        notif.actionToken!,
-        'katilacak',
-      );
+      await _teyitGonder(true);
       if (mounted) {
         setState(() {
           _showKatilacagimLoading = false;
@@ -205,22 +256,18 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _showKatilacagimLoading = false);
-        ShowMessage.error(context, e.toString());
+        _hatayiGoster(e);
       }
     }
   }
 
   Future<void> _katilmayacagim() async {
-    if (!notif.hasAction || _loading) return;
+    if (_loading) return;
     setState(() => _loading = true);
     HapticFeedback.mediumImpact();
 
     try {
-      await NotificationActionService.executeAction(
-        notif.actionToken!,
-        'katilmayacak',
-        aciklama: _aciklamaController.text.trim(),
-      );
+      await _teyitGonder(false, aciklama: _aciklamaController.text.trim());
       if (mounted) {
         setState(() {
           _loading = false;
@@ -232,7 +279,7 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        ShowMessage.error(context, e.toString());
+        _hatayiGoster(e);
       }
     }
   }
@@ -299,6 +346,19 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
         title: katilacak ? 'Katılacaksınız' : 'Katılmayacaksınız',
         subtitle: 'Bu ders için daha önce cevap verdiniz.',
         showChangeHint: true,
+        onClose: _handleClose,
+      );
+    }
+
+    // Bildirim süresi dolmuş (yalnızca oturum yokken karşılaşılır: auth'lu uçta
+    // süre penceresi yok). Kırmızı toast yerine ne yapılacağını söyleyen ekran.
+    if (_tokenSuresiDoldu) {
+      return BildirimDurumGorunumWidget(
+        icon: Icons.timer_off_rounded,
+        color: BildirimRenkleri.uyariTuruncu,
+        title: 'Bildirim Süresi Doldu',
+        subtitle: 'Bu bildirim üç günden eski. Uygulamaya giriş yapıp '
+            'takviminizden katılım bildirebilirsiniz.',
         onClose: _handleClose,
       );
     }
