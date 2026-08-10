@@ -122,7 +122,12 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
       HapticFeedback.heavyImpact();
       ShowMessage.success(context, r.mesaj);
     } on ApiException catch (e) {
-      if (e.code == 'TEYIT_DEGISTIRME_YASAK' || e.statusCode == 409) {
+      // DERS_GECMIS de 409 döner; aşağıdaki genel 409 dalı onu "karar zaten
+      // verilmiş" sanıp ekranı cevaplanmış duruma çevirirdi. Cevap verilmedi,
+      // ders geçti.
+      if (e.code == 'DERS_GECMIS') {
+        ShowMessage.warning(context, e.message);
+      } else if (e.code == 'TEYIT_DEGISTIRME_YASAK' || e.statusCode == 409) {
         ShowMessage.warning(
           context,
           e.message.isNotEmpty

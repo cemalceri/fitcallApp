@@ -229,6 +229,12 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
   /// ise hata değil bir durum: sayfanın kendi durum görünümüne geçilir.
   void _hatayiGoster(Object e) {
     if (e is ApiException) {
+      // Sunucu "ders başlamış" diyorsa ekrandaki tarih kontrolü tutmamış
+      // demektir (display_data okunamamış olabilir); sayfayı doğru duruma al.
+      if (e.code == 'DERS_GECMIS') {
+        setState(() => _isLessonPast = true);
+        return;
+      }
       if (e.code == 'TOKEN_EXPIRED' || e.statusCode == 410) {
         setState(() => _tokenSuresiDoldu = true);
         return;
