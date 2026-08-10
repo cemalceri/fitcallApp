@@ -152,7 +152,7 @@ class AntrenorDrawer extends StatelessWidget {
               icon: Icons.help_outline_rounded,
               title: 'Yardım',
               color: const Color(0xFF64748B),
-              onTap: () => _git(context, routeEnums[SayfaAdi.yardim]!),
+              onTap: () => _git(context, routeEnums[SayfaAdi.antrenorYardim]!),
             ),
             const SizedBox(height: 8),
           ],

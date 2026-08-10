@@ -1,4 +1,5 @@
 import 'package:fitcall/screens/1_common/yardim_page.dart';
+import 'package:fitcall/screens/3_antrenor/antrenor_yardim_page.dart';
 import 'package:fitcall/screens/2_uye/home/uye_home_page.dart';
 import 'package:fitcall/screens/2_uye/takvim/uye_takvim_page.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/antrenor_takvim_page.dart';
@@ -56,6 +57,7 @@ enum SayfaAdi {
   antrenorEksikYoklama,
   antrenorHakedis,
   antrenorOgrenciler,
+  antrenorYardim,
   uyeDersTalepleri,
   bildirimler,
   yoneticiAnasayfa,
@@ -87,6 +89,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.antrenorEksikYoklama: '/antrenor_eksik_yoklama',
   SayfaAdi.antrenorHakedis: '/antrenorHakedis',
   SayfaAdi.antrenorOgrenciler: '/antrenor_ogrenciler',
+  SayfaAdi.antrenorYardim: '/antrenor_yardim',
   SayfaAdi.uyeDersTalepleri: '/uyeDersTalepleri',
   SayfaAdi.bildirimler: '/bildirimler',
   SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
@@ -119,6 +122,7 @@ final Map<String, WidgetBuilder> routes = {
       const AntrenorEksikYoklamaPage(),
   routeEnums[SayfaAdi.antrenorHakedis]!: (c) => const AntrenorHakedisPage(),
   routeEnums[SayfaAdi.antrenorOgrenciler]!: (c) => AntrenorOgrencilerPage(),
+  routeEnums[SayfaAdi.antrenorYardim]!: (c) => const AntrenorYardimPage(),
   routeEnums[SayfaAdi.uyeDersTalepleri]!: (context) => DersTalepPage(
         secimJson: const {
           "kort_id": 0,
@@ -164,6 +168,7 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.qrKodKayit]!: AccessRule.anyone,
   routeEnums[SayfaAdi.qrKodDogrula]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yardim]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.antrenorYardim]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yoneticiProgram]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yoneticiHakedis]!: AccessRule.anyone,
   routeEnums[SayfaAdi.antrenorHakedis]!: AccessRule.anyone,

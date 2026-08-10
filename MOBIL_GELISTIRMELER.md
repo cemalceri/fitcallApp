@@ -30,13 +30,29 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 ## 🔴 Açık işler
 
 ### 1. SSS/Yardım metni onayı
-`lib/screens/1_common/yardim_page.dart` içindeki soru-cevap içeriği **taslak**; kullanıcı onayı /
-düzeltmesi bekliyor. Son dokunuş `f5d1d62`.
+Antrenör tarafı yazıldı ve kullanıcı onayından geçti (bkz. tamamlanan turlar).
+**Üye tarafı** (`lib/screens/1_common/yardim_page.dart`) hâlâ **taslak**; onay/düzeltme bekliyor.
+Yönetici için ayrı bir yardım sayfası hiç yok — antrenör sayfası kalıp olarak kullanılabilir.
 
-### 2. Heroku Scheduler doğrulaması
-Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan doğrulanamaz):
-- `python manage.py ders_bildirimleri` — 10 dakikada bir
-- `python manage.py paket_bitis_bildirim` — günlük
+### 2. Heroku Scheduler — komutlar büyük olasılıkla HİÇ koşmuyor
+Faz 1'in periyodik komutları Scheduler'a eklenmiş varsayılıyordu; `tenis/history.md`'nin
+2026-08-10 log bakımı girdisi **Scheduler addon'unun olmadığını** söylüyor (o yüzden `log_temizle`
+`Procfile`'ın release fazına alınmıştı). `Procfile`'da da yalnız `release` ve `web` var — clock
+dyno yok. Yani şu komutlar üretimde tetiklenmiyor olmalı:
+- `ders_bildirimleri` (10 dk) — üyeye `DERS_HATIRLATMA`, antrenöre `YOKLAMA_HATIRLATMA` push
+- `paket_bitis_bildirim` (günlük)
+- `update_antrenor_home_cards` — antrenör ana sayfasındaki bilgi kartlarını üreten tek yol
+
+**Mobil etkisi:** yoklama hatırlatma bildirimi ve antrenör bilgi kartı karuseli kodda tamamen
+hazır ama pratikte ölü. Yardım sayfasına bu iki konuda soru **bilerek konulmadı** — özellik
+çalışmadan cevap yazmak kullanıcıyı yanıltır. Scheduler kurulunca ikisi de eklenmeli.
+
+### 2b. Çalışma saatlerini okuyan canlı akış yok
+`AntrenorCalismaGunleriModel` yazılıyor ama hiçbir yerde tüketilmiyor: mobilde
+`getAntrenorUygunSaatleri` çağıran ekran yok, web'deki `uygun_saatler_view` ölü uç
+(bkz. `tenis/history.md` 2026-07-30) ve `DersTalepPage` rotasına hiçbir yerden yönlendirme yok.
+Ekranın kendi bilgi notu ("üyelerin ders talebi oluştururken gördüğü uygun saatleriniz") şu an
+**karşılığı olmayan bir vaat** — ya ders talep akışı tamamlanmalı ya da not düzeltilmeli.
 
 ### 3. Deploy sonrası gözlem (backend canlıya çıktı, izlenmeli)
 - **İptal signal'ları:** `etkinlik_signals/` paketine `__init__.py` eklenmesiyle ~5,5 aydır işlemeyen
@@ -49,6 +65,31 @@ Faz 1'in bildirim komutları Scheduler'a eklendi mi, teyit edilmedi (bu repodan 
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Antrenöre özel Yardım & SSS sayfası (2026-08-10)
+
+- **Sorun:** Antrenör drawer'daki "Yardım" ortak `yardim_page.dart`'a gidiyordu; oradaki 13 sorunun
+  tamamı üye diliyle yazılmış (kayıt olma, bakiye, paket, telafi, QR giriş). Antrenör kendi işine
+  yarayan tek bir cevap bulamıyordu.
+- **Çözüm:** `lib/screens/3_antrenor/antrenor_yardim_page.dart` — 10 bölüm, 50 soru. Yeni rota
+  `SayfaAdi.antrenorYardim` (`/antrenor_yardim`, `AccessRule.anyone`), antrenör drawer'ı buraya
+  bağlandı. Üye sayfası olduğu gibi duruyor.
+- **Kapsam:** yoklama ve ders onayı (8), eksik yoklamalar (3), plan dışı katılımcı ve misafir (6),
+  ders devri (7), ders iptali (3), hakediş saatleri (8), takvim (5), çalışma saatleri (2),
+  öğrencilerim (5), genel (3).
+- **Cevaplar kural kaynaklarından türetildi**, ekran metninden değil: hakediş üçlüsü ve çakışma
+  tekilleştirmesi `api/yonetici/hakedis_servis.py`, yoklama kilitleri (`LOCKED_BY_YONETICI`,
+  `KARAR_VERILMIS`, `DERS_IPTAL`) `api/etkinlik/metots.py`, devir kuralları
+  `api/antrenor/metots.py`, eksik yoklama pencereleri (kokpit bugün+7 gün / sayfa 30 gün)
+  `api/antrenor/gunluk_ozet.py`. **Kural değişirse bu sayfa da güncellenmeli.**
+- **Yazarken doğrulanan üç yanlış varsayım** — karşılığı olmadığı için soru olarak
+  yazılmadı: yoklama hatırlatma bildirimi ve antrenör bilgi kartları Scheduler'a bağlı (açık iş 2),
+  çalışma saatlerini okuyan canlı akış yok (açık iş 2b).
+- **Dikkat çeken cevaplar:** "Öğrencilerim" listesi ders verilen herkesi değil yalnız *sorumlu
+  hocası siz olan* aktif üyeleri gösteriyor; "yapılmadı" nedenleri hiçbir otomatik işlem
+  tetiklemiyor, yalnız yöneticinin kararına dayanak oluyor; hakediş bayrağı ders onayını eziyor.
+- **Test:** sayfa API çağırmadığı için taşma testine doğrudan girdi
+  (`tasmaTesti('AntrenorYardimPage', ...)`). Süit **681 passed**, `flutter analyze` temiz.
 
 ### Cihaz kaydına izin durumları + uygulama sürümü (2026-08-10)
 

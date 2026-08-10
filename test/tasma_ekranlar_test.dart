@@ -30,6 +30,7 @@ import 'package:fitcall/screens/2_uye/home/widgets/uye_ozet_serit.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_next_lesson_card.dart';
 import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_view.dart';
 import 'package:fitcall/models/3_antrenor/home_card_model.dart';
+import 'package:fitcall/screens/3_antrenor/antrenor_yardim_page.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/info_cards_carousel.dart';
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
@@ -555,6 +556,11 @@ void main() {
         onMenuTap: () {},
       ),
     );
+
+    // Yardım sayfası API çağırmadığı için doğrudan render edilebiliyor.
+    // Kapsanan: başlık satırı, üst kart, bölüm başlıkları ve ekranda görünen
+    // soru kartları — hepsi uzun Türkçe metinle dolu Row'lar taşıyor.
+    tasmaTesti('AntrenorYardimPage', () => const AntrenorYardimPage());
   });
 
   /* ===================== ÜYE ===================== */
