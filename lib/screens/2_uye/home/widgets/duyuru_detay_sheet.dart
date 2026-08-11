@@ -85,7 +85,7 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: Theme.of(context).colorScheme.outlineVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -323,19 +323,19 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
       width: double.infinity,
       height: double.infinity,
       errorBuilder: (_, __, ___) => Container(
-        color: Colors.grey.shade200,
-        child: const Center(
+        color: Theme.of(context).colorScheme.outlineVariant,
+        child: Center(
           child: Icon(
             Icons.broken_image_rounded,
             size: 48,
-            color: Colors.grey,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ),
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return Container(
-          color: Colors.grey.shade100,
+          color: Theme.of(context).colorScheme.outlineVariant,
           child: Center(
             child: CircularProgressIndicator(
               value: loadingProgress.expectedTotalBytes != null
@@ -523,6 +523,7 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
                   children: [
                     // Kapat butonu
                     IconButton(
+                      tooltip: 'Kapat',
                       onPressed: () => Navigator.pop(context),
                       icon: Container(
                         padding: const EdgeInsets.all(8),

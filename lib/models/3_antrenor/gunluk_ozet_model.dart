@@ -6,7 +6,8 @@ class EksikYoklamaDers {
   final String saat;
   final String kortAdi;
 
-  EksikYoklamaDers({required this.id, required this.saat, required this.kortAdi});
+  EksikYoklamaDers(
+      {required this.id, required this.saat, required this.kortAdi});
 
   factory EksikYoklamaDers.fromJson(Map<String, dynamic> json) {
     return EksikYoklamaDers(
@@ -56,10 +57,11 @@ class GunlukOzetModel {
       ilkDers: json['ilk_ders'],
       sonDers: json['son_ders'],
       eksikYoklama: (json['eksik_yoklama'] as num?)?.toInt() ?? 0,
-      eksikYoklamaDersler: ((json['eksik_yoklama_dersler'] as List?) ?? const [])
-          .map((e) =>
-              EksikYoklamaDers.fromJson((e as Map).cast<String, dynamic>()))
-          .toList(),
+      eksikYoklamaDersler:
+          ((json['eksik_yoklama_dersler'] as List?) ?? const [])
+              .map((e) =>
+                  EksikYoklamaDers.fromJson((e as Map).cast<String, dynamic>()))
+              .toList(),
       eksikYoklamaGecmis: (json['eksik_yoklama_gecmis'] as num?)?.toInt() ?? 0,
     );
   }

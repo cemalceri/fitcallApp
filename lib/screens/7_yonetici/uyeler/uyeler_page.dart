@@ -160,6 +160,7 @@ class _UyelerPageState extends State<UyelerPage> {
                         prefixIcon: const Icon(Icons.search, size: 20),
                         suffixIcon: _aramaController.text.isNotEmpty
                             ? IconButton(
+                                tooltip: 'Temizle',
                                 icon: const Icon(Icons.clear, size: 18),
                                 onPressed: () => _aramaController.clear(),
                               )

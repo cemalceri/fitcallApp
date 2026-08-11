@@ -31,7 +31,7 @@ class PlanDisiBildirimOzeti extends StatelessWidget {
           _KisiBolumu(
             baslik: 'Derse eklendi',
             icon: Icons.person_add_alt_1_rounded,
-            renk: BildirimRenkleri.uyariTuruncu,
+            renk: context.bildirimRenk.uyariTuruncu,
             kisiler: eklenenler,
           ),
         if (eklenenler.isNotEmpty && cikarilanlar.isNotEmpty)
@@ -40,7 +40,7 @@ class PlanDisiBildirimOzeti extends StatelessWidget {
           _KisiBolumu(
             baslik: 'Dersten çıkarıldı',
             icon: Icons.person_remove_alt_1_rounded,
-            renk: BildirimRenkleri.hataKirmizi,
+            renk: context.bildirimRenk.hataKirmizi,
             kisiler: cikarilanlar,
           ),
       ],
@@ -106,9 +106,9 @@ class _KisiBolumu extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Text(
                 k,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: BildirimRenkleri.yaziAna,
+                  color: context.bildirimRenk.yaziAna,
                 ),
               ),
             ),

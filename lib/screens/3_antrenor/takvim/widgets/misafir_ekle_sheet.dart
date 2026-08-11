@@ -78,8 +78,8 @@ class _MisafirEkleSheetState extends State<MisafirEkleSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -92,7 +92,7 @@ class _MisafirEkleSheetState extends State<MisafirEkleSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: Theme.of(context).colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -107,11 +107,10 @@ class _MisafirEkleSheetState extends State<MisafirEkleSheet> {
               'Sisteme kayıtlı olmayan kişi',
               style: TextStyle(
                 fontSize: 13,
-                color: TakvimColors.textSecondary,
+                color: context.takvim.textSecondary,
               ),
             ),
             const SizedBox(height: 18),
-
             TextField(
               controller: _adCtrl,
               autofocus: true,
@@ -121,7 +120,7 @@ class _MisafirEkleSheetState extends State<MisafirEkleSheet> {
                 hintText: 'Örn. Mehmet Kaya',
                 errorText: _hata,
                 filled: true,
-                fillColor: Colors.grey.shade50,
+                fillColor: Colors.grey.withValues(alpha: 0.10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -132,7 +131,6 @@ class _MisafirEkleSheetState extends State<MisafirEkleSheet> {
               },
             ),
             const SizedBox(height: 12),
-
             TextField(
               controller: _notCtrl,
               maxLines: 2,
@@ -140,7 +138,7 @@ class _MisafirEkleSheetState extends State<MisafirEkleSheet> {
                 labelText: 'Not (isteğe bağlı)',
                 hintText: 'Telefon, kimin misafiri olduğu...',
                 filled: true,
-                fillColor: Colors.grey.shade50,
+                fillColor: Colors.grey.withValues(alpha: 0.10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -148,7 +146,6 @@ class _MisafirEkleSheetState extends State<MisafirEkleSheet> {
               ),
             ),
             const SizedBox(height: 20),
-
             Row(
               children: [
                 Expanded(
@@ -168,7 +165,7 @@ class _MisafirEkleSheetState extends State<MisafirEkleSheet> {
                   child: FilledButton(
                     onPressed: _kaydet,
                     style: FilledButton.styleFrom(
-                      backgroundColor: TakvimColors.primary,
+                      backgroundColor: context.takvim.primary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

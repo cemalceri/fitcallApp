@@ -39,13 +39,15 @@ KullaniciProfilModel _yoneticiProfil({
 void main() {
   group('KullaniciProfilModel', () {
     test('isletme alanlarını parse eder', () {
-      final p = _yoneticiProfil(id: 1, isletmeAdi: 'Binay Akademi', isletmeId: 1);
+      final p =
+          _yoneticiProfil(id: 1, isletmeAdi: 'Binay Akademi', isletmeId: 1);
       expect(p.isletmeAdi, 'Binay Akademi');
       expect(p.isletmeId, 1);
     });
 
     test('isletme adı boşlukları temizlenir', () {
-      final p = _yoneticiProfil(id: 1, isletmeAdi: '  Datça Akademi  ', isletmeId: 2);
+      final p =
+          _yoneticiProfil(id: 1, isletmeAdi: '  Datça Akademi  ', isletmeId: 2);
       expect(p.isletmeAdi, 'Datça Akademi');
     });
 
@@ -56,7 +58,8 @@ void main() {
     });
 
     test('toJson isletme alanlarını içerir', () {
-      final p = _yoneticiProfil(id: 1, isletmeAdi: 'Binay Akademi', isletmeId: 1);
+      final p =
+          _yoneticiProfil(id: 1, isletmeAdi: 'Binay Akademi', isletmeId: 1);
       final j = p.toJson();
       expect(j['isletme_id'], 1);
       expect(j['isletme_adi'], 'Binay Akademi');

@@ -90,7 +90,8 @@ class PositionCalculator {
 
         for (final ders in group) {
           final column = columnAssignments[ders]!;
-          final totalColumns = _getMaxColumnInGroup(group, columnAssignments) + 1;
+          final totalColumns =
+              _getMaxColumnInGroup(group, columnAssignments) + 1;
 
           positionedLessons.add(PositionedLesson(
             ders: ders,
@@ -133,7 +134,8 @@ class PositionCalculator {
           endTime: latestEnd,
           extraLessons: extraDersler,
           top: TimeUtils.timeToPixel(earliestStart),
-          height: TimeUtils.timeToPixel(latestEnd) - TimeUtils.timeToPixel(earliestStart),
+          height: TimeUtils.timeToPixel(latestEnd) -
+              TimeUtils.timeToPixel(earliestStart),
         ));
       }
     }
@@ -145,7 +147,8 @@ class PositionCalculator {
   }
 
   /// Çakışan dersleri gruplara ayır
-  static List<List<EtkinlikModel>> _findOverlapGroups(List<EtkinlikModel> dersler) {
+  static List<List<EtkinlikModel>> _findOverlapGroups(
+      List<EtkinlikModel> dersler) {
     if (dersler.isEmpty) return [];
 
     final List<List<EtkinlikModel>> groups = [];
@@ -240,7 +243,8 @@ class PositionCalculator {
 
   /// Ders yüksekliğini hesapla
   static double _calculateHeight(EtkinlikModel ders) {
-    final duration = ders.bitisTarihSaat.difference(ders.baslangicTarihSaat).inMinutes;
+    final duration =
+        ders.bitisTarihSaat.difference(ders.baslangicTarihSaat).inMinutes;
     return TimeUtils.durationToHeight(duration);
   }
 }

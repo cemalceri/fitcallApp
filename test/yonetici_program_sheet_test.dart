@@ -47,10 +47,26 @@ EtkinlikFormVerileri _formVerileri({
       {'kod': 'DIGER', 'ad': 'Diğer'},
     ],
     'iptal_modlari': [
-      {'kod': 'STANDART', 'ad': 'Standart', 'aciklama': '24 saat kuralı işler.'},
-      {'kod': 'TELAFI_VER', 'ad': 'Telafi ver', 'aciklama': 'Telafi tanımlanır.'},
-      {'kod': 'HAKKI_IADE_ET', 'ad': 'Hakkı iade et', 'aciklama': 'Düşüm yapılmaz.'},
-      {'kod': 'BORC_YAZMA', 'ad': 'Borç yazma', 'aciklama': 'Borç yansıtılmaz.'},
+      {
+        'kod': 'STANDART',
+        'ad': 'Standart',
+        'aciklama': '24 saat kuralı işler.'
+      },
+      {
+        'kod': 'TELAFI_VER',
+        'ad': 'Telafi ver',
+        'aciklama': 'Telafi tanımlanır.'
+      },
+      {
+        'kod': 'HAKKI_IADE_ET',
+        'ad': 'Hakkı iade et',
+        'aciklama': 'Düşüm yapılmaz.'
+      },
+      {
+        'kod': 'BORC_YAZMA',
+        'ad': 'Borç yazma',
+        'aciklama': 'Borç yansıtılmaz.'
+      },
     ],
     'secili_uye_idler': duzenleme ? [1, 2] : <int>[],
     'etkinlik': duzenleme
@@ -123,14 +139,16 @@ void main() {
     testWidgets('sabit plan uyarısı gösterilir', (tester) async {
       await _kucukEkran(
         tester,
-        EtkinlikFormSheet(veriler: _formVerileri(duzenleme: true, urunKilitli: true)),
+        EtkinlikFormSheet(
+            veriler: _formVerileri(duzenleme: true, urunKilitli: true)),
       );
 
       expect(tester.takeException(), isNull);
       expect(find.textContaining('sabit plandan üretilmiş'), findsOneWidget);
     });
 
-    testWidgets('yeni kayıtta eksik zorunlu alanlar uyarı verir', (tester) async {
+    testWidgets('yeni kayıtta eksik zorunlu alanlar uyarı verir',
+        (tester) async {
       // Yeni kayıtta ürün ve antrenör ön seçili gelmez (web'deki modal da böyle)
       await _uzunEkran(tester, EtkinlikFormSheet(veriler: _formVerileri()));
 

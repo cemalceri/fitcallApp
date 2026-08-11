@@ -106,8 +106,7 @@ class AntrenorApiService {
     return ApiClient.postParsed<GunlukOzetModel>(
       getAntrenorGunlukOzetUrl,
       {
-        if (tarih != null)
-          'tarih': tarih.toIso8601String().split('T').first,
+        if (tarih != null) 'tarih': tarih.toIso8601String().split('T').first,
       },
       (json) => GunlukOzetModel.fromJson(json as Map<String, dynamic>),
     );

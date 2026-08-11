@@ -6,14 +6,14 @@ import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:flutter/material.dart';
 
-class ChangePasswordPage extends StatefulWidget {
-  const ChangePasswordPage({super.key});
+class SifreDegistirPage extends StatefulWidget {
+  const SifreDegistirPage({super.key});
 
   @override
-  State<ChangePasswordPage> createState() => _ChangePasswordPageState();
+  State<SifreDegistirPage> createState() => _SifreDegistirPageState();
 }
 
-class _ChangePasswordPageState extends State<ChangePasswordPage> {
+class _SifreDegistirPageState extends State<SifreDegistirPage> {
   final _formKey = GlobalKey<FormState>();
   final _eskiCtrl = TextEditingController();
   final _yeniCtrl = TextEditingController();
@@ -99,6 +99,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 child: Row(
                   children: [
                     IconButton(
+                      tooltip: 'Geri',
                       onPressed: () => Navigator.pop(context),
                       icon: Container(
                         padding: const EdgeInsets.all(8),
@@ -158,6 +159,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           obscureText: !_showOld,
                           prefixIcon: Icons.lock_outline,
                           suffixIcon: IconButton(
+                            tooltip: 'Şifre görünürlüğü',
                             onPressed: () =>
                                 setState(() => _showOld = !_showOld),
                             icon: Icon(_showOld
@@ -176,6 +178,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           obscureText: !_showNew,
                           prefixIcon: Icons.lock_rounded,
                           suffixIcon: IconButton(
+                            tooltip: 'Şifre görünürlüğü',
                             onPressed: () =>
                                 setState(() => _showNew = !_showNew),
                             icon: Icon(_showNew
@@ -193,6 +196,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                           obscureText: !_showNew2,
                           prefixIcon: Icons.lock_rounded,
                           suffixIcon: IconButton(
+                            tooltip: 'Şifre görünürlüğü',
                             onPressed: () =>
                                 setState(() => _showNew2 = !_showNew2),
                             icon: Icon(_showNew2
@@ -218,12 +222,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                               ),
                             ),
                             child: _isSubmitting
-                                ? const SizedBox(
+                                ? SizedBox(
                                     height: 20,
                                     width: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: Colors.white,
+                                      color:
+                                          Theme.of(context).colorScheme.surface,
                                     ),
                                   )
                                 : const Text(

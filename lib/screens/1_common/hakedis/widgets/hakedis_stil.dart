@@ -24,7 +24,7 @@ const Color hakedisYesil = Color(0xFF10B981);
 const Color hakedisTuruncu = Color(0xFFF59E0B);
 
 /// Hakediş dışı / nötr — slate
-const Color hakedisGri = Color(0xFF64748B);
+Color hakedisGri = const Color(0xFF8C8C8C);
 
 /// Plan dışı katılımcı — mavi
 const Color hakedisMavi = Color(0xFF3B82F6);
@@ -276,8 +276,8 @@ class HakedisDurumGovdesi extends StatelessWidget {
                   color: r.dolgu,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.error_outline_rounded,
-                    size: 30, color: r.metin),
+                child:
+                    Icon(Icons.error_outline_rounded, size: 30, color: r.metin),
               ),
               const SizedBox(height: 16),
               Text(

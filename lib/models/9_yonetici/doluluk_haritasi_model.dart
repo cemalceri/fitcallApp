@@ -40,8 +40,7 @@ class DolulukHaritasi {
   factory DolulukHaritasi.fromJson(Map<String, dynamic> json) {
     return DolulukHaritasi(
       donem: json['donem'] ?? '',
-      gunler:
-          (json['gunler'] as List? ?? []).map((e) => e.toString()).toList(),
+      gunler: (json['gunler'] as List? ?? []).map((e) => e.toString()).toList(),
       saatler: (json['saatler'] as List? ?? [])
           .map((e) => (e is int) ? e : int.tryParse(e.toString()) ?? 0)
           .toList(),

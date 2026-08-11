@@ -24,7 +24,7 @@ import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_w
 import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
 import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
-import 'package:fitcall/screens/2_uye/home/widgets/uye_bottom_bar.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_odul_sayaci.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_ozet_serit.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_next_lesson_card.dart';
@@ -52,6 +52,7 @@ import 'package:fitcall/screens/7_yonetici/program/widgets/program_izgara.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/uye_secim_sheet.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_bottom_bar.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -60,21 +61,15 @@ import 'support/tasma_yardimcisi.dart';
 
 import 'package:fitcall/screens/3_antrenor/eksik_yoklama/widgets/eksik_yoklama_listesi.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_header.dart';
-import 'package:fitcall/screens/3_antrenor/home/widgets/antrenor_bottom_bar.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/antrenor_drawer.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/home_header.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_block.dart'
     as antrenor_blok;
-import 'package:fitcall/screens/3_antrenor/takvim/widgets/week_day_selector.dart'
-    as antrenor_serit;
-import 'package:fitcall/screens/3_antrenor/takvim/widgets/timeline_view.dart'
-    as antrenor_timeline;
+import 'package:fitcall/screens/1_common/takvim/hafta_gun_secici.dart';
+import 'package:fitcall/screens/1_common/takvim/takvim_ajanda.dart';
+import 'package:fitcall/screens/1_common/takvim/takvim_zaman_cizelgesi.dart';
 import 'package:fitcall/screens/2_uye/takvim/widgets/lesson_block.dart'
     as uye_blok;
-import 'package:fitcall/screens/2_uye/takvim/widgets/week_day_selector.dart'
-    as uye_serit;
-import 'package:fitcall/screens/2_uye/takvim/widgets/timeline_view.dart'
-    as uye_timeline;
 
 /* ============================== ÖRNEK VERİ ============================== */
 
@@ -136,7 +131,12 @@ Map<String, dynamic> _programJson({int kortSayisi = 6, int dersSayisi = 6}) => {
       ],
       'kortlar': [
         for (var i = 1; i <= kortSayisi; i++)
-          {'id': i, 'adi': 'Kapalı Kort $i', 'sira': i, 'max_etkinlik_sayisi': 3}
+          {
+            'id': i,
+            'adi': 'Kapalı Kort $i',
+            'sira': i,
+            'max_etkinlik_sayisi': 3
+          }
       ],
       'dersler': [
         for (var i = 1; i <= dersSayisi; i++)
@@ -152,8 +152,10 @@ Map<String, dynamic> _programJson({int kortSayisi = 6, int dersSayisi = 6}) => {
             'urun_adi': 'Grup Dersi',
             'seviye': 'Kirmizi',
             'seviye_renk': '#e74c3c',
-            'baslangic_tarih_saat': '2026-07-23T${(8 + i).toString().padLeft(2, '0')}:00:00+03:00',
-            'bitis_tarih_saat': '2026-07-23T${(9 + i).toString().padLeft(2, '0')}:00:00+03:00',
+            'baslangic_tarih_saat':
+                '2026-07-23T${(8 + i).toString().padLeft(2, '0')}:00:00+03:00',
+            'bitis_tarih_saat':
+                '2026-07-23T${(9 + i).toString().padLeft(2, '0')}:00:00+03:00',
             'saat': '${(8 + i).toString().padLeft(2, '0')}:00',
             'bitis_saat': '${(9 + i).toString().padLeft(2, '0')}:00',
             'iptal_mi': i == 2,
@@ -181,7 +183,12 @@ EtkinlikFormVerileri _formVerileri({bool duzenleme = false}) =>
         {'id': 1, 'ad_soyad': 'Ayşe Yılmaz', 'renk': '#2563EB', 'pasif': false},
       ],
       'urunler': [
-        {'id': 1, 'adi': 'Grup Dersi', 'urun_tipi': 'PAKET', 'telafi_mi': false},
+        {
+          'id': 1,
+          'adi': 'Grup Dersi',
+          'urun_tipi': 'PAKET',
+          'telafi_mi': false
+        },
       ],
       'seviyeler': [
         {'kod': 'Kirmizi', 'ad': 'Kırmızı', 'renk': '#e74c3c'},
@@ -201,10 +208,26 @@ EtkinlikFormVerileri _formVerileri({bool duzenleme = false}) =>
         {'kod': 'DIGER', 'ad': 'Diğer'},
       ],
       'iptal_modlari': [
-        {'kod': 'STANDART', 'ad': 'Standart', 'aciklama': '24 saat kuralı normal işler.'},
-        {'kod': 'TELAFI_VER', 'ad': 'Telafi ver', 'aciklama': 'Abonelikte 24 saat şartı aranmaz.'},
-        {'kod': 'HAKKI_IADE_ET', 'ad': 'Paket hakkını iade et', 'aciklama': 'Hak düşülmez.'},
-        {'kod': 'BORC_YAZMA', 'ad': 'Borç yazma', 'aciklama': 'Borç yansıtılmaz.'},
+        {
+          'kod': 'STANDART',
+          'ad': 'Standart',
+          'aciklama': '24 saat kuralı normal işler.'
+        },
+        {
+          'kod': 'TELAFI_VER',
+          'ad': 'Telafi ver',
+          'aciklama': 'Abonelikte 24 saat şartı aranmaz.'
+        },
+        {
+          'kod': 'HAKKI_IADE_ET',
+          'ad': 'Paket hakkını iade et',
+          'aciklama': 'Hak düşülmez.'
+        },
+        {
+          'kod': 'BORC_YAZMA',
+          'ad': 'Borç yazma',
+          'aciklama': 'Borç yansıtılmaz.'
+        },
       ],
       'secili_uye_idler': duzenleme ? [1, 2, 3, 4, 5] : <int>[],
       'etkinlik': duzenleme
@@ -234,7 +257,11 @@ SilmeEtkisi _silmeEtkisi() => SilmeEtkisi.fromJson({
       'teyit_sayisi': 12,
       'onay_sayisi': 2,
       'degerlendirme_sayisi': 9,
-      'ders': {'tarih': '23.07.2026', 'saat': '10:00', 'kort_adi': 'Kapalı Kort 1'},
+      'ders': {
+        'tarih': '23.07.2026',
+        'saat': '10:00',
+        'kort_adi': 'Kapalı Kort 1'
+      },
     });
 
 DersListeItem _dersListeItem() => DersListeItem.fromJson({
@@ -254,7 +281,11 @@ DersListeItem _dersListeItem() => DersListeItem.fromJson({
       'katilimci_sayisi': 4,
       'katilimcilar': [
         for (var i = 0; i < 4; i++)
-          {'id': i + 1, 'ad_soyad': 'Katılımcı $i Uzun Soyadı', 'telefon': '5550000000'}
+          {
+            'id': i + 1,
+            'ad_soyad': 'Katılımcı $i Uzun Soyadı',
+            'telefon': '5550000000'
+          }
       ],
       'durum': 'planli',
       'onay_durumu': 'bekliyor',
@@ -464,8 +495,8 @@ void main() {
   /* ===================== ANTRENÖR ===================== */
 
   group('Antrenör takvimi', () {
-    tasmaTesti('WeekDaySelector', () {
-      return antrenor_serit.WeekDaySelector(
+    tasmaTesti('HaftaGunSecici', () {
+      return HaftaGunSecici(
         selectedDay: DateTime(2026, 7, 23),
         focusedDay: DateTime(2026, 7, 23),
         lessonCounts: {
@@ -478,13 +509,15 @@ void main() {
 
     tasmaTesti(
       'LessonBlock',
-      () => antrenor_blok.LessonBlock(ders: _etkinlik(katilimci: 6), onTap: () {}),
+      () => antrenor_blok.LessonBlock(
+          ders: _etkinlik(katilimci: 6), onTap: () {}),
       sar: (w) => Center(child: SizedBox(width: 300, height: 90, child: w)),
     );
 
     tasmaTesti(
       'LessonBlock (iptal, dar)',
-      () => antrenor_blok.LessonBlock(ders: _etkinlik(iptal: true), onTap: () {}),
+      () =>
+          antrenor_blok.LessonBlock(ders: _etkinlik(iptal: true), onTap: () {}),
       sar: (w) => Center(child: SizedBox(width: 140, height: 60, child: w)),
     );
 
@@ -498,11 +531,19 @@ void main() {
     // Aynı saatte 3 ders olunca kart 3 kolona bölünür; en dar kart durum
     // rozetini sıkıştırıp taşıyordu (bkz. LessonBlock üst satırı).
     tasmaTesti('TimelineView (3 çakışan ders)', () {
-      return antrenor_timeline.TimelineView(
+      return TakvimZamanCizelgesi(
+        blokYapici: (ders, onTap) =>
+            antrenor_blok.LessonBlock(ders: ders, onTap: onTap),
         dersler: [
-          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T15:30:00+03:00'),
-          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T16:30:00+03:00'),
-          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T16:30:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T15:30:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T16:30:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T16:30:00+03:00'),
         ],
         selectedDay: DateTime(2026, 7, 23),
         onLessonTap: (_) {},
@@ -511,11 +552,19 @@ void main() {
 
     // Kısa dersler kartı alçaltıp kompakt moda düşürür (ayrı düzen).
     tasmaTesti('TimelineView (3 çakışan kısa ders)', () {
-      return antrenor_timeline.TimelineView(
+      return TakvimZamanCizelgesi(
+        blokYapici: (ders, onTap) =>
+            antrenor_blok.LessonBlock(ders: ders, onTap: onTap),
         dersler: [
-          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T14:50:00+03:00'),
-          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T15:05:00+03:00'),
-          _etkinlik(bas: '2026-07-23T14:35:00+03:00', bit: '2026-07-23T15:10:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T14:50:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T15:05:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:35:00+03:00',
+              bit: '2026-07-23T15:10:00+03:00'),
         ],
         selectedDay: DateTime(2026, 7, 23),
         onLessonTap: (_) {},
@@ -532,7 +581,8 @@ void main() {
         mevcut: MisafirModel(
           id: 12,
           adSoyad: 'Mehmet Kaya',
-          notMetni: 'Ayşe Demir’in arkadaşı, telefon 0532 000 00 00, ilk kez geldi',
+          notMetni:
+              'Ayşe Demir’in arkadaşı, telefon 0532 000 00 00, ilk kez geldi',
         ),
       ),
     );
@@ -541,7 +591,32 @@ void main() {
   /* ===================== ANTRENÖR — ANA SAYFA KABUĞU ===================== */
 
   group('Antrenör ana sayfa', () {
-    tasmaTesti('AntrenorBottomBar', () => const AntrenorBottomBar());
+    tasmaTesti(
+      'KabukAltBar (antrenör sekmeleri)',
+      () => KabukAltBar(
+        aktifIndeks: 1,
+        onSekme: (_) {},
+        onMerkez: () {},
+        sekmeler: const [
+          KabukSekmesi(
+              ikon: Icons.home_outlined,
+              seciliIkon: Icons.home_rounded,
+              etiket: 'Ana Sayfa'),
+          KabukSekmesi(
+              ikon: Icons.calendar_month_outlined,
+              seciliIkon: Icons.calendar_month_rounded,
+              etiket: 'Takvim'),
+          KabukSekmesi(
+              ikon: Icons.groups_outlined,
+              seciliIkon: Icons.groups_rounded,
+              etiket: 'Öğrenciler'),
+          KabukSekmesi(
+              ikon: Icons.person_outline_rounded,
+              seciliIkon: Icons.person_rounded,
+              etiket: 'Bilgilerim'),
+        ],
+      ),
+    );
 
     tasmaTesti('AntrenorDrawer',
         () => const AntrenorDrawer(antrenorAdi: 'Ayşe Yılmazoğulları'));
@@ -566,18 +641,6 @@ void main() {
   /* ===================== ÜYE ===================== */
 
   group('Üye ekranları', () {
-    tasmaTesti('WeekDaySelector', () {
-      return uye_serit.WeekDaySelector(
-        selectedDay: DateTime(2026, 7, 23),
-        focusedDay: DateTime(2026, 7, 23),
-        lessonCounts: {
-          for (var i = 20; i <= 26; i++) DateTime(2026, 7, i): 12,
-        },
-        onDaySelected: (_) {},
-        onPageChanged: (_) {},
-      );
-    });
-
     tasmaTesti(
       'LessonBlock',
       () => uye_blok.LessonBlock(ders: _etkinlik(katilimci: 6), onTap: () {}),
@@ -586,11 +649,19 @@ void main() {
 
     // Antrenör takvimiyle aynı senaryo: çakışan dersler kartı daraltır.
     tasmaTesti('TimelineView (3 çakışan ders)', () {
-      return uye_timeline.TimelineView(
+      return TakvimZamanCizelgesi(
+        blokYapici: (ders, onTap) =>
+            uye_blok.LessonBlock(ders: ders, onTap: onTap),
         dersler: [
-          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T15:30:00+03:00'),
-          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T16:30:00+03:00'),
-          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T16:30:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T15:30:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T16:30:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T16:30:00+03:00'),
         ],
         selectedDay: DateTime(2026, 7, 23),
         onLessonTap: (_) {},
@@ -598,16 +669,45 @@ void main() {
     });
 
     tasmaTesti('TimelineView (3 çakışan kısa ders)', () {
-      return uye_timeline.TimelineView(
+      return TakvimZamanCizelgesi(
+        blokYapici: (ders, onTap) =>
+            uye_blok.LessonBlock(ders: ders, onTap: onTap),
         dersler: [
-          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T14:50:00+03:00'),
-          _etkinlik(bas: '2026-07-23T14:30:00+03:00', bit: '2026-07-23T15:05:00+03:00'),
-          _etkinlik(bas: '2026-07-23T14:35:00+03:00', bit: '2026-07-23T15:10:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T14:50:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T15:05:00+03:00'),
+          _etkinlik(
+              bas: '2026-07-23T14:35:00+03:00',
+              bit: '2026-07-23T15:10:00+03:00'),
         ],
         selectedDay: DateTime(2026, 7, 23),
         onLessonTap: (_) {},
       );
     });
+
+    tasmaTesti('TakvimAjanda (dolu hafta)', () {
+      return TakvimAjanda(
+        dersler: [
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T15:30:00+03:00',
+              katilimci: 4),
+          _etkinlik(
+              bas: '2026-07-24T09:00:00+03:00',
+              bit: '2026-07-24T10:00:00+03:00'),
+        ],
+        onLessonTap: (_) {},
+        durumEtiketi: (_) => 'Onay bekliyor',
+      );
+    });
+
+    tasmaTesti(
+      'TakvimAjanda (boş)',
+      () => TakvimAjanda(dersler: const [], onLessonTap: (_) {}),
+    );
 
     tasmaTesti('UyeOzetSerit', () {
       return UyeOzetSerit(
@@ -619,28 +719,53 @@ void main() {
       );
     });
 
-    tasmaTesti('UyeOzetSerit (yükleniyor)',
-        () => const UyeOzetSerit(isLoading: true));
-
     tasmaTesti(
-        'UyeOdulSayaci (sayıyor)', () => UyeOdulSayaci(durum: _odul(sayac: 14)));
+        'UyeOzetSerit (yükleniyor)', () => const UyeOzetSerit(isLoading: true));
+
+    tasmaTesti('UyeOdulSayaci (sayıyor)',
+        () => UyeOdulSayaci(durum: _odul(sayac: 14)));
 
     tasmaTesti('UyeOdulSayaci (hak edildi)',
         () => UyeOdulSayaci(durum: _odul(sayac: 20), onOdulAl: () async {}));
 
-    tasmaTesti(
-        'UyeOdulSayaci (kod hazır)', () => UyeOdulSayaci(durum: _odul(kod: true)));
+    tasmaTesti('UyeOdulSayaci (kod hazır)',
+        () => UyeOdulSayaci(durum: _odul(kod: true)));
 
     tasmaTesti('UyeOdulSayaci (yükleniyor)',
         () => const UyeOdulSayaci(isLoading: true));
 
-    tasmaTesti('UyeNextLessonCard',
-        () => UyeNextLessonCard(nextLesson: _etkinlik()));
+    tasmaTesti(
+        'UyeNextLessonCard', () => UyeNextLessonCard(nextLesson: _etkinlik()));
 
     tasmaTesti('UyeNextLessonCard (ders yok)',
         () => const UyeNextLessonCard(nextLesson: null));
 
-    tasmaTesti('UyeBottomBar', () => const UyeBottomBar());
+    tasmaTesti(
+      'KabukAltBar (üye sekmeleri)',
+      () => KabukAltBar(
+        aktifIndeks: 0,
+        onSekme: (_) {},
+        onMerkez: () {},
+        sekmeler: const [
+          KabukSekmesi(
+              ikon: Icons.home_outlined,
+              seciliIkon: Icons.home_rounded,
+              etiket: 'Ana Sayfa'),
+          KabukSekmesi(
+              ikon: Icons.calendar_month_outlined,
+              seciliIkon: Icons.calendar_month_rounded,
+              etiket: 'Takvim'),
+          KabukSekmesi(
+              ikon: Icons.account_balance_wallet_outlined,
+              seciliIkon: Icons.account_balance_wallet_rounded,
+              etiket: 'Hareketler'),
+          KabukSekmesi(
+              ikon: Icons.person_outline_rounded,
+              seciliIkon: Icons.person_rounded,
+              etiket: 'Hesabım'),
+        ],
+      ),
+    );
 
     tasmaTesti(
       'UyeHeader (çok profilli)',
@@ -721,7 +846,7 @@ void main() {
       'BildirimDurumGorunumu (süresi dolmuş bildirim)',
       () => BildirimDurumGorunumWidget(
         icon: Icons.timer_off_rounded,
-        color: BildirimRenkleri.uyariTuruncu,
+        color: FitcallRenkleri.acik.uyari,
         title: 'Bildirim Süresi Doldu',
         subtitle: 'Bu bildirim üç günden eski. Uygulamaya giriş yapıp '
             'takviminizden katılım bildirebilirsiniz.',
@@ -733,7 +858,7 @@ void main() {
       'BildirimDurumGorunumu (teyit verilmiş + ipucu)',
       () => BildirimDurumGorunumWidget(
         icon: Icons.check_circle_rounded,
-        color: BildirimRenkleri.basariYesil,
+        color: FitcallRenkleri.acik.basari,
         title: 'Katılacaksınız',
         subtitle: 'Bu ders için daha önce cevap verdiniz.',
         showChangeHint: true,
@@ -874,7 +999,11 @@ List<GecmisDersModel> _gecmisDersler() => [
         'urun_adi': 'Grup Dersi Paketi',
         'seviye': 'Kirmizi',
         'iptal_mi': false,
-        'katilim': {'katildi': true, 'plan_disi_mi': false, 'not_metni': 'İyi bir ders oldu, forehand çalışıldı.'},
+        'katilim': {
+          'katildi': true,
+          'plan_disi_mi': false,
+          'not_metni': 'İyi bir ders oldu, forehand çalışıldı.'
+        },
         'puanim': {'puan': 4, 'yorum': 'Teşekkürler'},
       }),
       GecmisDersModel.fromJson(const {
@@ -1072,8 +1201,7 @@ HakedisAntrenorListesi _hakedisAntrenorListesi() =>
           'bekleyen_dakika': 900,
           'disi_ders_sayisi': 0,
           'disi_dakika': 0,
-          'aylar':
-              _hakedisAylikDizi(hakedisDakika: 25680, bekleyenDers: 12),
+          'aylar': _hakedisAylikDizi(hakedisDakika: 25680, bekleyenDers: 12),
         },
         {
           'antrenor_id': 8,

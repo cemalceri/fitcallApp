@@ -27,7 +27,7 @@ class BildirimDetaySheetWidget extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -38,7 +38,7 @@ class BildirimDetaySheetWidget extends StatelessWidget {
             width: 36,
             height: 4,
             decoration: BoxDecoration(
-              color: BildirimRenkleri.ayiriciCizgi,
+              color: context.bildirimRenk.ayiriciCizgi,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -52,7 +52,7 @@ class BildirimDetaySheetWidget extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      _buildTipIkonu(),
+                      _buildTipIkonu(context),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
@@ -60,18 +60,18 @@ class BildirimDetaySheetWidget extends StatelessWidget {
                           children: [
                             Text(
                               notification.title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
-                                color: BildirimRenkleri.yaziAna,
+                                color: context.bildirimRenk.yaziAna,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               _formatTarihSaat(notification.timestamp),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                                color: BildirimRenkleri.yaziIkincil,
+                                color: context.bildirimRenk.yaziIkincil,
                               ),
                             ),
                           ],
@@ -89,15 +89,15 @@ class BildirimDetaySheetWidget extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFAFAFA),
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       notification.body,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         height: 1.6,
-                        color: BildirimRenkleri.yaziAna,
+                        color: context.bildirimRenk.yaziAna,
                       ),
                     ),
                   ),
@@ -107,8 +107,10 @@ class BildirimDetaySheetWidget extends StatelessWidget {
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
                       style: TextButton.styleFrom(
-                        backgroundColor: const Color(0xFFF5F5F5),
-                        foregroundColor: BildirimRenkleri.yaziAna,
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        foregroundColor: context.bildirimRenk.yaziAna,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -136,11 +138,11 @@ class BildirimDetaySheetWidget extends StatelessWidget {
       notification.notificationType == NotificationType.ofisPlanDisiKatilim &&
       notification.displayData != null;
 
-  Widget _buildTipIkonu() {
+  Widget _buildTipIkonu(BuildContext context) {
     final iconData =
         BildirimGorselYardimci.ikonGetir(notification.notificationType);
-    final color =
-        BildirimGorselYardimci.renkGetir(notification.notificationType);
+    final color = BildirimGorselYardimci.renkGetir(
+        context, notification.notificationType);
     return Container(
       width: 52,
       height: 52,

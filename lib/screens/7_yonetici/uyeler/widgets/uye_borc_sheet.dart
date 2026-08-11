@@ -157,8 +157,9 @@ class _UyeBorcSheetState extends State<UyeBorcSheet> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: secili ? FontWeight.w600 : FontWeight.w500,
-                color:
-                    secili ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                color: secili
+                    ? colorScheme.onPrimary
+                    : colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -322,8 +323,8 @@ class _UyeBorcSheetState extends State<UyeBorcSheet> {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(etiket,
-            style: TextStyle(
-                fontSize: 10, color: colorScheme.onSurfaceVariant)),
+            style:
+                TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant)),
         Text(deger,
             style: TextStyle(
                 fontSize: 12, fontWeight: FontWeight.w500, color: renk)),

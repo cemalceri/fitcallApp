@@ -77,8 +77,8 @@ class _YoneticiProgramPageState extends State<YoneticiProgramPage> {
   }
 
   void _haftaDegistir(int haftaFarki) {
-    setState(() => _secilenGun =
-        _secilenGun.add(Duration(days: 7 * haftaFarki)));
+    setState(
+        () => _secilenGun = _secilenGun.add(Duration(days: 7 * haftaFarki)));
     _yukle();
   }
 

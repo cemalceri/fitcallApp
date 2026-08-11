@@ -55,5 +55,4 @@ class DersTalepApiService {
       (json) => (json as Map).cast<String, dynamic>(),
     );
   }
-
 }

@@ -153,12 +153,13 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
+          tooltip: 'Geri',
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
@@ -180,7 +181,7 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
   }
 
   Widget _buildLoading() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -188,7 +189,8 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
           SizedBox(height: 16),
           Text(
             'Bilgiler yükleniyor...',
-            style: TextStyle(color: Color(0xFF64748B)),
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -219,9 +221,9 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
             Text(
               _hataMessaji!,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
-                color: Color(0xFF64748B),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 24),
@@ -259,7 +261,7 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -294,18 +296,18 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
                   children: [
                     Text(
                       _detay!.uye.adSoyad,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1E293B),
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       etkinlik.kort,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF64748B),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -320,7 +322,7 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -353,17 +355,17 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.person_rounded,
                   size: 18,
-                  color: Color(0xFF64748B),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   etkinlik.antrenor,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF64748B),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -389,10 +391,10 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
         const SizedBox(height: 2),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1E293B),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ],
@@ -405,7 +407,7 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -436,18 +438,18 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
           const SizedBox(height: 16),
           Text(
             katilacak ? 'Katılımınız Onaylandı' : 'Katılmayacağınız Bildirildi',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1E293B),
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Cevabınız alındı. Teşekkürler.',
             style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF64748B),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 24),
@@ -530,13 +532,13 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Soru
-        const Text(
+        Text(
           'Bu derse katılacak mısınız?',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1E293B),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
 
@@ -573,12 +575,12 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-                    const Text(
+                    Text(
                       'Açıklama (İsteğe bağlı)',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF64748B),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -701,12 +703,16 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: isSelected ? color : const Color(0xFFF1F5F9),
+                color: isSelected
+                    ? color
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                color: isSelected
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.outline,
                 size: 28,
               ),
             ),
@@ -716,7 +722,9 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? color : const Color(0xFF64748B),
+                color: isSelected
+                    ? color
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ],

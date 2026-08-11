@@ -178,7 +178,7 @@ class _ProgressBar extends StatelessWidget {
     return Container(
       height: 3,
       decoration: BoxDecoration(
-        color: Colors.grey.shade300,
+        color: Theme.of(context).colorScheme.outlineVariant,
         borderRadius: BorderRadius.circular(2),
       ),
       child: ClipRRect(
@@ -265,13 +265,13 @@ class _DuyuruKart extends StatelessWidget {
                               color: const Color(0xFFDC2626),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   Icons.star_rounded,
                                   size: 14,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.surface,
                                 ),
                                 SizedBox(width: 4),
                                 Text(
@@ -302,10 +302,10 @@ class _DuyuruKart extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.photo_library_rounded,
                                   size: 14,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.surface,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -367,7 +367,7 @@ class _DuyuruKart extends StatelessWidget {
                               color: Colors.white.withValues(alpha: 0.4),
                             ),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
@@ -382,7 +382,7 @@ class _DuyuruKart extends StatelessWidget {
                               Icon(
                                 Icons.arrow_forward_ios_rounded,
                                 size: 12,
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.surface,
                               ),
                             ],
                           ),

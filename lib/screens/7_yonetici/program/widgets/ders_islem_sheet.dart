@@ -128,8 +128,8 @@ class DersIslemSheet extends StatelessWidget {
             ] else
               _islem(context, Icons.restore, 'İptali geri al',
                   DersIslemi.iptalGeriAl),
-            _islem(context, Icons.delete_forever_outlined,
-                'Kalıcı olarak sil', DersIslemi.sil,
+            _islem(context, Icons.delete_forever_outlined, 'Kalıcı olarak sil',
+                DersIslemi.sil,
                 renk: renk.error),
             const SizedBox(height: 8),
           ],

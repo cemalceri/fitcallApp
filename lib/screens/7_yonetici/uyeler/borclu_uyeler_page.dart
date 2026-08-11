@@ -145,8 +145,7 @@ class _BorcluUyelerPageState extends State<BorcluUyelerPage> {
               padding: const EdgeInsets.only(top: 40),
               child: Center(
                 child: Text('Borçlu üye bulunmuyor 🎉',
-                    style:
-                        TextStyle(color: colorScheme.onSurfaceVariant)),
+                    style: TextStyle(color: colorScheme.onSurfaceVariant)),
               ),
             );
           }

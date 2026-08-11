@@ -140,6 +140,7 @@ class _DerslerPageState extends State<DerslerPage> {
                     Row(
                       children: [
                         IconButton(
+                          tooltip: 'Geri',
                           onPressed: _previousDay,
                           icon: const Icon(Icons.chevron_left),
                           style: IconButton.styleFrom(

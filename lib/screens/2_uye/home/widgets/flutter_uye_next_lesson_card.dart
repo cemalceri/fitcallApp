@@ -240,8 +240,8 @@ class _LessonContent extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color:
-                      colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  color: colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -324,10 +324,10 @@ class _DateBox extends StatelessWidget {
         children: [
           Text(
             date.day.toString(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
             ),
           ),
           Text(
@@ -504,7 +504,8 @@ class _LessonDetailSheet extends StatelessWidget {
                             routeEnums[SayfaAdi.dersler]!,
                           );
                         },
-                        icon: const Icon(Icons.calendar_month_outlined, size: 18),
+                        icon:
+                            const Icon(Icons.calendar_month_outlined, size: 18),
                         label: const Text('Takvime Git'),
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),

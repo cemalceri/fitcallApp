@@ -1,6 +1,7 @@
 // lib/screens/3_antrenor/takvim/widgets/cancelled_lesson_info_dialog.dart
 
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'package:flutter/material.dart';
 import 'takvim_constants.dart';
 
@@ -16,10 +17,9 @@ class CancelledLessonInfoDialog extends StatelessWidget {
     required BuildContext context,
     required EtkinlikModel ders,
   }) {
-    return showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => CancelledLessonInfoDialog(ders: ders),
+    return altSayfaGoster<void>(
+      context,
+      cocuk: CancelledLessonInfoDialog(ders: ders),
     );
   }
 
@@ -27,15 +27,10 @@ class CancelledLessonInfoDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final katilimcilar = ders.uyeList.map((u) => u.adSoyad).toList();
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
-          maxWidth: 400,
-        ),
-        child: Column(
+    return SizedBox(
+      width: double.infinity,
+      child: Builder(
+        builder: (context) => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Header
@@ -78,7 +73,7 @@ class CancelledLessonInfoDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: TakvimColors.cancelled.withValues(alpha: 0.08),
+        color: context.takvim.cancelled.withValues(alpha: 0.08),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
@@ -86,12 +81,12 @@ class CancelledLessonInfoDialog extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: TakvimColors.cancelled.withValues(alpha: 0.15),
+              color: context.takvim.cancelled.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.event_busy_rounded,
-              color: TakvimColors.cancelled,
+              color: context.takvim.cancelled,
               size: 22,
             ),
           ),
@@ -109,18 +104,19 @@ class CancelledLessonInfoDialog extends StatelessWidget {
                   '${TimeUtils.formatDateFull(ders.baslangicTarihSaat)} • ${TimeUtils.formatTime(ders.baslangicTarihSaat)}',
                   style: TextStyle(
                     fontSize: 13,
-                    color: TakvimColors.textSecondary,
+                    color: context.takvim.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
           IconButton(
+            tooltip: 'Kapat',
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.close_rounded),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: TakvimColors.textSecondary,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              foregroundColor: context.takvim.textSecondary,
             ),
           ),
         ],
@@ -133,9 +129,9 @@ class CancelledLessonInfoDialog extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Colors.grey.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +141,7 @@ class CancelledLessonInfoDialog extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: TakvimColors.textSecondary,
+              color: context.takvim.textSecondary,
             ),
           ),
           const SizedBox(height: 12),
@@ -197,7 +193,7 @@ class CancelledLessonInfoDialog extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: TakvimColors.primaryLight.withValues(alpha: 0.5),
+        color: context.takvim.primaryLight.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -208,7 +204,7 @@ class CancelledLessonInfoDialog extends StatelessWidget {
               Icon(
                 Icons.groups_outlined,
                 size: 18,
-                color: TakvimColors.textSecondary,
+                color: context.takvim.textSecondary,
               ),
               const SizedBox(width: 8),
               Text(
@@ -216,7 +212,7 @@ class CancelledLessonInfoDialog extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: TakvimColors.textSecondary,
+                  color: context.takvim.textSecondary,
                 ),
               ),
             ],
@@ -230,7 +226,7 @@ class CancelledLessonInfoDialog extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -253,10 +249,10 @@ class CancelledLessonInfoDialog extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: TakvimColors.cancelled.withValues(alpha: 0.08),
+        color: context.takvim.cancelled.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: TakvimColors.cancelled.withValues(alpha: 0.3),
+          color: context.takvim.cancelled.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -267,23 +263,23 @@ class CancelledLessonInfoDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: TakvimColors.cancelled.withValues(alpha: 0.15),
+                  color: context.takvim.cancelled.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.cancel_rounded,
-                  color: TakvimColors.cancelled,
+                  color: context.takvim.cancelled,
                   size: 20,
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'İptal Bilgileri',
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: TakvimColors.cancelled,
+                    color: context.takvim.cancelled,
                   ),
                 ),
               ),
@@ -319,7 +315,7 @@ class CancelledLessonInfoDialog extends StatelessWidget {
             margin: const EdgeInsets.only(top: 8),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
@@ -327,7 +323,7 @@ class CancelledLessonInfoDialog extends StatelessWidget {
                 Icon(
                   Icons.info_outline_rounded,
                   size: 18,
-                  color: TakvimColors.textMuted,
+                  color: context.takvim.textMuted,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -335,7 +331,7 @@ class CancelledLessonInfoDialog extends StatelessWidget {
                     'Bu ders iptal edilmiştir.',
                     style: TextStyle(
                       fontSize: 12,
-                      color: TakvimColors.textSecondary,
+                      color: context.takvim.textSecondary,
                     ),
                   ),
                 ),
@@ -351,7 +347,7 @@ class CancelledLessonInfoDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Colors.grey.withValues(alpha: 0.10),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
       child: SizedBox(
@@ -359,7 +355,7 @@ class CancelledLessonInfoDialog extends StatelessWidget {
         child: FilledButton(
           onPressed: () => Navigator.pop(context),
           style: FilledButton.styleFrom(
-            backgroundColor: TakvimColors.textSecondary,
+            backgroundColor: context.takvim.textSecondary,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -394,7 +390,7 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: TakvimColors.textMuted),
+        Icon(icon, size: 18, color: context.takvim.textMuted),
         const SizedBox(width: 10),
         SizedBox(
           width: 60,
@@ -402,17 +398,17 @@ class _InfoRow extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 13,
-              color: TakvimColors.textMuted,
+              color: context.takvim.textMuted,
             ),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: TakvimColors.textPrimary,
+              color: context.takvim.textPrimary,
             ),
           ),
         ),
@@ -441,17 +437,17 @@ class _CancelInfoRow extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 13,
-              color: TakvimColors.textSecondary,
+              color: context.takvim.textSecondary,
             ),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: TakvimColors.textPrimary,
+              color: context.takvim.textPrimary,
             ),
           ),
         ),

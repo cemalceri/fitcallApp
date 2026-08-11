@@ -162,7 +162,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: Theme.of(context).colorScheme.outlineVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -197,14 +197,13 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                     const SizedBox(height: 20),
                   ],
                   if (!iptalEdildi &&
-                      widget.ders.baslangicTarihSaat
-                          .isAfter(simdiKulup())) ...[
+                      widget.ders.baslangicTarihSaat.isAfter(simdiKulup())) ...[
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: _takvimeEkle,
-                        icon: const Icon(Icons.calendar_month_outlined,
-                            size: 18),
+                        icon:
+                            const Icon(Icons.calendar_month_outlined, size: 18),
                         label: const Text(
                           'Telefon Takvimine Ekle',
                           style: TextStyle(fontWeight: FontWeight.w600),
@@ -216,9 +215,9 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                           ),
                           side: BorderSide(
                             color:
-                                TakvimColors.primary.withValues(alpha: 0.4),
+                                context.takvim.primary.withValues(alpha: 0.4),
                           ),
-                          foregroundColor: TakvimColors.primary,
+                          foregroundColor: context.takvim.primary,
                         ),
                       ),
                     ),
@@ -233,7 +232,9 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        side: BorderSide(color: Colors.grey.shade300),
+                        side: BorderSide(
+                            color:
+                                Theme.of(context).colorScheme.outlineVariant),
                       ),
                       child: const Text(
                         'Kapat',
@@ -267,14 +268,15 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: iptalEdildi
-                      ? Colors.red.shade50
-                      : TakvimColors.primary.withValues(alpha: 0.12),
+                      ? Colors.red.withValues(alpha: 0.10)
+                      : context.takvim.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.sports_tennis_rounded,
-                  color:
-                      iptalEdildi ? Colors.red.shade400 : TakvimColors.primary,
+                  color: iptalEdildi
+                      ? Colors.red.shade400
+                      : context.takvim.primary,
                   size: 22,
                 ),
               ),
@@ -335,21 +337,21 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Theme.of(context).colorScheme.outlineVariant,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: TakvimColors.primary),
+          Icon(icon, size: 14, color: context.takvim.primary),
           const SizedBox(width: 6),
           Text(
             text,
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: Colors.grey.shade800,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -361,7 +363,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
+        color: Colors.red.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.red.shade200, width: 1.5),
       ),
@@ -370,7 +372,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.red.shade100,
+              color: Colors.red.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(Icons.cancel_rounded,
@@ -385,7 +387,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                   'Ders Durumu',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -405,7 +407,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                     'İptal eden: ${widget.ders.iptalEdenAdi}',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.grey.shade700,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -463,7 +465,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                         style: TextStyle(
                           fontSize: 13,
                           fontStyle: FontStyle.italic,
-                          color: Colors.grey.shade600,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -483,10 +485,10 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: TakvimColors.primary.withValues(alpha: 0.08),
+        color: context.takvim.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: TakvimColors.primary.withValues(alpha: 0.2),
+          color: context.takvim.primary.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -494,7 +496,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
           Icon(
             Icons.info_outline_rounded,
             size: 20,
-            color: TakvimColors.primary,
+            color: context.takvim.primary,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -502,7 +504,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
               'Değişiklik talebiniz varsa lütfen iletişime geçiniz.',
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.grey.shade700,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 height: 1.4,
               ),
             ),
@@ -523,12 +525,12 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
           child: FilledButton.icon(
             onPressed: _isLoading ? null : _katilacagim,
             icon: _isLoading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                     ),
                   )
                 : const Icon(Icons.check_circle_rounded, size: 18),
@@ -560,7 +562,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
             ),
             style: FilledButton.styleFrom(
-              backgroundColor: TakvimColors.notAttending,
+              backgroundColor: context.takvim.notAttending,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -576,10 +578,10 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: TakvimColors.notAttending.withValues(alpha: 0.08),
+        color: context.takvim.notAttending.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: TakvimColors.notAttending.withValues(alpha: 0.25),
+          color: context.takvim.notAttending.withValues(alpha: 0.25),
         ),
       ),
       child: Column(
@@ -590,12 +592,12 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: TakvimColors.notAttending.withValues(alpha: 0.15),
+                  color: context.takvim.notAttending.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.event_busy_rounded,
-                  color: TakvimColors.notAttending,
+                  color: context.takvim.notAttending,
                   size: 20,
                 ),
               ),
@@ -610,11 +612,12 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                 ),
               ),
               IconButton(
+                tooltip: 'Kapat',
                 onPressed: () =>
                     setState(() => _showKatilmayacagimForm = false),
                 icon: const Icon(Icons.close_rounded),
                 style: IconButton.styleFrom(
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor: Theme.of(context).colorScheme.outlineVariant,
                   padding: const EdgeInsets.all(4),
                 ),
                 iconSize: 18,
@@ -627,19 +630,22 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
             maxLines: 3,
             decoration: InputDecoration(
               hintText: 'Açıklama (isteğe bağlı)',
-              hintStyle: TextStyle(color: Colors.grey.shade500),
+              hintStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: TakvimColors.notAttending,
+                borderSide: BorderSide(
+                  color: context.takvim.notAttending,
                   width: 1.5,
                 ),
               ),
@@ -654,12 +660,12 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
             child: FilledButton.icon(
               onPressed: _isLoading ? null : _katilmayacagim,
               icon: _isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.surface,
                       ),
                     )
                   : const Icon(Icons.send_rounded, size: 18),
@@ -668,7 +674,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               style: FilledButton.styleFrom(
-                backgroundColor: TakvimColors.notAttending,
+                backgroundColor: context.takvim.notAttending,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -685,10 +691,10 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: TakvimColors.pending.withValues(alpha: 0.12),
+        color: context.takvim.pending.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: TakvimColors.pending.withValues(alpha: 0.35),
+          color: context.takvim.pending.withValues(alpha: 0.35),
           width: 1.2,
         ),
       ),
@@ -698,7 +704,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: TakvimColors.pending.withValues(alpha: 0.18),
+              color: context.takvim.pending.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -706,7 +712,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
               children: [
                 Icon(
                   Icons.info_rounded,
-                  color: TakvimColors.pending,
+                  color: context.takvim.pending,
                   size: 18,
                 ),
                 const SizedBox(width: 6),
@@ -715,7 +721,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: TakvimColors.pending,
+                    color: context.takvim.pending,
                   ),
                 ),
               ],
@@ -750,7 +756,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
           width: 5,
           height: 5,
           decoration: BoxDecoration(
-            color: TakvimColors.pending.withValues(alpha: 0.7),
+            color: context.takvim.pending.withValues(alpha: 0.7),
             shape: BoxShape.circle,
           ),
         ),
@@ -760,7 +766,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
             text,
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey.shade700,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               height: 1.4,
             ),
           ),

@@ -1,19 +1,34 @@
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
-import 'package:fitcall/screens/2_uye/takvim/widgets/takvim_constants.dart';
+import 'package:fitcall/screens/1_common/takvim/takvim_renkleri.dart';
 import 'package:flutter/material.dart';
 
 /* -------------------------------------------------------------------------- */
 /*                          PAYLAŞILAN RENK SABİTLERİ                          */
 /* -------------------------------------------------------------------------- */
+/// Bildirim ekranlarının renkleri artık tema token'larından okunuyor:
+/// sabit değerler (beyaz kart, koyu gri yazı) koyu temada okunmaz oluyordu.
 class BildirimRenkleri {
-  static const yaziAna = Color(0xFF1A1A1A);
-  static const yaziIkincil = Color(0xFF6B7280);
-  static const basariYesil = Color(0xFF10B981);
-  static const hataKirmizi = Color(0xFFEF4444);
-  static const arkaplanGri = Color(0xFFF9FAFB);
-  static const anaMavi = Color(0xFF0095F6);
-  static const uyariTuruncu = Color(0xFFFF9500);
-  static const ayiriciCizgi = Color(0xFFDBDBDB);
+  final ColorScheme _cs;
+  final FitcallRenkleri _r;
+
+  const BildirimRenkleri(this._cs, this._r);
+
+  Color get yaziAna => _cs.onSurface;
+  Color get yaziIkincil => _cs.onSurfaceVariant;
+  Color get basariYesil => _r.basari;
+  Color get hataKirmizi => _r.hata;
+  Color get arkaplanGri => _cs.surfaceContainerLow;
+  Color get anaMavi => _r.bilgi;
+  Color get uyariTuruncu => _r.uyari;
+  Color get ayiriciCizgi => _cs.outlineVariant;
+
+  /// Kart/sayfa yüzeyi — eskiden her yerde sabit beyazdı.
+  Color get kart => _cs.surface;
+}
+
+extension BildirimRenkKisayolu on BuildContext {
+  BildirimRenkleri get bildirimRenk => BildirimRenkleri(cs, renkler);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -58,17 +73,17 @@ class BildirimGorselYardimci {
   }
 
   /// Bildirim tipine göre ana renk döndürür.
-  static Color renkGetir(String bildirimTipi) {
+  static Color renkGetir(BuildContext context, String bildirimTipi) {
     switch (bildirimTipi) {
       case NotificationType.dersTeyidi:
       case NotificationType.telafiIade:
       case NotificationType.paketSatinAlma:
       case NotificationType.antrenorDevirKabul:
-        return BildirimRenkleri.basariYesil;
+        return context.bildirimRenk.basariYesil;
       case NotificationType.dersIptal:
       case NotificationType.gecikenOdeme:
       case NotificationType.antrenorDevirRed:
-        return BildirimRenkleri.hataKirmizi;
+        return context.bildirimRenk.hataKirmizi;
       case NotificationType.paketBitiyor:
       case NotificationType.paketSuresiDoluyor:
       case NotificationType.antrenorDegisikligi:
@@ -77,18 +92,18 @@ class BildirimGorselYardimci {
       // Plan dışı kayıtlar antrenör ve yönetici ekranlarında da turuncu
       // "Plan Dışı" etiketiyle gösteriliyor; bildirim aynı dili konuşsun.
       case NotificationType.ofisPlanDisiKatilim:
-        return BildirimRenkleri.uyariTuruncu;
+        return context.bildirimRenk.uyariTuruncu;
       case NotificationType.paketHakGuncelleme:
       case NotificationType.uyelikTanimlandi:
-        return BildirimRenkleri.anaMavi;
+        return context.bildirimRenk.anaMavi;
       default:
-        return BildirimRenkleri.yaziIkincil;
+        return context.bildirimRenk.yaziIkincil;
     }
   }
 
   /// Bildirim tipine göre arka plan rengi.
-  static Color arkaplanRengiGetir(String bildirimTipi) {
-    return renkGetir(bildirimTipi).withValues(alpha: 0.15);
+  static Color arkaplanRengiGetir(BuildContext context, String bildirimTipi) {
+    return renkGetir(context, bildirimTipi).withValues(alpha: 0.15);
   }
 }
 
@@ -103,12 +118,13 @@ class BildirimUstBarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      color: BildirimRenkleri.arkaplanGri,
+      color: context.bildirimRenk.arkaplanGri,
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.close_rounded,
-                color: BildirimRenkleri.yaziAna),
+            tooltip: 'Kapat',
+            icon:
+                Icon(Icons.close_rounded, color: context.bildirimRenk.yaziAna),
             onPressed: onClose,
           ),
           const Spacer(),
@@ -151,13 +167,13 @@ class BildirimDurumGorunumWidget extends StatelessWidget {
           constraints: BoxConstraints(
             minHeight: (constraints.maxHeight - 48).clamp(0.0, double.infinity),
           ),
-          child: IntrinsicHeight(child: _govde()),
+          child: IntrinsicHeight(child: _govde(context)),
         ),
       ),
     );
   }
 
-  Widget _govde() {
+  Widget _govde(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -173,35 +189,37 @@ class BildirimDurumGorunumWidget extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         Text(title,
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
-                color: BildirimRenkleri.yaziAna),
+                color: context.bildirimRenk.yaziAna),
             textAlign: TextAlign.center),
         const SizedBox(height: 8),
         Text(subtitle,
-            style: const TextStyle(
-                fontSize: 15, color: BildirimRenkleri.yaziIkincil, height: 1.4),
+            style: TextStyle(
+                fontSize: 15,
+                color: context.bildirimRenk.yaziIkincil,
+                height: 1.4),
             textAlign: TextAlign.center),
         if (showChangeHint) ...[
           const SizedBox(height: 24),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.info_outline_rounded,
-                    size: 18, color: TakvimColors.primary),
+                    size: 18, color: context.takvim.primary),
                 const SizedBox(width: 8),
-                const Flexible(
+                Flexible(
                   child: Text(
                     'Değiştirmek için kulüp ile iletişime geçin',
                     style: TextStyle(
-                        fontSize: 13, color: BildirimRenkleri.yaziIkincil),
+                        fontSize: 13, color: context.bildirimRenk.yaziIkincil),
                   ),
                 ),
               ],
@@ -216,13 +234,14 @@ class BildirimDurumGorunumWidget extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 14),
               side: BorderSide(
-                  color: BildirimRenkleri.yaziIkincil.withValues(alpha: 0.3)),
+                  color:
+                      context.bildirimRenk.yaziIkincil.withValues(alpha: 0.3)),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Kapat',
+            child: Text('Kapat',
                 style: TextStyle(
-                    color: BildirimRenkleri.yaziAna,
+                    color: context.bildirimRenk.yaziAna,
                     fontWeight: FontWeight.w600)),
           ),
         ),
@@ -255,19 +274,19 @@ class BildirimKompaktBaslikWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: TakvimColors.primary.withValues(alpha: 0.12),
+                color: context.takvim.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.sports_tennis_rounded,
-                  color: TakvimColors.primary, size: 22),
+              child: Icon(Icons.sports_tennis_rounded,
+                  color: context.takvim.primary, size: 22),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(tarih.toString(),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: BildirimRenkleri.yaziAna)),
+                      color: context.bildirimRenk.yaziAna)),
             ),
           ],
         ),
@@ -309,21 +328,21 @@ class BildirimBilgiCipiWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Theme.of(context).colorScheme.outlineVariant,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: TakvimColors.primary),
+          Icon(icon, size: 14, color: context.takvim.primary),
           const SizedBox(width: 6),
           Flexible(
             child: Text(text,
                 style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade800),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
                 overflow: TextOverflow.ellipsis),
           ),
         ],
@@ -350,23 +369,23 @@ class BildirimMesajKutusuWidget extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: BildirimRenkleri.yaziAna)),
+                  color: context.bildirimRenk.yaziAna)),
           const SizedBox(height: 6),
           Text(body,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 14,
-                  color: BildirimRenkleri.yaziIkincil,
+                  color: context.bildirimRenk.yaziIkincil,
                   height: 1.5)),
         ],
       ),

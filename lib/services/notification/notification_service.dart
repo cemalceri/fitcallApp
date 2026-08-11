@@ -56,6 +56,15 @@ class NotificationService {
         setNotificationsRead, {'tumu': true}, (_) => true);
   }
 
+  /// Seçili bildirimleri siler (backend'de soft delete).
+  ///
+  /// Kaydırarak silme bunu kullanır; "tümünü sil"den çok daha az riskli bir
+  /// işlem olduğu için geri alma çubuğuyla birlikte sunulur.
+  static Future<ApiResult<bool>> deleteNotifications(List<int> ids) {
+    return ApiClient.postParsed<bool>(
+        setNotificationsDeleted, {'ids': ids}, (_) => true);
+  }
+
   /// Profilin tüm bildirimlerini siler (backend'de soft delete).
   static Future<ApiResult<bool>> deleteAllNotifications() {
     return ApiClient.postParsed<bool>(

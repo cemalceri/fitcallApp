@@ -63,7 +63,9 @@ class ProgramDersBlok extends StatelessWidget {
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   height: 1.15,
-                  color: iptal ? ProgramRenkleri.iptal : const Color(0xFF0F172A),
+                  color: iptal
+                      ? ProgramRenkleri.iptal
+                      : Theme.of(context).colorScheme.onSurface,
                   decoration: iptal ? TextDecoration.lineThrough : null,
                 ),
               ),
@@ -84,10 +86,10 @@ class ProgramDersBlok extends StatelessWidget {
                     ders.katilimcilar.map((k) => k.adSoyad).join(', '),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 9.5,
                       height: 1.15,
-                      color: Color(0xFF64748B),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),

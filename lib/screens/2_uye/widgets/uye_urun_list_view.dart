@@ -1,4 +1,6 @@
 import 'package:fitcall/models/8_urun/uye_urun_model.dart';
+import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
+import 'package:fitcall/common/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -66,7 +68,7 @@ class _UyeUrunListViewState extends State<UyeUrunListView> {
             key: 'DIGER',
             baslik: 'Diğer',
             icon: Icons.inventory_2_outlined,
-            renk: const Color(0xFF64748B),
+            renk: Theme.of(context).colorScheme.onSurfaceVariant,
             items: digerler,
           ),
       ],
@@ -116,7 +118,8 @@ class _UyeUrunListViewState extends State<UyeUrunListView> {
                 }
               }),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                 child: Row(
                   children: [
                     Container(
@@ -139,8 +142,8 @@ class _UyeUrunListViewState extends State<UyeUrunListView> {
                       ),
                     ),
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 3),
                       decoration: BoxDecoration(
                         color: renk.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
@@ -191,23 +194,14 @@ class _UyeUrunListViewState extends State<UyeUrunListView> {
   }
 
   Widget _buildBos(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      children: [
-        const SizedBox(height: 90),
-        Icon(Icons.inventory_2_outlined,
-            size: 64, color: colorScheme.outlineVariant),
-        const SizedBox(height: 16),
-        Text(
-          'Kayıtlı üyelik/paket bulunamadı',
-          style: TextStyle(
-            fontSize: 15,
-            color: colorScheme.onSurfaceVariant,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+    return BosDurum(
+      ikon: Icons.inventory_2_outlined,
+      baslik: 'Kayıtlı üyelik/paket yok',
+      aciklama: 'Aldığın paketler ve üyelik dönemin burada listelenir. '
+          'Paket almak için kulüple iletişime geçebilirsin.',
+      eylemEtiketi: 'Yardım & iletişim',
+      eylemIkonu: Icons.help_outline_rounded,
+      onEylem: () => Navigator.pushNamed(context, routeEnums[SayfaAdi.yardim]!),
     );
   }
 }
@@ -305,7 +299,8 @@ class _UrunKart extends StatelessWidget {
             child: LinearProgressIndicator(
               value: oran,
               minHeight: 6,
-              backgroundColor: colorScheme.outlineVariant.withValues(alpha: 0.4),
+              backgroundColor:
+                  colorScheme.outlineVariant.withValues(alpha: 0.4),
               valueColor: AlwaysStoppedAnimation<Color>(renk),
             ),
           ),
@@ -397,7 +392,8 @@ class _DurumRozet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final renk = aktif ? const Color(0xFF10B981) : const Color(0xFF94A3B8);
+    final renk =
+        aktif ? const Color(0xFF10B981) : Theme.of(context).colorScheme.outline;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(

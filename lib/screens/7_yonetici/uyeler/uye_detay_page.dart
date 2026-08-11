@@ -114,9 +114,8 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_data?.profil.adSoyad ??
-            widget.baslangicAdSoyad ??
-            'Üye Detayı'),
+        title: Text(
+            _data?.profil.adSoyad ?? widget.baslangicAdSoyad ?? 'Üye Detayı'),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -363,7 +362,9 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
                       Icon(
                         p.aktifMi ? Icons.check_circle : Icons.remove_circle,
                         size: 16,
-                        color: p.aktifMi ? Colors.green : Colors.grey,
+                        color: p.aktifMi
+                            ? Colors.green
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       const SizedBox(width: 10),
                       Expanded(

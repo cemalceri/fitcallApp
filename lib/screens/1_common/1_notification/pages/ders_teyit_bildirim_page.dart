@@ -301,12 +301,12 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BildirimRenkleri.arkaplanGri,
+      backgroundColor: context.bildirimRenk.arkaplanGri,
       body: SafeArea(
         child: _checkingStatus
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(
-                    strokeWidth: 2, color: TakvimColors.primary),
+                    strokeWidth: 2, color: context.takvim.primary),
               )
             : Column(
                 children: [
@@ -323,7 +323,7 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
     if (_isLessonCancelled) {
       return BildirimDurumGorunumWidget(
         icon: Icons.cancel_rounded,
-        color: BildirimRenkleri.hataKirmizi,
+        color: context.bildirimRenk.hataKirmizi,
         title: 'Ders İptal Edildi',
         subtitle: 'Bu ders iptal edilmiştir.',
         onClose: _handleClose,
@@ -334,7 +334,7 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
     if (_isLessonPast) {
       return BildirimDurumGorunumWidget(
         icon: Icons.schedule_rounded,
-        color: BildirimRenkleri.yaziIkincil,
+        color: context.bildirimRenk.yaziIkincil,
         title: 'Ders Tarihi Geçti',
         subtitle: 'Bu ders için katılım bildirimi artık yapılamaz.',
         onClose: _handleClose,
@@ -347,8 +347,8 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
       return BildirimDurumGorunumWidget(
         icon: katilacak ? Icons.check_circle_rounded : Icons.cancel_rounded,
         color: katilacak
-            ? BildirimRenkleri.basariYesil
-            : BildirimRenkleri.hataKirmizi,
+            ? context.bildirimRenk.basariYesil
+            : context.bildirimRenk.hataKirmizi,
         title: katilacak ? 'Katılacaksınız' : 'Katılmayacaksınız',
         subtitle: 'Bu ders için daha önce cevap verdiniz.',
         showChangeHint: true,
@@ -361,7 +361,7 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
     if (_tokenSuresiDoldu) {
       return BildirimDurumGorunumWidget(
         icon: Icons.timer_off_rounded,
-        color: BildirimRenkleri.uyariTuruncu,
+        color: context.bildirimRenk.uyariTuruncu,
         title: 'Bildirim Süresi Doldu',
         subtitle: 'Bu bildirim üç günden eski. Uygulamaya giriş yapıp '
             'takviminizden katılım bildirebilirsiniz.',
@@ -375,8 +375,8 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
       return BildirimDurumGorunumWidget(
         icon: katilacak ? Icons.check_circle_rounded : Icons.cancel_rounded,
         color: katilacak
-            ? BildirimRenkleri.basariYesil
-            : BildirimRenkleri.hataKirmizi,
+            ? context.bildirimRenk.basariYesil
+            : context.bildirimRenk.hataKirmizi,
         title: 'Bildirildi',
         subtitle: 'Cevabınız iletildi.',
         onClose: _handleClose,
@@ -425,12 +425,13 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
-                side: BorderSide(color: Colors.grey.shade300),
+                side: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant),
               ),
-              child: const Text('Kapat',
+              child: Text('Kapat',
                   style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: BildirimRenkleri.yaziAna)),
+                      color: context.bildirimRenk.yaziAna)),
             ),
           ),
         ],
@@ -503,12 +504,12 @@ class _KatilimButonlari extends StatelessWidget {
           child: FilledButton.icon(
             onPressed: isKatilacagimLoading ? null : onKatilacagim,
             icon: isKatilacagimLoading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                     ),
                   )
                 : const Icon(Icons.check_circle_rounded, size: 18),
@@ -517,7 +518,7 @@ class _KatilimButonlari extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
             ),
             style: FilledButton.styleFrom(
-              backgroundColor: BildirimRenkleri.basariYesil,
+              backgroundColor: context.bildirimRenk.basariYesil,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -536,7 +537,7 @@ class _KatilimButonlari extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
             ),
             style: FilledButton.styleFrom(
-              backgroundColor: TakvimColors.notAttending,
+              backgroundColor: context.takvim.notAttending,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -567,10 +568,10 @@ class _KatilmayacagimForm extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: TakvimColors.notAttending.withValues(alpha: 0.08),
+        color: context.takvim.notAttending.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: TakvimColors.notAttending.withValues(alpha: 0.25)),
+            color: context.takvim.notAttending.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -580,25 +581,26 @@ class _KatilmayacagimForm extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: TakvimColors.notAttending.withValues(alpha: 0.15),
+                  color: context.takvim.notAttending.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.event_busy_rounded,
-                    color: TakvimColors.notAttending, size: 20),
+                child: Icon(Icons.event_busy_rounded,
+                    color: context.takvim.notAttending, size: 20),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text('Katılamayacağımı Bildir',
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: BildirimRenkleri.yaziAna)),
+                        color: context.bildirimRenk.yaziAna)),
               ),
               IconButton(
+                tooltip: 'Kapat',
                 onPressed: onClose,
                 icon: const Icon(Icons.close_rounded),
                 style: IconButton.styleFrom(
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor: Theme.of(context).colorScheme.outlineVariant,
                   padding: const EdgeInsets.all(4),
                 ),
                 iconSize: 18,
@@ -611,22 +613,25 @@ class _KatilmayacagimForm extends StatelessWidget {
             maxLines: 3,
             decoration: InputDecoration(
               hintText: 'Açıklama (isteğe bağlı)',
-              hintStyle: TextStyle(color: Colors.grey.shade500),
+              hintStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                    color: TakvimColors.notAttending, width: 1.5),
+                borderSide:
+                    BorderSide(color: context.takvim.notAttending, width: 1.5),
               ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
               contentPadding: const EdgeInsets.all(14),
             ),
           ),
@@ -647,7 +652,7 @@ class _KatilmayacagimForm extends StatelessWidget {
                   isLoading ? 'Gönderiliyor...' : 'Katılamayacağımı Bildir',
                   style: const TextStyle(fontWeight: FontWeight.w600)),
               style: FilledButton.styleFrom(
-                backgroundColor: TakvimColors.notAttending,
+                backgroundColor: context.takvim.notAttending,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
@@ -668,10 +673,10 @@ class _BilgilendirmeNotu extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: TakvimColors.pending.withValues(alpha: 0.12),
+        color: context.takvim.pending.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: TakvimColors.pending.withValues(alpha: 0.35), width: 1.2),
+            color: context.takvim.pending.withValues(alpha: 0.35), width: 1.2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -679,43 +684,44 @@ class _BilgilendirmeNotu extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: TakvimColors.pending.withValues(alpha: 0.18),
+              color: context.takvim.pending.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.info_rounded, color: TakvimColors.pending, size: 18),
+                Icon(Icons.info_rounded,
+                    color: context.takvim.pending, size: 18),
                 const SizedBox(width: 6),
                 Text('Önemli Bilgiler',
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: TakvimColors.pending)),
+                        color: context.takvim.pending)),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          _buildMadde(
+          _buildMadde(context,
               'Ders iptali veya değişiklik taleplerinin en az 24 saat önceden bildirilmesini önemle rica ederiz. Bu süre içinde yapılmayan bildirimlerde ders, paket kapsamında kullanılmış sayılacaktır.'),
           const SizedBox(height: 6),
-          _buildMadde(
+          _buildMadde(context,
               'Zamanında bildirilmeyen dersler sistem tarafından "gerçekleşti" olarak işaretlenmektedir.'),
           const SizedBox(height: 6),
-          _buildMadde(
+          _buildMadde(context,
               'İstisnai hallerde, kort ve antrenör uygunluğu doğrultusunda telafi dersi planlanması için gerekli hassasiyet gösterilecektir; ancak telafi garantisi sunulamamaktadır.'),
           const SizedBox(height: 6),
-          _buildMadde(
+          _buildMadde(context,
               'Saat değişikliği talepleriniz için kulübümüzle doğrudan iletişime geçmenizi rica ederiz. Bu gibi durumlarda "katılamayacağım" butonunun kullanılmaması sürecin daha sağlıklı ilerlemesini sağlayacaktır.'),
           const SizedBox(height: 6),
-          _buildMadde(
+          _buildMadde(context,
               'Tüm sorularınız ve özel durumlarınız için ekibimiz size 8.30-20.30 saatleri arasında destek olmaktan memnuniyet duyacaktır.'),
         ],
       ),
     );
   }
 
-  Widget _buildMadde(String text) {
+  Widget _buildMadde(BuildContext context, String text) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -724,7 +730,7 @@ class _BilgilendirmeNotu extends StatelessWidget {
           width: 5,
           height: 5,
           decoration: BoxDecoration(
-            color: TakvimColors.pending.withValues(alpha: 0.7),
+            color: context.takvim.pending.withValues(alpha: 0.7),
             shape: BoxShape.circle,
           ),
         ),
@@ -732,7 +738,9 @@ class _BilgilendirmeNotu extends StatelessWidget {
         Expanded(
           child: Text(text,
               style: TextStyle(
-                  fontSize: 13, color: Colors.grey.shade700, height: 1.4)),
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  height: 1.4)),
         ),
       ],
     );

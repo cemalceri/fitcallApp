@@ -435,6 +435,7 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
       child: Row(
         children: [
           IconButton(
+            tooltip: 'Geri',
             onPressed: () => Navigator.pop(context),
             icon: Container(
               padding: const EdgeInsets.all(8),
@@ -475,6 +476,7 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
             ),
           ),
           IconButton(
+            tooltip: 'Yenile',
             onPressed: _yukle,
             icon: Container(
               padding: const EdgeInsets.all(10),
@@ -523,10 +525,10 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
               Expanded(
                 child: Text(
                   ev.ad,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
               ),
@@ -555,10 +557,10 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
                   const SizedBox(width: 6),
                   Text(
                     _kotaMetni(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                     ),
                   ),
                 ],
@@ -618,7 +620,7 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
                   return Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: const Color(0xFF2E7D6B).withValues(
@@ -855,7 +857,9 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
       ),
       child: FloatingActionButton.extended(
         onPressed: kotaDoldu ? null : _davetEt,
-        backgroundColor: kotaDoldu ? Colors.grey : const Color(0xFF2E7D6B),
+        backgroundColor: kotaDoldu
+            ? Theme.of(context).colorScheme.onSurfaceVariant
+            : const Color(0xFF2E7D6B),
         foregroundColor: Colors.white,
         elevation: 0,
         icon: Icon(kotaDoldu ? Icons.block : Icons.person_add_alt_1_rounded),

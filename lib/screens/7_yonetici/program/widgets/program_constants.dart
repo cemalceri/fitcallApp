@@ -33,7 +33,7 @@ class ProgramRenkleri {
   ProgramRenkleri._();
 
   static const Color saatCizgisi = Color(0xFFE2E8F0);
-  static const Color yarimSaatCizgisi = Color(0xFFF1F5F9);
+  static Color yarimSaatCizgisi = const Color(0x22808080);
   static const Color kortAyraci = Color(0xFFE2E8F0);
   static const Color simdiCizgisi = Color(0xFFEF4444);
 
@@ -41,7 +41,7 @@ class ProgramRenkleri {
   static const Color tamamlandi = Color(0xFF10B981);
   static const Color devamEdiyor = Color(0xFFF59E0B);
   static const Color planli = Color(0xFF2563EB);
-  static const Color onayBekliyor = Color(0xFF64748B);
+  static Color onayBekliyor = const Color(0xFF8C8C8C);
 
   static Color durumRengi(String durum) {
     switch (durum) {

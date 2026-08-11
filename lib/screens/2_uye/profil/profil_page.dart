@@ -1,6 +1,7 @@
 // lib/screens/2_uye/profile_page.dart
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/screens/2_uye/profil/widgets/menu_section.dart';
 import 'package:fitcall/screens/2_uye/profil/widgets/profile_header.dart';
@@ -102,74 +103,62 @@ class _ProfileContent extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final seviyeRenk = getSeviyeColor(uye.seviyeRengi);
 
+    // Kabuk sekmesi olarak açıldığında geri okunun gideceği yer yok.
+    final geriVar = Navigator.of(context).canPop();
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              seviyeRenk.withValues(alpha: 0.08),
-              colorScheme.surface,
-              colorScheme.secondary.withValues(alpha: 0.03),
+      body: CustomScrollView(
+        slivers: [
+          // Kaydırınca isim başlığa oturur (X/Twitter profil kalıbı):
+          // eski 340 px'lik başlık ekranın yarısını yiyordu.
+          SliverAppBar(
+            expandedHeight: 190,
+            pinned: true,
+            automaticallyImplyLeading: geriVar,
+            backgroundColor: colorScheme.surface,
+            surfaceTintColor: Colors.transparent,
+            title: Text('${uye.adi} ${uye.soyadi}'),
+            actions: [
+              IconButton(
+                tooltip: 'Ayarlar',
+                icon: const Icon(Icons.settings_outlined),
+                onPressed: () =>
+                    Navigator.pushNamed(context, routeEnums[SayfaAdi.ayarlar]!),
+              ),
             ],
+            flexibleSpace: FlexibleSpaceBar(
+              // Başlık yalnız kapanınca görünsün: açıkken isim başlıkta da
+              // gövdede de yazıyordu.
+              titlePadding: EdgeInsets.zero,
+              background: ProfileHeader(uye: uye, seviyeRenk: seviyeRenk),
+            ),
           ),
-        ),
-        child: CustomScrollView(
-          slivers: [
-            // Modern SliverAppBar
-            SliverAppBar(
-              expandedHeight: 340,
-              pinned: true,
-              stretch: true,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              flexibleSpace: FlexibleSpaceBar(
-                background: ProfileHeader(
-                  uye: uye,
-                  seviyeRenk: seviyeRenk,
-                ),
-              ),
-              leading: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 20,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ),
+
+          // İçerik
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ProfilDurumRozetleri(uye: uye, seviyeRenk: seviyeRenk),
+
+                  const SizedBox(height: 20),
+
+                  // Hızlı Bilgi Kartları
+                  QuickInfoSection(uye: uye, seviyeRenk: seviyeRenk),
+
+                  const SizedBox(height: 24),
+
+                  // Menü Bölümü
+                  MenuSection(uye: uye, seviyeRenk: seviyeRenk),
+
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
-
-            // İçerik
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    // Hızlı Bilgi Kartları
-                    QuickInfoSection(uye: uye, seviyeRenk: seviyeRenk),
-
-                    const SizedBox(height: 24),
-
-                    // Menü Bölümü
-                    MenuSection(uye: uye, seviyeRenk: seviyeRenk),
-
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

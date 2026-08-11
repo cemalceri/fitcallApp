@@ -74,8 +74,8 @@ class _PlanDisiUyeSecimSheetState extends State<PlanDisiUyeSecimSheet> {
 
     return Container(
       height: h * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -85,7 +85,7 @@ class _PlanDisiUyeSecimSheetState extends State<PlanDisiUyeSecimSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: Theme.of(context).colorScheme.outlineVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -114,6 +114,7 @@ class _PlanDisiUyeSecimSheetState extends State<PlanDisiUyeSecimSheet> {
                   ),
                 ),
                 IconButton(
+                  tooltip: 'Kapat',
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.close_rounded),
                 ),
@@ -132,11 +133,12 @@ class _PlanDisiUyeSecimSheetState extends State<PlanDisiUyeSecimSheet> {
                 suffixIcon: _searchCtrl.text.isEmpty
                     ? null
                     : IconButton(
+                        tooltip: 'Temizle',
                         icon: const Icon(Icons.clear_rounded),
                         onPressed: () => _searchCtrl.clear(),
                       ),
                 filled: true,
-                fillColor: Colors.grey.shade50,
+                fillColor: Colors.grey.withValues(alpha: 0.10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -176,13 +178,15 @@ class _PlanDisiUyeSecimSheetState extends State<PlanDisiUyeSecimSheet> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.search_off_rounded,
-                size: 48, color: Colors.grey.shade400),
+                size: 48,
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
             const SizedBox(height: 12),
             Text(
               _searchCtrl.text.isEmpty
                   ? 'Eklenebilecek üye yok'
                   : 'Sonuç bulunamadı',
-              style: TextStyle(color: Colors.grey.shade600),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ],
         ),
@@ -192,13 +196,13 @@ class _PlanDisiUyeSecimSheetState extends State<PlanDisiUyeSecimSheet> {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       itemCount: _filtered.length,
-      separatorBuilder: (_, __) =>
-          Divider(height: 1, color: Colors.grey.shade100),
+      separatorBuilder: (_, __) => Divider(
+          height: 1, color: Theme.of(context).colorScheme.outlineVariant),
       itemBuilder: (ctx, i) {
         final u = _filtered[i];
         return ListTile(
           leading: CircleAvatar(
-            backgroundColor: Colors.blue.shade50,
+            backgroundColor: Colors.blue.withValues(alpha: 0.10),
             child: Text(
               u.adSoyad.isNotEmpty ? u.adSoyad[0].toUpperCase() : '?',
               style: TextStyle(

@@ -3,7 +3,9 @@ import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_fcm_service.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -18,8 +20,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
   final _kullaniciAdiCtrl = TextEditingController();
   final _sifreCtrl = TextEditingController();
+  final _sifreFocus = FocusNode();
   bool _beniHatirla = false;
   bool _yukleniyor = false;
   bool _sifreGizli = true;
@@ -52,6 +56,7 @@ class _LoginPageState extends State<LoginPage> {
         .removeListener(_onNotificationDismissedRetryLogin);
     _kullaniciAdiCtrl.dispose();
     _sifreCtrl.dispose();
+    _sifreFocus.dispose();
     super.dispose();
   }
 
@@ -148,10 +153,9 @@ class _LoginPageState extends State<LoginPage> {
     if (_yukleniyor) return;
     final u = _kullaniciAdiCtrl.text.trim();
     final p = _sifreCtrl.text;
-    if (u.isEmpty || p.isEmpty) {
-      ShowMessage.error(context, 'Kullanıcı adı / şifre boş olamaz');
-      return;
-    }
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    // Şifre yöneticisine "bu değerleri kaydedebilirsin" sinyali.
+    TextInput.finishAutofillContext();
 
     setState(() => _yukleniyor = true);
     try {
@@ -184,438 +188,197 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = context.cs;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    const Color(0xFF0F172A),
-                    const Color(0xFF1E293B),
-                  ]
-                : [
-                    const Color(0xFFF8FAFC),
-                    const Color(0xFFE2E8F0),
-                  ],
-          ),
-        ),
-        child: SafeArea(
-          child: (_hazirlaniyor || _otomatikGiris)
-              ? _buildGirisYapiliyor(isDark)
-              : Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: _buildGlassContainer(isDark),
+      // Buzlu cam yüzeyler ve iç içe yarı saydam katmanlar kaldırıldı:
+      // düz yüzey + net kontrast hem okunur hem koyu temayla uyumlu.
+      body: SafeArea(
+        child: (_hazirlaniyor || _otomatikGiris)
+            ? _girisYapiliyor()
+            : Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(Bosluk.xl),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: AutofillGroup(
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _logo(cs),
+                            const SizedBox(height: Bosluk.xl),
+                            Text('Hoş geldiniz',
+                                style: context.metin.headlineMedium),
+                            const SizedBox(height: Bosluk.xs),
+                            Text(
+                              'Giriş için bilgilerinizi girin',
+                              textAlign: TextAlign.center,
+                              style: context.metin.bodyMedium
+                                  ?.copyWith(color: cs.onSurfaceVariant),
+                            ),
+                            const SizedBox(height: Bosluk.xl),
+                            _kullaniciAlani(),
+                            const SizedBox(height: Bosluk.m),
+                            _sifreAlani(),
+                            const SizedBox(height: Bosluk.s),
+                            _beniHatirlaSatiri(),
+                            const SizedBox(height: Bosluk.l),
+                            _girisButonu(),
+                            const SizedBox(height: Bosluk.s),
+                            _baglantilar(),
+                            const SizedBox(height: Bosluk.l),
+                            _surum(),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-        ),
+              ),
       ),
     );
   }
 
   /// Beni-hatırla otomatik girişinde gösterilen tam ekran açılış.
-  Widget _buildGirisYapiliyor(bool isDark) {
-    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+  Widget _girisYapiliyor() {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.white.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.2)
-                      : Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Image.asset(
-              'assets/images/logo.png',
-              width: 96,
-              height: 96,
-            ),
+          _logo(context.cs),
+          const SizedBox(height: Bosluk.xxl),
+          const SizedBox(
+            width: 30,
+            height: 30,
+            child: CircularProgressIndicator(strokeWidth: 3),
           ),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: 32,
-            height: 32,
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(textColor),
-            ),
-          ),
-          // "Giriş yapılıyor…" yalnızca gerçekten otomatik giriş sürerken;
-          // beni-hatırla durumunu belirlerken (kısa an) sadece logo + spinner.
           if (_otomatikGiris) ...[
-            const SizedBox(height: 20),
-            Text(
-              'Giriş yapılıyor…',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: textColor,
-                letterSpacing: 0.2,
-              ),
-            ),
+            const SizedBox(height: Bosluk.l),
+            Text('Giriş yapılıyor…', style: context.metin.titleSmall),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildGlassContainer(bool isDark) {
+  Widget _logo(ColorScheme cs) {
     return Container(
-      constraints: const BoxConstraints(maxWidth: 400),
-      padding: const EdgeInsets.all(40),
+      padding: const EdgeInsets.all(Bosluk.l),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.white.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.white.withValues(alpha: 0.5),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.3)
-                : Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildLogo(isDark),
-          const SizedBox(height: 32),
-          _buildTitle(isDark),
-          const SizedBox(height: 8),
-          _buildSubtitle(isDark),
-          const SizedBox(height: 32),
-          _buildInputFields(isDark),
-          const SizedBox(height: 16),
-          _buildRememberMe(isDark),
-          const SizedBox(height: 24),
-          _buildLoginButton(isDark),
-          const SizedBox(height: 16),
-          _buildLinks(isDark),
-          const SizedBox(height: 24),
-          _buildVersion(isDark),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLogo(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.08)
-            : Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.2)
-                : Colors.black.withValues(alpha: 0.06),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        // Logo siyah çizgili: koyu temada okunması için zemin hep beyaz.
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(Yaricap.xl),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Image.asset(
         'assets/images/logo.png',
-        width: 100,
-        height: 100,
+        width: 92,
+        height: 92,
+        semanticLabel: 'Binay Tenis Akademi',
       ),
     );
   }
 
-  Widget _buildTitle(bool isDark) {
-    return Text(
-      "Hoşgeldiniz",
-      style: TextStyle(
-        fontSize: 28,
-        fontWeight: FontWeight.w700,
-        color: isDark ? Colors.white : const Color(0xFF1E293B),
-        letterSpacing: -0.3,
+  Widget _kullaniciAlani() {
+    return TextFormField(
+      controller: _kullaniciAdiCtrl,
+      autofillHints: const [AutofillHints.username],
+      textInputAction: TextInputAction.next,
+      keyboardType: TextInputType.name,
+      autocorrect: false,
+      decoration: const InputDecoration(
+        labelText: 'Kullanıcı adı',
+        prefixIcon: Icon(Icons.person_outline_rounded),
       ),
+      validator: (v) =>
+          (v ?? '').trim().isEmpty ? 'Kullanıcı adı gerekli' : null,
+      onFieldSubmitted: (_) => _sifreFocus.requestFocus(),
     );
   }
 
-  Widget _buildSubtitle(bool isDark) {
-    return Text(
-      "Giriş için lütfen bilgilerinizi giriniz",
-      style: TextStyle(
-        fontSize: 15,
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.7)
-            : const Color(0xFF64748B),
-      ),
-      textAlign: TextAlign.center,
-    );
-  }
-
-  Widget _buildInputFields(bool isDark) {
-    return Column(
-      children: [
-        // Kullanıcı Adı
-        Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.white.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.15)
-                  : Colors.white.withValues(alpha: 0.7),
-              width: 1,
-            ),
-          ),
-          child: TextField(
-            controller: _kullaniciAdiCtrl,
-            style: TextStyle(
-              fontSize: 16,
-              color: isDark ? Colors.white : const Color(0xFF1E293B),
-            ),
-            decoration: InputDecoration(
-              hintText: "Kullanıcı Adı",
-              hintStyle: TextStyle(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.5)
-                    : const Color(0xFF94A3B8),
-              ),
-              prefixIcon: Icon(
-                Icons.person_outline_rounded,
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.6)
-                    : const Color(0xFF64748B),
-                size: 22,
-              ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
-              ),
-            ),
-          ),
+  Widget _sifreAlani() {
+    return TextFormField(
+      controller: _sifreCtrl,
+      focusNode: _sifreFocus,
+      obscureText: _sifreGizli,
+      autofillHints: const [AutofillHints.password],
+      textInputAction: TextInputAction.done,
+      keyboardType: TextInputType.visiblePassword,
+      decoration: InputDecoration(
+        labelText: 'Şifre',
+        prefixIcon: const Icon(Icons.lock_outline_rounded),
+        suffixIcon: IconButton(
+          tooltip: _sifreGizli ? 'Şifreyi göster' : 'Şifreyi gizle',
+          icon: Icon(_sifreGizli
+              ? Icons.visibility_outlined
+              : Icons.visibility_off_outlined),
+          onPressed: () => setState(() => _sifreGizli = !_sifreGizli),
         ),
-        const SizedBox(height: 16),
-        // Şifre
-        Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.white.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.15)
-                  : Colors.white.withValues(alpha: 0.7),
-              width: 1,
-            ),
-          ),
-          child: TextField(
-            controller: _sifreCtrl,
-            obscureText: _sifreGizli,
-            style: TextStyle(
-              fontSize: 16,
-              color: isDark ? Colors.white : const Color(0xFF1E293B),
-            ),
-            decoration: InputDecoration(
-              hintText: "Şifre",
-              hintStyle: TextStyle(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.5)
-                    : const Color(0xFF94A3B8),
-              ),
-              prefixIcon: Icon(
-                Icons.lock_outline_rounded,
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.6)
-                    : const Color(0xFF64748B),
-                size: 22,
-              ),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  _sifreGizli
-                      ? Icons.visibility_outlined
-                      : Icons.visibility_off_outlined,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.6)
-                      : const Color(0xFF64748B),
-                  size: 22,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _sifreGizli = !_sifreGizli;
-                  });
-                },
-              ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
+      validator: (v) => (v ?? '').isEmpty ? 'Şifre gerekli' : null,
+      onFieldSubmitted: (_) => _girisButonunaBasildi(),
     );
   }
 
-  Widget _buildRememberMe(bool isDark) {
+  Widget _beniHatirlaSatiri() {
     return Row(
       children: [
-        SizedBox(
-          height: 20,
-          width: 20,
-          child: Checkbox(
-            value: _beniHatirla,
-            onChanged: (value) async {
-              final v = value ?? false;
-              setState(() => _beniHatirla = v);
-              StorageService.setBeniHatirla(v);
-              if (!v) {
-                await SecureStorageService.remove(_kRememberUser);
-                await SecureStorageService.remove(_kRememberPass);
-              }
-            },
-            fillColor: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.selected)) {
-                return isDark ? Colors.white : const Color(0xFF1E293B);
-              }
-              return isDark
-                  ? Colors.white.withValues(alpha: 0.3)
-                  : Colors.grey.shade300;
-            }),
-            checkColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
+        Checkbox(
+          value: _beniHatirla,
+          onChanged: (value) async {
+            final v = value ?? false;
+            setState(() => _beniHatirla = v);
+            StorageService.setBeniHatirla(v);
+            if (!v) {
+              await SecureStorageService.remove(_kRememberUser);
+              await SecureStorageService.remove(_kRememberPass);
+            }
+          },
         ),
-        const SizedBox(width: 10),
-        Text(
-          "Beni Hatırla",
-          style: TextStyle(
-            fontSize: 14,
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.8)
-                : const Color(0xFF475569),
-          ),
-        ),
+        const Expanded(child: Text('Beni hatırla')),
       ],
     );
   }
 
-  Widget _buildLoginButton(bool isDark) {
+  Widget _girisButonu() {
     return SizedBox(
       width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
+      child: FilledButton(
         onPressed: _yukleniyor ? null : _girisButonunaBasildi,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isDark ? Colors.white : const Color(0xFF1E293B),
-          foregroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-          disabledBackgroundColor: isDark
-              ? Colors.white.withValues(alpha: 0.5)
-              : Colors.grey.shade400,
-          elevation: 0,
-          shadowColor: isDark
-              ? Colors.white.withValues(alpha: 0.3)
-              : Colors.black.withValues(alpha: 0.2),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
         child: _yukleniyor
-            ? SizedBox(
+            ? const SizedBox(
                 height: 20,
                 width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isDark ? const Color(0xFF1E293B) : Colors.white,
-                  ),
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const Text(
-                "Giriş Yap",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.3,
-                ),
-              ),
+            : const Text('Giriş yap'),
       ),
     );
   }
 
-  Widget _buildLinks(bool isDark) {
+  Widget _baglantilar() {
     return Column(
       children: [
         TextButton(
-          onPressed: () {
-            Navigator.pushNamed(context, routeEnums[SayfaAdi.sifremiUnuttum]!);
-          },
-          child: Text(
-            "Şifremi Unuttum",
-            style: TextStyle(
-              fontSize: 14,
-              color: isDark ? Colors.white : const Color(0xFF1E293B),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          onPressed: () => Navigator.pushNamed(
+              context, routeEnums[SayfaAdi.sifremiUnuttum]!),
+          child: const Text('Şifremi unuttum'),
         ),
-        const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              "Hesabın yok mu? ",
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.7)
-                    : const Color(0xFF64748B),
-              ),
+            Flexible(
+              child: Text('Hesabın yok mu?',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.metin.bodyMedium),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, routeEnums[SayfaAdi.kayitol]!);
-              },
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-              ),
-              child: Text(
-                "Kayıt ol",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.white : const Color(0xFF1E293B),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              onPressed: () =>
+                  Navigator.pushNamed(context, routeEnums[SayfaAdi.kayitol]!),
+              child: const Text('Kayıt ol'),
             ),
           ],
         ),
@@ -623,15 +386,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildVersion(bool isDark) {
-    return Text(
-      _surumYazi ?? '',
-      style: TextStyle(
-        fontSize: 12,
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.4)
-            : const Color(0xFF94A3B8),
-      ),
-    );
+  Widget _surum() {
+    return Text(_surumYazi ?? '', style: context.metin.bodySmall);
   }
 }

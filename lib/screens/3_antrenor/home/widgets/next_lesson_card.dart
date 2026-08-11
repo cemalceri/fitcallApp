@@ -119,7 +119,7 @@ class NextLessonCard extends StatelessWidget {
     final lesson = nextLesson!;
     final tf = DateFormat('HH:mm');
     final df = DateFormat('d MMMM EEEE', 'tr_TR');
-    
+
     final now = simdiKulup();
     final diff = lesson.baslangicTarihSaat.difference(now);
     final countdown = _getCountdown(diff);
@@ -168,7 +168,8 @@ class NextLessonCard extends StatelessWidget {
                         const SizedBox(height: 8),
                         _InfoPill(
                           icon: Icons.access_time_rounded,
-                          text: '${tf.format(lesson.baslangicTarihSaat)} - ${tf.format(lesson.bitisTarihSaat)}',
+                          text:
+                              '${tf.format(lesson.baslangicTarihSaat)} - ${tf.format(lesson.bitisTarihSaat)}',
                         ),
                         const SizedBox(height: 6),
                         _InfoPill(
@@ -179,7 +180,8 @@ class NextLessonCard extends StatelessWidget {
                           const SizedBox(height: 6),
                           _InfoPill(
                             icon: Icons.person_outline_rounded,
-                            text: lesson.uyeList.map((u) => u.adSoyad).join(', '),
+                            text:
+                                lesson.uyeList.map((u) => u.adSoyad).join(', '),
                           ),
                         ],
                       ],
@@ -195,7 +197,8 @@ class NextLessonCard extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  color: colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -267,10 +270,10 @@ class _DateBox extends StatelessWidget {
         children: [
           Text(
             date.day.toString(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
             ),
           ),
           Text(

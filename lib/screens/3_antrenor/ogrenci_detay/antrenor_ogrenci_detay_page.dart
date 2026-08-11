@@ -400,8 +400,8 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
         _telefonSatiri(
             colorScheme, 'Baba${_adEki(v.babaAdiSoyadi)}', v.babaTelefon!),
       if (v.acilDurumTelefon != null && v.acilDurumTelefon!.isNotEmpty)
-        _telefonSatiri(colorScheme, 'Acil${_adEki(v.acilDurumKisi)}',
-            v.acilDurumTelefon!),
+        _telefonSatiri(
+            colorScheme, 'Acil${_adEki(v.acilDurumKisi)}', v.acilDurumTelefon!),
     ];
 
     return _kart(
@@ -514,8 +514,8 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
                 ),
                 if (paket.kalanHak != null && paket.toplamHak != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: (paket.kalanHak! <= 2
                               ? const Color(0xFFEF4444)
@@ -568,9 +568,8 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
       baslik: 'Son Katılımlar',
       ikon: Icons.fact_check_outlined,
       children: _detay!.sonKatilimlar.map((katilim) {
-        final renk = katilim.katildi
-            ? const Color(0xFF10B981)
-            : const Color(0xFFEF4444);
+        final renk =
+            katilim.katildi ? const Color(0xFF10B981) : const Color(0xFFEF4444);
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 5),
           child: Row(

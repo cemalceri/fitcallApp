@@ -9,6 +9,7 @@ import 'package:fitcall/screens/2_uye/takvim/widgets/ders_degerlendirme_popup.da
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
+import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/common/tarih_util.dart';
@@ -147,16 +148,13 @@ class _GecmisDerslerPageState extends State<GecmisDerslerPage> {
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         const SizedBox(height: 120),
-        Icon(Icons.history_rounded,
-            size: 64, color: colorScheme.outlineVariant),
-        const SizedBox(height: 16),
-        Center(
-          child: Text(
-            'Son 30 günde ders kaydınız yok',
-            style: TextStyle(color: colorScheme.onSurfaceVariant),
-          ),
+        const BosDurum(
+          ikon: Icons.history_rounded,
+          baslik: 'Son 30 günde ders yok',
+          aciklama: 'Katıldığın dersler burada listelenir. '
+              'Daha eski kayıtlar için aşağıdaki butonu kullanabilirsin.',
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         Center(child: _dahaEskiButonu(colorScheme)),
       ],
     );
@@ -169,8 +167,7 @@ class _GecmisDerslerPageState extends State<GecmisDerslerPage> {
         child: Center(
           child: Text(
             'Daha eski kayıt bulunamadı',
-            style:
-                TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+            style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
           ),
         ),
       );

@@ -33,12 +33,12 @@ class LessonBlock extends StatelessWidget {
       borderColor = const Color(0xFFFCA5A5); // Kırmızı border
       statusIcon = Icons.cancel_rounded;
     } else if (isPast) {
-      statusColor = TakvimColors.completed;
+      statusColor = context.takvim.completed;
       backgroundColor = statusColor.withValues(alpha: 0.12);
       borderColor = statusColor;
       statusIcon = Icons.check_circle_rounded;
     } else {
-      statusColor = TakvimColors.future;
+      statusColor = context.takvim.future;
       backgroundColor = statusColor.withValues(alpha: 0.12);
       borderColor = statusColor;
       statusIcon = Icons.schedule_rounded;
@@ -101,8 +101,10 @@ class LessonBlock extends StatelessWidget {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: isIptal
-                                    ? Colors.grey.shade600
-                                    : TakvimColors.textPrimary,
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant
+                                    : context.takvim.textPrimary,
                                 decoration:
                                     isIptal ? TextDecoration.lineThrough : null,
                                 decorationColor: statusColor,
@@ -171,8 +173,10 @@ class LessonBlock extends StatelessWidget {
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: isIptal
-                                  ? Colors.grey.shade600
-                                  : TakvimColors.textPrimary,
+                                  ? Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                  : context.takvim.textPrimary,
                               decoration:
                                   isIptal ? TextDecoration.lineThrough : null,
                               decorationColor: statusColor,
@@ -193,8 +197,10 @@ class LessonBlock extends StatelessWidget {
                                 Icons.person_rounded,
                                 size: 12,
                                 color: isIptal
-                                    ? Colors.grey.shade400
-                                    : TakvimColors.textMuted,
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant
+                                    : context.takvim.textMuted,
                               ),
                               const SizedBox(width: 4),
                               Expanded(
@@ -203,8 +209,10 @@ class LessonBlock extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: isIptal
-                                        ? Colors.grey.shade500
-                                        : TakvimColors.textSecondary,
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant
+                                        : context.takvim.textSecondary,
                                     decoration: isIptal
                                         ? TextDecoration.lineThrough
                                         : null,

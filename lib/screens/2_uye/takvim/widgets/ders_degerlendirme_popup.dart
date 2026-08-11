@@ -142,7 +142,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: Theme.of(context).colorScheme.outlineVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -158,7 +158,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                   decoration: BoxDecoration(
                     color: widget.ders.iptalMi
                         ? Colors.red.withValues(alpha: 0.12)
-                        : TakvimColors.completed.withValues(alpha: 0.12),
+                        : context.takvim.completed.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
@@ -167,7 +167,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                         : Icons.star_rounded,
                     color: widget.ders.iptalMi
                         ? Colors.red
-                        : TakvimColors.completed,
+                        : context.takvim.completed,
                     size: 24,
                   ),
                 ),
@@ -214,7 +214,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.red.shade50,
+                      color: Colors.red.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.red.shade200),
                     ),
@@ -256,7 +256,8 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                     child: FilledButton(
                       onPressed: () => Navigator.pop(context),
                       style: FilledButton.styleFrom(
-                        backgroundColor: Colors.grey.shade700,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.onSurfaceVariant,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -299,7 +300,10 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12)),
-                            side: BorderSide(color: Colors.grey.shade300),
+                            side: BorderSide(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant),
                           ),
                           child: const Text('Kapat',
                               style: TextStyle(fontWeight: FontWeight.w600)),
@@ -320,7 +324,10 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                                     const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12)),
-                                side: BorderSide(color: Colors.grey.shade300),
+                                side: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .outlineVariant),
                               ),
                               child: const Text('Vazgeç',
                                   style:
@@ -334,7 +341,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                               onPressed:
                                   _isLoading || _puan == 0 ? null : _kaydet,
                               style: FilledButton.styleFrom(
-                                backgroundColor: TakvimColors.completed,
+                                backgroundColor: context.takvim.completed,
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
@@ -369,13 +376,13 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: widget.ders.iptalMi
-            ? Colors.grey.shade100
-            : TakvimColors.completed.withValues(alpha: 0.08),
+            ? Theme.of(context).colorScheme.outlineVariant
+            : context.takvim.completed.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: widget.ders.iptalMi
-              ? Colors.grey.shade300
-              : TakvimColors.completed.withValues(alpha: 0.2),
+              ? Theme.of(context).colorScheme.outlineVariant
+              : context.takvim.completed.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -385,14 +392,15 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
             decoration: BoxDecoration(
               color: widget.ders.iptalMi
                   ? Colors.red.withValues(alpha: 0.15)
-                  : TakvimColors.completed.withValues(alpha: 0.15),
+                  : context.takvim.completed.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               widget.ders.iptalMi
                   ? Icons.cancel_rounded
                   : Icons.check_circle_rounded,
-              color: widget.ders.iptalMi ? Colors.red : TakvimColors.completed,
+              color:
+                  widget.ders.iptalMi ? Colors.red : context.takvim.completed,
               size: 24,
             ),
           ),
@@ -408,7 +416,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                     fontWeight: FontWeight.w500,
                     color: widget.ders.iptalMi
                         ? Colors.red
-                        : TakvimColors.completed,
+                        : context.takvim.completed,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -418,13 +426,17 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                 const SizedBox(height: 2),
                 Text(
                   '${TimeUtils.formatTime(widget.ders.baslangicTarihSaat)} - ${TimeUtils.formatTime(widget.ders.bitisTarihSaat)}',
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
                 if (widget.ders.antrenorAdi != null) ...[
                   const SizedBox(height: 2),
                   Text(widget.ders.antrenorAdi!,
-                      style:
-                          TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+                      style: TextStyle(
+                          fontSize: 13,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant)),
                 ],
               ],
             ),
@@ -438,9 +450,10 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: TakvimColors.pending.withValues(alpha: 0.1),
+        color: context.takvim.pending.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: TakvimColors.pending.withValues(alpha: 0.25)),
+        border:
+            Border.all(color: context.takvim.pending.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,8 +468,9 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                   return Icon(
                     i < _puan ? Icons.star_rounded : Icons.star_border_rounded,
                     size: 24,
-                    color:
-                        i < _puan ? TakvimColors.pending : Colors.grey.shade300,
+                    color: i < _puan
+                        ? context.takvim.pending
+                        : Theme.of(context).colorScheme.outlineVariant,
                   );
                 }),
               ),
@@ -473,7 +487,9 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
               decoration: BoxDecoration(
                   color: Colors.white, borderRadius: BorderRadius.circular(10)),
               child: Text(_yorumController.text,
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
+                  style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ),
           ],
         ],
@@ -491,9 +507,10 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
+            color: Colors.grey.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.grey.shade200),
+            border:
+                Border.all(color: Theme.of(context).colorScheme.outlineVariant),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -511,8 +528,8 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                     isSelected ? Icons.star_rounded : Icons.star_border_rounded,
                     size: 44,
                     color: isSelected
-                        ? TakvimColors.pending
-                        : Colors.grey.shade300,
+                        ? context.takvim.pending
+                        : Theme.of(context).colorScheme.outlineVariant,
                   ),
                 ),
               );
@@ -535,22 +552,25 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
           maxLines: 4,
           decoration: InputDecoration(
             hintText: 'Ders hakkında düşüncelerinizi paylaşın...',
-            hintStyle: TextStyle(color: Colors.grey.shade500),
+            hintStyle: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide:
-                  const BorderSide(color: TakvimColors.completed, width: 1.5),
+                  BorderSide(color: context.takvim.completed, width: 1.5),
             ),
             filled: true,
-            fillColor: Colors.grey.shade50,
+            fillColor: Colors.grey.withValues(alpha: 0.10),
             contentPadding: const EdgeInsets.all(16),
           ),
         ),
@@ -562,7 +582,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: Colors.blue.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.blue.shade200),
       ),

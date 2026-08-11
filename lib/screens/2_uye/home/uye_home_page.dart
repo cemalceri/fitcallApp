@@ -13,7 +13,6 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/duyuru_carousel.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_header.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_next_lesson_card.dart';
-import 'package:fitcall/screens/2_uye/home/widgets/uye_bottom_bar.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_drawer.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_odul_sayaci.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_ozet_serit.dart';
@@ -239,7 +238,6 @@ class _UyeHomePageState extends State<UyeHomePage> {
         userId: _userId,
         onEventReturn: _checkAktifEvent,
       ),
-      bottomNavigationBar: const UyeBottomBar(),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(

@@ -1,6 +1,7 @@
 import 'package:fitcall/screens/1_common/yardim_page.dart';
+import 'package:fitcall/screens/2_uye/uye_kabuk.dart';
+import 'package:fitcall/screens/3_antrenor/antrenor_kabuk.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_yardim_page.dart';
-import 'package:fitcall/screens/2_uye/home/uye_home_page.dart';
 import 'package:fitcall/screens/2_uye/takvim/uye_takvim_page.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/antrenor_takvim_page.dart';
 import 'package:fitcall/screens/4_auth/forgot_password_page.dart';
@@ -27,12 +28,12 @@ import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_page.dart';
 import 'package:fitcall/screens/6_muhasebe/muhasebe_page.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_talep_page.dart';
 
-import 'package:fitcall/screens/3_antrenor/home/antrenor_home_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_ogrenciler_page.dart';
 import 'package:fitcall/screens/3_antrenor/eksik_yoklama/antrenor_eksik_yoklama_page.dart';
 
 import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
+import 'package:fitcall/screens/1_common/ayarlar/ayarlar_page.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
@@ -66,6 +67,7 @@ enum SayfaAdi {
   dersTeyit,
   teyitBekleyen,
   yardim,
+  ayarlar,
 }
 
 /* ------------------ 1) Enum -> String ------------------ */
@@ -98,6 +100,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.dersTeyit: '/dersTeyit',
   SayfaAdi.teyitBekleyen: '/teyitBekleyen',
   SayfaAdi.yardim: '/yardim',
+  SayfaAdi.ayarlar: '/ayarlar',
 };
 
 /* ------------------ 2) String -> Widget ------------------ */
@@ -108,16 +111,16 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.sifremiUnuttum]!: (c) => const ForgotPasswordPage(),
   routeEnums[SayfaAdi.qrKodKayit]!: (c) => const QRKodKayitPage(),
   routeEnums[SayfaAdi.qrKodDogrula]!: (c) => const QRKodDogrulaPage(),
-  routeEnums[SayfaAdi.uyeAnasayfa]!: (c) => UyeHomePage(),
+  routeEnums[SayfaAdi.uyeAnasayfa]!: (c) => const UyeKabuk(),
   routeEnums[SayfaAdi.profil]!: (c) => const ProfilePage(),
   routeEnums[SayfaAdi.uyelikPaket]!: (c) => const UyeUrunListPage(),
   routeEnums[SayfaAdi.telafiHaklari]!: (c) => const TelafiHaklariPage(),
   routeEnums[SayfaAdi.muhasebe]!: (c) => const MuhasebePage(),
   routeEnums[SayfaAdi.dersler]!: (c) => const DersListesiPage(),
   routeEnums[SayfaAdi.uyeGecmisDersler]!: (c) => const GecmisDerslerPage(),
-  routeEnums[SayfaAdi.antrenorAnasayfa]!: (c) => AntrenorHomePage(),
-  routeEnums[SayfaAdi.antrenorProfil]!: (c) => AntrenorProfilPage(),
-  routeEnums[SayfaAdi.antrenorDersler]!: (c) => AntrenorTakvimPage(),
+  routeEnums[SayfaAdi.antrenorAnasayfa]!: (c) => const AntrenorKabuk(),
+  routeEnums[SayfaAdi.antrenorProfil]!: (c) => const AntrenorProfilPage(),
+  routeEnums[SayfaAdi.antrenorDersler]!: (c) => const AntrenorTakvimPage(),
   routeEnums[SayfaAdi.antrenorEksikYoklama]!: (c) =>
       const AntrenorEksikYoklamaPage(),
   routeEnums[SayfaAdi.antrenorHakedis]!: (c) => const AntrenorHakedisPage(),
@@ -140,6 +143,7 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.dersTeyit]!: (c) => const DersTeyitPage(),
   routeEnums[SayfaAdi.teyitBekleyen]!: (c) => const TeyitBekleyenlerPage(),
   routeEnums[SayfaAdi.yardim]!: (c) => const YardimPage(),
+  routeEnums[SayfaAdi.ayarlar]!: (c) => const AyarlarPage(),
 };
 
 /* ------------------ 3) Public rotalar ------------------ */
@@ -169,6 +173,7 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.qrKodDogrula]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yardim]!: AccessRule.anyone,
   routeEnums[SayfaAdi.antrenorYardim]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.ayarlar]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yoneticiProgram]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yoneticiHakedis]!: AccessRule.anyone,
   routeEnums[SayfaAdi.antrenorHakedis]!: AccessRule.anyone,

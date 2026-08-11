@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/common/ui_scale.dart';
+import 'package:fitcall/services/core/tema_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -17,6 +19,9 @@ void main() async {
   await Future.wait([
     Firebase.initializeApp(),
     initializeDateFormatting('tr', null),
+    // Tema tercihi ilk kareden önce okunmalı; yoksa uygulama açık temada
+    // açılıp anında koyuya geçer (göz yoran bir çakma).
+    TemaKontrol.yukle(),
   ]);
   await NotificationFCMService.instance.initialize();
   initFCMTokenListener();
@@ -68,18 +73,20 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      navigatorKey: navigatorKey,
-      title: 'Binay Akademi',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: TemaKontrol.modu,
+      builder: (context, temaModu, _) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
+        title: 'Binay Akademi',
+        theme: FitcallTema.acik,
+        darkTheme: FitcallTema.koyu,
+        themeMode: temaModu,
+        onGenerateRoute: myRouteGenerator,
+        initialRoute: '/',
+        // Yazı ölçeğini uygulama genelinde makul üst sınıra çek (bkz. ui_scale.dart)
+        builder: yaziOlceginiSinirla,
       ),
-      onGenerateRoute: myRouteGenerator,
-      initialRoute: '/',
-      // Yazı ölçeğini uygulama genelinde makul üst sınıra çek (bkz. ui_scale.dart)
-      builder: yaziOlceginiSinirla,
     );
   }
 }

@@ -41,8 +41,8 @@ class UyeHomeOzetModel {
       ozet: UyeOzetModel.fromJson(
           (json['ozet'] as Map?)?.cast<String, dynamic>() ?? const {}),
       kartlar: kartlarJson
-          .map((e) =>
-              HomeCardModel.fromJson((e as Map).cast<String, dynamic>()))
+          .map(
+              (e) => HomeCardModel.fromJson((e as Map).cast<String, dynamic>()))
           .toList(),
     );
   }

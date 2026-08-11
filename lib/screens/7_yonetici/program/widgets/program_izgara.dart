@@ -96,7 +96,8 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
   }
 
   /// Bir kortun derslerini çakışma gruplarına ayırıp kolon indeksi atar.
-  List<_Yerlesim> _kortYerlesimi(List<ProgramDersi> kortDersleri, int baslangicSaati) {
+  List<_Yerlesim> _kortYerlesimi(
+      List<ProgramDersi> kortDersleri, int baslangicSaati) {
     if (kortDersleri.isEmpty) return const [];
 
     final sirali = [...kortDersleri]
@@ -141,7 +142,8 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
     }
 
     for (final d in sirali) {
-      if (grup.isEmpty || (grupBitis != null && d.baslangic.isBefore(grupBitis!))) {
+      if (grup.isEmpty ||
+          (grupBitis != null && d.baslangic.isBefore(grupBitis!))) {
         grup.add(d);
         grupBitis = (grupBitis == null || d.bitis.isAfter(grupBitis!))
             ? d.bitis
@@ -200,10 +202,12 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
                                       d.localPosition, basSaat),
                                 ),
                               ),
-                            ..._saatCizgileri(basSaat, bitSaat, izgaraGenisligi),
+                            ..._saatCizgileri(
+                                basSaat, bitSaat, izgaraGenisligi),
                             ..._kortAyraclari(toplamYukseklik),
                             ..._dersBloklari(basSaat),
-                            if (_bugunMu) _simdiCizgisi(basSaat, izgaraGenisligi),
+                            if (_bugunMu)
+                              _simdiCizgisi(basSaat, izgaraGenisligi),
                           ],
                         ),
                       ),
@@ -315,7 +319,8 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
           top: ust + ProgramOlculeri.saatYuksekligi / 2,
           left: 0,
           width: genislik,
-          child: Container(height: 0.5, color: ProgramRenkleri.yarimSaatCizgisi),
+          child:
+              Container(height: 0.5, color: ProgramRenkleri.yarimSaatCizgisi),
         ));
       }
     }

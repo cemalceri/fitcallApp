@@ -229,8 +229,7 @@ class OgrenciDetayModel {
       istatistik: OgrenciIstatistik.fromJson(
           (json['istatistik'] as Map?)?.cast<String, dynamic>() ?? const {}),
       paketler: ((json['paketler'] as List?) ?? const [])
-          .map((e) =>
-              OgrenciPaket.fromJson((e as Map).cast<String, dynamic>()))
+          .map((e) => OgrenciPaket.fromJson((e as Map).cast<String, dynamic>()))
           .toList(),
       aktifTelafi: (json['aktif_telafi'] as num?)?.toInt() ?? 0,
       sonKatilimlar: ((json['son_katilimlar'] as List?) ?? const [])

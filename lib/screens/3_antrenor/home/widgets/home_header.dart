@@ -115,6 +115,7 @@ class _LogoutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      tooltip: 'Çıkış yap',
       onPressed: () {
         HapticFeedback.lightImpact();
         AuthService.logout(context);

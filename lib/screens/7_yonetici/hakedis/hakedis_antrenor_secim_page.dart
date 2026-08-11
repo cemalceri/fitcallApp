@@ -91,7 +91,9 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
     final tumu = _veri?.antrenorler ?? const <HakedisAntrenorOzeti>[];
     final anahtar = _arama.trim().toLowerCase();
     if (anahtar.isEmpty) return tumu;
-    return tumu.where((a) => a.adSoyad.toLowerCase().contains(anahtar)).toList();
+    return tumu
+        .where((a) => a.adSoyad.toLowerCase().contains(anahtar))
+        .toList();
   }
 
   void _antrenorAc(HakedisAntrenorOzeti antrenor) {
@@ -220,8 +222,7 @@ class _Filtreler extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: aktif ? FontWeight.w700 : FontWeight.w500,
-                      color:
-                          aktif ? renk.onPrimary : renk.onSurfaceVariant,
+                      color: aktif ? renk.onPrimary : renk.onSurfaceVariant,
                     ),
                   ),
                 ),

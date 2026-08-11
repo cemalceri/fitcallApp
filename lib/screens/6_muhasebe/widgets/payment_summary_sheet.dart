@@ -326,12 +326,12 @@ class _PaymentSummarySheetState extends State<PaymentSummarySheet> {
               child: FilledButton.icon(
                 onPressed: _isStarting ? null : _startPayment,
                 icon: _isStarting
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
                         ),
                       )
                     : const Icon(Icons.lock_rounded, size: 18),

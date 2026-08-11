@@ -104,7 +104,8 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage>
   }
 
   Color _getSeviyeColor(String seviye) {
-    return seviyeRenkleri[seviye] ?? Colors.grey;
+    return seviyeRenkleri[seviye] ??
+        Theme.of(context).colorScheme.onSurfaceVariant;
   }
 
   void _showStudentDetails(UyeModel student) {
@@ -173,6 +174,7 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage>
       child: Row(
         children: [
           IconButton(
+            tooltip: 'Geri',
             onPressed: () => Navigator.pop(context),
             icon: Container(
               padding: const EdgeInsets.all(8),
@@ -214,6 +216,7 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage>
             ),
           ),
           IconButton(
+            tooltip: 'Yenile',
             onPressed: _yukleOgrenciler,
             icon: Container(
               padding: const EdgeInsets.all(10),

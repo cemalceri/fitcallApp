@@ -101,6 +101,7 @@ class _ParaHareketPageState extends State<ParaHareketPage> {
       child: Row(
         children: [
           IconButton(
+            tooltip: 'Geri',
             onPressed: () => Navigator.pop(context),
             icon: Container(
               padding: const EdgeInsets.all(8),
@@ -141,6 +142,7 @@ class _ParaHareketPageState extends State<ParaHareketPage> {
             ),
           ),
           IconButton(
+            tooltip: 'Yenile',
             onPressed: () {
               setState(() => _loadData());
             },

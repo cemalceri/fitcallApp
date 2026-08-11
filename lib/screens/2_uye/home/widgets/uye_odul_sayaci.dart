@@ -70,7 +70,8 @@ class _UyeOdulSayaciState extends State<UyeOdulSayaci> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: hazir ? _kKahveAcik.withValues(alpha: 0.10) : colorScheme.surface,
+        color:
+            hazir ? _kKahveAcik.withValues(alpha: 0.10) : colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: hazir
@@ -111,12 +112,12 @@ class _UyeOdulSayaciState extends State<UyeOdulSayaci> {
                   ),
                 ),
                 icon: _talepEdiliyor
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
                         ),
                       )
                     : const Icon(Icons.card_giftcard_rounded, size: 18),
@@ -281,7 +282,8 @@ class _FincanPainter extends CustomPainter {
       canvas.save();
       canvas.clipPath(govde);
       dolgu.color = _kKahve;
-      canvas.drawRect(Rect.fromLTRB(solUst - 1, seviye, sagUst + 1, alt), dolgu);
+      canvas.drawRect(
+          Rect.fromLTRB(solUst - 1, seviye, sagUst + 1, alt), dolgu);
       canvas.restore();
     }
 
@@ -297,9 +299,12 @@ class _FincanPainter extends CustomPainter {
     final kulp = Path()
       ..moveTo(sagUst, ust + (alt - ust) * 0.18)
       ..cubicTo(
-        w * 1.02, ust + (alt - ust) * 0.18,
-        w * 1.02, ust + (alt - ust) * 0.62,
-        sagUst - daralma * 0.4, ust + (alt - ust) * 0.62,
+        w * 1.02,
+        ust + (alt - ust) * 0.18,
+        w * 1.02,
+        ust + (alt - ust) * 0.62,
+        sagUst - daralma * 0.4,
+        ust + (alt - ust) * 0.62,
       );
     canvas.drawPath(kulp, cizgi);
 

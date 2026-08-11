@@ -110,6 +110,7 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
                 child: Row(
                   children: [
                     IconButton(
+                      tooltip: 'Geri',
                       onPressed: () => Navigator.pop(context),
                       icon: Container(
                         padding: const EdgeInsets.all(8),
@@ -231,8 +232,7 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
             ),
             indicatorSize: TabBarIndicatorSize.tab,
             labelColor: Colors.white,
-            unselectedLabelColor:
-                Theme.of(context).colorScheme.onSurfaceVariant,
+            unselectedLabelColor: const Color(0xFF8C8C8C),
             labelStyle: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -453,10 +453,10 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
         children: [
           Text(
             '$value',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: const Color(0xFFFFFFFF),
             ),
           ),
           const SizedBox(height: 4),
@@ -574,7 +574,7 @@ class _TelafiCard extends StatelessWidget {
       case 'suresi_doldu':
         return Colors.red;
       default:
-        return Colors.grey;
+        return const Color(0xFF8C8C8C);
     }
   }
 
@@ -941,7 +941,7 @@ class _TelafiDetailSheet extends StatelessWidget {
       case 'suresi_doldu':
         return Colors.red;
       default:
-        return Colors.grey;
+        return const Color(0xFF8C8C8C);
     }
   }
 

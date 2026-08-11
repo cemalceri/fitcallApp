@@ -5,6 +5,7 @@ import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
@@ -24,10 +25,9 @@ class LessonDevirDialog extends StatefulWidget {
     required EtkinlikModel ders,
     required VoidCallback onSuccess,
   }) {
-    return showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (_) => LessonDevirDialog(ders: ders, onSuccess: onSuccess),
+    return altSayfaGoster<void>(
+      context,
+      cocuk: LessonDevirDialog(ders: ders, onSuccess: onSuccess),
     );
   }
 
@@ -166,15 +166,10 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.9,
-          maxWidth: 480,
-        ),
-        child: Column(
+    return SizedBox(
+      width: double.infinity,
+      child: Builder(
+        builder: (context) => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(),
@@ -190,7 +185,7 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: TakvimColors.primary.withValues(alpha: 0.08),
+        color: context.takvim.primary.withValues(alpha: 0.08),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
@@ -198,11 +193,11 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: TakvimColors.primary.withValues(alpha: 0.15),
+              color: context.takvim.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.swap_horiz_rounded,
-                color: TakvimColors.primary, size: 22),
+            child: Icon(Icons.swap_horiz_rounded,
+                color: context.takvim.primary, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -218,17 +213,18 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
                 Text(
                   '${TimeUtils.formatDateFull(widget.ders.baslangicTarihSaat)} • ${TimeUtils.formatTime(widget.ders.baslangicTarihSaat)}',
                   style: TextStyle(
-                      fontSize: 13, color: TakvimColors.textSecondary),
+                      fontSize: 13, color: context.takvim.textSecondary),
                 ),
               ],
             ),
           ),
           IconButton(
+            tooltip: 'Kapat',
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.close_rounded),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: TakvimColors.textSecondary,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              foregroundColor: context.takvim.textSecondary,
             ),
           ),
         ],
@@ -250,12 +246,12 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded,
-                color: TakvimColors.cancelled, size: 40),
+            Icon(Icons.error_outline_rounded,
+                color: context.takvim.cancelled, size: 40),
             const SizedBox(height: 12),
             Text(_yuklemeHatasi!,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: TakvimColors.textSecondary)),
+                style: TextStyle(color: context.takvim.textSecondary)),
           ],
         ),
       );
@@ -278,30 +274,30 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: TakvimColors.pending.withValues(alpha: 0.1),
+              color: context.takvim.pending.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                  color: TakvimColors.pending.withValues(alpha: 0.3)),
+                  color: context.takvim.pending.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: TakvimColors.pending.withValues(alpha: 0.15),
+                    color: context.takvim.pending.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.pending_rounded,
-                      color: TakvimColors.pending, size: 22),
+                  child: Icon(Icons.pending_rounded,
+                      color: context.takvim.pending, size: 22),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Devir talebi cevap bekliyor',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: TakvimColors.pending,
+                      color: context.takvim.pending,
                     ),
                   ),
                 ),
@@ -314,16 +310,16 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
           _kvRow('Hedef antrenör', t.hedefAntrenorAdi),
           if ((t.talepNotu ?? '').isNotEmpty) ...[
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Not',
-              style: TextStyle(fontSize: 12, color: TakvimColors.textMuted),
+              style: TextStyle(fontSize: 12, color: context.takvim.textMuted),
             ),
             const SizedBox(height: 4),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: Colors.grey.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(t.talepNotu!, style: const TextStyle(fontSize: 13)),
@@ -346,7 +342,7 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
               k,
               style: TextStyle(
                 fontSize: 12,
-                color: TakvimColors.textMuted,
+                color: context.takvim.textMuted,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -373,7 +369,7 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.blue.shade50,
+              color: Colors.blue.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.blue.shade200),
             ),
@@ -413,7 +409,7 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               filled: true,
-              fillColor: Colors.grey.shade50,
+              fillColor: Colors.grey.withValues(alpha: 0.10),
               contentPadding: const EdgeInsets.all(12),
             ),
           ),
@@ -428,13 +424,14 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: Colors.grey.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border:
+              Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         ),
         child: Text(
           'Devredilecek antrenör bulunamadı.',
-          style: TextStyle(color: TakvimColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: context.takvim.textSecondary, fontSize: 13),
         ),
       );
     }
@@ -446,9 +443,9 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
         final hex = (secili.renk ?? '').replaceAll('#', '');
         renk = hex.length == 6
             ? Color(int.parse('FF$hex', radix: 16))
-            : TakvimColors.primary;
+            : context.takvim.primary;
       } catch (_) {
-        renk = TakvimColors.primary;
+        renk = context.takvim.primary;
       }
     }
 
@@ -460,11 +457,12 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
+            color: Colors.grey.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color:
-                  secili != null ? TakvimColors.primary : Colors.grey.shade300,
+              color: secili != null
+                  ? context.takvim.primary
+                  : Theme.of(context).colorScheme.outlineVariant,
               width: secili != null ? 1.5 : 1,
             ),
           ),
@@ -491,20 +489,20 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
                 ),
               ] else ...[
                 Icon(Icons.person_search_rounded,
-                    size: 20, color: TakvimColors.textMuted),
+                    size: 20, color: context.takvim.textMuted),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Antrenör seçin...',
                     style: TextStyle(
                       fontSize: 14,
-                      color: TakvimColors.textSecondary,
+                      color: context.takvim.textSecondary,
                     ),
                   ),
                 ),
               ],
               Icon(Icons.keyboard_arrow_down_rounded,
-                  color: TakvimColors.textSecondary),
+                  color: context.takvim.textSecondary),
             ],
           ),
         ),
@@ -517,7 +515,7 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
+          color: Colors.grey.withValues(alpha: 0.10),
           borderRadius:
               const BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
@@ -551,7 +549,7 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
                       style:
                           TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
                   style: FilledButton.styleFrom(
-                    backgroundColor: TakvimColors.pending,
+                    backgroundColor: context.takvim.pending,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
@@ -569,7 +567,7 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Colors.grey.withValues(alpha: 0.10),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
       child: Row(
@@ -591,7 +589,7 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
             child: FilledButton(
               onPressed: canSend ? _talepGonder : null,
               style: FilledButton.styleFrom(
-                backgroundColor: TakvimColors.primary,
+                backgroundColor: context.takvim.primary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
@@ -656,8 +654,8 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
       expand: false,
       builder: (_, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
@@ -667,7 +665,7 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
                 height: 4,
                 margin: const EdgeInsets.only(top: 12, bottom: 8),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: Theme.of(context).colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -683,6 +681,7 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
                       ),
                     ),
                     IconButton(
+                      tooltip: 'Kapat',
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close_rounded),
                       padding: EdgeInsets.zero,
@@ -703,6 +702,7 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
                     prefixIcon: const Icon(Icons.search_rounded, size: 20),
                     suffixIcon: _aramaText.isNotEmpty
                         ? IconButton(
+                            tooltip: 'Kapat',
                             icon: const Icon(Icons.close_rounded, size: 18),
                             onPressed: () {
                               _aramaCtrl.clear();
@@ -713,7 +713,7 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12)),
                     filled: true,
-                    fillColor: Colors.grey.shade50,
+                    fillColor: Colors.grey.withValues(alpha: 0.10),
                     contentPadding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     isDense: true,
@@ -730,7 +730,8 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
                             _aramaText.isEmpty
                                 ? 'Antrenör yok'
                                 : '"$_aramaText" için sonuç yok',
-                            style: TextStyle(color: TakvimColors.textSecondary),
+                            style:
+                                TextStyle(color: context.takvim.textSecondary),
                           ),
                         ),
                       )
@@ -761,9 +762,9 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
       final hex = (a.renk ?? '').replaceAll('#', '');
       renk = hex.length == 6
           ? Color(int.parse('FF$hex', radix: 16))
-          : TakvimColors.primary;
+          : context.takvim.primary;
     } catch (_) {
-      renk = TakvimColors.primary;
+      renk = context.takvim.primary;
     }
 
     return Opacity(
@@ -782,11 +783,11 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             decoration: BoxDecoration(
               color: selected
-                  ? TakvimColors.primary.withValues(alpha: 0.08)
+                  ? context.takvim.primary.withValues(alpha: 0.08)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: selected ? TakvimColors.primary : Colors.transparent,
+                color: selected ? context.takvim.primary : Colors.transparent,
                 width: selected ? 1.5 : 0,
               ),
             ),
@@ -820,7 +821,7 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
                             a.engelNedeni!,
                             style: TextStyle(
                               fontSize: 11,
-                              color: TakvimColors.cancelled,
+                              color: context.takvim.cancelled,
                               fontWeight: FontWeight.w500,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -830,8 +831,8 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
                   ),
                 ),
                 if (selected)
-                  const Icon(Icons.check_circle_rounded,
-                      color: TakvimColors.primary, size: 22),
+                  Icon(Icons.check_circle_rounded,
+                      color: context.takvim.primary, size: 22),
               ],
             ),
           ),

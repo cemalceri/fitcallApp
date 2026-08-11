@@ -361,7 +361,7 @@ class RaporOzetKarti {
     try {
       return Color(int.parse(renk.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return Colors.grey;
+      return const Color(0xFF8C8C8C);
     }
   }
 }
@@ -591,7 +591,7 @@ class UyeListeItem {
     try {
       return Color(int.parse(seviyeRengiHex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return Colors.grey;
+      return const Color(0xFF8C8C8C);
     }
   }
 }
@@ -700,7 +700,7 @@ class AntrenorListeItem {
     try {
       return Color(int.parse(renk.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return Colors.grey;
+      return const Color(0xFF8C8C8C);
     }
   }
 }
@@ -817,8 +817,7 @@ class DersListeItem {
     return DersListeItem(
       id: json['id'] ?? 0,
       baslangicTarihSaat:
-          parseApiTarih(json['baslangic_tarih_saat'] ?? '') ??
-              simdiKulup(),
+          parseApiTarih(json['baslangic_tarih_saat'] ?? '') ?? simdiKulup(),
       bitisTarihSaat:
           parseApiTarih(json['bitis_tarih_saat'] ?? '') ?? simdiKulup(),
       tarih: json['tarih'] ?? '',

@@ -8,6 +8,7 @@
 // gözden kaçmıştı. Bu yardımcı her widget'ı bir ekran boyutu × yazı ölçeği
 // matrisinde render edip hiç taşma olmadığını doğrular.
 
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/common/ui_scale.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,6 +38,7 @@ void tasmaTesti(
   List<Size> boyutlar = kEkranBoyutlari,
   List<double> yaziOlcekleri = kYaziOlcekleri,
   Widget Function(Widget)? sar,
+  bool koyuTemaDa = true,
 }) {
   for (final boyut in boyutlar) {
     for (final olcek in yaziOlcekleri) {
@@ -54,6 +56,21 @@ void tasmaTesti(
       );
     }
   }
+
+  // Koyu tema tek kombinasyonda: amaç taşmayı değil, tema token'ı eksikliğinden
+  // doğan çalışma zamanı hatalarını yakalamak (ThemeExtension okunamazsa burada
+  // patlar). Tam matrisi ikiye katlamak test süresini boşuna uzatırdı.
+  if (koyuTemaDa) {
+    testWidgets('$ad — koyu temada hatasız', (tester) async {
+      await tasmaKontrol(
+        tester,
+        yapici(),
+        boyut: const Size(360, 640),
+        sar: sar,
+        koyu: true,
+      );
+    });
+  }
 }
 
 /// Tek bir boyut/ölçek kombinasyonunda taşma kontrolü.
@@ -63,6 +80,7 @@ Future<void> tasmaKontrol(
   Size boyut = const Size(360, 640),
   double yaziOlcegi = 1.0,
   Widget Function(Widget)? sar,
+  bool koyu = false,
 }) async {
   tester.view.physicalSize = boyut;
   tester.view.devicePixelRatio = 1.0;
@@ -73,6 +91,7 @@ Future<void> tasmaKontrol(
   await tester.pumpWidget(
     MaterialApp(
       locale: const Locale('tr', 'TR'),
+      theme: koyu ? FitcallTema.koyu : FitcallTema.acik,
       home: MediaQuery(
         data: MediaQueryData(
           size: boyut,

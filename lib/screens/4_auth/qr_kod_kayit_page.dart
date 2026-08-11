@@ -462,6 +462,7 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
       child: Row(
         children: [
           IconButton(
+            tooltip: 'Geri',
             onPressed: () => Navigator.pop(context),
             icon: Container(
               padding: const EdgeInsets.all(8),
@@ -502,6 +503,7 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
             ),
           ),
           IconButton(
+            tooltip: 'Yenile',
             onPressed: _yukle,
             icon: Container(
               padding: const EdgeInsets.all(10),
@@ -545,7 +547,7 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
                     Icon(Icons.qr_code_scanner_rounded,
                         color: Colors.white, size: 28),
@@ -555,7 +557,7 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.surface,
                       ),
                     ),
                   ],
@@ -611,7 +613,7 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
                   return Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: const Color(0xFF2E7D6B).withValues(

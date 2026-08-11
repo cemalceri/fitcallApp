@@ -25,7 +25,7 @@ class UyeOzetSerit extends StatelessWidget {
         ? const Color(0xFFEF4444) // borç: kırmızı
         : bakiye > 0
             ? const Color(0xFF10B981) // alacak: yeşil
-            : const Color(0xFF64748B); // sıfır: gri
+            : Theme.of(context).colorScheme.onSurfaceVariant; // sıfır: gri
     final tutarFmt = NumberFormat('#,##0', 'tr_TR');
 
     return Row(

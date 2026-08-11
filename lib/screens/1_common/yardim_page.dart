@@ -1,11 +1,36 @@
 // lib/screens/1_common/help/faq_page.dart
 // ignore_for_file: constant_identifier_names
 
+import 'package:fitcall/screens/1_common/widgets/sss_arama.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class YardimPage extends StatelessWidget {
+class YardimPage extends StatefulWidget {
   const YardimPage({super.key});
+
+  @override
+  State<YardimPage> createState() => _YardimPageState();
+}
+
+class _YardimPageState extends State<YardimPage> {
+  final _aramaCtrl = TextEditingController();
+  String _sorgu = '';
+
+  @override
+  void dispose() {
+    _aramaCtrl.dispose();
+    super.dispose();
+  }
+
+  List<_FAQ> get _sonuclar {
+    if (_sorgu.trim().isEmpty) return _faqs;
+    final q = _sorgu.toLowerCase();
+    return _faqs
+        .where((f) =>
+            f.question.toLowerCase().contains(q) ||
+            f.answer.toLowerCase().contains(q))
+        .toList();
+  }
 
   static const _faqs = <_FAQ>[
     _FAQ(
@@ -49,8 +74,7 @@ class YardimPage extends StatelessWidget {
     _FAQ(
       icon: Icons.event_busy_outlined,
       question: 'Bir derse katılamayacağımı nasıl bildiririm?',
-      answer:
-          'Takvimde ilgili derse dokunup "Katılamayacağım" ile durumunuzu'
+      answer: 'Takvimde ilgili derse dokunup "Katılamayacağım" ile durumunuzu'
           ' iletebilirsiniz. Ders saatinden en az 24 saat önce yapılan bildirimlerde'
           ' telafi hakkı tanımlanır ve ders bir pakete dahilse paketinizden düşülmez.'
           ' İstisnai durumlarda kulüple iletişime geçmeniz gerekir; telafi hakkının'
@@ -76,8 +100,7 @@ class YardimPage extends StatelessWidget {
     _FAQ(
       icon: Icons.event_repeat_rounded,
       question: 'Telafi derslerim nedir, nereden takip ederim?',
-      answer:
-          'Uygun koşullarda katılamadığınız derslerden kazandığınız telafi'
+      answer: 'Uygun koşullarda katılamadığınız derslerden kazandığınız telafi'
           ' haklarınızı ana sayfadaki "Telafi Derslerim" kartından veya menüden takip'
           ' edebilirsiniz. Geçerlilik tarihlerini, kullanılan ve aktif telafilerinizi'
           ' burada görürsünüz.',
@@ -94,8 +117,7 @@ class YardimPage extends StatelessWidget {
     _FAQ(
       icon: Icons.history_rounded,
       question: 'Geçmiş derslerimi görüp değerlendirebilir miyim?',
-      answer:
-          'Alttaki "Geçmiş" ekranında tamamlanan derslerinizi aya göre'
+      answer: 'Alttaki "Geçmiş" ekranında tamamlanan derslerinizi aya göre'
           ' listeleyebilir, dilerseniz derse puan ve yorum bırakabilirsiniz. Ders'
           ' durumları renklerle gösterilir: yeşil katıldığınız/yapılan dersler,'
           ' kırmızı iptaller, sarı ise sonucu henüz girilmemiş (kulüp onayında)'
@@ -129,126 +151,43 @@ class YardimPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sonuclar = _sonuclar;
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade50,
-              Colors.white,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Modern App Bar
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Row(
-                    children: [
-                      _buildBackButton(context),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Yardım & SSS',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1E293B),
-                              ),
-                            ),
-                            Text(
-                              'Sıkça sorulan sorular',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Header Illustration
-              SliverToBoxAdapter(
-                child: _buildHeaderCard(),
-              ),
-
-              // FAQ List
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _FAQTile(
-                          faq: _faqs[index],
-                          index: index,
-                        ),
-                      );
-                    },
-                    childCount: _faqs.length,
-                  ),
-                ),
-              ),
-
-              // Contact Card
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: _buildContactCard(),
-                ),
-              ),
-
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 24),
-              ),
-            ],
-          ),
+      appBar: AppBar(
+        title: const Text('Yardım & SSS'),
+        // Arama kutusu listeyle kaymaz: 14 sorunun içinde cevabı aramak
+        // kaydırmayla değil yazarak yapılır.
+        bottom: SssArama(
+          denetleyici: _aramaCtrl,
+          onDegisti: (v) => setState(() => _sorgu = v),
+          yaziOlcegi: MediaQuery.textScalerOf(context).scale(1.0),
         ),
       ),
-    );
-  }
-
-  Widget _buildBackButton(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => Navigator.pop(context),
-          child: const Padding(
-            padding: EdgeInsets.all(10),
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 20,
-              color: Color(0xFF1E293B),
+      body: CustomScrollView(
+        slivers: [
+          if (_sorgu.isEmpty) SliverToBoxAdapter(child: _buildHeaderCard()),
+          if (sonuclar.isEmpty)
+            SliverToBoxAdapter(child: SssSonucYok(sorgu: _sorgu))
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              sliver: SliverList.builder(
+                itemCount: sonuclar.length,
+                itemBuilder: (context, index) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _FAQTile(faq: sonuclar[index], index: index),
+                ),
+              ),
+            ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: _buildContactCard(),
             ),
           ),
-        ),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
       ),
     );
   }
@@ -281,12 +220,12 @@ class YardimPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Size nasıl yardımcı olabiliriz?',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -307,10 +246,10 @@ class YardimPage extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.help_outline_rounded,
               size: 40,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
             ),
           ),
         ],
@@ -325,13 +264,13 @@ class YardimPage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Colors.orange.shade50,
-            Colors.amber.shade50,
+            Colors.orange.withValues(alpha: 0.10),
+            Colors.amber.withValues(alpha: 0.10),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.orange.shade100,
+          color: Colors.orange.withValues(alpha: 0.16),
           width: 1,
         ),
         boxShadow: [
@@ -368,12 +307,12 @@ class YardimPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Destek & İletişim',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B),
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -381,7 +320,7 @@ class YardimPage extends StatelessWidget {
                         'binayakademi@gmail.com',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey.shade600,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -390,7 +329,7 @@ class YardimPage extends StatelessWidget {
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16,
-                  color: Colors.grey.shade400,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ],
             ),
@@ -463,10 +402,14 @@ class _FAQTileState extends State<_FAQTile>
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: _expanded ? Colors.blue.shade50 : Colors.white,
+        color: _expanded
+            ? Theme.of(context).colorScheme.surfaceContainerHigh
+            : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _expanded ? Colors.blue.shade200 : Colors.grey.shade100,
+          color: _expanded
+              ? Colors.blue.shade200
+              : Theme.of(context).colorScheme.outlineVariant,
           width: 1,
         ),
         boxShadow: [
@@ -498,7 +441,7 @@ class _FAQTileState extends State<_FAQTile>
                       decoration: BoxDecoration(
                         color: _expanded
                             ? Colors.blue.shade400
-                            : Colors.blue.shade50,
+                            : Colors.blue.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
@@ -517,7 +460,7 @@ class _FAQTileState extends State<_FAQTile>
                           fontWeight: FontWeight.w600,
                           color: _expanded
                               ? Colors.blue.shade700
-                              : const Color(0xFF1E293B),
+                              : Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -529,14 +472,15 @@ class _FAQTileState extends State<_FAQTile>
                         decoration: BoxDecoration(
                           color: _expanded
                               ? Colors.blue.shade400
-                              : Colors.grey.shade100,
+                              : Theme.of(context).colorScheme.outlineVariant,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Icon(
                           Icons.keyboard_arrow_down_rounded,
                           size: 20,
-                          color:
-                              _expanded ? Colors.white : Colors.grey.shade600,
+                          color: _expanded
+                              ? Colors.white
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),
@@ -552,7 +496,7 @@ class _FAQTileState extends State<_FAQTile>
                       style: TextStyle(
                         fontSize: 14,
                         height: 1.5,
-                        color: Colors.grey.shade700,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),

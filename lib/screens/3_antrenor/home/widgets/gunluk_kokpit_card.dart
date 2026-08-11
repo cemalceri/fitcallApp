@@ -102,12 +102,11 @@ class GunlukKokpitCard extends StatelessWidget {
             _stat(colorScheme, '${o.ogrenciSayisi}', 'Öğrenci',
                 const Color(0xFF10B981)),
             _ayrac(colorScheme),
-            _stat(colorScheme, '${o.kalan}', 'Kalan',
-                const Color(0xFFF59E0B)),
+            _stat(colorScheme, '${o.kalan}', 'Kalan', const Color(0xFFF59E0B)),
             if (o.iptal > 0) ...[
               _ayrac(colorScheme),
-              _stat(colorScheme, '${o.iptal}', 'İptal',
-                  const Color(0xFFEF4444)),
+              _stat(
+                  colorScheme, '${o.iptal}', 'İptal', const Color(0xFFEF4444)),
             ],
           ],
         ),

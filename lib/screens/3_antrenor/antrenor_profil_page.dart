@@ -2,15 +2,12 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
-import 'package:fitcall/screens/1_common/widgets/kvkk.dart';
-import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/3_antrenor/calisma_saatleri/calisma_saatleri_page.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
-import 'package:fitcall/services/api_exception.dart';
-import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
-import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -106,81 +103,78 @@ class _AntrenorProfilContent extends StatelessWidget {
     final antrenorRenk =
         _colorFromHex(antrenor.renk, fallback: colorScheme.primary);
 
+    // Kabuk sekmesi olarak açıldığında geri okunun gideceği yer yok.
+    final geriVar = Navigator.of(context).canPop();
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              antrenorRenk.withValues(alpha: 0.08),
-              colorScheme.surface,
-              colorScheme.secondary.withValues(alpha: 0.03),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 190,
+            pinned: true,
+            automaticallyImplyLeading: geriVar,
+            backgroundColor: colorScheme.surface,
+            surfaceTintColor: Colors.transparent,
+            title: Text('${antrenor.adi} ${antrenor.soyadi}'),
+            actions: [
+              IconButton(
+                tooltip: 'Ayarlar',
+                icon: const Icon(Icons.settings_outlined),
+                onPressed: () =>
+                    Navigator.pushNamed(context, routeEnums[SayfaAdi.ayarlar]!),
+              ),
             ],
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: EdgeInsets.zero,
+              background: _ProfileHeader(
+                antrenor: antrenor,
+                antrenorRenk: antrenorRenk,
+              ),
+            ),
           ),
-        ),
-        child: CustomScrollView(
-          slivers: [
-            // Modern SliverAppBar
-            SliverAppBar(
-              expandedHeight: 320,
-              pinned: true,
-              stretch: true,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              flexibleSpace: FlexibleSpaceBar(
-                background: _ProfileHeader(
-                  antrenor: antrenor,
-                  antrenorRenk: antrenorRenk,
-                ),
-              ),
-              leading: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(12),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _StatusBadge(
+                        label: antrenor.isActive ? 'Aktif' : 'Pasif',
+                        color: antrenor.isActive
+                            ? context.renkler.basari
+                            : context.renkler.hata,
+                        icon: antrenor.isActive
+                            ? Icons.check_circle_outline
+                            : Icons.cancel_outlined,
+                      ),
+                      _StatusBadge(
+                        label: 'Antrenör',
+                        color: antrenorRenk,
+                        icon: Icons.sports_tennis,
+                      ),
+                    ],
                   ),
-                  child: IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 20,
-                      color: colorScheme.onSurface,
-                    ),
+                  const SizedBox(height: 20),
+                  _QuickInfoSection(
+                    antrenor: antrenor,
+                    antrenorRenk: antrenorRenk,
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  _MenuSection(
+                    antrenor: antrenor,
+                    antrenorRenk: antrenorRenk,
+                    formatDate: _fmtDt,
+                  ),
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
-
-            // İçerik
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    // Hızlı Bilgi Kartları
-                    _QuickInfoSection(
-                      antrenor: antrenor,
-                      antrenorRenk: antrenorRenk,
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Menü Bölümü
-                    _MenuSection(
-                      antrenor: antrenor,
-                      antrenorRenk: antrenorRenk,
-                      formatDate: _fmtDt,
-                    ),
-
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -209,45 +203,26 @@ class _ProfileHeader extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            antrenorRenk.withValues(alpha: 0.3),
-            antrenorRenk.withValues(alpha: 0.1),
+            antrenorRenk.withValues(alpha: 0.22),
             colorScheme.surface,
           ],
-          stops: const [0.0, 0.5, 1.0],
         ),
       ),
       child: SafeArea(
+        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+          child: Row(
             children: [
-              const SizedBox(height: 48),
-
-              // Avatar
               Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      antrenorRenk,
-                      antrenorRenk.withValues(alpha: 0.6),
-                    ],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: antrenorRenk.withValues(alpha: 0.4),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+                  color: antrenorRenk.withValues(alpha: 0.35),
                 ),
                 child: Container(
-                  width: 100,
-                  height: 100,
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: colorScheme.surface,
@@ -266,56 +241,28 @@ class _ProfileHeader extends StatelessWidget {
                   ),
                 ),
               ),
-
-              const SizedBox(height: 16),
-
-              // İsim
-              Text(
-                '${antrenor.adi} ${antrenor.soyadi}',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                  letterSpacing: -0.5,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${antrenor.adi} ${antrenor.soyadi}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    if (antrenor.ePosta != null || antrenor.telefon != null)
+                      Text(
+                        antrenor.ePosta ?? antrenor.telefon ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 8),
-
-              // İletişim
-              if (antrenor.ePosta != null || antrenor.telefon != null)
-                Text(
-                  antrenor.ePosta ?? antrenor.telefon ?? '',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-
-              const SizedBox(height: 12),
-
-              // Durum Badge'leri
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _StatusBadge(
-                    label: antrenor.isActive ? 'Aktif' : 'Pasif',
-                    color: antrenor.isActive ? Colors.green : Colors.red,
-                    icon: antrenor.isActive
-                        ? Icons.check_circle_outline
-                        : Icons.cancel_outlined,
-                  ),
-                  _StatusBadge(
-                    label: 'Antrenör',
-                    color: antrenorRenk,
-                    icon: Icons.sports_tennis,
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -330,7 +277,7 @@ class _ProfileHeader extends StatelessWidget {
         child: Text(
           '${antrenor.adi[0]}${antrenor.soyadi[0]}',
           style: TextStyle(
-            fontSize: 36,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
             color: antrenorRenk,
           ),
@@ -614,8 +561,8 @@ class _MenuSection extends StatelessWidget {
 
         const SizedBox(height: 24),
 
-        // Ayarlar
-        _SectionTitle(title: 'Ayarlar', icon: Icons.settings_outlined),
+        // Hesap
+        _SectionTitle(title: 'Hesap', icon: Icons.settings_outlined),
         const SizedBox(height: 12),
         _MenuCard(
           children: [
@@ -623,7 +570,7 @@ class _MenuSection extends StatelessWidget {
               icon: Icons.schedule_rounded,
               title: 'Çalışma Saatlerim',
               subtitle: 'Haftalık uygunluk saatleri',
-              color: Colors.indigo,
+              color: context.renkler.bilgi,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -631,52 +578,15 @@ class _MenuSection extends StatelessWidget {
                 ),
               ),
             ),
+            // Şifre değiştirme, KVKK, bildirim izni ve hesap silme Ayarlar
+            // sayfasında toplandı; üye tarafıyla aynı sayfa kullanılıyor.
             _ModernMenuTile(
-              icon: Icons.lock_reset_rounded,
-              title: 'Şifreyi Değiştir',
-              subtitle: 'Hesap güvenliği',
-              color: Colors.orange,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AntrenorChangePasswordPage(),
-                ),
-              ),
-            ),
-            _ModernMenuTile(
-              icon: Icons.privacy_tip_outlined,
-              title: 'KVKK Aydınlatma Metni',
-              subtitle: 'Veri işleme ve saklama bilgileri',
-              color: Colors.blue,
-              onTap: () => showKvkkAydinlatmaModal(context),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 24),
-
-        // Tehlikeli Bölge
-        _SectionTitle(
-          title: 'Tehlikeli Bölge',
-          icon: Icons.warning_amber_rounded,
-          color: colorScheme.error,
-        ),
-        const SizedBox(height: 12),
-        _MenuCard(
-          borderColor: colorScheme.error.withValues(alpha: 0.2),
-          children: [
-            _ModernMenuTile(
-              icon: Icons.delete_forever_rounded,
-              title: 'Hesabı Kalıcı Sil',
-              subtitle: 'Tüm verilerin kaldırılması',
-              color: colorScheme.error,
-              isDestructive: true,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AntrenorDeleteUserAccountPage(),
-                ),
-              ),
+              icon: Icons.settings_outlined,
+              title: 'Ayarlar',
+              subtitle: 'Tema, bildirimler, şifre ve hesap',
+              color: colorScheme.primary,
+              onTap: () =>
+                  Navigator.pushNamed(context, routeEnums[SayfaAdi.ayarlar]!),
             ),
           ],
         ),
@@ -709,18 +619,16 @@ class _MenuSection extends StatelessWidget {
 class _SectionTitle extends StatelessWidget {
   final String title;
   final IconData icon;
-  final Color? color;
 
   const _SectionTitle({
     required this.title,
     required this.icon,
-    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final displayColor = color ?? colorScheme.primary;
+    final displayColor = colorScheme.primary;
 
     return Row(
       children: [
@@ -742,12 +650,8 @@ class _SectionTitle extends StatelessWidget {
 
 class _MenuCard extends StatelessWidget {
   final List<Widget> children;
-  final Color? borderColor;
 
-  const _MenuCard({
-    required this.children,
-    this.borderColor,
-  });
+  const _MenuCard({required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -757,10 +661,7 @@ class _MenuCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color:
-              borderColor ?? colorScheme.outlineVariant.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
             color: colorScheme.shadow.withValues(alpha: 0.04),
@@ -798,7 +699,6 @@ class _ModernMenuTile extends StatelessWidget {
   final String subtitle;
   final Color color;
   final VoidCallback onTap;
-  final bool isDestructive;
 
   const _ModernMenuTile({
     required this.icon,
@@ -806,7 +706,6 @@ class _ModernMenuTile extends StatelessWidget {
     required this.subtitle,
     required this.color,
     required this.onTap,
-    this.isDestructive = false,
   });
 
   @override
@@ -843,9 +742,7 @@ class _ModernMenuTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: isDestructive
-                            ? colorScheme.error
-                            : colorScheme.onSurface,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -1034,727 +931,3 @@ class _DetailSheet extends StatelessWidget {
 /* -------------------------------------------------------------------------- */
 /*                           Change Password Page                             */
 /* -------------------------------------------------------------------------- */
-
-class AntrenorChangePasswordPage extends StatefulWidget {
-  const AntrenorChangePasswordPage({super.key});
-
-  @override
-  State<AntrenorChangePasswordPage> createState() =>
-      _AntrenorChangePasswordPageState();
-}
-
-class _AntrenorChangePasswordPageState
-    extends State<AntrenorChangePasswordPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _eskiCtrl = TextEditingController();
-  final _yeniCtrl = TextEditingController();
-  final _yeni2Ctrl = TextEditingController();
-  bool _showOld = false, _showNew = false, _showNew2 = false;
-  bool _isSubmitting = false;
-
-  @override
-  void dispose() {
-    _eskiCtrl.dispose();
-    _yeniCtrl.dispose();
-    _yeni2Ctrl.dispose();
-    super.dispose();
-  }
-
-  String? _validateNew(String? v) {
-    final s = (v ?? '').trim();
-    if (s.isEmpty) return 'Yeni şifre zorunludur.';
-    if (s.length < 8) return 'En az 8 karakter olmalı.';
-    if (!RegExp(r'[A-Za-z]').hasMatch(s) || !RegExp(r'[0-9]').hasMatch(s)) {
-      return 'Harf ve rakam içermeli.';
-    }
-    return null;
-  }
-
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_yeniCtrl.text != _yeni2Ctrl.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Yeni şifreler eşleşmiyor.'),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
-      return;
-    }
-
-    setState(() => _isSubmitting = true);
-    try {
-      final res = await UyeApiService.kullaniciSifreDegistir(
-        eskiSifre: _eskiCtrl.text.trim(),
-        yeniSifre: _yeniCtrl.text.trim(),
-      );
-
-      ShowMessage.success(
-        context,
-        res.mesaj.isNotEmpty ? res.mesaj : 'Şifreniz başarıyla değiştirildi.',
-      );
-      AuthService.logout(context);
-    } on ApiException catch (e) {
-      ShowMessage.error(context, e.message);
-    } catch (e) {
-      ShowMessage.error(context, 'Hata: $e');
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.orange.withValues(alpha: 0.1),
-              colorScheme.surface,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // AppBar
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          size: 20,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Şifreyi Değiştir',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Form(
-                    key: _formKey,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    child: Column(
-                      children: [
-                        // Icon
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.lock_reset_rounded,
-                            size: 48,
-                            color: Colors.orange,
-                          ),
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // Form Fields
-                        _ModernTextField(
-                          controller: _eskiCtrl,
-                          label: 'Mevcut Şifre',
-                          obscureText: !_showOld,
-                          prefixIcon: Icons.lock_outline,
-                          suffixIcon: IconButton(
-                            onPressed: () =>
-                                setState(() => _showOld = !_showOld),
-                            icon: Icon(_showOld
-                                ? Icons.visibility_off
-                                : Icons.visibility),
-                          ),
-                          validator: (v) =>
-                              (v == null || v.isEmpty) ? 'Zorunlu alan.' : null,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        _ModernTextField(
-                          controller: _yeniCtrl,
-                          label: 'Yeni Şifre',
-                          obscureText: !_showNew,
-                          prefixIcon: Icons.lock_rounded,
-                          suffixIcon: IconButton(
-                            onPressed: () =>
-                                setState(() => _showNew = !_showNew),
-                            icon: Icon(_showNew
-                                ? Icons.visibility_off
-                                : Icons.visibility),
-                          ),
-                          validator: _validateNew,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        _ModernTextField(
-                          controller: _yeni2Ctrl,
-                          label: 'Yeni Şifre (Tekrar)',
-                          obscureText: !_showNew2,
-                          prefixIcon: Icons.lock_rounded,
-                          suffixIcon: IconButton(
-                            onPressed: () =>
-                                setState(() => _showNew2 = !_showNew2),
-                            icon: Icon(_showNew2
-                                ? Icons.visibility_off
-                                : Icons.visibility),
-                          ),
-                          validator: (v) =>
-                              (v == null || v.isEmpty) ? 'Zorunlu alan.' : null,
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // Submit Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton(
-                            onPressed: _isSubmitting ? null : _submit,
-                            style: FilledButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              backgroundColor: Colors.orange,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: _isSubmitting
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Text(
-                                    'Şifreyi Değiştir',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ModernTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String label;
-  final bool obscureText;
-  final IconData prefixIcon;
-  final Widget? suffixIcon;
-  final String? Function(String?)? validator;
-
-  const _ModernTextField({
-    required this.controller,
-    required this.label,
-    this.obscureText = false,
-    required this.prefixIcon,
-    this.suffixIcon,
-    this.validator,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(prefixIcon),
-        suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.orange, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: colorScheme.error),
-        ),
-      ),
-    );
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/*                           Delete Account Page                              */
-/* -------------------------------------------------------------------------- */
-
-class AntrenorDeleteUserAccountPage extends StatefulWidget {
-  const AntrenorDeleteUserAccountPage({super.key});
-
-  @override
-  State<AntrenorDeleteUserAccountPage> createState() =>
-      _AntrenorDeleteUserAccountPageState();
-}
-
-class _AntrenorDeleteUserAccountPageState
-    extends State<AntrenorDeleteUserAccountPage> {
-  final _confirmCtrl = TextEditingController();
-  bool _isLoading = false;
-
-  @override
-  void dispose() {
-    _confirmCtrl.dispose();
-    super.dispose();
-  }
-
-  bool get _canProceed => _confirmCtrl.text.trim().toLowerCase() == 'sil';
-
-  Future<void> _performDelete() async {
-    setState(() => _isLoading = true);
-    try {
-      final res = await UyeApiService.kullaniciSil();
-      await StorageService.clearAll();
-
-      ShowMessage.success(
-        context,
-        res.mesaj.isNotEmpty
-            ? res.mesaj
-            : 'Kullanıcınız kalıcı olarak silindi.',
-      );
-      AuthService.logout(context);
-    } on ApiException catch (e) {
-      ShowMessage.error(context, e.message);
-    } catch (e) {
-      ShowMessage.error(context, 'Silme başarısız: $e');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  void _showFinalSheet() {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: colorScheme.error.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.warning_amber_rounded,
-                      size: 48,
-                      color: colorScheme.error,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Bu işlem geri alınamaz!',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.error,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Hesabın ve ilişkili kişisel verilerin kalıcı olarak silinecek. '
-                    'Mevzuat gereği saklanması zorunlu kayıtlar varsa, kişisel bağın koparılarak anonimleştirilir.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text('Vazgeç'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: _isLoading
-                              ? null
-                              : () {
-                                  Navigator.pop(ctx);
-                                  _performDelete();
-                                },
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            backgroundColor: colorScheme.error,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Text('Evet, Kalıcı Sil'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: MediaQuery.of(ctx).padding.bottom + 8),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.error.withValues(alpha: 0.08),
-              colorScheme.surface,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // AppBar
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          size: 20,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Hesabı Kalıcı Sil',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.error,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      // Warning Card
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: colorScheme.error.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: colorScheme.error.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.warning_amber_rounded,
-                              size: 56,
-                              color: colorScheme.error,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Dikkat!',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: colorScheme.error,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            _WarningPoint(
-                              text: 'Bu işlem geri alınamaz.',
-                              color: colorScheme.error,
-                            ),
-                            const SizedBox(height: 8),
-                            _WarningPoint(
-                              text:
-                                  'Tüm profil verilerin ve uygulama içi içeriklerin kaldırılacaktır.',
-                              color: colorScheme.error,
-                            ),
-                            const SizedBox(height: 8),
-                            _WarningPoint(
-                              text:
-                                  'Mevzuat gereği saklanması zorunlu finansal kayıtlar anonimleştirilebilir.',
-                              color: colorScheme.error,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Confirmation Card
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surface,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: colorScheme.outlineVariant
-                                .withValues(alpha: 0.3),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: colorScheme.shadow.withValues(alpha: 0.05),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Onay',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Devam etmek için aşağıya "sil" yazın.',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            TextField(
-                              controller: _confirmCtrl,
-                              textCapitalization: TextCapitalization.none,
-                              decoration: InputDecoration(
-                                hintText: 'sil',
-                                filled: true,
-                                fillColor: colorScheme.surfaceContainerHighest
-                                    .withValues(alpha: 0.3),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide.none,
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(
-                                    color: colorScheme.error,
-                                    width: 2,
-                                  ),
-                                ),
-                              ),
-                              onChanged: (_) => setState(() {}),
-                            ),
-                            const SizedBox(height: 20),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: const Text('Vazgeç'),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: FilledButton(
-                                    onPressed: _canProceed && !_isLoading
-                                        ? _showFinalSheet
-                                        : null,
-                                    style: FilledButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
-                                      backgroundColor: _canProceed
-                                          ? colorScheme.error
-                                          : colorScheme.error
-                                              .withValues(alpha: 0.3),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: _isLoading
-                                        ? const SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        : const Text('Hesabı Sil'),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _WarningPoint extends StatelessWidget {
-  final String text;
-  final Color color;
-
-  const _WarningPoint({required this.text, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(top: 6),
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 14,
-              color: color.withValues(alpha: 0.9),
-              height: 1.4,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}

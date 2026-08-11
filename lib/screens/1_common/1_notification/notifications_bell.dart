@@ -28,7 +28,7 @@ class NotificationsBell extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: count > 0
                       ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
-                      : Colors.grey.shade100,
+                      : Theme.of(context).colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Stack(
@@ -41,7 +41,7 @@ class NotificationsBell extends StatelessWidget {
                         size: 22,
                         color: count > 0
                             ? const Color(0xFF3B82F6)
-                            : Colors.grey.shade600),
+                            : Theme.of(context).colorScheme.onSurfaceVariant),
                     if (count > 0)
                       Positioned(right: 8, top: 8, child: _Badge(count: count)),
                   ],

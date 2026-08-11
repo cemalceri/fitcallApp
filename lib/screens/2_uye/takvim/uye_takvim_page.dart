@@ -7,9 +7,11 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/screens/2_uye/takvim/widgets/ders_degerlendirme_popup.dart';
 import 'package:fitcall/screens/2_uye/takvim/widgets/ders_detay_popup.dart';
+import 'package:fitcall/screens/1_common/takvim/hafta_gun_secici.dart';
+import 'package:fitcall/screens/1_common/takvim/takvim_ajanda.dart';
+import 'package:fitcall/screens/1_common/takvim/takvim_zaman_cizelgesi.dart';
+import 'package:fitcall/screens/2_uye/takvim/widgets/lesson_block.dart';
 import 'package:fitcall/screens/2_uye/takvim/widgets/takvim_constants.dart';
-import 'package:fitcall/screens/2_uye/takvim/widgets/timeline_view.dart';
-import 'package:fitcall/screens/2_uye/takvim/widgets/week_day_selector.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
@@ -41,6 +43,11 @@ class _DersListesiPageState extends State<DersListesiPage>
   // Hesaplanmış değerler
   Map<DateTime, int> _gunlukDersSayilari = {};
   List<EtkinlikModel> _selectedDayDersler = [];
+  List<EtkinlikModel> _haftaDersleri = [];
+
+  /// Üyenin asıl sorusu "sıradaki dersim ne zaman" olduğu için varsayılan
+  /// görünüm ajanda; ızgaraya anahtarla geçilir (tercih oturum boyu kalır).
+  bool _ajandaGorunumu = true;
 
   // Animasyon
   late AnimationController _animController;
@@ -144,6 +151,7 @@ class _DersListesiPageState extends State<DersListesiPage>
 
     final counts = <DateTime, int>{};
     final selectedDersler = <EtkinlikModel>[];
+    final haftaDersleri = <EtkinlikModel>[];
 
     for (final ders in _tumDersler) {
       final dersDay = TimeUtils.normalizeDate(ders.baslangicTarihSaat);
@@ -151,6 +159,7 @@ class _DersListesiPageState extends State<DersListesiPage>
       // Hafta içindeyse say
       if (!dersDay.isBefore(weekStart) && dersDay.isBefore(weekEnd)) {
         counts[dersDay] = (counts[dersDay] ?? 0) + 1;
+        haftaDersleri.add(ders);
       }
 
       // Seçili günse listeye ekle
@@ -172,6 +181,7 @@ class _DersListesiPageState extends State<DersListesiPage>
     setState(() {
       _gunlukDersSayilari = counts;
       _selectedDayDersler = selectedDersler;
+      _haftaDersleri = haftaDersleri;
     });
   }
 
@@ -236,40 +246,29 @@ class _DersListesiPageState extends State<DersListesiPage>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: TakvimColors.surface,
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: theme.colorScheme.surface,
-        surfaceTintColor: Colors.transparent,
-        title: const Text(
-          'Derslerim',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
+        title: const Text('Derslerim'),
         actions: [
-          // Bugüne git butonu
+          // Ajanda / Hafta anahtarı — ajanda "ne zaman", ızgara "günüm nasıl"
+          // sorusuna cevap verir.
           IconButton(
+            tooltip: _ajandaGorunumu ? 'Izgara görünümü' : 'Ajanda görünümü',
+            onPressed: () => setState(() => _ajandaGorunumu = !_ajandaGorunumu),
+            icon: Icon(_ajandaGorunumu
+                ? Icons.calendar_view_day_rounded
+                : Icons.view_agenda_rounded),
+          ),
+          IconButton(
+            tooltip: 'Bugüne git',
             onPressed: () {
               final today = simdiKulup();
               _onPageChanged(today);
               _onDaySelected(today);
             },
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: TakvimColors.primaryLight.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.today_rounded,
-                color: TakvimColors.primary,
-                size: 20,
-              ),
-            ),
+            icon: const Icon(Icons.today_rounded),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
         ],
       ),
       body: _isLoading
@@ -278,25 +277,27 @@ class _DersListesiPageState extends State<DersListesiPage>
               opacity: _fadeAnim,
               child: Column(
                 children: [
-                  // Hafta seçici
-                  WeekDaySelector(
+                  HaftaGunSecici(
                     selectedDay: _selectedDay,
                     focusedDay: _focusedDay,
                     lessonCounts: _gunlukDersSayilari,
                     onDaySelected: _onDaySelected,
                     onPageChanged: _onPageChanged,
                   ),
-
-                  // Gün başlığı
-                  _buildDayHeader(theme),
-
-                  // Timeline
+                  if (!_ajandaGorunumu) _buildDayHeader(Theme.of(context)),
                   Expanded(
-                    child: TimelineView(
-                      dersler: _selectedDayDersler,
-                      selectedDay: _selectedDay,
-                      onLessonTap: _onLessonTap,
-                    ),
+                    child: _ajandaGorunumu
+                        ? TakvimAjanda(
+                            dersler: _haftaDersleri,
+                            onLessonTap: _onLessonTap,
+                          )
+                        : TakvimZamanCizelgesi(
+                            dersler: _selectedDayDersler,
+                            selectedDay: _selectedDay,
+                            onLessonTap: _onLessonTap,
+                            blokYapici: (ders, onTap) =>
+                                LessonBlock(ders: ders, onTap: onTap),
+                          ),
                   ),
                 ],
               ),
@@ -313,7 +314,7 @@ class _DersListesiPageState extends State<DersListesiPage>
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
@@ -321,13 +322,15 @@ class _DersListesiPageState extends State<DersListesiPage>
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isToday
-                  ? TakvimColors.primary.withValues(alpha: 0.12)
-                  : Colors.grey.shade100,
+                  ? context.takvim.primary.withValues(alpha: 0.12)
+                  : Theme.of(context).colorScheme.outlineVariant,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               Icons.calendar_today_rounded,
-              color: isToday ? TakvimColors.primary : Colors.grey.shade600,
+              color: isToday
+                  ? context.takvim.primary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
               size: 20,
             ),
           ),
@@ -352,7 +355,7 @@ class _DersListesiPageState extends State<DersListesiPage>
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: TakvimColors.primary,
+                          color: context.takvim.primary,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
@@ -383,7 +386,7 @@ class _DersListesiPageState extends State<DersListesiPage>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: TakvimColors.pending.withValues(alpha: 0.15),
+                color: context.takvim.pending.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -392,13 +395,13 @@ class _DersListesiPageState extends State<DersListesiPage>
                   Icon(
                     Icons.sports_tennis_rounded,
                     size: 14,
-                    color: TakvimColors.pending,
+                    color: context.takvim.pending,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     '${_selectedDayDersler.length}',
-                    style: const TextStyle(
-                      color: TakvimColors.pending,
+                    style: TextStyle(
+                      color: context.takvim.pending,
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),

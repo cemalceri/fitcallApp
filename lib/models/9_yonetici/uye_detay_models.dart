@@ -106,7 +106,7 @@ class UyeProfilBilgi {
     try {
       return Color(int.parse(seviyeRengiHex.replaceFirst('#', '0xFF')));
     } catch (_) {
-      return Colors.grey;
+      return const Color(0xFF8C8C8C);
     }
   }
 }
@@ -139,7 +139,8 @@ class ParaHareketItem {
       id: json['id'] ?? 0,
       tarih: json['tarih'] != null ? parseApiTarih(json['tarih']) : null,
       hareketTuru: json['hareket_turu'] ?? '',
-      hareketTuruLabel: json['hareket_turu_label'] ?? json['hareket_turu'] ?? '',
+      hareketTuruLabel:
+          json['hareket_turu_label'] ?? json['hareket_turu'] ?? '',
       tutar: _toDouble(json['tutar']),
       borcMu: json['borc_mu'] ?? false,
       aciklama: json['aciklama'],
@@ -208,8 +209,7 @@ class UyePaketItem {
       urunAdi: json['urun_adi'] ?? '',
       urunTipi: json['urun_tipi'],
       toplamHak: json['toplam_hak'],
-      kalanHak:
-          json['kalan_hak'] != null ? _toDouble(json['kalan_hak']) : null,
+      kalanHak: json['kalan_hak'] != null ? _toDouble(json['kalan_hak']) : null,
       baslangic: json['baslangic'],
       bitis: json['bitis'],
       aktifMi: json['aktif_mi'] ?? false,

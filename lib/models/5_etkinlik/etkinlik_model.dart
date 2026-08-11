@@ -47,7 +47,7 @@ class UyeTeyit {
 
   /// Teyit durumu renk
   Color get durumColor {
-    if (katilacakMi == null) return Colors.grey;
+    if (katilacakMi == null) return const Color(0xFF8C8C8C);
     return katilacakMi! ? const Color(0xFF10B981) : const Color(0xFFEF4444);
   }
 

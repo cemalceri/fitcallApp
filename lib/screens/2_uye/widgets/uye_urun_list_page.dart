@@ -92,7 +92,8 @@ class _UyeUrunListPageState extends State<UyeUrunListPage> {
         const SizedBox(height: 4),
         Center(
           child: Text(mesaj,
-              style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+              style:
+                  TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
               textAlign: TextAlign.center),
         ),
       ],

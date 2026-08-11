@@ -61,6 +61,7 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
       drawer: YoneticiDrawer(
         yoneticiAdi: _yoneticiAdi,
         onTabSelected: _goTab,
+        aktifSekme: _selectedIndex,
       ),
       body: IndexedStack(
         index: _selectedIndex,

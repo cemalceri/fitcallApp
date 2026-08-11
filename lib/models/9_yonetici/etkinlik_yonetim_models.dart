@@ -61,7 +61,7 @@ class SecenekAntrenor {
   factory SecenekAntrenor.fromJson(Map<String, dynamic> j) => SecenekAntrenor(
         id: _int(j['id']),
         adSoyad: j['ad_soyad']?.toString() ?? '',
-        renk: _renk(j['renk']?.toString(), const Color(0xFF94A3B8)),
+        renk: _renk(j['renk']?.toString(), const Color(0xFF8C8C8C)),
         pasif: j['pasif'] == true,
       );
 }
@@ -180,7 +180,8 @@ class ProgramDersi {
   final Color seviyeRenk;
   final bool iptalMi;
   final bool sabitPlanMi;
-  final String durum; // planli | devam_ediyor | tamamlandi | iptal | onay_bekliyor
+  final String
+      durum; // planli | devam_ediyor | tamamlandi | iptal | onay_bekliyor
   final int katilimciSayisi;
   final List<ProgramKatilimci> katilimcilar;
   final String? aciklama;
@@ -223,7 +224,8 @@ class ProgramDersi {
       kortAdi: j['kort_adi']?.toString() ?? '',
       antrenorId: j['antrenor_id'] == null ? null : _int(j['antrenor_id']),
       antrenorAdi: j['antrenor_adi']?.toString() ?? '',
-      antrenorRenk: _renk(j['antrenor_renk']?.toString(), const Color(0xFF94A3B8)),
+      antrenorRenk:
+          _renk(j['antrenor_renk']?.toString(), const Color(0xFF8C8C8C)),
       urunId: j['urun_id'] == null ? null : _int(j['urun_id']),
       urunAdi: j['urun_adi']?.toString() ?? '',
       seviye: j['seviye']?.toString() ?? '',
@@ -233,7 +235,8 @@ class ProgramDersi {
       durum: j['durum']?.toString() ?? 'planli',
       katilimciSayisi: _int(j['katilimci_sayisi']),
       katilimcilar: (j['katilimcilar'] as List? ?? const [])
-          .map((e) => ProgramKatilimci.fromJson((e as Map).cast<String, dynamic>()))
+          .map((e) =>
+              ProgramKatilimci.fromJson((e as Map).cast<String, dynamic>()))
           .toList(),
       aciklama: j['aciklama']?.toString(),
     );
@@ -288,13 +291,16 @@ class HaftalikProgram {
         haftaBitis: parseApiGun(j['hafta_bitis']) ?? simdiKulup(),
         bugun: parseApiGun(j['bugun']) ?? simdiKulup(),
         gunler: (j['gunler'] as List? ?? const [])
-            .map((e) => ProgramGunu.fromJson((e as Map).cast<String, dynamic>()))
+            .map(
+                (e) => ProgramGunu.fromJson((e as Map).cast<String, dynamic>()))
             .toList(),
         kortlar: (j['kortlar'] as List? ?? const [])
-            .map((e) => SecenekKort.fromJson((e as Map).cast<String, dynamic>()))
+            .map(
+                (e) => SecenekKort.fromJson((e as Map).cast<String, dynamic>()))
             .toList(),
         dersler: (j['dersler'] as List? ?? const [])
-            .map((e) => ProgramDersi.fromJson((e as Map).cast<String, dynamic>()))
+            .map((e) =>
+                ProgramDersi.fromJson((e as Map).cast<String, dynamic>()))
             .toList(),
       );
 

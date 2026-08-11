@@ -8,12 +8,12 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-08-08)
+## 📌 Şu anki durum (2026-08-11)
 
 | | |
 |---|---|
-| Mobil | `main` = `origin/main`, `pubspec` sürümü **3.7.0+40** — sürüm notları yazıldı |
-| Testler | `flutter test` **672 geçiyor**, `flutter analyze` temiz |
+| Mobil | `main`, `pubspec` sürümü **3.8.0+40** — tasarım sistemi + koyu tema turu içeride |
+| Testler | `flutter test` **755 geçiyor**, `flutter analyze` temiz |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
 | Mağaza | Son yayınlanan sürüm **3.6.0**; 3.7.0 build'i Codemagic'te alınacak |
 
@@ -305,13 +305,58 @@ Detay `SURUM_NOTLARI.md` → 3.6.0.
 - **(22)** Video/foto geri bildirim — ders videosu yükleyip öğrenciyle paylaşma
 
 ### Platform / Ortak
-- **(24)** Skeleton (shimmer) loading — spinner yerine iskelet kartlar
+- **(24)** Skeleton (shimmer) loading — spinner yerine iskelet kartlar.
+  *Ölçüm (2026-08-11):* 42 ekran ortada `CircularProgressIndicator` gösteriyor, yalnız 6'sında
+  iskelet var. Ayrıca 47 liste ekranından **24'ünde** `RefreshIndicator` var — aşağı çekip
+  yenileme yarım kalmış.
 - **(25)** Offline cache — stale-while-revalidate ile hızlı açılış
-- **(26)** Karanlık tema (Material 3 hazır)
+- **(26)** Karanlık tema (Material 3 hazır).
+  *Ölçüm (2026-08-11):* `MaterialApp`'te `darkTheme`/`themeMode` **hiç tanımlı değil**, yani
+  uygulama daima açık temada. Buna rağmen 5 ekran `isDark` dallanması taşıyor (`login_page.dart`
+  başta olmak üzere neredeyse her widget çift renk hesaplıyor) — **hiçbir zaman çalışmayan ölü
+  kod**. (29) girdikten sonra yapılmalı, ölü dallar aynı turda temizlenmeli.
 - **(27)** Bildirim tercihleri — kullanıcı hangi bildirim türlerini alacağını seçsin
 - **(28)** Üye ↔ antrenör ↔ yönetim iletişim kısayolu (mesaj/WhatsApp deep-link)
 
-> (23) Bottom navigation bar 2026-07-29 turunda yapıldı — listeden çıkarıldı.
+### Tasarım / arayüz denetimi — 2026-08-11 turunda **yapıldı**
+
+Üç rolün tüm ekranları tarandı (143 dosya, 47.439 satır), maddeler tek turda kodlandı.
+Kapsam dışı bırakılan tek başlık: **ana sayfa kart yerleşimi ve görsel tasarımı** (üye + antrenör),
+kullanıcı kararıyla.
+
+**Marka renkleri kulüp formasından alındı:** turuncu gövde + kobalt mavi yazı.
+`lib/common/tema.dart` tek kaynak: `Marka.turuncu` (#F4661B) dolgu yüzeylerde, açık zeminde
+metin/ikon için koyu hâli (#C2500B, beyazla 4.7:1) `ColorScheme.primary` olarak kullanılır;
+ikincil renk kobalt mavi (#2438C8). Koyu temada turuncu açılır (#FF9351), zeminler sıcak
+siyaha (#15120F) iner.
+
+| # | Madde | Ne yapıldı |
+|---|---|---|
+| (29) | Tasarım sistemi / tema token'ları | `lib/common/tema.dart`: marka + semantik renkler (`FitcallRenkleri` ThemeExtension), tipografi, `Bosluk`/`Yaricap` ölçekleri, 20+ bileşen teması. `main.dart`'taki deepPurple tohumu gitti. `context.cs` / `context.renkler` / `context.metin` kısayolları. |
+| (26) | Koyu tema | `darkTheme` + `themeMode`; tercih `TemaKontrol` ile cihazda saklanır, çıkışta silinmez. Varsayılan **sistem teması**. Ekranlardaki sabit beyaz/gri/koyu renkler token'a çevrildi (53 dosya). |
+| — | **Ayarlar sayfası** (yeni) | `lib/screens/1_common/ayarlar/ayarlar_page.dart`: tema seçimi, bildirim izni, şifre değiştir, KVKK, yardım, sürüm, çıkış, hesap silme. Profil sayfalarındaki ayar menüleri buraya taşındı. Üç rolde de drawer'dan ve profil ekranından açılır. |
+| (30) | Üye/antrenör sekme kabuğu | `UyeKabuk` / `AntrenorKabuk`: `IndexedStack` + ortak `KabukAltBar`. Sekmeler: **Ana Sayfa · Takvim · [QR] · Hareketler/Öğrenciler · Hesabım**. Aktif sekme göstergesi (üst çubuk + ikon + kalın etiket), tek renk ikon, geri tuşu ana sekmeye döner. Bildirim zili kullanıcı kararıyla ana sayfa üst barında kaldı. Ana hesap kontrolü kabukta yapılıyor (rota guard'ı sekme geçişinde çalışmaz). |
+| (31) | Yönetici sol menü | Kullanıcı kararı: Dersler + Haftalık Program bara alınmadı, sol menünün en üstündeki **"Ders yönetimi"** bölümüne çıkarıldı; drawer aktif sekmeyi işaretliyor. Alt bar da ortak `KabukAltBar`'a geçti. |
+| (32) | Takvimde yatay kaydırma | Hafta şeridi `PageView` üzerinde — yana kaydırarak hafta değişir. Ek olarak **Ajanda / Izgara** anahtarı: üye varsayılanı ajanda (yapışkan gün başlıkları, boş saat yok), antrenör varsayılanı ızgara. |
+| (33) | Takvim ikizleri | `timeline_view` + `week_day_selector` + `TakvimColors` kopyaları silindi; `lib/screens/1_common/takvim/` altında tek bileşen (`TakvimZamanCizelgesi`, `HaftaGunSecici`, `TakvimRenkleri`). Ders bloğu rolün kendi widget'ı olarak `blokYapici` ile veriliyor. ~900 satır tekrar gitti. |
+| (34) | Ders işlemlerinde kalıp birliği | Antrenör takvimindeki 5 diyalog (onay, iptal, devir, detay, iptal bilgisi) `showModalBottomSheet`'e taşındı (`altSayfaGoster`). Ders bloğuna **uzun basınca bağlam menüsü**: yoklama/detay/devir/iptal tek dokunuş. |
+| (35) | Erişilebilirlik + autofill | Giriş formunda `AutofillGroup` + `AutofillHints.username/password` + `TextInput.finishAutofillContext()`. Yeni bileşenlerde `Semantics` (sekmeler, gün hücreleri, ajanda satırları, ayar satırları). İkon-only 40 `IconButton`'a tooltip (ekran okuyucu etiketi). |
+| (36) | Yardım sayfalarında arama | İki SSS sayfasına `AppBar.bottom` içinde yapışkan arama kutusu; antrenörde ayrıca bölüm çipleri. Sonuç yoksa yönlendiren boş durum. |
+| (37) | Giriş ekranı | Buzlu cam katmanları kaldırıldı, düz yüzey + tema renkleri. Form doğrulama, `textInputAction`, klavye tipi, şifre alanına odak zinciri. |
+| (38) | Bildirim listesi | `Dismissible` ile kaydırarak silme + **geri alma çubuğu** (sunucuya ancak geri alınmazsa gidiyor; backend `ids` ile silmeyi zaten destekliyordu). Boş durum ikonu kalp → çan, metin eyleme yönlendiriyor. |
+| (39) | Profil başlığı | Üye ve antrenörde `expandedHeight` 340/320 → **190**; avatar + ad yatay düzende, kaydırınca ad başlığa oturuyor. Durum rozetleri gövdeye indi. Başlıkta Ayarlar kısayolu. |
+| (40) | Ölü kod | `MuhasebeTable` + `ParaHareketTable` ve `data_table_2` bağımlılığı silindi. `antrenor_profil_page.dart` 1.760 → ~950 satır: şifre değiştirme ve hesap silme sayfaları `lib/screens/1_common/hesap/` altında ortaklaştı. |
+| (41) | Boş durumlar | Ortak `BosDurum` bileşeni (ikon + başlık + açıklama + eylem). Takvim, ajanda, hesap hareketleri, üyelik/paket ve geçmiş dersler ekranlarına uygulandı. |
+
+**Taşma testi:** `test/support/tasma_yardimcisi.dart` artık uygulamanın gerçek temasıyla render
+ediyor ve her bileşen için bir de **koyu tema** koşusu yapıyor (token eksikliğinden doğan hataları
+yakalar). Yeni ortak bileşenler (`KabukAltBar`, `HaftaGunSecici`, `TakvimZamanCizelgesi`,
+`TakvimAjanda`) matrise eklendi.
+
+**Bu turda kapsanmayan:** ana sayfa tasarımı (kullanıcı kararı), (25) offline cache,
+(27) bildirim tercihleri, (28) iletişim kısayolu. Yönetici program ekranındaki ızgara sabitleri
+(`program_constants.dart`) ve model içindeki durum renkleri `BuildContext` görmediği için
+token yerine iki temada da okunan nötr değerlerle bırakıldı.
 
 ---
 

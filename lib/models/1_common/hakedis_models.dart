@@ -184,8 +184,9 @@ class HakedisAntrenorOzeti {
   });
 
   /// [index]'inci ayın kırılımı; sıra dışıysa boş dönem.
-  HakedisDonem ay(int index) =>
-      (index >= 0 && index < aylar.length) ? aylar[index] : const HakedisDonem();
+  HakedisDonem ay(int index) => (index >= 0 && index < aylar.length)
+      ? aylar[index]
+      : const HakedisDonem();
 
   factory HakedisAntrenorOzeti.fromJson(Map<String, dynamic> j) {
     final aylik = (j['aylar'] as List?) ?? const [];
@@ -349,8 +350,7 @@ class HakedisAy {
   bool get bos => dersSayisi == 0;
 
   /// Dersi olan roller (yardımcı olarak hiç girmediyse o kart gösterilmez).
-  List<HakedisRolOzeti> get doluRoller =>
-      roller.where((r) => !r.bos).toList();
+  List<HakedisRolOzeti> get doluRoller => roller.where((r) => !r.bos).toList();
 
   HakedisAyHucresi get hucre => HakedisAyHucresi(
         kisaAd: _kisaAd(kisaEtiket),
@@ -376,8 +376,8 @@ class HakedisAy {
       disiDersSayisi: _int(j['disi_ders_sayisi']),
       disiDakika: _int(j['disi_dakika']),
       roller: liste
-          .map(
-              (e) => HakedisRolOzeti.fromJson((e as Map).cast<String, dynamic>()))
+          .map((e) =>
+              HakedisRolOzeti.fromJson((e as Map).cast<String, dynamic>()))
           .toList(),
     );
   }
@@ -395,8 +395,8 @@ class HakedisOzet {
   factory HakedisOzet.fromJson(Map<String, dynamic> j) {
     final liste = (j['aylar'] as List?) ?? const [];
     return HakedisOzet(
-      antrenor:
-          HakedisAntrenor.fromJson((j['antrenor'] as Map).cast<String, dynamic>()),
+      antrenor: HakedisAntrenor.fromJson(
+          (j['antrenor'] as Map).cast<String, dynamic>()),
       aylar: liste
           .map((e) => HakedisAy.fromJson((e as Map).cast<String, dynamic>()))
           .toList(),

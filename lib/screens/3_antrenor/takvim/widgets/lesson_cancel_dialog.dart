@@ -4,6 +4,7 @@ import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
+import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'package:flutter/material.dart';
 import 'takvim_constants.dart';
 
@@ -48,10 +49,9 @@ class LessonCancelDialog extends StatefulWidget {
     Navigator.pop(context); // Loading kapat
 
     // Dialog göster
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => _LessonCancelDialogContent(
+    altSayfaGoster<void>(
+      context,
+      cocuk: _LessonCancelDialogContent(
         ders: ders,
         userId: userId,
         onSuccess: onSuccess,
@@ -109,15 +109,10 @@ class _LessonCancelDialogContentState
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
-          maxWidth: 400,
-        ),
-        child: Column(
+    return SizedBox(
+      width: double.infinity,
+      child: Builder(
+        builder: (context) => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Header
@@ -143,7 +138,7 @@ class _LessonCancelDialogContentState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: TakvimColors.primaryLight.withValues(alpha: 0.3),
+        color: context.takvim.primaryLight.withValues(alpha: 0.3),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
@@ -151,12 +146,12 @@ class _LessonCancelDialogContentState
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               Icons.event_note_rounded,
-              color: TakvimColors.primary,
+              color: context.takvim.primary,
               size: 22,
             ),
           ),
@@ -174,18 +169,19 @@ class _LessonCancelDialogContentState
                   '${TimeUtils.formatDateFull(widget.ders.baslangicTarihSaat)} • ${TimeUtils.formatTime(widget.ders.baslangicTarihSaat)}',
                   style: TextStyle(
                     fontSize: 13,
-                    color: TakvimColors.textSecondary,
+                    color: context.takvim.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
           IconButton(
+            tooltip: 'Kapat',
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.close_rounded),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: TakvimColors.textSecondary,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              foregroundColor: context.takvim.textSecondary,
             ),
           ),
         ],
@@ -207,7 +203,9 @@ class _LessonCancelDialogContentState
           _buildKatilimDurumlari(),
           const SizedBox(height: 20),
           // Ayırıcı çizgi
-          Divider(color: Colors.grey.shade300, thickness: 1),
+          Divider(
+              color: Theme.of(context).colorScheme.outlineVariant,
+              thickness: 1),
           const SizedBox(height: 20),
         ],
 
@@ -216,10 +214,10 @@ class _LessonCancelDialogContentState
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: TakvimColors.pending.withValues(alpha: 0.1),
+            color: context.takvim.pending.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
-            border:
-                Border.all(color: TakvimColors.pending.withValues(alpha: 0.3)),
+            border: Border.all(
+                color: context.takvim.pending.withValues(alpha: 0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,17 +227,17 @@ class _LessonCancelDialogContentState
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: TakvimColors.pending.withValues(alpha: 0.15),
+                      color: context.takvim.pending.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.pending_rounded,
-                      color: TakvimColors.pending,
+                      color: context.takvim.pending,
                       size: 24,
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -248,7 +246,7 @@ class _LessonCancelDialogContentState
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: TakvimColors.pending,
+                            color: context.takvim.pending,
                           ),
                         ),
                         SizedBox(height: 4),
@@ -256,7 +254,7 @@ class _LessonCancelDialogContentState
                           'Yönetici onayı bekleniyor',
                           style: TextStyle(
                             fontSize: 13,
-                            color: TakvimColors.textSecondary,
+                            color: context.takvim.textSecondary,
                           ),
                         ),
                       ],
@@ -271,14 +269,14 @@ class _LessonCancelDialogContentState
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     talep['aciklama'],
                     style: TextStyle(
                       fontSize: 13,
-                      color: TakvimColors.textPrimary,
+                      color: context.takvim.textPrimary,
                     ),
                   ),
                 ),
@@ -303,7 +301,9 @@ class _LessonCancelDialogContentState
           _buildKatilimDurumlari(),
           const SizedBox(height: 20),
           // Ayırıcı çizgi
-          Divider(color: Colors.grey.shade300, thickness: 1),
+          Divider(
+              color: Theme.of(context).colorScheme.outlineVariant,
+              thickness: 1),
           const SizedBox(height: 20),
         ],
 
@@ -311,7 +311,7 @@ class _LessonCancelDialogContentState
         Row(
           children: [
             Icon(Icons.event_busy_rounded,
-                size: 20, color: TakvimColors.cancelled),
+                size: 20, color: context.takvim.cancelled),
             const SizedBox(width: 8),
             const Text(
               'İptal Talebi',
@@ -325,7 +325,7 @@ class _LessonCancelDialogContentState
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.blue.shade50,
+            color: Colors.blue.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.blue.shade200),
           ),
@@ -358,10 +358,12 @@ class _LessonCancelDialogContentState
           maxLength: 500,
           decoration: InputDecoration(
             hintText: 'İptal nedeninizi açıklayın...',
-            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+            hintStyle: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 14),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
             filled: true,
-            fillColor: Colors.grey.shade50,
+            fillColor: Colors.grey.withValues(alpha: 0.10),
             contentPadding: const EdgeInsets.all(14),
           ),
         ),
@@ -377,9 +379,10 @@ class _LessonCancelDialogContentState
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200, width: 1.5),
+        border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant, width: 1.5),
       ),
       child: Row(
         children: [
@@ -390,12 +393,12 @@ class _LessonCancelDialogContentState
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: TakvimColors.primaryLight.withValues(alpha: 0.3),
+                    color: context.takvim.primaryLight.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.sports_tennis_rounded,
-                    color: TakvimColors.primary,
+                    color: context.takvim.primary,
                     size: 18,
                   ),
                 ),
@@ -408,7 +411,7 @@ class _LessonCancelDialogContentState
                         'Kort',
                         style: TextStyle(
                           fontSize: 11,
-                          color: TakvimColors.textSecondary,
+                          color: context.takvim.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -432,7 +435,7 @@ class _LessonCancelDialogContentState
           Container(
             height: 40,
             width: 1,
-            color: Colors.grey.shade300,
+            color: Theme.of(context).colorScheme.outlineVariant,
             margin: const EdgeInsets.symmetric(horizontal: 12),
           ),
 
@@ -443,12 +446,12 @@ class _LessonCancelDialogContentState
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: TakvimColors.primaryLight.withValues(alpha: 0.3),
+                    color: context.takvim.primaryLight.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.access_time_rounded,
-                    color: TakvimColors.primary,
+                    color: context.takvim.primary,
                     size: 18,
                   ),
                 ),
@@ -461,7 +464,7 @@ class _LessonCancelDialogContentState
                         'Saat',
                         style: TextStyle(
                           fontSize: 11,
-                          color: TakvimColors.textSecondary,
+                          color: context.takvim.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -492,14 +495,14 @@ class _LessonCancelDialogContentState
         Row(
           children: [
             Icon(Icons.people_rounded,
-                size: 18, color: TakvimColors.textSecondary),
+                size: 18, color: context.takvim.textSecondary),
             const SizedBox(width: 6),
             Text(
               'Katılımcı Durumları (${widget.ders.uyeList.length})',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: TakvimColors.textSecondary,
+                color: context.takvim.textSecondary,
               ),
             ),
           ],
@@ -509,9 +512,10 @@ class _LessonCancelDialogContentState
           constraints:
               const BoxConstraints(maxHeight: 250), // 200'den 250'ye çıkardık
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
+            color: Colors.grey.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
+            border:
+                Border.all(color: Theme.of(context).colorScheme.outlineVariant),
           ),
           padding: const EdgeInsets.all(10),
           child: SingleChildScrollView(
@@ -576,7 +580,7 @@ class _LessonCancelDialogContentState
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -597,7 +601,7 @@ class _LessonCancelDialogContentState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Colors.grey.withValues(alpha: 0.10),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
       child: Row(
@@ -632,7 +636,7 @@ class _LessonCancelDialogContentState
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
               ),
               style: FilledButton.styleFrom(
-                backgroundColor: TakvimColors.pending,
+                backgroundColor: context.takvim.pending,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -651,7 +655,7 @@ class _LessonCancelDialogContentState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Colors.grey.withValues(alpha: 0.10),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
       child: Row(
@@ -674,7 +678,7 @@ class _LessonCancelDialogContentState
             child: FilledButton(
               onPressed: !hasText || _isSaving ? null : _talepGonder,
               style: FilledButton.styleFrom(
-                backgroundColor: TakvimColors.cancelled,
+                backgroundColor: context.takvim.cancelled,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

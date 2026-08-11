@@ -57,16 +57,17 @@ void main() {
   });
 
   group('HomeCardModel yeni üye tipleri', () {
-    HomeCardModel kart(String tip) =>
-        HomeCardModel.fromJson({'id': 1, 'type': tip, 'title': '', 'subtitle': ''});
+    HomeCardModel kart(String tip) => HomeCardModel.fromJson(
+        {'id': 1, 'type': tip, 'title': '', 'subtitle': ''});
 
     test('üye tipleri doğru enum değerine çözülür', () {
       expect(kart('teyit_bekleyen').type, HomeCardType.teyitBekleyen);
       expect(kart('borc').type, HomeCardType.borc);
       expect(kart('paket_bitiyor').type, HomeCardType.paketBitiyor);
-      expect(kart('telafi_sure_yaklasan').type, HomeCardType.telafiSureYaklasan);
       expect(
-          kart('degerlendirme_bekleyen').type, HomeCardType.degerlendirmeBekleyen);
+          kart('telafi_sure_yaklasan').type, HomeCardType.telafiSureYaklasan);
+      expect(kart('degerlendirme_bekleyen').type,
+          HomeCardType.degerlendirmeBekleyen);
     });
 
     test('bilinmeyen tip info olarak parse edilir (geriye uyumluluk)', () {
@@ -75,8 +76,8 @@ void main() {
 
     test('her tipin renk ve ikonu tanımlı', () {
       for (final tip in HomeCardType.values) {
-        final model = HomeCardModel(
-            id: 1, type: tip, title: 't', subtitle: 's');
+        final model =
+            HomeCardModel(id: 1, type: tip, title: 't', subtitle: 's');
         expect(model.color, isNotNull);
         expect(model.icon, isNotNull);
       }

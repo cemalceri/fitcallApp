@@ -6,6 +6,8 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/muhasebe/muhasebe_service.dart';
 import 'package:fitcall/services/muhasebe/para_hareket_service.dart';
+import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
+import 'package:fitcall/common/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -86,8 +88,7 @@ class _MuhasebePageState extends State<MuhasebePage> {
       // En güncel ayın kapanış bakiyesi = güncel kalan bakiye
       _kalanBakiye = ozetler.isEmpty ? 0 : ozetler.first.kapanisBakiyesi;
       // Hiç hareketi olmayan aylar için istek atmaya gerek yok
-      _donemler =
-          ozetler.where((o) => o.borc != 0 || o.odeme != 0).toList();
+      _donemler = ozetler.where((o) => o.borc != 0 || o.odeme != 0).toList();
     } on ApiException catch (e) {
       if (mounted) ShowMessage.error(context, e.message);
     } catch (e) {
@@ -212,6 +213,7 @@ class _MuhasebePageState extends State<MuhasebePage> {
       child: Row(
         children: [
           IconButton(
+            tooltip: 'Geri',
             onPressed: () => Navigator.pop(context),
             icon: Container(
               padding: const EdgeInsets.all(8),
@@ -252,6 +254,7 @@ class _MuhasebePageState extends State<MuhasebePage> {
             ),
           ),
           IconButton(
+            tooltip: 'Yenile',
             onPressed: _verileriYukle,
             icon: Container(
               padding: const EdgeInsets.all(10),
@@ -382,39 +385,15 @@ class _MuhasebePageState extends State<MuhasebePage> {
 
   Widget _buildEmptyState(ColorScheme colorScheme) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.receipt_long_outlined,
-              size: 64,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Hesap kaydı bulunamadı',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Henüz borç veya ödeme kaydınız yok',
-            style: TextStyle(
-              fontSize: 14,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
+      child: BosDurum(
+        ikon: Icons.receipt_long_outlined,
+        baslik: 'Hesap hareketi yok',
+        aciklama: 'Borç, ödeme ve paket kayıtların burada görünür. '
+            'Bir eksiklik olduğunu düşünüyorsan kulüple iletişime geç.',
+        eylemEtiketi: 'Üyelik & paketlerim',
+        eylemIkonu: Icons.card_membership_rounded,
+        onEylem: () =>
+            Navigator.pushNamed(context, routeEnums[SayfaAdi.uyelikPaket]!),
       ),
     );
   }
@@ -676,8 +655,8 @@ class _HareketDetaySheet extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: renk.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),

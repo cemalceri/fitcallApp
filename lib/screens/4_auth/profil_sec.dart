@@ -109,7 +109,7 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     final isEmpty = widget.kullaniciProfilList.isEmpty;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -127,7 +127,7 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                         Icon(
                           Icons.inbox_rounded,
                           size: 80,
-                          color: Colors.grey.shade300,
+                          color: Theme.of(context).colorScheme.outlineVariant,
                         ),
                         const SizedBox(height: 24),
                         Text(
@@ -135,7 +135,8 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade700,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -143,7 +144,8 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                           'Mevcut profil yok',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey.shade500,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                         const SizedBox(height: 32),
@@ -192,17 +194,18 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
           children: [
             if (Navigator.of(context).canPop())
               IconButton(
+                tooltip: 'Geri',
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    size: 20, color: Color(0xFF1E293B)),
+                icon: Icon(Icons.arrow_back_ios_new_rounded,
+                    size: 20, color: Theme.of(context).colorScheme.onSurface),
               ),
             if (!Navigator.of(context).canPop()) const SizedBox(width: 16),
-            const Expanded(
+            Expanded(
               child: Text('Profil Seç',
                   style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1E293B),
+                      color: Theme.of(context).colorScheme.onSurface,
                       letterSpacing: -0.3)),
             ),
           ],
@@ -210,7 +213,9 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
         Padding(
           padding: const EdgeInsets.only(left: 16, top: 4),
           child: Text('Devam etmek için bir profil seçin',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
+              style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ),
       ],
     );
@@ -237,10 +242,12 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700)),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
               const SizedBox(width: 12),
               Expanded(
-                  child: Container(height: 1, color: Colors.grey.shade200)),
+                  child: Container(
+                      height: 1,
+                      color: Theme.of(context).colorScheme.outlineVariant)),
             ],
           ),
           const SizedBox(height: 16),
@@ -258,7 +265,9 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
       return Text(theme.label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 13, color: Colors.grey.shade600));
+          style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.onSurfaceVariant));
     }
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -292,11 +301,11 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-            colors: [Colors.white, Colors.grey.shade50],
+            colors: [Colors.white, Colors.grey.withValues(alpha: 0.10)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -339,10 +348,10 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                       Text(displayName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF1E293B),
+                              color: Theme.of(context).colorScheme.onSurface,
                               letterSpacing: -0.2)),
                       const SizedBox(height: 3),
                       // Alt satır: işletme adı (birden çok işletmede aynı
@@ -352,7 +361,8 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                   ),
                 ),
                 Icon(Icons.arrow_forward_ios_rounded,
-                    size: 16, color: Colors.grey.shade400),
+                    size: 16,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
               ],
             ),
           ),

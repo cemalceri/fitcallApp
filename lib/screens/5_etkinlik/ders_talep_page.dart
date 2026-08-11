@@ -227,7 +227,7 @@ class _DersTalepPageState extends State<DersTalepPage> {
                         width: double.infinity,
                         height: 120,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
+                          color: Theme.of(context).colorScheme.outlineVariant,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Center(
@@ -245,7 +245,7 @@ class _DersTalepPageState extends State<DersTalepPage> {
                             width: double.infinity,
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: Colors.amber.shade50,
+                              color: Colors.amber.withValues(alpha: 0.10),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: Colors.amber.shade200,
@@ -360,7 +360,7 @@ class _DersTalepPageState extends State<DersTalepPage> {
                     filled: true,
                     fillColor: isDark
                         ? theme.colorScheme.surfaceContainerHighest
-                        : Colors.grey.shade50,
+                        : Colors.grey.withValues(alpha: 0.10),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: BorderSide(
@@ -574,7 +574,7 @@ class _PaketCard extends StatelessWidget {
                   ? uiPrimaryBlue.withValues(alpha: 0.3)
                   : (isDark
                       ? theme.colorScheme.outline.withValues(alpha: 0.2)
-                      : Colors.grey.shade200),
+                      : Theme.of(context).colorScheme.outlineVariant),
               width: isSelected ? 2 : 1,
             ),
             boxShadow: isSelected
@@ -603,7 +603,9 @@ class _PaketCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected ? uiPrimaryBlue : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? uiPrimaryBlue : Colors.grey.shade400,
+                    color: isSelected
+                        ? uiPrimaryBlue
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(8),
@@ -670,7 +672,7 @@ class _PaketCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.amber.shade50,
+                          color: Colors.amber.withValues(alpha: 0.10),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
                             color: Colors.amber.shade200,

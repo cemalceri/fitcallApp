@@ -160,9 +160,9 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
       backgroundColor: _bgGray,
       body: SafeArea(
         child: _loading
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(
-                    strokeWidth: 2, color: TakvimColors.primary))
+                    strokeWidth: 2, color: context.takvim.primary))
             : _hata != null
                 ? _buildHataView(_hata!)
                 : _buildContent(),
@@ -252,6 +252,7 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
       child: Row(
         children: [
           IconButton(
+            tooltip: 'Kapat',
             icon: const Icon(Icons.close_rounded, color: _textPrimary),
             onPressed: _close,
           ),
@@ -270,11 +271,11 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: TakvimColors.primary.withValues(alpha: 0.12),
+                color: context.takvim.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.swap_horiz_rounded,
-                  color: TakvimColors.primary, size: 22),
+              child: Icon(Icons.swap_horiz_rounded,
+                  color: context.takvim.primary, size: 22),
             ),
             const SizedBox(width: 12),
             const Expanded(
@@ -304,9 +305,9 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,7 +329,7 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
   Widget _buildKvRow(IconData icon, String k, String v) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: TakvimColors.primary),
+        Icon(icon, size: 18, color: context.takvim.primary),
         const SizedBox(width: 10),
         SizedBox(
           width: 70,
@@ -349,17 +350,17 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.groups_rounded,
-                  size: 18, color: TakvimColors.primary),
+              Icon(Icons.groups_rounded,
+                  size: 18, color: context.takvim.primary),
               const SizedBox(width: 8),
               Text(
                 'Katılımcılar (${liste.length})',
@@ -380,13 +381,13 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
                       CircleAvatar(
                         radius: 14,
                         backgroundColor:
-                            TakvimColors.primary.withValues(alpha: 0.15),
+                            context.takvim.primary.withValues(alpha: 0.15),
                         child: Text(
                           k.ad.isNotEmpty ? k.ad[0].toUpperCase() : '?',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: TakvimColors.primary,
+                            color: context.takvim.primary,
                           ),
                         ),
                       ),
@@ -409,7 +410,7 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.amber.shade50,
+        color: Colors.amber.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.amber.shade200),
       ),
@@ -437,9 +438,9 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Colors.grey.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -601,6 +602,7 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
                         TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
               ),
               IconButton(
+                tooltip: 'Kapat',
                 icon: const Icon(Icons.close_rounded),
                 iconSize: 18,
                 padding: EdgeInsets.zero,
@@ -619,7 +621,7 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
               contentPadding: const EdgeInsets.all(12),
             ),
           ),

@@ -46,8 +46,8 @@ const Duration kulupUtcOfseti = Duration(hours: 3);
 /// saat dilimi sonucu etkilemez.
 DateTime _kulupDuvarSaati(DateTime an) {
   final d = an.toUtc().add(kulupUtcOfseti);
-  return DateTime(
-      d.year, d.month, d.day, d.hour, d.minute, d.second, d.millisecond, d.microsecond);
+  return DateTime(d.year, d.month, d.day, d.hour, d.minute, d.second,
+      d.millisecond, d.microsecond);
 }
 
 /// Backend'den gelen tarih-saat metnini kulüp duvar saatine çevirir.

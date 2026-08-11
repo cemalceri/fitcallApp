@@ -12,10 +12,15 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fitcall/screens/1_common/takvim/hafta_gun_secici.dart';
+import 'package:fitcall/screens/1_common/takvim/takvim_ajanda.dart';
+import 'package:fitcall/screens/1_common/takvim/takvim_zaman_cizelgesi.dart';
+import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'widgets/takvim_constants.dart';
-import 'widgets/week_day_selector.dart';
-import 'widgets/timeline_view.dart';
 import 'widgets/lesson_approval_dialog.dart';
+import 'widgets/lesson_block.dart';
+import 'widgets/lesson_cancel_dialog.dart';
+import 'widgets/lesson_devir_dialog.dart';
 
 class AntrenorTakvimPage extends StatefulWidget {
   const AntrenorTakvimPage({super.key});
@@ -34,6 +39,9 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
   final Map<DateTime, int> _gunlukDersSayilari = {};
 
   bool _routeArgsIslendiMi = false;
+
+  /// Antrenör gününü ızgarada görmek ister; ajanda isteğe bağlı.
+  bool _ajandaGorunumu = false;
 
   @override
   void initState() {
@@ -140,6 +148,122 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
 
   void _onPageChanged(DateTime focusedDay) {
     setState(() => _focusedDay = focusedDay);
+    if (_ajandaGorunumu) _haftayiYukle();
+  }
+
+  /// Ajanda haftanın tamamını gösterir; ızgara gün gün yüklerken bu yedi günü
+  /// birden ister.
+  Future<void> _haftayiYukle() async {
+    final basla = TimeUtils.getWeekStart(_focusedDay);
+    setState(() => _isLoading = true);
+    for (var i = 0; i < 7; i++) {
+      await _loadDay(TimeUtils.normalizeDate(basla.add(Duration(days: i))));
+    }
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  List<EtkinlikModel> _haftaDersleri() {
+    final basla = TimeUtils.getWeekStart(_focusedDay);
+    final liste = <EtkinlikModel>[];
+    for (var i = 0; i < 7; i++) {
+      liste.addAll(_gunlukDersler[
+              TimeUtils.normalizeDate(basla.add(Duration(days: i)))] ??
+          const []);
+    }
+    return liste;
+  }
+
+  void _gorunumDegistir() {
+    setState(() => _ajandaGorunumu = !_ajandaGorunumu);
+    if (_ajandaGorunumu) _haftayiYukle();
+  }
+
+  /// Ders bloğuna uzun basınca açılan bağlam menüsü: onay-iptal-devir tek
+  /// dokunuşa iner (iOS/WhatsApp kalıbı).
+  Future<void> _dersMenusu(EtkinlikModel ders) async {
+    HapticFeedback.mediumImpact();
+    if (ders.iptalMi) {
+      await CancelledLessonInfoDialog.show(context: context, ders: ders);
+      return;
+    }
+
+    final int userId = await SecureStorageService.getValue('user_id');
+    if (!mounted) return;
+
+    final gecmis = ders.bitisTarihSaat.isBefore(simdiKulup());
+
+    await altSayfaGoster<void>(
+      context,
+      cocuk: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AltSayfaBasligi(
+              ikon: Icons.sports_tennis_rounded,
+              baslik: ders.kortAdi,
+              altBaslik: '${TimeUtils.formatTime(ders.baslangicTarihSaat)} - '
+                  '${TimeUtils.formatTime(ders.bitisTarihSaat)}',
+            ),
+            if (gecmis)
+              ListTile(
+                leading: const Icon(Icons.fact_check_rounded),
+                title: const Text('Yoklama ve onay'),
+                onTap: () {
+                  Navigator.pop(context);
+                  LessonApprovalDialog.show(
+                    context: context,
+                    ders: ders,
+                    userId: userId,
+                    onSuccess: _forceRefresh,
+                  );
+                },
+              )
+            else ...[
+              ListTile(
+                leading: const Icon(Icons.info_outline_rounded),
+                title: const Text('Ders detayı'),
+                onTap: () {
+                  Navigator.pop(context);
+                  FutureLessonDetailDialog.show(
+                    context: context,
+                    ders: ders,
+                    userId: userId,
+                    onSuccess: _forceRefresh,
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.swap_horiz_rounded),
+                title: const Text('Dersi devret'),
+                onTap: () {
+                  Navigator.pop(context);
+                  LessonDevirDialog.show(
+                    context: context,
+                    ders: ders,
+                    onSuccess: _forceRefresh,
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.event_busy_rounded,
+                    color: Theme.of(context).colorScheme.error),
+                title: const Text('İptal talebi'),
+                onTap: () {
+                  Navigator.pop(context);
+                  LessonCancelDialog.show(
+                    context: context,
+                    ders: ders,
+                    userId: userId,
+                    onSuccess: _forceRefresh,
+                  );
+                },
+              ),
+            ],
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _onLessonTap(EtkinlikModel ders) async {
@@ -192,42 +316,32 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
   /* --------------------------------- UI ----------------------------------- */
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final normalizedDay = TimeUtils.normalizeDate(_selectedDay);
     final selectedDersler = _gunlukDersler[normalizedDay] ?? [];
 
     return Scaffold(
-      backgroundColor:
-          isDark ? theme.colorScheme.surface : TakvimColors.surface,
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        title: const Text(
-          'Antrenör Takvimi',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
+        title: const Text('Antrenör Takvimi'),
         actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: TakvimColors.primaryLight.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: IconButton(
-              onPressed: _forceRefresh,
-              icon: const Icon(Icons.refresh_rounded,
-                  color: TakvimColors.primary),
-              tooltip: 'Yenile',
-            ),
+          IconButton(
+            tooltip: _ajandaGorunumu ? 'Izgara görünümü' : 'Ajanda görünümü',
+            onPressed: _gorunumDegistir,
+            icon: Icon(_ajandaGorunumu
+                ? Icons.calendar_view_day_rounded
+                : Icons.view_agenda_rounded),
           ),
+          IconButton(
+            onPressed: _forceRefresh,
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Yenile',
+          ),
+          const SizedBox(width: 4),
         ],
       ),
       body: Column(
         children: [
           // Hafta seçici
-          WeekDaySelector(
+          HaftaGunSecici(
             selectedDay: _selectedDay,
             focusedDay: _focusedDay,
             lessonCounts: _gunlukDersSayilari,
@@ -239,11 +353,20 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
           Expanded(
             child: _isLoading
                 ? const LoadingSpinnerWidget(message: 'Yükleniyor...')
-                : TimelineView(
-                    dersler: selectedDersler,
-                    selectedDay: _selectedDay,
-                    onLessonTap: _onLessonTap,
-                  ),
+                : _ajandaGorunumu
+                    ? TakvimAjanda(
+                        dersler: _haftaDersleri(),
+                        onLessonTap: _onLessonTap,
+                        onLessonLongPress: _dersMenusu,
+                      )
+                    : TakvimZamanCizelgesi(
+                        dersler: selectedDersler,
+                        selectedDay: _selectedDay,
+                        onLessonTap: _onLessonTap,
+                        onLessonLongPress: _dersMenusu,
+                        blokYapici: (ders, onTap) =>
+                            LessonBlock(ders: ders, onTap: onTap),
+                      ),
           ),
         ],
       ),

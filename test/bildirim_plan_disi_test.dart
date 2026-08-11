@@ -9,6 +9,7 @@ import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_sheet.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -142,13 +143,24 @@ void main() {
   });
 
   group('Bildirim ikon/renk eşlemesi', () {
-    test('plan dışı bildiriminin kendi ikonu ve turuncu rengi var', () {
+    testWidgets('plan dışı bildiriminin kendi ikonu ve turuncu rengi var',
+        (tester) async {
       const tip = NotificationType.ofisPlanDisiKatilim;
 
       expect(BildirimGorselYardimci.ikonGetir(tip),
           Icons.person_add_alt_1_rounded);
-      expect(BildirimGorselYardimci.renkGetir(tip),
-          BildirimRenkleri.uyariTuruncu);
+
+      // Renk artık temadan geliyor; BuildContext gerektirdiği için widget
+      // testinde ölçülüyor.
+      late Color renk;
+      await tester.pumpWidget(MaterialApp(
+        theme: FitcallTema.acik,
+        home: Builder(builder: (context) {
+          renk = BildirimGorselYardimci.renkGetir(context, tip);
+          return const SizedBox.shrink();
+        }),
+      ));
+      expect(renk, FitcallRenkleri.acik.uyari);
     });
 
     test('tanınmayan tip varsayılan ikona düşer', () {

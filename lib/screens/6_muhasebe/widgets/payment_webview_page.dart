@@ -63,6 +63,7 @@ class _PaymentWebViewPageState extends State<PaymentWebViewPage> {
         title: const Text('Güvenli Ödeme'),
         centerTitle: true,
         leading: IconButton(
+          tooltip: 'Kapat',
           icon: const Icon(Icons.close),
           onPressed: () => _showExitDialog(context),
         ),

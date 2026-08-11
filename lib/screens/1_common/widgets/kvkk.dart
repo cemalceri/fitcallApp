@@ -157,7 +157,8 @@ class _KvkkAydinlatmaSheet extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     'Yürürlük Tarihi: 18.09.2025  •  Metin, mevzuat ve iç süreçlere göre güncellenebilir; güncel sürüm web sitemizde yayımlanır.',
-                    style: text.bodySmall?.copyWith(color: Colors.grey[600]),
+                    style: text.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
                   const SizedBox(height: 12),
                 ],

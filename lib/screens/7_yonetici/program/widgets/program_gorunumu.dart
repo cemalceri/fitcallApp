@@ -42,15 +42,13 @@ class ProgramGorunumu extends StatelessWidget {
     this.onBosSlotTap,
   });
 
-  String _gunAnahtari(DateTime d) =>
-      '${d.year.toString().padLeft(4, '0')}-'
+  String _gunAnahtari(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
       '${d.month.toString().padLeft(2, '0')}-'
       '${d.day.toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context) {
-    final gunBasi =
-        DateTime(secilenGun.year, secilenGun.month, secilenGun.day);
+    final gunBasi = DateTime(secilenGun.year, secilenGun.month, secilenGun.day);
 
     return Column(
       children: [

@@ -3,6 +3,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'lesson_cancel_dialog.dart';
@@ -27,10 +28,9 @@ class FutureLessonDetailDialog extends StatelessWidget {
     required int userId,
     required VoidCallback onSuccess,
   }) {
-    return showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (_) => FutureLessonDetailDialog(
+    return altSayfaGoster<void>(
+      context,
+      cocuk: FutureLessonDetailDialog(
         ders: ders,
         userId: userId,
         onSuccess: onSuccess,
@@ -40,15 +40,10 @@ class FutureLessonDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
-          maxWidth: 480,
-        ),
-        child: Column(
+    return SizedBox(
+      width: double.infinity,
+      child: Builder(
+        builder: (context) => Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(context),
@@ -58,16 +53,16 @@ class FutureLessonDetailDialog extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDersBilgisi(),
+                    _buildDersBilgisi(context),
                     const SizedBox(height: 12),
-                    _buildDetaySatirlari(),
+                    _buildDetaySatirlari(context),
                     if (ders.uyeList.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      _buildKatilimDurumlari(),
+                      _buildKatilimDurumlari(context),
                     ],
                     if (ders.aktifDevirTalebi != null) ...[
                       const SizedBox(height: 16),
-                      _buildDevirTalebiUyari(),
+                      _buildDevirTalebiUyari(context),
                     ],
                   ],
                 ),
@@ -88,7 +83,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: TakvimColors.primary.withValues(alpha: 0.08),
+        color: context.takvim.primary.withValues(alpha: 0.08),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
@@ -96,12 +91,12 @@ class FutureLessonDetailDialog extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               Icons.event_note_rounded,
-              color: TakvimColors.primary,
+              color: context.takvim.primary,
               size: 22,
             ),
           ),
@@ -119,18 +114,19 @@ class FutureLessonDetailDialog extends StatelessWidget {
                   '${TimeUtils.formatDateFull(ders.baslangicTarihSaat)} • ${TimeUtils.formatTime(ders.baslangicTarihSaat)}',
                   style: TextStyle(
                     fontSize: 13,
-                    color: TakvimColors.textSecondary,
+                    color: context.takvim.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
           IconButton(
+            tooltip: 'Kapat',
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.close_rounded),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: TakvimColors.textSecondary,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              foregroundColor: context.takvim.textSecondary,
             ),
           ),
         ],
@@ -142,7 +138,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
   /*                              DERS BİLGİSİ                                  */
   /* -------------------------------------------------------------------------- */
 
-  Widget _buildDersBilgisi() {
+  Widget _buildDersBilgisi(BuildContext context) {
     final baslangic = ders.baslangicTarihSaat;
     final bitis = ders.bitisTarihSaat;
     final sure = bitis.difference(baslangic).inMinutes;
@@ -150,9 +146,10 @@ class FutureLessonDetailDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200, width: 1.5),
+        border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant, width: 1.5),
       ),
       child: Row(
         children: [
@@ -162,12 +159,12 @@ class FutureLessonDetailDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: TakvimColors.primaryLight.withValues(alpha: 0.3),
+                    color: context.takvim.primaryLight.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.sports_tennis_rounded,
-                    color: TakvimColors.primary,
+                    color: context.takvim.primary,
                     size: 18,
                   ),
                 ),
@@ -180,7 +177,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
                         'Kort',
                         style: TextStyle(
                           fontSize: 11,
-                          color: TakvimColors.textSecondary,
+                          color: context.takvim.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -202,7 +199,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
           Container(
             height: 40,
             width: 1,
-            color: Colors.grey.shade300,
+            color: Theme.of(context).colorScheme.outlineVariant,
             margin: const EdgeInsets.symmetric(horizontal: 12),
           ),
           Expanded(
@@ -211,12 +208,12 @@ class FutureLessonDetailDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: TakvimColors.primaryLight.withValues(alpha: 0.3),
+                    color: context.takvim.primaryLight.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.access_time_rounded,
-                    color: TakvimColors.primary,
+                    color: context.takvim.primary,
                     size: 18,
                   ),
                 ),
@@ -229,7 +226,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
                         'Saat',
                         style: TextStyle(
                           fontSize: 11,
-                          color: TakvimColors.textSecondary,
+                          color: context.takvim.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -257,7 +254,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
   /*                            DETAY SATIRLARI                                 */
   /* -------------------------------------------------------------------------- */
 
-  Widget _buildDetaySatirlari() {
+  Widget _buildDetaySatirlari(BuildContext context) {
     final rows = <Widget>[];
 
     if (ders.antrenorAdi != null && ders.antrenorAdi!.isNotEmpty) {
@@ -289,21 +286,21 @@ class FutureLessonDetailDialog extends StatelessWidget {
   /*                          KATILIM DURUMLARI                                 */
   /* -------------------------------------------------------------------------- */
 
-  Widget _buildKatilimDurumlari() {
+  Widget _buildKatilimDurumlari(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Icon(Icons.people_rounded,
-                size: 18, color: TakvimColors.textSecondary),
+                size: 18, color: context.takvim.textSecondary),
             const SizedBox(width: 6),
             Text(
               'Katılımcı Durumları (${ders.uyeList.length})',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: TakvimColors.textSecondary,
+                color: context.takvim.textSecondary,
               ),
             ),
           ],
@@ -312,9 +309,10 @@ class FutureLessonDetailDialog extends StatelessWidget {
         Container(
           constraints: const BoxConstraints(maxHeight: 250),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
+            color: Colors.grey.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
+            border:
+                Border.all(color: Theme.of(context).colorScheme.outlineVariant),
           ),
           padding: const EdgeInsets.all(10),
           child: SingleChildScrollView(
@@ -323,7 +321,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
               runSpacing: 8,
               children: ders.uyeList.map((uye) {
                 final teyit = ders.getTeyitBilgisi(uye.id);
-                return _buildUyeDurumChip(uye, teyit);
+                return _buildUyeDurumChip(context, uye, teyit);
               }).toList(),
             ),
           ),
@@ -332,7 +330,8 @@ class FutureLessonDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildUyeDurumChip(UyeLiteModel uye, UyeTeyit? teyit) {
+  Widget _buildUyeDurumChip(
+      BuildContext context, UyeLiteModel uye, UyeTeyit? teyit) {
     final katilacakMi = teyit?.katilacakMi;
     final color = katilacakMi == null
         ? const Color(0xFFF59E0B)
@@ -377,7 +376,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -398,7 +397,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
   /*                        DEVIR TALEBI UYARISI                                */
   /* -------------------------------------------------------------------------- */
 
-  Widget _buildDevirTalebiUyari() {
+  Widget _buildDevirTalebiUyari(BuildContext context) {
     final talep = ders.aktifDevirTalebi!;
     final benTalepEden = talep.benTalepEdenim;
 
@@ -406,21 +405,22 @@ class FutureLessonDetailDialog extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: TakvimColors.pending.withValues(alpha: 0.1),
+        color: context.takvim.pending.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: TakvimColors.pending.withValues(alpha: 0.3)),
+        border:
+            Border.all(color: context.takvim.pending.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: TakvimColors.pending.withValues(alpha: 0.15),
+              color: context.takvim.pending.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.swap_horiz_rounded,
-              color: TakvimColors.pending,
+              color: context.takvim.pending,
               size: 20,
             ),
           ),
@@ -433,10 +433,10 @@ class FutureLessonDetailDialog extends StatelessWidget {
                   benTalepEden
                       ? 'Devir talebiniz cevap bekliyor'
                       : 'Size devir teklifi geldi',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: TakvimColors.pending,
+                    color: context.takvim.pending,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -444,7 +444,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
                   'Detay için "Devret" butonuna dokunun',
                   style: TextStyle(
                     fontSize: 11,
-                    color: TakvimColors.textSecondary,
+                    color: context.takvim.textSecondary,
                   ),
                 ),
               ],
@@ -465,7 +465,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Colors.grey.withValues(alpha: 0.10),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
       child: Row(
@@ -480,8 +480,8 @@ class FutureLessonDetailDialog extends StatelessWidget {
                     const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor: TakvimColors.primary,
-                side: BorderSide(color: TakvimColors.primary),
+                foregroundColor: context.takvim.primary,
+                side: BorderSide(color: context.takvim.primary),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -499,7 +499,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
               ),
               style: FilledButton.styleFrom(
-                backgroundColor: TakvimColors.cancelled,
+                backgroundColor: context.takvim.cancelled,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -555,7 +555,7 @@ class _DetaySatir extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: TakvimColors.textMuted),
+        Icon(icon, size: 16, color: context.takvim.textMuted),
         const SizedBox(width: 8),
         SizedBox(
           width: 70,
@@ -563,7 +563,7 @@ class _DetaySatir extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: TakvimColors.textSecondary,
+              color: context.takvim.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -571,10 +571,10 @@ class _DetaySatir extends StatelessWidget {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: TakvimColors.textPrimary,
+              color: context.takvim.textPrimary,
             ),
             overflow: TextOverflow.ellipsis,
           ),

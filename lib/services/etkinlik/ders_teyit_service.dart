@@ -135,7 +135,6 @@ class TeyitDurum {
 }
 
 class DersTeyitService {
-
   /// Teyit detayını getirir (etkinlik + üye + teyit durumu)
   static Future<ApiResult<TeyitDetayModel>> getTeyitDetayBilgisi({
     required String etkinlikId,

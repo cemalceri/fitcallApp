@@ -25,8 +25,7 @@ class Shimmer extends StatefulWidget {
   State<Shimmer> createState() => _ShimmerState();
 }
 
-class _ShimmerState extends State<Shimmer>
-    with SingleTickerProviderStateMixin {
+class _ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
@@ -48,8 +47,9 @@ class _ShimmerState extends State<Shimmer>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final base = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE6E6E6);
-    final highlight =
-        isDark ? const Color(0xFF3A3A3A) : const Color(0xFFF5F5F5);
+    final highlight = isDark
+        ? const Color(0xFF3A3A3A)
+        : Theme.of(context).colorScheme.surfaceContainerHighest;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -63,8 +63,7 @@ class _ShimmerState extends State<Shimmer>
               stops: const [0.1, 0.3, 0.4],
               begin: Alignment.topLeft,
               end: Alignment.centerRight,
-              transform:
-                  _SlidingGradientTransform(_controller.value * 3 - 1.5),
+              transform: _SlidingGradientTransform(_controller.value * 3 - 1.5),
             ).createShader(bounds);
           },
           child: child,
@@ -192,8 +191,7 @@ class DashboardSkeleton extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const SkeletonBox(
-                width: double.infinity, height: 200, radius: 16),
+            const SkeletonBox(width: double.infinity, height: 200, radius: 16),
           ],
         ),
       ),

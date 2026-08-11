@@ -167,7 +167,9 @@ class _AntrenorSatiri extends StatelessWidget {
         .where((p) => p.isNotEmpty)
         .toList();
     if (parcalar.isEmpty) return '?';
-    if (parcalar.length == 1) return parcalar.first.substring(0, 1).toUpperCase();
+    if (parcalar.length == 1) {
+      return parcalar.first.substring(0, 1).toUpperCase();
+    }
     return (parcalar.first.substring(0, 1) + parcalar.last.substring(0, 1))
         .toUpperCase();
   }

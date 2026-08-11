@@ -38,8 +38,8 @@ class DersListeItemWidget extends StatelessWidget {
           decoration: BoxDecoration(
             color: colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
-            border:
-                Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+            border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [

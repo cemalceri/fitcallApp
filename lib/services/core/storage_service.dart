@@ -17,8 +17,14 @@ class StorageService {
   static Future<String?> getToken() =>
       SecureStorageService.getValue<String>('token');
 
+  /// Oturum verilerini siler. Tema tercihi oturuma bağlı değil — çıkışta
+  /// sıfırlanmaması için okunup geri yazılır.
   static Future<void> clearAll() async {
+    final tema = await SecureStorageService.getValue<String>('tema_modu');
     await SecureStorageService.clearAll();
+    if (tema != null) {
+      await SecureStorageService.setValue<String>('tema_modu', tema);
+    }
   }
 
   static Future<UyeModel?> uyeBilgileriniGetir() async {

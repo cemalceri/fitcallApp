@@ -28,7 +28,7 @@ class LessonBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = _getStatus();
-    final colors = _getColors(status);
+    final colors = _getColors(context, status);
     final katilimcilar = ders.uyeList.map((u) => u.adSoyad).toList();
 
     return Stack(
@@ -93,10 +93,10 @@ class LessonBlock extends StatelessWidget {
                         Expanded(
                           child: Text(
                             katilimcilar.isNotEmpty ? katilimcilar.first : '-',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: TakvimColors.textPrimary,
+                              color: context.takvim.textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -130,10 +130,10 @@ class LessonBlock extends StatelessWidget {
                         Expanded(
                           child: Text(
                             katilimcilar.isNotEmpty ? katilimcilar.first : '-',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: TakvimColors.textPrimary,
+                              color: context.takvim.textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -191,10 +191,10 @@ class LessonBlock extends StatelessWidget {
                           katilimcilar.isNotEmpty
                               ? katilimcilar.first
                               : 'Katılımcı yok',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: TakvimColors.textPrimary,
+                            color: context.takvim.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -205,9 +205,9 @@ class LessonBlock extends StatelessWidget {
                         [ders.kortAdi, ders.seviye]
                             .where((s) => s.isNotEmpty)
                             .join(' • '),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: TakvimColors.textSecondary,
+                          color: context.takvim.textSecondary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -283,46 +283,23 @@ class LessonBlock extends StatelessWidget {
     return LessonStatus.pending;
   }
 
-  _LessonColors _getColors(LessonStatus status) {
-    switch (status) {
-      case LessonStatus.future:
-        return _LessonColors(
-          background: const Color(0xFFDBEAFE),
-          backgroundEnd: const Color(0xFFBFDBFE),
-          border: TakvimColors.future,
-        );
-      case LessonStatus.completed:
-        return _LessonColors(
-          background: const Color(0xFFDCFCE7),
-          backgroundEnd: const Color(0xFFBBF7D0),
-          border: TakvimColors.completed,
-        );
-      case LessonStatus.antrenorApproved:
-        // Antrenör onayladı ama yönetici bekliyor - açık yeşil/sarımsı
-        return _LessonColors(
-          background: const Color(0xFFE8F5E9),
-          backgroundEnd: const Color(0xFFFFF8E1),
-          border: const Color(0xFF8BC34A), // Açık yeşil
-        );
-      case LessonStatus.pending:
-        return _LessonColors(
-          background: const Color(0xFFFEF3C7),
-          backgroundEnd: const Color(0xFFFDE68A),
-          border: TakvimColors.pending,
-        );
-      case LessonStatus.notDone:
-        return _LessonColors(
-          background: const Color(0xFFF1F5F9),
-          backgroundEnd: const Color(0xFFE2E8F0),
-          border: TakvimColors.notDone,
-        );
-      case LessonStatus.cancelled:
-        return _LessonColors(
-          background: const Color(0xFFFEE2E2),
-          backgroundEnd: const Color(0xFFFECACA),
-          border: TakvimColors.cancelled,
-        );
-    }
+  /// Blok renkleri durum renginden türetilir: sabit pastel zeminler koyu
+  /// temada beyaz lekeler bırakıyordu.
+  _LessonColors _getColors(BuildContext context, LessonStatus status) {
+    final t = context.takvim;
+    final ana = switch (status) {
+      LessonStatus.future => t.future,
+      LessonStatus.completed => t.completed,
+      LessonStatus.antrenorApproved => t.completed,
+      LessonStatus.pending => t.pending,
+      LessonStatus.notDone => t.notDone,
+      LessonStatus.cancelled => t.cancelled,
+    };
+    return _LessonColors(
+      background: ana.withValues(alpha: 0.16),
+      backgroundEnd: ana.withValues(alpha: 0.09),
+      border: ana,
+    );
   }
 
   /// Kompakt modda sadece ikon göster
@@ -444,7 +421,7 @@ class _DevirBadge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: TakvimColors.pending,
+          color: context.takvim.pending,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
@@ -454,10 +431,10 @@ class _DevirBadge extends StatelessWidget {
             ),
           ],
         ),
-        child: const Icon(
+        child: Icon(
           Icons.swap_horiz_rounded,
           size: 12,
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
         ),
       ),
     );

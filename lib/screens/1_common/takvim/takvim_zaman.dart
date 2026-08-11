@@ -3,7 +3,6 @@
 // hesaplamaları. İki tarafta birebir aynı kopyalardı; tek yere alındı.
 // Renk/etiket sabitleri role göre farklı olduğu için kendi dosyalarında kaldı.
 
-
 /// Takvim boyut sabitleri
 class TakvimSizes {
   TakvimSizes._();
@@ -74,11 +73,27 @@ class TimeUtils {
   /// Tarihi formatla (21 Ocak Salı)
   static String formatDateFull(DateTime d) {
     const aylar = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık'
     ];
     const gunler = [
-      'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'
+      'Pazartesi',
+      'Salı',
+      'Çarşamba',
+      'Perşembe',
+      'Cuma',
+      'Cumartesi',
+      'Pazar'
     ];
     return '${d.day} ${aylar[d.month - 1]} ${gunler[d.weekday - 1]}';
   }
@@ -103,8 +118,18 @@ class TimeUtils {
   /// Ay adını al
   static String getMonthName(int month) {
     const months = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık'
     ];
     return months[month - 1];
   }

@@ -7,14 +7,14 @@ import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:flutter/material.dart';
 
-class DeleteUserAccountPage extends StatefulWidget {
-  const DeleteUserAccountPage({super.key});
+class HesapSilPage extends StatefulWidget {
+  const HesapSilPage({super.key});
 
   @override
-  State<DeleteUserAccountPage> createState() => _DeleteUserAccountPageState();
+  State<HesapSilPage> createState() => _HesapSilPageState();
 }
 
-class _DeleteUserAccountPageState extends State<DeleteUserAccountPage> {
+class _HesapSilPageState extends State<HesapSilPage> {
   final _confirmCtrl = TextEditingController();
   bool _isLoading = false;
 
@@ -139,12 +139,13 @@ class _DeleteUserAccountPageState extends State<DeleteUserAccountPage> {
                             ),
                           ),
                           child: _isLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                   height: 20,
                                   width: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Colors.white,
+                                    color:
+                                        Theme.of(context).colorScheme.surface,
                                   ),
                                 )
                               : const Text('Evet, Kalıcı Sil'),
@@ -187,6 +188,7 @@ class _DeleteUserAccountPageState extends State<DeleteUserAccountPage> {
                 child: Row(
                   children: [
                     IconButton(
+                      tooltip: 'Geri',
                       onPressed: () => Navigator.pop(context),
                       icon: Container(
                         padding: const EdgeInsets.all(8),
@@ -363,12 +365,14 @@ class _DeleteUserAccountPageState extends State<DeleteUserAccountPage> {
                                       ),
                                     ),
                                     child: _isLoading
-                                        ? const SizedBox(
+                                        ? SizedBox(
                                             height: 20,
                                             width: 20,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              color: Colors.white,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .surface,
                                             ),
                                           )
                                         : const Text('Hesabı Sil'),

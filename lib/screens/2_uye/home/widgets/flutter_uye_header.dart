@@ -111,6 +111,7 @@ class UyeHeader extends StatelessWidget {
 
               // Çıkış
               IconButton(
+                tooltip: 'Çıkış yap',
                 onPressed: () => _logout(context),
                 icon: Container(
                   padding: const EdgeInsets.all(8),

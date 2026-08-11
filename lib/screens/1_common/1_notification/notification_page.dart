@@ -163,7 +163,8 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sil', style: TextStyle(color: Color(0xFFEF4444))),
+            child:
+                const Text('Sil', style: TextStyle(color: Color(0xFFEF4444))),
           ),
         ],
       ),
@@ -226,7 +227,7 @@ class _NotificationPageState extends State<NotificationPage> {
   Widget build(BuildContext context) {
     final groups = _groupByDate();
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -238,7 +239,7 @@ class _NotificationPageState extends State<NotificationPage> {
                       ? _buildEmptyState()
                       : RefreshIndicator(
                           onRefresh: _fetchNotifications,
-                          color: BildirimRenkleri.anaMavi,
+                          color: context.bildirimRenk.anaMavi,
                           child: ListView.builder(
                             physics: const AlwaysScrollableScrollPhysics(
                                 parent: BouncingScrollPhysics()),
@@ -262,33 +263,35 @@ class _NotificationPageState extends State<NotificationPage> {
     return Container(
       padding: const EdgeInsets.fromLTRB(4, 8, 16, 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         border: Border(
             bottom: BorderSide(
-                color: BildirimRenkleri.ayiriciCizgi.withValues(alpha: 0.5))),
+                color:
+                    context.bildirimRenk.ayiriciCizgi.withValues(alpha: 0.5))),
       ),
       child: Row(
         children: [
           IconButton(
+            tooltip: 'Geri',
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                size: 22, color: BildirimRenkleri.yaziAna),
+            icon: Icon(Icons.arrow_back_ios_new_rounded,
+                size: 22, color: context.bildirimRenk.yaziAna),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
               'Bildirimler',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
-                color: BildirimRenkleri.yaziAna,
+                color: context.bildirimRenk.yaziAna,
                 letterSpacing: -0.5,
               ),
             ),
           ),
           if (_notifications.isNotEmpty)
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert_rounded,
-                  size: 22, color: BildirimRenkleri.yaziAna),
+              icon: Icon(Icons.more_vert_rounded,
+                  size: 22, color: context.bildirimRenk.yaziAna),
               tooltip: 'Bildirim işlemleri',
               onSelected: (secim) {
                 if (secim == 'okundu') {
@@ -299,12 +302,12 @@ class _NotificationPageState extends State<NotificationPage> {
               },
               itemBuilder: (_) => [
                 if (_unreadCount > 0)
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'okundu',
                     child: Row(
                       children: [
                         Icon(Icons.done_all_rounded,
-                            size: 20, color: BildirimRenkleri.anaMavi),
+                            size: 20, color: context.bildirimRenk.anaMavi),
                         SizedBox(width: 12),
                         Text('Tümünü okundu yap'),
                       ],
@@ -338,19 +341,78 @@ class _NotificationPageState extends State<NotificationPage> {
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
           child: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: BildirimRenkleri.yaziAna,
+              color: context.bildirimRenk.yaziAna,
             ),
           ),
         ),
-        ...items.map((n) => _BildirimSatiri(
+        ...items.map(
+          (n) => Dismissible(
+            key: ValueKey('bildirim_${n.id}'),
+            direction: DismissDirection.endToStart,
+            background: _silmeZemini(),
+            onDismissed: (_) => _bildirimSil(n),
+            child: _BildirimSatiri(
               notification: n,
               onTap: () => _onNotificationTap(n),
-            )),
+            ),
+          ),
+        ),
       ],
     );
+  }
+
+  /// Kaydırınca beliren kırmızı zemin.
+  Widget _silmeZemini() {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      color: cs.error,
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Icon(Icons.delete_outline_rounded, color: cs.onError),
+    );
+  }
+
+  /// Tek bildirimi siler; sunucuya gitmeden önce geri alma penceresi bırakır.
+  ///
+  /// "Tümünü sil" menüsü geri alınamaz bir işlemdi ve tek bir bildirimden
+  /// kurtulmanın başka yolu yoktu.
+  Future<void> _bildirimSil(NotificationModel notif) async {
+    final eskiListe = _notifications;
+    setState(() {
+      _notifications = [
+        for (final n in _notifications)
+          if (n.id != notif.id) n
+      ];
+    });
+
+    final sonuc = await ScaffoldMessenger.of(context)
+        .showSnackBar(
+          SnackBar(
+            content: const Text('Bildirim silindi'),
+            action: SnackBarAction(label: 'Geri al', onPressed: () {}),
+            duration: const Duration(seconds: 4),
+          ),
+        )
+        .closed;
+
+    if (!mounted) return;
+
+    if (sonuc == SnackBarClosedReason.action) {
+      setState(() => _notifications = eskiListe);
+      return;
+    }
+
+    try {
+      await NotificationService.deleteNotifications([notif.id]);
+      await NotificationService.refreshUnreadCount();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _notifications = eskiListe);
+      ShowMessage.error(context, 'Bildirim silinemedi');
+    }
   }
 
   Future<void> _onNotificationTap(NotificationModel notif) async {
@@ -360,10 +422,10 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: CircularProgressIndicator(
         strokeWidth: 2,
-        color: BildirimRenkleri.yaziIkincil,
+        color: context.bildirimRenk.yaziIkincil,
       ),
     );
   }
@@ -378,29 +440,29 @@ class _NotificationPageState extends State<NotificationPage> {
             height: 96,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: BildirimRenkleri.yaziAna, width: 2),
+              border: Border.all(color: context.bildirimRenk.yaziAna, width: 2),
             ),
-            child: const Icon(
-              Icons.favorite_border_rounded,
+            child: Icon(
+              Icons.notifications_none_rounded,
               size: 48,
-              color: BildirimRenkleri.yaziAna,
+              color: context.bildirimRenk.yaziAna,
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Etkinlik Yok',
+          Text(
+            'Bildirim yok',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w600,
-              color: BildirimRenkleri.yaziAna,
+              color: context.bildirimRenk.yaziAna,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Yeni bildirimler burada görünecek',
+          Text(
+            'Ders teyidi, iptal ve duyurular burada görünecek.',
             style: TextStyle(
               fontSize: 14,
-              color: BildirimRenkleri.yaziIkincil,
+              color: context.bildirimRenk.yaziIkincil,
             ),
           ),
         ],
@@ -422,7 +484,12 @@ class _BildirimSatiri extends StatelessWidget {
     final isUnread = !notification.isRead;
 
     return Material(
-      color: isUnread ? const Color(0xFFEFF6FF) : Colors.white,
+      color: isUnread
+          ? Theme.of(context)
+              .colorScheme
+              .primaryContainer
+              .withValues(alpha: 0.35)
+          : Theme.of(context).colorScheme.surface,
       child: InkWell(
         onTap: onTap,
         child: Container(
@@ -430,7 +497,7 @@ class _BildirimSatiri extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildAvatar(),
+              _buildAvatar(context),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -440,9 +507,9 @@ class _BildirimSatiri extends StatelessWidget {
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       text: TextSpan(
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: BildirimRenkleri.yaziAna,
+                          color: context.bildirimRenk.yaziAna,
                           height: 1.4,
                         ),
                         children: [
@@ -459,8 +526,8 @@ class _BildirimSatiri extends StatelessWidget {
                             style: TextStyle(
                               fontWeight: FontWeight.w400,
                               color: isUnread
-                                  ? BildirimRenkleri.yaziAna
-                                  : BildirimRenkleri.yaziIkincil,
+                                  ? context.bildirimRenk.yaziAna
+                                  : context.bildirimRenk.yaziIkincil,
                             ),
                           ),
                         ],
@@ -472,8 +539,8 @@ class _BildirimSatiri extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         color: isUnread
-                            ? BildirimRenkleri.anaMavi
-                            : BildirimRenkleri.yaziIkincil,
+                            ? context.bildirimRenk.anaMavi
+                            : context.bildirimRenk.yaziIkincil,
                         fontWeight:
                             isUnread ? FontWeight.w500 : FontWeight.w400,
                       ),
@@ -487,8 +554,8 @@ class _BildirimSatiri extends StatelessWidget {
                   width: 8,
                   height: 8,
                   margin: const EdgeInsets.only(top: 6),
-                  decoration: const BoxDecoration(
-                    color: BildirimRenkleri.anaMavi,
+                  decoration: BoxDecoration(
+                    color: context.bildirimRenk.anaMavi,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -500,13 +567,13 @@ class _BildirimSatiri extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar() {
+  Widget _buildAvatar(BuildContext context) {
     final iconData =
         BildirimGorselYardimci.ikonGetir(notification.notificationType);
     final bgColor = BildirimGorselYardimci.arkaplanRengiGetir(
-        notification.notificationType);
-    final iconColor =
-        BildirimGorselYardimci.renkGetir(notification.notificationType);
+        context, notification.notificationType);
+    final iconColor = BildirimGorselYardimci.renkGetir(
+        context, notification.notificationType);
 
     return Container(
       width: 48,

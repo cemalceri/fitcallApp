@@ -20,8 +20,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// (Cihaz saat dilimini hiç kullanmaz.)
 DateTime _kulupBeklenen(String isoAn) {
   final d = DateTime.parse(isoAn).toUtc().add(const Duration(hours: 3));
-  return DateTime(d.year, d.month, d.day, d.hour, d.minute, d.second, d.millisecond,
-      d.microsecond);
+  return DateTime(d.year, d.month, d.day, d.hour, d.minute, d.second,
+      d.millisecond, d.microsecond);
 }
 
 void main() {
@@ -71,8 +71,10 @@ void main() {
     test('canlı vaka: 08:30 dersi 08:30 görünür (11:30 değil)', () {
       // Etkinlik 86512 — DB 2026-08-01T05:30:00Z, API "+03:00" ile gönderiyor.
       final d = parseApiTarih('2026-08-01T08:30:00+03:00')!;
-      expect('${d.hour.toString().padLeft(2, '0')}:'
-          '${d.minute.toString().padLeft(2, '0')}', '08:30');
+      expect(
+          '${d.hour.toString().padLeft(2, '0')}:'
+              '${d.minute.toString().padLeft(2, '0')}',
+          '08:30');
     });
 
     test('saatsiz gün metnini kabul eder', () {
@@ -112,12 +114,12 @@ void main() {
 
   group('simdiKulup / bugunKulup', () {
     test('şimdi, anın kulüp karşılığıdır (cihaz saat diliminden bağımsız)', () {
-      final beklenen =
-          DateTime.now().toUtc().add(const Duration(hours: 3));
+      final beklenen = DateTime.now().toUtc().add(const Duration(hours: 3));
       final s = simdiKulup();
       expect(s.isUtc, isFalse);
       expect(
-        s.difference(DateTime(beklenen.year, beklenen.month, beklenen.day,
+        s
+            .difference(DateTime(beklenen.year, beklenen.month, beklenen.day,
                 beklenen.hour, beklenen.minute, beklenen.second))
             .inSeconds
             .abs(),
@@ -174,7 +176,8 @@ void main() {
     });
 
     test('UTC DateTime verilirse kulüp duvar saatine çevirir', () {
-      expect(formatApiTarih(DateTime.utc(2026, 7, 23, 7)), '2026-07-23T10:00:00');
+      expect(
+          formatApiTarih(DateTime.utc(2026, 7, 23, 7)), '2026-07-23T10:00:00');
     });
 
     test('mikrosaniye/salise taşınmaz', () {

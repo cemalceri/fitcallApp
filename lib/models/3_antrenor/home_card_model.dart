@@ -117,7 +117,7 @@ class HomeCardModel {
       case HomeCardType.success:
         return const Color(0xFF10B981); // Yeşil
       case HomeCardType.info:
-        return const Color(0xFF64748B); // Gri
+        return const Color(0xFF8C8C8C); // Gri
       case HomeCardType.teyitBekleyen:
         return const Color(0xFFF59E0B); // Turuncu
       case HomeCardType.borc:

@@ -1,12 +1,10 @@
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
-import 'package:fitcall/screens/1_common/widgets/kvkk.dart';
-import 'package:fitcall/screens/2_uye/profil/widgets/change_password_page.dart';
-import 'package:fitcall/screens/2_uye/profil/widgets/delete_user_account_page.dart';
 import 'package:fitcall/screens/2_uye/profil/widgets/telafi_haklari_page.dart';
 import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class MenuSection extends StatelessWidget {
   final UyeModel uye;
@@ -54,12 +52,12 @@ class MenuSection extends StatelessWidget {
               icon: Icons.contact_phone_outlined,
               title: 'İletişim Bilgileri',
               subtitle: 'Telefon, e-posta ve adres',
-              color: Colors.teal,
+              color: context.renkler.bilgi,
               onTap: () => _showDetailSheet(
                 context,
                 title: 'İletişim Bilgileri',
                 icon: Icons.contact_phone_outlined,
-                color: Colors.teal,
+                color: context.renkler.bilgi,
                 items: [
                   _DetailItem('Telefon', uye.telefon ?? 'Belirtilmedi'),
                   _DetailItem('E-posta', uye.email ?? 'Belirtilmedi'),
@@ -72,12 +70,12 @@ class MenuSection extends StatelessWidget {
               icon: Icons.family_restroom_outlined,
               title: 'Veli / Acil Durum',
               subtitle: 'Aile ve acil durum bilgileri',
-              color: Colors.purple,
+              color: context.renkler.uyari,
               onTap: () => _showDetailSheet(
                 context,
                 title: 'Veli / Acil Durum',
                 icon: Icons.family_restroom_outlined,
-                color: Colors.purple,
+                color: context.renkler.uyari,
                 items: [
                   _DetailItem(
                       'Acil Durum Kişi', uye.acilDurumKisi ?? 'Belirtilmedi'),
@@ -94,12 +92,12 @@ class MenuSection extends StatelessWidget {
               icon: Icons.sports_tennis_outlined,
               title: 'Tenis Tercihi',
               subtitle: 'Program ve hoca bilgileri',
-              color: Colors.green,
+              color: context.renkler.basari,
               onTap: () => _showDetailSheet(
                 context,
                 title: 'Tenis Tercihi',
                 icon: Icons.sports_tennis_outlined,
-                color: Colors.green,
+                color: context.renkler.basari,
                 items: [
                   _DetailItem(
                       'Tenis Geçmişi', uye.tenisGecmisiVarMi ?? 'Belirtilmedi'),
@@ -124,7 +122,7 @@ class MenuSection extends StatelessWidget {
               icon: Icons.calendar_today_outlined,
               title: 'Üyelik/Paket Bilgilerim',
               subtitle: 'Aktif paketler ve üyelikler',
-              color: Colors.indigo,
+              color: colorScheme.primary,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const UyeUrunListPage()),
@@ -134,7 +132,7 @@ class MenuSection extends StatelessWidget {
               icon: Icons.event_repeat_rounded,
               title: 'Telafi Haklarım',
               subtitle: 'Telafi dersleri ve kullanım durumu',
-              color: Colors.deepPurple,
+              color: context.renkler.bilgi,
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const TelafiHaklariPage()),
@@ -145,67 +143,17 @@ class MenuSection extends StatelessWidget {
 
         const SizedBox(height: 24),
 
-        // Ayarlar
-        _SectionTitle(title: 'Ayarlar', icon: Icons.settings_outlined),
-        const SizedBox(height: 12),
+        // Ayarlar — şifre, KVKK, bildirim izni, tema ve hesap silme tek
+        // sayfada toplandı; profil ekranı kişisel bilgide kalıyor.
         _MenuCard(
           children: [
             _ModernMenuTile(
-              icon: Icons.lock_reset_rounded,
-              title: 'Şifreyi Değiştir',
-              subtitle: 'Hesap güvenliği',
-              color: Colors.orange,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ChangePasswordPage()),
-              ),
-            ),
-            _ModernMenuTile(
-              icon: Icons.privacy_tip_outlined,
-              title: 'KVKK Aydınlatma Metni',
-              subtitle: 'Veri işleme ve saklama bilgileri',
-              color: Colors.blue,
-              onTap: () => showKvkkAydinlatmaModal(context),
-            ),
-            FutureBuilder<PermissionStatus>(
-              future: Permission.notification.status,
-              builder: (context, snapshot) {
-                final isGranted = snapshot.data?.isGranted ?? false;
-                return _ModernMenuTile(
-                  icon: Icons.notifications_outlined,
-                  title: 'Bildirim İzni',
-                  subtitle: isGranted ? 'Açık' : 'Kapalı',
-                  color: isGranted ? Colors.green : Colors.orange,
-                  onTap: () => openAppSettings(),
-                );
-              },
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 24),
-
-        // Tehlikeli Bölge
-        _SectionTitle(
-          title: 'Tehlikeli Bölge',
-          icon: Icons.warning_amber_rounded,
-          color: colorScheme.error,
-        ),
-        const SizedBox(height: 12),
-        _MenuCard(
-          borderColor: colorScheme.error.withValues(alpha: 0.2),
-          children: [
-            _ModernMenuTile(
-              icon: Icons.delete_forever_rounded,
-              title: 'Hesabı Kalıcı Sil',
-              subtitle: 'Tüm verilerin kaldırılması',
-              color: colorScheme.error,
-              isDestructive: true,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const DeleteUserAccountPage()),
-              ),
+              icon: Icons.settings_outlined,
+              title: 'Ayarlar',
+              subtitle: 'Tema, bildirimler, şifre ve hesap',
+              color: colorScheme.primary,
+              onTap: () =>
+                  Navigator.pushNamed(context, routeEnums[SayfaAdi.ayarlar]!),
             ),
           ],
         ),
@@ -239,18 +187,15 @@ class MenuSection extends StatelessWidget {
 class _SectionTitle extends StatelessWidget {
   final String title;
   final IconData icon;
-  final Color? color;
 
   const _SectionTitle({
     required this.title,
     required this.icon,
-    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final displayColor = color ?? colorScheme.primary;
+    final displayColor = Theme.of(context).colorScheme.primary;
 
     return Row(
       children: [
@@ -272,12 +217,8 @@ class _SectionTitle extends StatelessWidget {
 
 class _MenuCard extends StatelessWidget {
   final List<Widget> children;
-  final Color? borderColor;
 
-  const _MenuCard({
-    required this.children,
-    this.borderColor,
-  });
+  const _MenuCard({required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -287,10 +228,7 @@ class _MenuCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color:
-              borderColor ?? colorScheme.outlineVariant.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
             color: colorScheme.shadow.withValues(alpha: 0.04),
@@ -328,7 +266,6 @@ class _ModernMenuTile extends StatelessWidget {
   final String subtitle;
   final Color color;
   final VoidCallback onTap;
-  final bool isDestructive;
 
   const _ModernMenuTile({
     required this.icon,
@@ -336,7 +273,6 @@ class _ModernMenuTile extends StatelessWidget {
     required this.subtitle,
     required this.color,
     required this.onTap,
-    this.isDestructive = false,
   });
 
   @override
@@ -373,9 +309,7 @@ class _ModernMenuTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: isDestructive
-                            ? colorScheme.error
-                            : colorScheme.onSurface,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),

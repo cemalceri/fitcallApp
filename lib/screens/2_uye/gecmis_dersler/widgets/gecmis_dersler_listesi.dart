@@ -120,7 +120,7 @@ class _DersKarti extends StatelessWidget {
     }
     if (ders.dersYapildi == false) {
       // Yöneticinin "yapılmadı" işareti → nötr gri
-      return const _DersDurum('Ders yapılmadı', Color(0xFF64748B));
+      return _DersDurum('Ders yapılmadı', const Color(0xFF8C8C8C));
     }
     // Henüz sonuç girilmemiş → üye için "Kulüp onayında", sarı
     return const _DersDurum('Kulüp onayında', Color(0xFFF59E0B));
@@ -292,8 +292,8 @@ class _DersKarti extends StatelessWidget {
                 ders.puanim!.yorum!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style:
-                    TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                style: TextStyle(
+                    fontSize: 12, color: colorScheme.onSurfaceVariant),
               ),
             ),
           ],

@@ -1,7 +1,7 @@
 name: fitcall
 description: "Binay Akademi Mobil Uygulama"
 publish_to: 'none' 
-version: 3.7.0+40
+version: 3.8.0+40
 environment:
   sdk: '>=3.5.0 <4.0.0'
 dependencies:
@@ -21,7 +21,6 @@ dependencies:
   share_plus: ^12.0.0
   flutter_secure_storage: ^10.0.0
   mobile_scanner: ^7.0.1
-  data_table_2: ^2.6.0
   in_app_update: ^4.2.3
   package_info_plus: ^9.0.0
   flutter_native_splash: ^2.4.6

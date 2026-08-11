@@ -16,11 +16,48 @@
 // Sayfa API çağırmadığı için doğrudan taşma testine girebiliyor
 // (bkz. test/tasma_ekranlar_test.dart).
 
+import 'package:fitcall/screens/1_common/widgets/sss_arama.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class AntrenorYardimPage extends StatelessWidget {
+class AntrenorYardimPage extends StatefulWidget {
   const AntrenorYardimPage({super.key});
+
+  @override
+  State<AntrenorYardimPage> createState() => _AntrenorYardimPageState();
+}
+
+class _AntrenorYardimPageState extends State<AntrenorYardimPage> {
+  final _aramaCtrl = TextEditingController();
+  String _sorgu = '';
+  String? _seciliBolum;
+
+  @override
+  void dispose() {
+    _aramaCtrl.dispose();
+    super.dispose();
+  }
+
+  /// Arama + bölüm çipi birlikte uygulanır; sonuç bölüm bölüm döner.
+  List<_Bolum> get _sonuclar {
+    final q = _sorgu.trim().toLowerCase();
+    final liste = <_Bolum>[];
+    for (final bolum in _bolumler) {
+      if (_seciliBolum != null && bolum.baslik != _seciliBolum) continue;
+      final sorular = q.isEmpty
+          ? bolum.sorular
+          : bolum.sorular
+              .where((s) =>
+                  s.soru.toLowerCase().contains(q) ||
+                  s.cevap.toLowerCase().contains(q))
+              .toList();
+      if (sorular.isNotEmpty) {
+        liste.add(
+            _Bolum(baslik: bolum.baslik, ikon: bolum.ikon, sorular: sorular));
+      }
+    }
+    return liste;
+  }
 
   static const _bolumler = <_Bolum>[
     _Bolum(
@@ -219,7 +256,8 @@ class AntrenorYardimPage extends StatelessWidget {
         ),
         _SSS(
           ikon: Icons.do_not_disturb_on_outlined,
-          soru: 'Antrenör listesinde bazı isimler soluk ve seçilemiyor — neden?',
+          soru:
+              'Antrenör listesinde bazı isimler soluk ve seçilemiyor — neden?',
           cevap:
               'Aynı derste diğer rolde görevli olan antrenör devralamaz. Siz ana'
               ' antrenörseniz o dersin yardımcı antrenörü, yardımcı antrenörseniz ana'
@@ -450,8 +488,7 @@ class AntrenorYardimPage extends StatelessWidget {
         ),
         _SSS(
           ikon: Icons.event_available_outlined,
-          soru:
-              'Bir günü kapatırsam o gündeki mevcut derslerim iptal olur mu?',
+          soru: 'Bir günü kapatırsam o gündeki mevcut derslerim iptal olur mu?',
           cevap:
               'Hayır. Çalışma saatleri yalnızca haftalık uygunluğunuzu kaydeder; planlanmış'
               ' dersleriniz olduğu gibi kalır ve yoklamalarını girmeye devam edersiniz. Var'
@@ -549,108 +586,50 @@ class AntrenorYardimPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sonuclar = _sonuclar;
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade50, Colors.white],
-          ),
+      appBar: AppBar(
+        title: const Text('Yardım & SSS'),
+        // 50 soruyu kaydırarak aramak cevabın bulunamaması demekti:
+        // yapışkan arama kutusu + bölüm çipleri.
+        bottom: SssArama(
+          denetleyici: _aramaCtrl,
+          onDegisti: (v) => setState(() => _sorgu = v),
+          bolumler: [for (final b in _bolumler) b.baslik],
+          seciliBolum: _seciliBolum,
+          onBolum: (b) => setState(() => _seciliBolum = b),
+          yaziOlcegi: MediaQuery.textScalerOf(context).scale(1.0),
         ),
-        child: SafeArea(
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverToBoxAdapter(child: _baslikSatiri(context)),
-              SliverToBoxAdapter(child: _ustKart()),
-              for (final bolum in _bolumler) ...[
-                SliverToBoxAdapter(child: _bolumBasligi(bolum)),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, i) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _SSSKarti(sss: bolum.sorular[i]),
-                      ),
-                      childCount: bolum.sorular.length,
-                    ),
+      ),
+      body: CustomScrollView(
+        slivers: [
+          if (_sorgu.isEmpty && _seciliBolum == null)
+            SliverToBoxAdapter(child: _ustKart()),
+          if (sonuclar.isEmpty)
+            SliverToBoxAdapter(child: SssSonucYok(sorgu: _sorgu))
+          else
+            for (final bolum in sonuclar) ...[
+              SliverToBoxAdapter(child: _bolumBasligi(bolum)),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverList.builder(
+                  itemCount: bolum.sorular.length,
+                  itemBuilder: (context, i) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _SSSKarti(sss: bolum.sorular[i]),
                   ),
-                ),
-              ],
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: _iletisimKarti(),
                 ),
               ),
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _baslikSatiri(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Row(
-        children: [
-          _geriButonu(context),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Yardım & SSS',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-                Text(
-                  'Antrenör rehberi',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                ),
-              ],
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: _iletisimKarti(),
             ),
           ),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
-      ),
-    );
-  }
-
-  Widget _geriButonu(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => Navigator.pop(context),
-          child: const Padding(
-            padding: EdgeInsets.all(10),
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 20,
-              color: Color(0xFF1E293B),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -680,12 +659,12 @@ class AntrenorYardimPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Size nasıl yardımcı olabiliriz?',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -706,10 +685,10 @@ class AntrenorYardimPage extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.sports_tennis_rounded,
               size: 40,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
             ),
           ),
         ],
@@ -745,10 +724,13 @@ class AntrenorYardimPage extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.orange.shade50, Colors.amber.shade50],
+          colors: [
+            Colors.orange.withValues(alpha: 0.10),
+            Colors.amber.withValues(alpha: 0.10)
+          ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.orange.shade100),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.16)),
         boxShadow: [
           BoxShadow(
             color: Colors.orange.withValues(alpha: 0.1),
@@ -783,12 +765,12 @@ class AntrenorYardimPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Destek & İletişim',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B),
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -796,7 +778,7 @@ class AntrenorYardimPage extends StatelessWidget {
                         'binayakademi@gmail.com',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey.shade600,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -805,7 +787,7 @@ class AntrenorYardimPage extends StatelessWidget {
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16,
-                  color: Colors.grey.shade400,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ],
             ),
@@ -902,10 +884,12 @@ class _SSSKartiState extends State<_SSSKarti>
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
-        color: _acik ? Colors.blue.shade50 : Colors.white,
+        color: _acik ? Colors.blue.withValues(alpha: 0.10) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _acik ? Colors.blue.shade200 : Colors.grey.shade100,
+          color: _acik
+              ? Colors.blue.shade200
+              : Theme.of(context).colorScheme.outlineVariant,
         ),
         boxShadow: [
           BoxShadow(
@@ -934,8 +918,9 @@ class _SSSKartiState extends State<_SSSKarti>
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color:
-                            _acik ? Colors.blue.shade400 : Colors.blue.shade50,
+                        color: _acik
+                            ? Colors.blue.shade400
+                            : Colors.blue.withValues(alpha: 0.10),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
@@ -955,7 +940,7 @@ class _SSSKartiState extends State<_SSSKarti>
                             fontWeight: FontWeight.w600,
                             color: _acik
                                 ? Colors.blue.shade700
-                                : const Color(0xFF1E293B),
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -970,14 +955,17 @@ class _SSSKartiState extends State<_SSSKarti>
                           decoration: BoxDecoration(
                             color: _acik
                                 ? Colors.blue.shade400
-                                : Colors.grey.shade100,
+                                : Theme.of(context).colorScheme.outlineVariant,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Icon(
                             Icons.keyboard_arrow_down_rounded,
                             size: 20,
-                            color:
-                                _acik ? Colors.white : Colors.grey.shade600,
+                            color: _acik
+                                ? Colors.white
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -993,7 +981,7 @@ class _SSSKartiState extends State<_SSSKarti>
                       style: TextStyle(
                         fontSize: 14,
                         height: 1.5,
-                        color: Colors.grey.shade700,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),

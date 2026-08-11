@@ -13,7 +13,6 @@ import 'package:flutter/material.dart';
 
 // Widgets
 import 'package:fitcall/models/3_antrenor/gunluk_ozet_model.dart';
-import 'widgets/antrenor_bottom_bar.dart';
 import 'widgets/antrenor_drawer.dart';
 import 'widgets/home_header.dart';
 import 'widgets/gunluk_kokpit_card.dart';
@@ -189,7 +188,6 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: AntrenorDrawer(antrenorAdi: _antrenorAdi),
-      bottomNavigationBar: const AntrenorBottomBar(),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(

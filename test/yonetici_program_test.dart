@@ -73,7 +73,8 @@ Map<String, dynamic> _programJson({
   };
 }
 
-Widget _izgarayiSar(HaftalikProgram program, {Size boyut = const Size(360, 640)}) {
+Widget _izgarayiSar(HaftalikProgram program,
+    {Size boyut = const Size(360, 640)}) {
   return MaterialApp(
     home: MediaQuery(
       data: MediaQueryData(size: boyut),
@@ -232,8 +233,8 @@ void main() {
           _dersJson(
             id: 1,
             kortId: 1,
-            katilimcilar: List.generate(
-                12, (i) => 'Çok Uzun İsimli Katılımcı Numara $i'),
+            katilimcilar:
+                List.generate(12, (i) => 'Çok Uzun İsimli Katılımcı Numara $i'),
           ),
         ],
       ));
@@ -259,7 +260,8 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('aynı kortta çakışan dersler yan yana yerleşir', (tester) async {
+    testWidgets('aynı kortta çakışan dersler yan yana yerleşir',
+        (tester) async {
       tester.view.physicalSize = const Size(360, 640);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
@@ -352,7 +354,8 @@ void main() {
       addTearDown(tester.view.reset);
 
       final program = HaftalikProgram.fromJson(_programJson());
-      await tester.pumpWidget(_izgarayiSar(program, boyut: const Size(360, 800)));
+      await tester
+          .pumpWidget(_izgarayiSar(program, boyut: const Size(360, 800)));
       await tester.pumpAndSettle();
 
       expect(find.text('07:00'), findsOneWidget);
@@ -362,7 +365,8 @@ void main() {
   });
 
   group('ProgramGunSeridi', () {
-    Widget sar(HaftalikProgram program, {double yaziOlcegi = 1.0, Size boyut = const Size(360, 640)}) {
+    Widget sar(HaftalikProgram program,
+        {double yaziOlcegi = 1.0, Size boyut = const Size(360, 640)}) {
       return MaterialApp(
         home: MediaQuery(
           data: MediaQueryData(

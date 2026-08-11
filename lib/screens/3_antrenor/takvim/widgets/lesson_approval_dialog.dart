@@ -11,6 +11,7 @@ import 'package:fitcall/screens/3_antrenor/takvim/widgets/plan_disi_uye_secim_sh
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
+import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
@@ -36,10 +37,9 @@ class LessonApprovalDialog extends StatefulWidget {
     int? antrenorId,
     required VoidCallback onSuccess,
   }) async {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => LessonApprovalDialog(
+    altSayfaGoster<void>(
+      context,
+      cocuk: LessonApprovalDialog(
         ders: ders,
         userId: userId,
         antrenorId: antrenorId,
@@ -153,15 +153,10 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.9,
-          maxWidth: 480,
-        ),
-        child: _isLoading
+    return SizedBox(
+      width: double.infinity,
+      child: Builder(
+        builder: (context) => _isLoading
             ? _buildLoadingView()
             : _kilitli
                 ? _buildKilitliView()
@@ -186,7 +181,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
           const SizedBox(height: 16),
           Text(
             'Katılım bilgisi yükleniyor...',
-            style: TextStyle(color: TakvimColors.textSecondary, fontSize: 13),
+            style: TextStyle(color: context.takvim.textSecondary, fontSize: 13),
           ),
         ],
       ),
@@ -200,7 +195,8 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
   Widget _buildKilitliView() {
     final ao = _katilimData?.antrenorOnayi;
     final isYapildi = ao?.tamamlandi == true;
-    final color = isYapildi ? TakvimColors.completed : TakvimColors.cancelled;
+    final color =
+        isYapildi ? context.takvim.completed : context.takvim.cancelled;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -256,7 +252,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                                     ao!.onayRedIptalNedeni, isYapildi),
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: TakvimColors.textSecondary,
+                                  color: context.takvim.textSecondary,
                                 ),
                               ),
                             ],
@@ -272,7 +268,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
+                      color: Colors.grey.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
@@ -282,7 +278,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                           'Açıklama',
                           style: TextStyle(
                             fontSize: 11,
-                            color: TakvimColors.textMuted,
+                            color: context.takvim.textMuted,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -301,7 +297,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
+                    color: Colors.blue.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.blue.shade200),
                   ),
@@ -329,7 +325,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
+            color: Colors.grey.withValues(alpha: 0.10),
             borderRadius:
                 const BorderRadius.vertical(bottom: Radius.circular(20)),
           ),
@@ -338,7 +334,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
             child: FilledButton(
               onPressed: () => Navigator.pop(context),
               style: FilledButton.styleFrom(
-                backgroundColor: TakvimColors.primary,
+                backgroundColor: context.takvim.primary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -368,7 +364,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildHeader(TakvimColors.primary, 'Ders Onayı'),
+        _buildHeader(context.takvim.primary, 'Ders Onayı'),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           child: Column(
@@ -382,10 +378,10 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     decoration: BoxDecoration(
-                      color: TakvimColors.completed.withValues(alpha: 0.10),
+                      color: context.takvim.completed.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: TakvimColors.completed.withValues(alpha: 0.45),
+                        color: context.takvim.completed.withValues(alpha: 0.45),
                       ),
                     ),
                     child: Column(
@@ -394,25 +390,28 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                             ? const SizedBox(
                                 height: 24,
                                 width: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : Icon(Icons.check_circle_rounded,
-                                color: TakvimColors.completed, size: 26),
+                                color: context.takvim.completed, size: 26),
                         const SizedBox(height: 6),
                         Text(
                           'Ders yapıldı, herkes geldi',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: TakvimColors.completed,
+                            color: context.takvim.completed,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          planliSayi > 0 ? '$planliSayi kişi' : 'Planlı katılımcı yok',
+                          planliSayi > 0
+                              ? '$planliSayi kişi'
+                              : 'Planlı katılımcı yok',
                           style: TextStyle(
                             fontSize: 12,
-                            color: TakvimColors.completed,
+                            color: context.takvim.completed,
                           ),
                         ),
                       ],
@@ -434,10 +433,12 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                   },
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 14),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade300),
+                      border: Border.all(
+                          color: Theme.of(context).colorScheme.outlineVariant),
                     ),
                     child: Row(
                       children: [
@@ -446,7 +447,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                               style: TextStyle(fontSize: 14)),
                         ),
                         Icon(Icons.chevron_right_rounded,
-                            color: TakvimColors.textMuted),
+                            color: context.takvim.textMuted),
                       ],
                     ),
                   ),
@@ -464,7 +465,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                 },
                 child: Text(
                   'Ders yapılmadı',
-                  style: TextStyle(color: TakvimColors.textSecondary),
+                  style: TextStyle(color: context.takvim.textSecondary),
                 ),
               ),
             ],
@@ -493,7 +494,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildHeader(
-          TakvimColors.primary,
+          context.takvim.primary,
           hasOnceden ? 'Ders Onayını Güncelle' : 'Ders Onayı Ver',
         ),
         Flexible(
@@ -579,27 +580,29 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
+              color: Colors.grey.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(
+                  color: Theme.of(context).colorScheme.outlineVariant),
             ),
             child: Column(
               children: [
                 Icon(Icons.people_outline_rounded,
-                    size: 32, color: Colors.grey.shade400),
+                    size: 32,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
                 const SizedBox(height: 8),
                 Text(
                   'Bu derste planlı katılımcı yok',
                   style: TextStyle(
                     fontSize: 13,
-                    color: TakvimColors.textSecondary,
+                    color: context.takvim.textSecondary,
                   ),
                 ),
                 Text(
                   'Plan dışı üye ekleyebilirsiniz',
                   style: TextStyle(
                     fontSize: 12,
-                    color: TakvimColors.textMuted,
+                    color: context.takvim.textMuted,
                   ),
                 ),
               ],
@@ -663,7 +666,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                   Text(
                     m.notMetni!,
                     style: TextStyle(
-                        fontSize: 11, color: TakvimColors.textMuted),
+                        fontSize: 11, color: context.takvim.textMuted),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -673,12 +676,12 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                   Row(
                     children: [
                       Icon(Icons.lock_rounded,
-                          size: 12, color: TakvimColors.textMuted),
+                          size: 12, color: context.takvim.textMuted),
                       const SizedBox(width: 4),
                       Text(
                         'Yönetici karar verdi',
                         style: TextStyle(
-                            fontSize: 11, color: TakvimColors.textMuted),
+                            fontSize: 11, color: context.takvim.textMuted),
                       ),
                     ],
                   ),
@@ -689,7 +692,8 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
           if (!kilitli) ...[
             IconButton(
               icon: Icon(Icons.edit_outlined,
-                  size: 19, color: Colors.grey.shade600),
+                  size: 19,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
               onPressed: () => _misafirDuzenle(m),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -734,14 +738,14 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
     Color borderColor;
     Color bgColor;
     if (katildi == true) {
-      borderColor = TakvimColors.completed;
-      bgColor = TakvimColors.completed.withValues(alpha: 0.06);
+      borderColor = context.takvim.completed;
+      bgColor = context.takvim.completed.withValues(alpha: 0.06);
     } else if (katildi == false) {
-      borderColor = TakvimColors.cancelled;
-      bgColor = TakvimColors.cancelled.withValues(alpha: 0.06);
+      borderColor = context.takvim.cancelled;
+      bgColor = context.takvim.cancelled.withValues(alpha: 0.06);
     } else {
-      borderColor = Colors.grey.shade300;
-      bgColor = Colors.grey.shade50;
+      borderColor = Theme.of(context).colorScheme.outlineVariant;
+      bgColor = Colors.grey.withValues(alpha: 0.10);
     }
 
     return Container(
@@ -802,7 +806,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                               ? Icons.note_add_outlined
                               : Icons.sticky_note_2_outlined,
                           size: 14,
-                          color: TakvimColors.textMuted,
+                          color: context.takvim.textMuted,
                         ),
                         const SizedBox(width: 4),
                         Flexible(
@@ -812,7 +816,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                                 : k.notMetni!,
                             style: TextStyle(
                               fontSize: 11,
-                              color: TakvimColors.textMuted,
+                              color: context.takvim.textMuted,
                               fontStyle: (k.notMetni ?? '').isEmpty
                                   ? FontStyle.italic
                                   : FontStyle.normal,
@@ -835,9 +839,11 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
             constraints: const BoxConstraints(minWidth: 44, minHeight: 32),
             selectedColor: Colors.white,
             fillColor: katildi == true
-                ? TakvimColors.completed
-                : (katildi == false ? TakvimColors.cancelled : Colors.grey),
-            color: Colors.grey.shade700,
+                ? context.takvim.completed
+                : (katildi == false
+                    ? context.takvim.cancelled
+                    : Theme.of(context).colorScheme.onSurfaceVariant),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             onPressed: (i) {
               HapticFeedback.selectionClick();
               setState(() {
@@ -863,9 +869,10 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                 ? Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: Icon(Icons.lock_rounded,
-                        size: 18, color: TakvimColors.textMuted),
+                        size: 18, color: context.takvim.textMuted),
                   )
                 : IconButton(
+                    tooltip: 'Sil',
                     icon: Icon(Icons.delete_outline_rounded,
                         size: 20, color: Colors.red.shade400),
                     onPressed: () {
@@ -911,13 +918,13 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
           Color color;
           if (katildi == true) {
             icon = Icons.check_circle_rounded;
-            color = TakvimColors.completed;
+            color = context.takvim.completed;
           } else if (katildi == false) {
             icon = Icons.cancel_rounded;
-            color = TakvimColors.cancelled;
+            color = context.takvim.cancelled;
           } else {
             icon = Icons.remove_circle_outline_rounded;
-            color = Colors.grey;
+            color = Theme.of(context).colorScheme.onSurfaceVariant;
           }
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
@@ -960,8 +967,8 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                       color: Colors.orange, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(m.adSoyad,
-                        style: const TextStyle(fontSize: 13)),
+                    child:
+                        Text(m.adSoyad, style: const TextStyle(fontSize: 13)),
                   ),
                   Container(
                     padding:
@@ -1021,17 +1028,18 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                 Text(
                   '${TimeUtils.formatDateFull(widget.ders.baslangicTarihSaat)} • ${TimeUtils.formatTime(widget.ders.baslangicTarihSaat)}',
                   style: TextStyle(
-                      fontSize: 13, color: TakvimColors.textSecondary),
+                      fontSize: 13, color: context.takvim.textSecondary),
                 ),
               ],
             ),
           ),
           IconButton(
+            tooltip: 'Kapat',
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.close_rounded),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: TakvimColors.textSecondary,
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              foregroundColor: context.takvim.textSecondary,
             ),
           ),
         ],
@@ -1045,7 +1053,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
         _DurumSecenegi(
           isSelected: _secilenDurum == 'yapildi',
           icon: Icons.check_circle_rounded,
-          color: TakvimColors.completed,
+          color: context.takvim.completed,
           title: 'Ders yapıldı',
           subtitle: 'Katılımcıları işaretleyin',
           onTap: () {
@@ -1060,7 +1068,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
         _DurumSecenegi(
           isSelected: _secilenDurum == 'yapilmadi',
           icon: Icons.cancel_rounded,
-          color: TakvimColors.cancelled,
+          color: context.takvim.cancelled,
           title: 'Ders yapılmadı',
           subtitle: 'Tüm üyeler katılmadı sayılır',
           onTap: () {
@@ -1079,8 +1087,8 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
     final aktifListe =
         _secilenDurum == 'yapildi' ? _yapildiNedenleri : _yapilmadiNedenleri;
     final color = _secilenDurum == 'yapildi'
-        ? TakvimColors.completed
-        : TakvimColors.cancelled;
+        ? context.takvim.completed
+        : context.takvim.cancelled;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1090,7 +1098,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: TakvimColors.textSecondary,
+            color: context.takvim.textSecondary,
           ),
         ),
         const SizedBox(height: 10),
@@ -1127,7 +1135,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
         hintText: 'Açıklama (isteğe bağlı)',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
         filled: true,
-        fillColor: Colors.grey.shade50,
+        fillColor: Colors.grey.withValues(alpha: 0.10),
       ),
     );
   }
@@ -1139,7 +1147,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
+        color: Colors.grey.withValues(alpha: 0.10),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
       child: Row(
@@ -1162,7 +1170,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
             child: FilledButton(
               onPressed: canSave ? _kaydet : null,
               style: FilledButton.styleFrom(
-                backgroundColor: TakvimColors.primary,
+                backgroundColor: context.takvim.primary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -1340,11 +1348,14 @@ class _DurumSecenegi extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color:
-                isSelected ? color.withValues(alpha: 0.1) : Colors.grey.shade50,
+            color: isSelected
+                ? color.withValues(alpha: 0.1)
+                : Colors.grey.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isSelected ? color : Colors.grey.shade200,
+              color: isSelected
+                  ? color
+                  : Theme.of(context).colorScheme.outlineVariant,
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -1373,7 +1384,7 @@ class _DurumSecenegi extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                          fontSize: 12, color: TakvimColors.textSecondary),
+                          fontSize: 12, color: context.takvim.textSecondary),
                     ),
                   ],
                 ),

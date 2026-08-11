@@ -15,8 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 class EkranParlaklikService {
-  static const MethodChannel _kanal =
-      MethodChannel('fitcall/ekran_parlaklik');
+  static const MethodChannel _kanal = MethodChannel('fitcall/ekran_parlaklik');
 
   /// Ekranı maksimum parlaklığa alır. Başarılıysa true döner.
   static Future<bool> maksimumaAl() async {

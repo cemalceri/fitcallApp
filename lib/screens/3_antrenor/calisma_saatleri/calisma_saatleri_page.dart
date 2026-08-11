@@ -80,9 +80,8 @@ class _CalismaSaatleriPageState extends State<CalismaSaatleriPage> {
         ..sort((a, b) => a.haftaninGunu.compareTo(b.haftaninGunu));
 
       for (final gun in gunlerSirali) {
-        final kayitlar = data.calismaSaatleri
-            .where((k) => k.gunId == gun.gunId)
-            .toList();
+        final kayitlar =
+            data.calismaSaatleri.where((k) => k.gunId == gun.gunId).toList();
         if (kayitlar.isEmpty) {
           satirlar.add(_GunSatiri(
             gun: gun,
@@ -304,8 +303,7 @@ class _CalismaSaatleriPageState extends State<CalismaSaatleriPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: Text('—',
-                      style:
-                          TextStyle(color: colorScheme.onSurfaceVariant)),
+                      style: TextStyle(color: colorScheme.onSurfaceVariant)),
                 ),
                 _saatButonu(colorScheme, _formatSaat(satir.bitis),
                     () => _saatSec(satir, baslangicMi: false)),
@@ -381,12 +379,12 @@ class _CalismaSaatleriPageState extends State<CalismaSaatleriPage> {
           child: FilledButton.icon(
             onPressed: _isSaving ? null : _kaydet,
             icon: _isSaving
-                ? const SizedBox(
+                ? SizedBox(
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                     ),
                   )
                 : const Icon(Icons.save_rounded, size: 18),
