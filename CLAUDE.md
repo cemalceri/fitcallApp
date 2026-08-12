@@ -79,4 +79,7 @@ App-wide text scale is clamped to `[1.0, 1.3]` ([lib/common/ui_scale.dart](lib/c
 
 ### Screens
 
-Page widgets live at the domain folder root; their subcomponents go in a sibling `widgets/` folder. Shared UI helpers (snackbar/message display, spinners, KVKK text) are in `lib/screens/1_common/widgets/`. The üye and antrenör calendars (`takvim/`) are parallel implementations with their own `timeline_view`, `lesson_block`, and `position_calculator` widgets — changes to one calendar often need mirroring in the other.
+Page widgets live at the domain folder root; their subcomponents go in a sibling `widgets/` folder. Shared UI helpers (snackbar/message display, spinners, KVKK text) are in `lib/screens/1_common/widgets/`. Two of them are mandatory conventions for new screens:
+
+- **Lists** use [liste_satiri.dart](lib/screens/1_common/widgets/liste_satiri.dart) — `ListeSatiri` (flat row: circular avatar, two text lines, one right-hand value, hairline `ListeAyraci`), `ListeGrupBasligi` for sticky group headers, `ListeEylemi` for swipe actions. Don't wrap list rows in cards; cards are for real summary objects.
+- **Loading** uses [iskelet.dart](lib/screens/1_common/widgets/iskelet.dart) — `IskeletListe` / `IskeletKart` / `IskeletTakvim` / `IskeletDashboard`, all delayed 300 ms via `IskeletGecikmeli`. `CircularProgressIndicator` is only for in-button progress, the auth/route-guard flow, and determinate image loading; never for page or section loading. Pull-to-refresh shows the existing list, not a skeleton. The üye and antrenör calendars (`takvim/`) are parallel implementations with their own `timeline_view`, `lesson_block`, and `position_calculator` widgets — changes to one calendar often need mirroring in the other.
