@@ -2,6 +2,7 @@
 
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
+import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -11,6 +12,7 @@ import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/services/notification/notification_router.dart';
 import 'package:fitcall/main.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:fitcall/common/tarih_util.dart';
@@ -165,8 +167,8 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child:
-                const Text('Sil', style: TextStyle(color: Color(0xFFEF4444))),
+            child: Text('Sil',
+                style: TextStyle(color: ctx.renkler.hata)),
           ),
         ],
       ),
@@ -315,15 +317,15 @@ class _NotificationPageState extends State<NotificationPage> {
                       ],
                     ),
                   ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'sil',
                   child: Row(
                     children: [
                       Icon(Icons.delete_outline_rounded,
-                          size: 20, color: Color(0xFFEF4444)),
-                      SizedBox(width: 12),
+                          size: 20, color: context.renkler.hata),
+                      const SizedBox(width: 12),
                       Text('Tümünü sil',
-                          style: TextStyle(color: Color(0xFFEF4444))),
+                          style: TextStyle(color: context.renkler.hata)),
                     ],
                   ),
                 ),
@@ -341,18 +343,19 @@ class _NotificationPageState extends State<NotificationPage> {
       children: [
         // Diğer liste ekranlarıyla aynı grup başlığı kalıbı.
         ListeGrupBasligi(baslik: title, sayi: items.length),
-        ...items.map(
-          (n) => Dismissible(
-            key: ValueKey('bildirim_${n.id}'),
+        for (var i = 0; i < items.length; i++) ...[
+          if (i > 0) const ListeAyraci(),
+          Dismissible(
+            key: ValueKey('bildirim_${items[i].id}'),
             direction: DismissDirection.endToStart,
             background: _silmeZemini(),
-            onDismissed: (_) => _bildirimSil(n),
+            onDismissed: (_) => _bildirimSil(items[i]),
             child: _BildirimSatiri(
-              notification: n,
-              onTap: () => _onNotificationTap(n),
+              notification: items[i],
+              onTap: () => _onNotificationTap(items[i]),
             ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -417,42 +420,13 @@ class _NotificationPageState extends State<NotificationPage> {
   Widget _buildLoadingState() => const IskeletListe();
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: context.bildirimRenk.yaziAna, width: 2),
-            ),
-            child: Icon(
-              Icons.notifications_none_rounded,
-              size: 48,
-              color: context.bildirimRenk.yaziAna,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Bildirim yok',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: context.bildirimRenk.yaziAna,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Ders teyidi, iptal ve duyurular burada görünecek.',
-            style: TextStyle(
-              fontSize: 14,
-              color: context.bildirimRenk.yaziIkincil,
-            ),
-          ),
-        ],
-      ),
+    // Uygulamanın ortak boş durumu — elle çizilen halka/başlık diğer
+    // ekranlardakinden farklı ölçüdeydi.
+    return const BosDurum(
+      ikon: Icons.notifications_none_rounded,
+      baslik: 'Bildirim yok',
+      aciklama: 'Ders teyidi, iptal ve duyurular burada görünecek. '
+          'Bildirimleri kaçırmamak için izinlerin açık olduğundan emin ol.',
     );
   }
 }
@@ -467,81 +441,75 @@ class _BildirimSatiri extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isUnread = !notification.isRead;
+    final okunmadi = !notification.isRead;
+    final cs = Theme.of(context).colorScheme;
 
     return Material(
-      color: isUnread
-          ? Theme.of(context)
-              .colorScheme
-              .primaryContainer
-              .withValues(alpha: 0.35)
-          : Theme.of(context).colorScheme.surface,
+      // Okunmamış satır hafif renklenir (Instagram/X kalıbı). Eski %35'lik
+      // dolgu satırı kart gibi gösteriyordu; burada amaç vurgulamak, ayırmak
+      // değil — ayrımı zaten altındaki hairline yapıyor.
+      color: okunmadi
+          ? cs.primaryContainer.withValues(alpha: 0.18)
+          : cs.surface,
       child: InkWell(
         onTap: onTap,
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildAvatar(context),
               const SizedBox(width: 14),
+              // Zaman metnin altında ayrı satır değil, gövdenin devamında:
+              // sosyal uygulamaların bildirim satırı tek paragraf okunur ve
+              // liste bir satır daha sığdırır.
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    RichText(
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      text: TextSpan(
+                child: RichText(
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: context.bildirimRenk.yaziAna,
+                      height: 1.4,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: notification.title,
                         style: TextStyle(
-                          fontSize: 14,
-                          color: context.bildirimRenk.yaziAna,
-                          height: 1.4,
+                          fontWeight:
+                              okunmadi ? FontWeight.w700 : FontWeight.w600,
                         ),
-                        children: [
-                          TextSpan(
-                            text: notification.title,
-                            style: TextStyle(
-                              fontWeight:
-                                  isUnread ? FontWeight.w600 : FontWeight.w500,
-                            ),
-                          ),
-                          const TextSpan(text: ' '),
-                          TextSpan(
-                            text: notification.body,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w400,
-                              color: isUnread
-                                  ? context.bildirimRenk.yaziAna
-                                  : context.bildirimRenk.yaziIkincil,
-                            ),
-                          ),
-                        ],
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _formatTime(notification.timestamp),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isUnread
-                            ? context.bildirimRenk.anaMavi
-                            : context.bildirimRenk.yaziIkincil,
-                        fontWeight:
-                            isUnread ? FontWeight.w500 : FontWeight.w400,
+                      const TextSpan(text: ' '),
+                      TextSpan(
+                        text: notification.body,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w400,
+                          color: okunmadi
+                              ? context.bildirimRenk.yaziAna
+                              : context.bildirimRenk.yaziIkincil,
+                        ),
                       ),
-                    ),
-                  ],
+                      TextSpan(
+                        text: '  ${_formatTime(notification.timestamp)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: context.bildirimRenk.yaziIkincil,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              if (isUnread) ...[
+              if (okunmadi) ...[
                 const SizedBox(width: 12),
                 Container(
                   width: 8,
                   height: 8,
                   margin: const EdgeInsets.only(top: 6),
                   decoration: BoxDecoration(
-                    color: context.bildirimRenk.anaMavi,
+                    color: cs.primary,
                     shape: BoxShape.circle,
                   ),
                 ),

@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `main`, `pubspec` sürümü **3.8.0+40** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
-| Testler | `flutter test` **879 geçiyor**, `flutter analyze` temiz |
+| Testler | `flutter test` **939 geçiyor**, `flutter analyze` temiz |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
 | Mağaza | Son yayınlanan sürüm **3.6.0**; 3.7.0 build'i Codemagic'te alınacak |
 
@@ -112,7 +112,26 @@ eylemler alt sayfada listeleniyor: kaydırma ekran okuyucuyla kullanılamıyor.
 `RefreshIndicator`'sız dosyalar alt sayfa/diyalog/drawer ya da statik içerik (KVKK, SSS).
 
 **Taşma testi:** `ListeSatiri` (üç varyant), `ListeGrupBasligi`, `AntrenorListeItemWidget` ve dört
-iskelet matrise eklendi. `flutter test` 879 yeşil.
+iskelet matrise eklendi.
+
+#### Aynı gün gelen düzeltmeler (test geri bildirimi)
+
+- **Yönetici üye listesi bomboş açılıyordu.** Sebep: `ListeGrupBasligiDelegate` bildirdiği
+  yükseklikten kısa çiziliyordu; yapışkan başlıkta `paintExtent < layoutExtent` olunca viewport
+  `SliverGeometry is not valid` atıyor ve **tüm sayfa** boş kalıyor. Delegate artık çocuğu
+  `SizedBox(height: yukseklik)` ile sarıyor. Sayfanın gövdesi `UyelerGorunumu`'na ayrıldı
+  (CLAUDE.md kuralı) ve beş varyantı taşma testine girdi — regresyon bir daha sessiz geçmez.
+- **Antrenör satırında puan yoksa "—" yazıyordu.** Tire bir durum değil, boşluk işareti. Rozet
+  aynı biçimde kalıp ton değiştiriyor: dolu yıldız + puan, ya da içi boş yıldız + "Puan yok".
+  `ListeSatiri.sonEk` esnek yapıldı (dar ekran + 1.3x yazıda satırı taşırıyordu).
+- **Grup başlığı belirginleşti:** 11 px gri etiket → 14 px kalın, ana metin renginde, altında
+  hairline; sayaç sağda ayrı. Kaydırırken fark edilmiyordu.
+- **Bildirim satırı sosyal uygulama kalıbına yaklaştırıldı:** zaman ayrı satır yerine gövdenin
+  devamında (Instagram/X), okunmamış dolgusu %35'ten %18'e indi (kart gibi görünüyordu),
+  okunmamış noktası marka rengine geçti, satırlar arasına `ListeAyraci`, boş durum ortak
+  `BosDurum`'a taşındı, kalan gömülü kırmızılar token'landı.
+
+`flutter test` 939 yeşil.
 
 ### Antrenöre özel Yardım & SSS sayfası (2026-08-10)
 

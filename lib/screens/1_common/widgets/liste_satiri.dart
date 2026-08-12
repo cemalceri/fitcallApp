@@ -70,8 +70,11 @@ class ListeAvatari extends StatelessWidget {
 
   /// Ad soyaddan baş harfleri çıkarır ("Elif Yıldırım" → "EY").
   static String harfler(String adSoyad) {
-    final parcalar =
-        adSoyad.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parcalar = adSoyad
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
     if (parcalar.isEmpty) return '';
     if (parcalar.length == 1) {
       return parcalar.first.characters.first.toUpperCase();
@@ -223,8 +226,9 @@ class ListeSatiri extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: metin.titleSmall?.copyWith(
-                                fontWeight:
-                                    okunmadi ? FontWeight.w700 : FontWeight.w600,
+                                fontWeight: okunmadi
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
                               ),
                             ),
                           ),
@@ -248,7 +252,7 @@ class ListeSatiri extends StatelessWidget {
                 ),
                 if (sonEk != null) ...[
                   const SizedBox(width: Bosluk.s),
-                  sonEk!,
+                  Flexible(child: sonEk!),
                 ] else if (deger != null) ...[
                   const SizedBox(width: Bosluk.s),
                   Column(
@@ -318,6 +322,10 @@ class ListeAyraci extends StatelessWidget {
 ///
 /// Sliver içinde [ListeGrupBasligiDelegate] ile yapışkan kullanılır; düz
 /// `ListView` içinde doğrudan bu widget konur.
+///
+/// Başlık ana metin renginde ve gövde satırlarından büyük: küçük gri bir etiket
+/// kaydırırken fark edilmiyor, oysa grup başlığı listede nerede olduğunu
+/// söyleyen tek işaret. Altındaki hairline başlığı satırlardan ayırır.
 class ListeGrupBasligi extends StatelessWidget {
   final String baslik;
 
@@ -329,22 +337,41 @@ class ListeGrupBasligi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = context.cs;
+
     return Container(
       width: double.infinity,
-      color: cs.surfaceContainer,
+      alignment: Alignment.centerLeft,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainer,
+        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+      ),
       padding: const EdgeInsets.symmetric(
         horizontal: Bosluk.l,
-        vertical: Bosluk.s,
+        vertical: Bosluk.s + 2,
       ),
-      child: Text(
-        sayi == null ? baslik : '$baslik · $sayi',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: context.metin.labelSmall?.copyWith(
-          letterSpacing: 0.8,
-          fontWeight: FontWeight.w700,
-          color: cs.onSurfaceVariant,
-        ),
+      child: Row(
+        children: [
+          Flexible(
+            child: Text(
+              baslik,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.metin.titleSmall?.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
+              ),
+            ),
+          ),
+          if (sayi != null) ...[
+            const SizedBox(width: Bosluk.s),
+            Text(
+              '$sayi',
+              maxLines: 1,
+              style: context.metin.labelMedium,
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -372,8 +399,15 @@ class ListeGrupBasligiDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => yukseklik;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return ListeGrupBasligi(baslik: baslik, sayi: sayi);
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    // SizedBox şart: yapışkan başlık, delegate'in bildirdiği yüksekliği tam
+    // doldurmazsa `paintExtent < layoutExtent` olur ve viewport
+    // "SliverGeometry is not valid" atıp sayfayı komple boş bırakır.
+    return SizedBox(
+      height: yukseklik,
+      child: ListeGrupBasligi(baslik: baslik, sayi: sayi),
+    );
   }
 
   @override
@@ -383,12 +417,11 @@ class ListeGrupBasligiDelegate extends SliverPersistentHeaderDelegate {
 
 /// Grup başlığının verilen yazı ölçeğindeki yüksekliği.
 ///
-/// `SliverPersistentHeader` sabit yükseklik ister; metin ölçeğiyle büyüyen
-/// içeriğe tam oturan bir değer yuvarlama farkında taşar, bu yüzden 2 px pay
-/// bırakılır.
+/// İçeriğe tam oturan değer yuvarlama farkında taşar, bu yüzden pay bırakılır;
+/// başlık [SizedBox] içinde dikey ortalandığı için fazlalık sorun çıkarmaz.
 double listeGrupBasligiYuksekligi(BuildContext context) {
-  final olcek = MediaQuery.textScalerOf(context).scale(11);
-  return olcek * 1.2 + Bosluk.s * 2 + 2;
+  final olcek = MediaQuery.textScalerOf(context).scale(14);
+  return olcek * 1.3 + (Bosluk.s + 2) * 2 + 3;
 }
 
 /* ======================= Kaydırarak eylem ======================= */
@@ -540,8 +573,7 @@ void _eylemleriGoster(
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(
-                Bosluk.l, 0, Bosluk.l, Bosluk.s),
+            padding: const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.s),
             child: Text(
               baslik,
               maxLines: 1,

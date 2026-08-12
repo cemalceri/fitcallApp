@@ -35,8 +35,11 @@ class AntrenorListeItemWidget extends StatelessWidget {
   }
 }
 
-/// Ortalama puan rozeti. Puan yoksa tire gösterilir — boş bırakmak satırı
-/// eksik gösteriyordu.
+/// Ortalama puan rozeti.
+///
+/// Puan yokken tire koymak bir durum değil, boşluk işareti — okuyan "veri mi
+/// yok, sıfır mı?" diye takılıyor. Rozet aynı biçimde kalır, yalnız içeriği ve
+/// tonu değişir: dolu yıldız + puan, ya da içi boş yıldız + "Puan yok".
 class _Puan extends StatelessWidget {
   final double? puan;
 
@@ -45,26 +48,33 @@ class _Puan extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final renkler = context.renkler;
+    final puanVar = puan != null;
 
-    if (puan == null) {
-      return Text('—', style: context.metin.bodySmall);
-    }
+    final zemin = puanVar ? renkler.uyariZemin : context.cs.surfaceContainer;
+    final on = puanVar ? renkler.uyari : context.cs.onSurfaceVariant;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: Bosluk.s, vertical: 3),
       decoration: BoxDecoration(
-        color: renkler.uyariZemin,
+        color: zemin,
         borderRadius: BorderRadius.circular(Yaricap.s),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.star_rounded, size: 14, color: renkler.uyari),
+          Icon(
+            puanVar ? Icons.star_rounded : Icons.star_outline_rounded,
+            size: 14,
+            color: on,
+          ),
           const SizedBox(width: 3),
-          Text(
-            puan!.toStringAsFixed(1),
-            maxLines: 1,
-            style: context.metin.labelLarge?.copyWith(color: renkler.uyari),
+          Flexible(
+            child: Text(
+              puanVar ? puan!.toStringAsFixed(1) : 'Puan yok',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.metin.labelLarge?.copyWith(color: on),
+            ),
           ),
         ],
       ),

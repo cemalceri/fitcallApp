@@ -26,6 +26,7 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart';
+import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uyeler_gorunumu.dart';
 import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_odul_sayaci.dart';
@@ -268,7 +269,60 @@ SilmeEtkisi _silmeEtkisi() => SilmeEtkisi.fromJson({
       },
     });
 
-AntrenorListeItem _antrenorListeItem() => AntrenorListeItem.fromJson({
+UyeListeItem _uyeListeItem({
+  int no = 1,
+  double bakiye = -1850,
+  bool aktif = true,
+}) =>
+    UyeListeItem.fromJson({
+      'id': no,
+      'uye_no': 10400 + no,
+      'adi': 'Deniz Ayşegül',
+      'soyadi': 'Arslanoğulları $no',
+      'ad_soyad': 'Deniz Ayşegül Arslanoğulları $no',
+      'telefon': '5551112233',
+      'seviye_rengi': 'Kirmizi',
+      'seviye_rengi_hex': '#C2500B',
+      'aktif_mi': aktif,
+      'uye_tipi': 1,
+      'uye_turu': 'Öğrenci (indirimli)',
+      'yas': 14,
+      'bakiye': bakiye,
+    });
+
+UyeIstatistik _uyeIstatistik() => UyeIstatistik.fromJson({
+      'toplam_uye': 184,
+      'aktif_uye': 161,
+      'pasif_uye': 23,
+      'bu_ay_yeni_kayit': 7,
+    });
+
+/// [UyelerGorunumu] için ortak parametreler; testler yalnız farkı yazar.
+Widget _uyelerGorunumu({
+  required List<UyeListeItem> uyeler,
+  UyeIstatistik? istatistik,
+  bool yukleniyor = false,
+  String? hata,
+  String arama = '',
+}) {
+  return UyelerGorunumu(
+    istatistik: istatistik,
+    uyeler: uyeler,
+    yukleniyor: yukleniyor,
+    hata: hata,
+    filtre: 'tumu',
+    aramaDenetleyicisi: TextEditingController(text: arama),
+    onFiltre: (_) {},
+    onYenile: () async {},
+    onYenidenDene: () {},
+    onUyeSec: (_) {},
+    onAra: (_) {},
+    onWhatsapp: (_) {},
+  );
+}
+
+AntrenorListeItem _antrenorListeItem({bool puanli = true}) =>
+    AntrenorListeItem.fromJson({
       'id': 1,
       'adi': 'Ayşe',
       'soyadi': 'Yılmaz Öğretmenoğulları',
@@ -279,7 +333,7 @@ AntrenorListeItem _antrenorListeItem() => AntrenorListeItem.fromJson({
       'aktif_mi': false,
       'bugun_ders_sayisi': 12,
       'haftalik_ders_sayisi': 48,
-      'ortalama_puan': 4.8,
+      'ortalama_puan': puanli ? 4.8 : null,
       'ogrenci_sayisi': 126,
     });
 
@@ -536,6 +590,60 @@ void main() {
         antrenor: _antrenorListeItem(),
         onTap: () {},
       ),
+    );
+
+    tasmaTesti(
+      'AntrenorListeItemWidget (puansız)',
+      () => AntrenorListeItemWidget(
+        antrenor: _antrenorListeItem(puanli: false),
+        onTap: () {},
+      ),
+    );
+  });
+
+  /* ================= YÖNETİCİ — ÜYE LİSTESİ (GÖVDE) ================= */
+
+  // Yapışkan grup başlığı, bildirdiği yüksekliği tam doldurmazsa viewport
+  // "SliverGeometry is not valid" atıp sayfayı komple boş bırakıyor. Bu grup
+  // o regresyonu yakalar.
+  group('Yönetici üye listesi', () {
+    tasmaTesti(
+      'UyelerGorunumu (borçlu + güncel grupları)',
+      () => _uyelerGorunumu(
+        istatistik: _uyeIstatistik(),
+        uyeler: [
+          _uyeListeItem(no: 1, bakiye: -1850),
+          _uyeListeItem(no: 2, bakiye: -320),
+          _uyeListeItem(no: 3, bakiye: 0),
+          _uyeListeItem(no: 4, bakiye: 250, aktif: false),
+        ],
+      ),
+    );
+
+    tasmaTesti(
+      'UyelerGorunumu (tek grup)',
+      () => _uyelerGorunumu(
+        istatistik: _uyeIstatistik(),
+        uyeler: [_uyeListeItem(no: 1, bakiye: 0)],
+      ),
+    );
+
+    tasmaTesti(
+      'UyelerGorunumu (yükleniyor)',
+      () => _uyelerGorunumu(uyeler: const [], yukleniyor: true),
+    );
+
+    tasmaTesti(
+      'UyelerGorunumu (hata)',
+      () => _uyelerGorunumu(
+        uyeler: const [],
+        hata: 'Sunucuya ulaşılamadı, lütfen bağlantını kontrol et.',
+      ),
+    );
+
+    tasmaTesti(
+      'UyelerGorunumu (arama sonuçsuz)',
+      () => _uyelerGorunumu(uyeler: const [], arama: 'zzz'),
     );
   });
 
