@@ -8,6 +8,7 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/katilim_not_dialog.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/misafir_ekle_sheet.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/plan_disi_uye_secim_sheet.dart';
+import 'package:fitcall/screens/3_antrenor/takvim/widgets/yoklama_hizli_secim.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
@@ -201,7 +202,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildHeader(color, 'Ders Onayı'),
+        _buildHeader(color, 'Ders Yoklaması'),
         Flexible(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -359,116 +360,28 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
 
   /// Dialog'un açılış ekranı: en sık senaryo tek dokunuş.
   Widget _buildHizliOnayView() {
-    final planliSayi = _katilimMap.length;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildHeader(context.takvim.primary, 'Ders Onayı'),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-          child: Column(
-            children: [
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: _isSaving ? null : _hepsiGeldiKaydet,
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    decoration: BoxDecoration(
-                      color: context.takvim.completed.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: context.takvim.completed.withValues(alpha: 0.45),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        _isSaving
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : Icon(Icons.check_circle_rounded,
-                                color: context.takvim.completed, size: 26),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Ders yapıldı, herkes geldi',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: context.takvim.completed,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          planliSayi > 0
-                              ? '$planliSayi kişi'
-                              : 'Planlı katılımcı yok',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: context.takvim.completed,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() {
-                      _detayAcik = true;
-                      _secilenDurum = 'yapildi';
-                      _secilenNeden = 'YPL_PLAN';
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 14),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: Theme.of(context).colorScheme.outlineVariant),
-                    ),
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          child: Text('Eksik ya da fazla var',
-                              style: TextStyle(fontSize: 14)),
-                        ),
-                        Icon(Icons.chevron_right_rounded,
-                            color: context.takvim.textMuted),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              TextButton(
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  setState(() {
-                    _detayAcik = true;
-                    _secilenDurum = 'yapilmadi';
-                    _secilenNeden = null;
-                  });
-                },
-                child: Text(
-                  'Ders yapılmadı',
-                  style: TextStyle(color: context.takvim.textSecondary),
-                ),
-              ),
-            ],
+        _buildHeader(context.takvim.primary, 'Ders Yoklaması'),
+        // Küçük ekran + büyük yazı ölçeğinde üç kart sayfaya sığmıyor.
+        Flexible(
+          child: SingleChildScrollView(
+            child: YoklamaHizliSecim(
+              planliSayi: _katilimMap.length,
+              kaydediliyor: _isSaving,
+              onHepsiGeldi: _hepsiGeldiKaydet,
+              onEksikFazla: () => setState(() {
+                _detayAcik = true;
+                _secilenDurum = 'yapildi';
+                _secilenNeden = 'YPL_PLAN';
+              }),
+              onYapilmadi: () => setState(() {
+                _detayAcik = true;
+                _secilenDurum = 'yapilmadi';
+                _secilenNeden = null;
+              }),
+            ),
           ),
         ),
       ],
@@ -495,7 +408,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
       children: [
         _buildHeader(
           context.takvim.primary,
-          hasOnceden ? 'Ders Onayını Güncelle' : 'Ders Onayı Ver',
+          hasOnceden ? 'Yoklamayı Güncelle' : 'Yoklama Al',
         ),
         Flexible(
           child: SingleChildScrollView(
@@ -1012,7 +925,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
               color: accentColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.fact_check_rounded, color: accentColor, size: 22),
+            child: Icon(Icons.how_to_reg_rounded, color: accentColor, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(

@@ -35,6 +35,7 @@ import 'package:fitcall/screens/3_antrenor/home/widgets/info_cards_carousel.dart
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/misafir_ekle_sheet.dart';
+import 'package:fitcall/screens/3_antrenor/takvim/widgets/yoklama_hizli_secim.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
 import 'package:fitcall/screens/7_yonetici/dersler/widgets/ders_liste_item.dart';
 import 'package:fitcall/screens/7_yonetici/program/widgets/ders_iptal_dialog.dart';
@@ -585,6 +586,33 @@ void main() {
               'Ayşe Demir’in arkadaşı, telefon 0532 000 00 00, ilk kez geldi',
         ),
       ),
+    );
+
+    // Yoklamanın açılış ekranı: üç kartın da başlık + açıklaması uzun, büyük
+    // yazı ölçeğinde satırlar sarmalı. Dikeyde alt sayfadaki gibi kaydırma var
+    // (küçük ekran + 1.3 ölçekte üç kart sığmıyor); aranan taşma, kart
+    // içindeki ikon + metin + ok satırının yatayda taşması.
+    tasmaTesti(
+      'YoklamaHizliSecim',
+      () => YoklamaHizliSecim(
+        planliSayi: 4,
+        onHepsiGeldi: () {},
+        onEksikFazla: () {},
+        onYapilmadi: () {},
+      ),
+      sar: (w) => SingleChildScrollView(child: w),
+    );
+
+    tasmaTesti(
+      'YoklamaHizliSecim (kaydediliyor, planlı yok)',
+      () => YoklamaHizliSecim(
+        planliSayi: 0,
+        kaydediliyor: true,
+        onHepsiGeldi: () {},
+        onEksikFazla: () {},
+        onYapilmadi: () {},
+      ),
+      sar: (w) => SingleChildScrollView(child: w),
     );
   });
 
