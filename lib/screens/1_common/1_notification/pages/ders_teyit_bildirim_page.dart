@@ -9,6 +9,7 @@ import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:fitcall/services/notification/notification_action_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/common/tarih_util.dart';
@@ -304,10 +305,7 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
       backgroundColor: context.bildirimRenk.arkaplanGri,
       body: SafeArea(
         child: _checkingStatus
-            ? Center(
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: context.takvim.primary),
-              )
+            ? const IskeletKart(seritKutusu: 0)
             : Column(
                 children: [
                   BildirimUstBarWidget(onClose: _handleClose),

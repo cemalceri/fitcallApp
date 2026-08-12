@@ -3,6 +3,9 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
+import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/3_antrenor/ogrenci_detay/antrenor_ogrenci_detay_page.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
@@ -10,6 +13,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/common/tarih_util.dart';
+import 'package:fitcall/common/tema.dart';
 
 class AntrenorOgrencilerPage extends StatefulWidget {
   const AntrenorOgrencilerPage({super.key});
@@ -18,14 +22,12 @@ class AntrenorOgrencilerPage extends StatefulWidget {
   State<AntrenorOgrencilerPage> createState() => _AntrenorOgrencilerPageState();
 }
 
-class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage>
-    with SingleTickerProviderStateMixin {
+class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
   List<UyeModel> students = [];
   List<UyeModel> filteredStudents = [];
   bool isLoading = false;
   String searchQuery = '';
   String? selectedSeviye;
-  late AnimationController _animationController;
 
   // Seviye renk haritası
   static const Map<String, Color> seviyeRenkleri = {
@@ -39,17 +41,7 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage>
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
     _yukleOgrenciler();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 
   Future<void> _yukleOgrenciler() async {
@@ -66,7 +58,6 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage>
         students = data;
         filteredStudents = data;
       });
-      _animationController.forward();
     } on ApiException catch (e) {
       if (!mounted) return;
       ShowMessage.error(context, e.message);
@@ -156,10 +147,10 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage>
               // Öğrenci Listesi
               Expanded(
                 child: isLoading
-                    ? _buildLoadingState()
+                    ? const IskeletListe()
                     : filteredStudents.isEmpty
-                        ? _buildEmptyState(colorScheme)
-                        : _buildStudentGrid(),
+                        ? _buildEmptyState()
+                        : _buildOgrenciListesi(),
               ),
             ],
           ),
@@ -429,115 +420,63 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage>
     );
   }
 
-  Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              shape: BoxShape.circle,
-            ),
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Öğrenciler yükleniyor...',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
+
+  Widget _buildEmptyState() {
+    final filtreVar = searchQuery.isNotEmpty || selectedSeviye != null;
+
+    return BosDurum(
+      ikon: filtreVar
+          ? Icons.search_off_rounded
+          : Icons.people_outline_rounded,
+      baslik: filtreVar ? 'Sonuç yok' : 'Henüz öğrenci yok',
+      aciklama: filtreVar
+          ? 'Aramanıza ve seçili seviyeye uyan öğrenci bulunamadı.'
+          : 'Sorumlu olduğunuz öğrenciler burada görünecek.',
+      eylemEtiketi: filtreVar ? 'Filtreleri temizle' : null,
+      eylemIkonu: Icons.clear_rounded,
+      onEylem: filtreVar
+          ? () {
+              setState(() {
+                searchQuery = '';
+                selectedSeviye = null;
+              });
+              _filterStudents();
+            }
+          : null,
     );
   }
 
-  Widget _buildEmptyState(ColorScheme colorScheme) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.people_outline_rounded,
-              size: 64,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            searchQuery.isNotEmpty || selectedSeviye != null
-                ? 'Sonuç bulunamadı'
-                : 'Henüz öğrenci yok',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            searchQuery.isNotEmpty || selectedSeviye != null
-                ? 'Farklı filtreler deneyin'
-                : 'Sorumlu olduğunuz öğrenciler burada görünecek',
-            style: TextStyle(
-              fontSize: 14,
-              color: colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStudentGrid() {
+  Widget _buildOgrenciListesi() {
     return RefreshIndicator(
       onRefresh: _yukleOgrenciler,
-      child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.85,
-        ),
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: Bosluk.xxl),
         itemCount: filteredStudents.length,
         itemBuilder: (context, index) {
-          return AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              final delay = index * 0.1;
-              final animValue = Curves.easeOutBack
-                  .transform(
-                    (_animationController.value - delay).clamp(0.0, 1.0),
-                  )
-                  .clamp(0.0, 1.0); // Add clamp here
-              return Transform.scale(
-                scale: 0.5 + (0.5 * animValue),
-                child: Opacity(
-                  opacity: animValue,
-                  child: child,
+          final ogrenci = filteredStudents[index];
+          final yas = _calculateAge(ogrenci.dogumTarihi);
+          final adSoyad = '${ogrenci.adi} ${ogrenci.soyadi}';
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (index > 0) const ListeAyraci(),
+              ListeSatiri(
+                onGorsel: _OgrenciAvatari(
+                  adSoyad: adSoyad,
+                  fotograf: ogrenci.profilFotografi,
                 ),
-              );
-            },
-            child: _StudentCard(
-              student: filteredStudents[index],
-              seviyeColor: _getSeviyeColor(filteredStudents[index].seviyeRengi),
-              age: _calculateAge(filteredStudents[index].dogumTarihi),
-              onTap: () => _showStudentDetails(filteredStudents[index]),
-            ),
+                baslik: adSoyad,
+                altBaslik: [
+                  if (ogrenci.seviyeRengi.isNotEmpty)
+                    '${ogrenci.seviyeRengi} seviye',
+                  if (yas > 0) '$yas yaş',
+                ].join(' · '),
+                okGoster: true,
+                onTap: () => _showStudentDetails(ogrenci),
+              ),
+            ],
           );
         },
       ),
@@ -545,232 +484,27 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage>
   }
 }
 
-class _StudentCard extends StatelessWidget {
-  final UyeModel student;
-  final Color seviyeColor;
-  final int age;
-  final VoidCallback onTap;
+/// Öğrenci avatarı — fotoğraf varsa onu, yoksa baş harfleri gösterir.
+class _OgrenciAvatari extends StatelessWidget {
+  final String adSoyad;
+  final String? fotograf;
 
-  const _StudentCard({
-    required this.student,
-    required this.seviyeColor,
-    required this.age,
-    required this.onTap,
-  });
+  const _OgrenciAvatari({required this.adSoyad, this.fotograf});
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final harfli = ListeAvatari(basHarfler: ListeAvatari.harfler(adSoyad));
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: seviyeColor.withValues(alpha: 0.15),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            border: Border.all(
-              color: seviyeColor.withValues(alpha: 0.2),
-              width: 1,
-            ),
-          ),
-          child: Column(
-            children: [
-              // Üst gradient bölümü
-              Container(
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      seviyeColor.withValues(alpha: 0.2),
-                      seviyeColor.withValues(alpha: 0.05),
-                    ],
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                ),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    // Seviye Badge
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: seviyeColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          student.seviyeRengi,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Avatar
-                    Positioned(
-                      bottom: -30,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: colorScheme.surface,
-                            border: Border.all(
-                              color: seviyeColor,
-                              width: 3,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: seviyeColor.withValues(alpha: 0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: student.profilFotografi != null &&
-                                    student.profilFotografi!.isNotEmpty
-                                ? Image(
-                                    image: CachedNetworkImageProvider(
-                                        student.profilFotografi!),
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
-                                        _buildAvatarPlaceholder(colorScheme),
-                                  )
-                                : _buildAvatarPlaceholder(colorScheme),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+    if (fotograf == null || fotograf!.isEmpty) return harfli;
 
-              const SizedBox(height: 36),
-
-              // İsim
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  '${student.adi} ${student.soyadi}',
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                    height: 1.2,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // Bilgi satırları
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (age > 0) ...[
-                      Icon(
-                        Icons.cake_outlined,
-                        size: 14,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$age yaş',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-
-              const Spacer(),
-
-              // Alt buton
-              Container(
-                margin: const EdgeInsets.all(12),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: seviyeColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.visibility_outlined,
-                      size: 16,
-                      color: seviyeColor,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Detaylar',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: seviyeColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAvatarPlaceholder(ColorScheme colorScheme) {
-    return Container(
-      color: colorScheme.surfaceContainerHighest,
-      child: Center(
-        child: Text(
-          '${student.adi[0]}${student.soyadi[0]}',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: seviyeColor,
-          ),
+    return ClipOval(
+      child: SizedBox(
+        width: 44,
+        height: 44,
+        child: Image(
+          image: CachedNetworkImageProvider(fotograf!),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => harfli,
         ),
       ),
     );

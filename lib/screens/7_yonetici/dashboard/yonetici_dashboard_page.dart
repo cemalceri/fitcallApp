@@ -13,7 +13,7 @@ import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dar
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/weekly_chart_card.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/quick_access_section.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/daily_summary_card.dart';
-import 'package:fitcall/screens/7_yonetici/widgets/skeleton.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 
 class YoneticiDashboardPage extends StatefulWidget {
   /// Sekmeler arası geçiş
@@ -106,7 +106,7 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
 
   Widget _buildContent() {
     if (_loading) {
-      return const DashboardSkeleton();
+      return const IskeletDashboard();
     }
 
     if (_errorMessage != null) {

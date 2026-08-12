@@ -8,6 +8,7 @@ import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -72,7 +73,7 @@ class _TeyitBekleyenlerPageState extends State<TeyitBekleyenlerPage> {
           future: _future,
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              return const IskeletListe();
             }
             final list = snap.data ?? const <TeyitBekleyenDers>[];
             return TeyitBekleyenListesi(dersler: list, onTap: _acDersTeyit);

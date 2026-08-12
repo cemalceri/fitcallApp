@@ -5,6 +5,8 @@ import 'package:fitcall/models/dtos/paket_secim_item.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_talep_api_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 
 const Color uiPrimaryBlue = Color(0xFF2563EB);
@@ -223,21 +225,11 @@ class _DersTalepPageState extends State<DersTalepPage> {
                 const SizedBox(height: 12),
 
                 _loadingPaket
-                    ? Container(
-                        width: double.infinity,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.outlineVariant,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Center(
-                          child: SizedBox(
-                            width: 40,
-                            height: 40,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                            ),
-                          ),
+                    ? const Parilti(
+                        child: IskeletKutu(
+                          genislik: double.infinity,
+                          yukseklik: 120,
+                          yaricap: Yaricap.l,
                         ),
                       )
                     : _paketler.isEmpty

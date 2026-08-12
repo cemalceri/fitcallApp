@@ -8,12 +8,12 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-08-11)
+## 📌 Şu anki durum (2026-08-12)
 
 | | |
 |---|---|
-| Mobil | `main`, `pubspec` sürümü **3.8.0+40** — tasarım sistemi + koyu tema turu içeride |
-| Testler | `flutter test` **768 geçiyor**, `flutter analyze` temiz |
+| Mobil | `main`, `pubspec` sürümü **3.8.0+40** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
+| Testler | `flutter test` **879 geçiyor**, `flutter analyze` temiz |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
 | Mağaza | Son yayınlanan sürüm **3.6.0**; 3.7.0 build'i Codemagic'te alınacak |
 
@@ -65,6 +65,54 @@ Ekranın kendi bilgi notu ("üyelerin ders talebi oluştururken gördüğü uygu
 ---
 
 ## ✅ Tamamlanan turlar
+
+### İskelet yükleme + ortak liste kalıbı (2026-08-12)
+
+Tasarım turunun ikinci ayağı. **Ana sayfa tasarımı kullanıcı kararıyla yine kapsam dışı** —
+ana sayfada yalnız yükleme göstergeleri değişti, yerleşim aynı kaldı.
+
+**(24) İskelet yükleme.** `lib/screens/1_common/widgets/iskelet.dart` (yeni, ortak):
+`Parilti` (ShaderMask tabanlı, harici paket yok), `IskeletKutu`, `IskeletGecikmeli` ve dört hazır
+iskelet — `IskeletListe`, `IskeletKart`, `IskeletTakvim`, `IskeletDashboard`. Eski
+`7_yonetici/widgets/skeleton.dart` buraya taşındı ve silindi (Türkçe adlandırmaya geçti).
+
+Uygulanan kurallar:
+- İskelet gerçek içerikle **aynı yükseklikte** — veri gelince sayfa zıplamıyor.
+- **300 ms'den kısa yüklemede hiç gösterilmiyor** (`IskeletGecikmeli`); yanıp sönme beklemekten
+  rahatsız edici. `test/iskelet_test.dart` bunu doğruluyor.
+- **Aşağı çekip yenilemede iskelet çıkmıyor**, mevcut liste duruyor.
+- Renkler temadan (`surfaceContainerHigh` / `surfaceContainerLowest`); eski sabit gri koyu temada
+  beyaz şerit bırakıyordu. "Hareketi azalt" açıkken parıltı dönmüyor.
+
+Dönen halka **36 yerde kaldı** ve hepsi kural gereği: buton içi işlem göstergesi, giriş/kayıt/rota
+guard akışı, `LoadingSpinner` engelleyici diyaloğu ve görsel indirme (belirlenimli) ilerlemesi.
+Sayfa/bölüm seviyesinde tek bir `CircularProgressIndicator` kalmadı.
+
+**Ortak liste kalıbı.** `lib/screens/1_common/widgets/liste_satiri.dart` (yeni):
+`ListeSatiri`, `ListeAvatari`, `ListeAyraci`, `ListeGrupBasligi` (+ yapışkan sliver delegate'i),
+`ListeTonu` ve kaydırarak eylem (`ListeEylemi`). Kart yığını yerine düz satır: 44 px dairesel
+avatar, iki metin satırı, sağda tek değer, saç teli ayraç — aynı alanda 6 yerine ~10 satır.
+
+| Ekran | Ne değişti |
+|---|---|
+| Yönetici · Üyeler | `CustomScrollView` + `floating/snap` başlık (aşağı kaydırınca arama gizlenir, yukarı çekince döner). **Yapışkan grup başlıkları**: Borçlu / Güncel. Satır `ListeSatiri`; kaydırınca **Ara / WhatsApp**. Boş durum + arama sonuçsuz durumu `BosDurum`. `uye_liste_item.dart` silindi. |
+| Yönetici · Borçlu üyeler | Aynı satır kalıbı, satır içi mini butonlar kaydırma eylemine dönüştü. Özet kart token'landı (`Colors.red` → `renkler.hata`). |
+| Yönetici · Dersler | `ders_liste_item.dart` `ListeSatiri` üzerine kuruldu; avatar yerine **saat bloğu**. Durum renkleri `ListeTonu`'ya bağlandı. |
+| Yönetici · Antrenörler | `antrenor_liste_item.dart` sadeleşti; puan rozeti `sonEk` olarak sağda. |
+| Antrenör · Öğrencilerim | 2 sütunlu **kart ızgarası → düz liste**. `_StudentCard` (230 satır) ve kademeli ölçek animasyonu silindi; fotoğraf varsa dairesel avatar olarak geliyor. |
+| Üye · Geçmiş dersler | Kart → düz satır + `ListeGrupBasligi` (ay). Durum renkleri sabit hex'ten token'a. |
+| Üye · Hesap hareketleri | Zaman çizelgesi korundu; `Colors.green/red` → token, sayfalama göstergesi iskelet oldu. |
+| Bildirimler | Tarih grup başlıkları ortak `ListeGrupBasligi` kalıbına geçti (`Dismissible` zaten vardı). |
+
+Kaydırma jesti `Dismissible` ile değil, tek sürükleme denetleyicisiyle yazıldı (satır listeden
+atılmıyor, yerinde kalıp eylem şeridini açıyor) — yeni paket eklenmedi. **Uzun basınca** aynı
+eylemler alt sayfada listeleniyor: kaydırma ekran okuyucuyla kullanılamıyor.
+
+**Aşağı çekip yenileme** eksik kalan son sayfaya (`calisma_saatleri_page.dart`) eklendi; geri kalan
+`RefreshIndicator`'sız dosyalar alt sayfa/diyalog/drawer ya da statik içerik (KVKK, SSS).
+
+**Taşma testi:** `ListeSatiri` (üç varyant), `ListeGrupBasligi`, `AntrenorListeItemWidget` ve dört
+iskelet matrise eklendi. `flutter test` 879 yeşil.
 
 ### Antrenöre özel Yardım & SSS sayfası (2026-08-10)
 
@@ -305,10 +353,8 @@ Detay `SURUM_NOTLARI.md` → 3.6.0.
 - **(22)** Video/foto geri bildirim — ders videosu yükleyip öğrenciyle paylaşma
 
 ### Platform / Ortak
-- **(24)** Skeleton (shimmer) loading — spinner yerine iskelet kartlar.
-  *Ölçüm (2026-08-11):* 42 ekran ortada `CircularProgressIndicator` gösteriyor, yalnız 6'sında
-  iskelet var. Ayrıca 47 liste ekranından **24'ünde** `RefreshIndicator` var — aşağı çekip
-  yenileme yarım kalmış.
+- ~~**(24)** Skeleton (shimmer) loading~~ — **2026-08-12 turunda yapıldı**, aşağı çekip yenileme
+  boşlukları da kapatıldı.
 - **(25)** Offline cache — stale-while-revalidate ile hızlı açılış
 - **(26)** Karanlık tema (Material 3 hazır).
   *Ölçüm (2026-08-11):* `MaterialApp`'te `darkTheme`/`themeMode` **hiç tanımlı değil**, yani
@@ -353,8 +399,8 @@ ediyor ve her bileşen için bir de **koyu tema** koşusu yapıyor (token eksikl
 yakalar). Yeni ortak bileşenler (`KabukAltBar`, `HaftaGunSecici`, `TakvimZamanCizelgesi`,
 `TakvimAjanda`) matrise eklendi.
 
-**Bu turda kapsanmayan:** ana sayfa tasarımı (kullanıcı kararı), (25) offline cache,
-(27) bildirim tercihleri, (28) iletişim kısayolu. Yönetici program ekranındaki ızgara sabitleri
+**Bu turda kapsanmayan:** ana sayfa tasarımı (kullanıcı kararı — 2026-08-12 turunda da kapsam
+dışı bırakıldı), (25) offline cache, (27) bildirim tercihleri, (28) iletişim kısayolu. Yönetici program ekranındaki ızgara sabitleri
 (`program_constants.dart`) ve model içindeki durum renkleri `BuildContext` görmediği için
 token yerine iki temada da okunan nötr değerlerle bırakıldı.
 

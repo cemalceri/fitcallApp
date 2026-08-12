@@ -4,6 +4,7 @@
 
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -180,22 +181,7 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
     );
   }
 
-  Widget _buildLoading() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text(
-            'Bilgiler yükleniyor...',
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildLoading() => const IskeletKart(seritKutusu: 0);
 
   Widget _buildError() {
     return Center(

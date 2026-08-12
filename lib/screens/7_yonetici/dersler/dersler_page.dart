@@ -7,8 +7,12 @@ import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/7_yonetici/dersler/widgets/ders_istatistik_kartlar.dart';
 import 'package:fitcall/screens/7_yonetici/dersler/widgets/ders_liste_item.dart';
+import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:intl/intl.dart';
 import 'package:fitcall/common/tarih_util.dart';
+import 'package:fitcall/common/tema.dart';
 
 class DerslerPage extends StatefulWidget {
   const DerslerPage({super.key});
@@ -242,71 +246,61 @@ class _DerslerPageState extends State<DerslerPage> {
 
   Widget _buildContent() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const IskeletListe();
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline,
-                  size: 48, color: Theme.of(context).colorScheme.error),
-              const SizedBox(height: 16),
-              Text(_errorMessage!, textAlign: TextAlign.center),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: _loadData,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Tekrar Dene'),
-              ),
-            ],
-          ),
-        ),
+      return BosDurum(
+        ikon: Icons.error_outline_rounded,
+        baslik: 'Liste alınamadı',
+        aciklama: _errorMessage!,
+        ikonRengi: context.renkler.hata,
+        eylemEtiketi: 'Tekrar dene',
+        eylemIkonu: Icons.refresh_rounded,
+        onEylem: _loadData,
       );
     }
 
     if (_data == null || _data!.dersler.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      return RefreshIndicator(
+        onRefresh: _loadData,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            Icon(
-              Icons.event_busy,
-              size: 64,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurfaceVariant
-                  .withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Bu tarihte ders bulunamadı',
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            SizedBox(height: MediaQuery.sizeOf(context).height * 0.1),
+            const BosDurum(
+              ikon: Icons.event_busy_rounded,
+              baslik: 'Ders yok',
+              aciklama: 'Seçili tarih ve filtreye uyan ders bulunmuyor. '
+                  'Başka bir gün seçebilir veya filtreyi değiştirebilirsiniz.',
             ),
           ],
         ),
       );
     }
 
+    final dersler = _data!.dersler;
+
     return RefreshIndicator(
       onRefresh: _loadData,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _data!.dersler.length + 1,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: Bosluk.xxl),
+        itemCount: dersler.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) {
             return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.fromLTRB(
+                  Bosluk.l, 0, Bosluk.l, Bosluk.l),
               child: DersIstatistikKartlar(data: _data!.istatistikler),
             );
           }
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: DersListeItemWidget(ders: _data!.dersler[index - 1]),
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (index > 1) const ListeAyraci(solBosluk: 78),
+              DersListeItemWidget(ders: dersler[index - 1]),
+            ],
           );
         },
       ),

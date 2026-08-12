@@ -10,6 +10,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/common/tarih_util.dart';
@@ -129,7 +130,7 @@ class _GecmisDerslerPageState extends State<GecmisDerslerPage> {
         centerTitle: true,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const IskeletListe()
           : RefreshIndicator(
               onRefresh: _yukle,
               child: _dersler.isEmpty

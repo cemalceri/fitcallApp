@@ -2,6 +2,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:fitcall/services/muhasebe/para_hareket_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/models/6_muhasebe/para_hareket_model.dart';
@@ -164,18 +165,7 @@ class _ParaHareketPageState extends State<ParaHareketPage> {
     );
   }
 
-  Widget _buildLoadingState() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Hareketler yükleniyor...'),
-        ],
-      ),
-    );
-  }
+  Widget _buildLoadingState() => const IskeletListe();
 
   Widget _buildErrorState(ColorScheme colorScheme, String error) {
     return Center(

@@ -22,7 +22,10 @@ import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_sheet.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
+import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart';
 import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_odul_sayaci.dart';
@@ -265,6 +268,21 @@ SilmeEtkisi _silmeEtkisi() => SilmeEtkisi.fromJson({
       },
     });
 
+AntrenorListeItem _antrenorListeItem() => AntrenorListeItem.fromJson({
+      'id': 1,
+      'adi': 'Ayşe',
+      'soyadi': 'Yılmaz Öğretmenoğulları',
+      'ad_soyad': 'Ayşe Yılmaz Öğretmenoğulları',
+      'e_posta': 'ayse@binay.fit',
+      'telefon': '5550000000',
+      'renk': '#2438C8',
+      'aktif_mi': false,
+      'bugun_ders_sayisi': 12,
+      'haftalik_ders_sayisi': 48,
+      'ortalama_puan': 4.8,
+      'ogrenci_sayisi': 126,
+    });
+
 DersListeItem _dersListeItem() => DersListeItem.fromJson({
       'id': 1,
       'baslangic_tarih_saat': '2026-07-23T10:00:00+03:00',
@@ -458,6 +476,74 @@ void main() {
       () => HakedisDersKarti(ders: _hakedisDersIptal()),
       sar: kaydirilabilir,
     );
+  });
+
+  /* ================= ORTAK — LİSTE VE İSKELET BİLEŞENLERİ ================= */
+
+  group('Ortak liste bileşenleri', () {
+    tasmaTesti(
+      'ListeSatiri (tam dolu)',
+      () => ListeSatiri(
+        onGorsel: const ListeAvatari(basHarfler: 'EY', ton: ListeTonu.hata),
+        baslik: 'Elif Yıldırım Karahanoğulları',
+        altBaslik: 'Kırmızı seviye · Standart · 14 yaş',
+        rozet: const Icon(Icons.circle, size: 10),
+        deger: '-12.850 ₺',
+        altDeger: '#10425',
+        okGoster: true,
+        onTap: () {},
+      ),
+    );
+
+    tasmaTesti(
+      'ListeSatiri (kaydırma eylemli)',
+      () => ListeSatiri(
+        onGorsel: const ListeAvatari(basHarfler: 'BD'),
+        baslik: 'Burak Demir',
+        altBaslik: 'Mavi seviye · Pazartesi',
+        deger: '-320 ₺',
+        onTap: () {},
+        eylemler: [
+          ListeEylemi(
+            etiket: 'Ara',
+            ikon: Icons.phone_rounded,
+            ton: ListeTonu.basari,
+            onSec: () {},
+          ),
+          ListeEylemi(
+            etiket: 'WhatsApp',
+            ikon: Icons.chat_rounded,
+            ton: ListeTonu.bilgi,
+            onSec: () {},
+          ),
+        ],
+      ),
+    );
+
+    tasmaTesti(
+      'ListeSatiri (yalın)',
+      () => const ListeSatiri(baslik: 'Yalnızca başlık'),
+    );
+
+    tasmaTesti(
+      'ListeGrupBasligi',
+      () => const ListeGrupBasligi(baslik: 'Borçlu', sayi: 23),
+    );
+
+    tasmaTesti(
+      'AntrenorListeItemWidget',
+      () => AntrenorListeItemWidget(
+        antrenor: _antrenorListeItem(),
+        onTap: () {},
+      ),
+    );
+  });
+
+  group('İskelet bileşenleri', () {
+    tasmaTesti('IskeletListe', () => const IskeletListe());
+    tasmaTesti('IskeletKart', () => const IskeletKart());
+    tasmaTesti('IskeletTakvim', () => const IskeletTakvim());
+    tasmaTesti('IskeletDashboard', () => const IskeletDashboard());
   });
 
   /* ===================== YÖNETİCİ — MEVCUT BİLEŞENLER ===================== */

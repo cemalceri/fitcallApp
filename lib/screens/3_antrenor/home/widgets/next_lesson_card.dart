@@ -2,6 +2,8 @@
 
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -62,9 +64,18 @@ class NextLessonCard extends StatelessWidget {
 
   Widget _buildLoadingState(ColorScheme colorScheme) {
     return const Padding(
-      padding: EdgeInsets.all(32),
-      child: Center(
-        child: CircularProgressIndicator(),
+      padding: EdgeInsets.all(Bosluk.l),
+      child: Parilti(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            IskeletKutu(genislik: 140, yukseklik: 16),
+            SizedBox(height: Bosluk.m),
+            IskeletKutu(genislik: 200, yukseklik: 13),
+            SizedBox(height: Bosluk.s),
+            IskeletKutu(genislik: 120, yukseklik: 13),
+          ],
+        ),
       ),
     );
   }

@@ -7,7 +7,9 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/muhasebe/muhasebe_service.dart';
 import 'package:fitcall/services/muhasebe/para_hareket_service.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -279,9 +281,9 @@ class _MuhasebePageState extends State<MuhasebePage> {
     final borcVar = _kalanBakiye < 0;
     final fazlaVar = _kalanBakiye > 0;
     final renk = borcVar
-        ? Colors.red
+        ? context.renkler.hata
         : fazlaVar
-            ? Colors.green
+            ? context.renkler.basari
             : colorScheme.onSurfaceVariant;
 
     return Container(
@@ -370,18 +372,7 @@ class _MuhasebePageState extends State<MuhasebePage> {
     );
   }
 
-  Widget _buildLoadingState() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Veriler yükleniyor...'),
-        ],
-      ),
-    );
-  }
+  Widget _buildLoadingState() => const IskeletListe();
 
   Widget _buildEmptyState(ColorScheme colorScheme) {
     return Center(
@@ -425,15 +416,11 @@ class _MuhasebePageState extends State<MuhasebePage> {
                 ),
               );
             }
-            return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: Center(
-                child: SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
+            // Sayfalama sırasında da iskelet: dönen halka listenin biçimini
+            // taşımıyor, gelen satırların yerini önden göstermek daha okunur.
+            return const IskeletListe(
+              satirSayisi: 2,
+              kaydirilabilir: false,
             );
           }
 
@@ -482,7 +469,8 @@ class _HareketSatiri extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final odemeMi = hareket.odemeYonlu;
-    final renk = odemeMi ? Colors.green.shade600 : Colors.red.shade600;
+    // Sabit `Colors.green/red` koyu temada zeminle yeterince ayrışmıyordu.
+    final renk = odemeMi ? context.renkler.basari : context.renkler.hata;
     final cizgiRengi = colorScheme.outlineVariant.withValues(alpha: 0.6);
 
     final baslik = (hareket.aciklama ?? '').trim().isNotEmpty

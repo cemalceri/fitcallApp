@@ -5,6 +5,7 @@ import 'package:fitcall/screens/6_muhasebe/widgets/payment_webview_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/muhasebe/muhasebe_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -143,7 +144,7 @@ class _PaymentSummarySheetState extends State<PaymentSummarySheet> {
             child: _isLoading
                 ? const SizedBox(
                     height: 200,
-                    child: Center(child: CircularProgressIndicator()),
+                    child: IskeletKart(anaKartYuksekligi: 90, seritKutusu: 0),
                   )
                 : _errorMessage != null
                     ? _buildError(colorScheme)

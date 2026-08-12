@@ -1,9 +1,11 @@
-// lib/screens/9_yonetici/antrenorler/widgets/antrenor_liste_item.dart
+// lib/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart
 
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
+import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
+/// Antrenör listesi satırı — ortak [ListeSatiri] kalıbı üzerine kurulu.
 class AntrenorListeItemWidget extends StatelessWidget {
   final AntrenorListeItem antrenor;
   final VoidCallback? onTap;
@@ -16,194 +18,76 @@ class AntrenorListeItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    return ListeSatiri(
+      onGorsel: ListeAvatari(
+        basHarfler: ListeAvatari.harfler(antrenor.adSoyad),
+        ton: antrenor.aktifMi ? ListeTonu.bilgi : ListeTonu.notr,
+      ),
+      baslik: antrenor.adSoyad,
+      rozet: antrenor.aktifMi ? null : const _PasifRozeti(),
+      altBaslik: 'Bugün ${antrenor.bugunDersSayisi} ders · '
+          'hafta ${antrenor.haftalikDersSayisi} · '
+          '${antrenor.ogrenciSayisi} öğrenci',
+      sonEk: _Puan(puan: antrenor.ortalamaPuan),
+      okGoster: onTap != null,
+      onTap: onTap,
+    );
+  }
+}
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap?.call();
-        },
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
+/// Ortalama puan rozeti. Puan yoksa tire gösterilir — boş bırakmak satırı
+/// eksik gösteriyordu.
+class _Puan extends StatelessWidget {
+  final double? puan;
+
+  const _Puan({required this.puan});
+
+  @override
+  Widget build(BuildContext context) {
+    final renkler = context.renkler;
+
+    if (puan == null) {
+      return Text('—', style: context.metin.bodySmall);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Bosluk.s, vertical: 3),
+      decoration: BoxDecoration(
+        color: renkler.uyariZemin,
+        borderRadius: BorderRadius.circular(Yaricap.s),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.star_rounded, size: 14, color: renkler.uyari),
+          const SizedBox(width: 3),
+          Text(
+            puan!.toStringAsFixed(1),
+            maxLines: 1,
+            style: context.metin.labelLarge?.copyWith(color: renkler.uyari),
           ),
-          child: Row(
-            children: [
-              // Avatar
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: antrenor.renkColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: antrenor.renkColor, width: 2),
-                ),
-                child: Center(
-                  child: Text(
-                    antrenor.adSoyad.isNotEmpty
-                        ? antrenor.adSoyad
-                            .split(' ')
-                            .map((e) => e.isNotEmpty ? e[0] : '')
-                            .take(2)
-                            .join()
-                            .toUpperCase()
-                        : '?',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: antrenor.renkColor,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              // Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            antrenor.adSoyad,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (!antrenor.aktifMi)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              'Pasif',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        _InfoChip(
-                          icon: Icons.event,
-                          label: 'Bugün: ${antrenor.bugunDersSayisi}',
-                        ),
-                        const SizedBox(width: 8),
-                        _InfoChip(
-                          icon: Icons.people,
-                          label: '${antrenor.ogrenciSayisi} öğrenci',
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Puan
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (antrenor.ortalamaPuan != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.star, size: 14, color: Colors.amber),
-                          const SizedBox(width: 4),
-                          Text(
-                            antrenor.ortalamaPuan!.toStringAsFixed(1),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.amber,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else
-                    Text(
-                      '-',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Hafta: ${antrenor.haftalikDersSayisi}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                color: colorScheme.onSurfaceVariant,
-                size: 20,
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _InfoChip({required this.icon, required this.label});
+class _PasifRozeti extends StatelessWidget {
+  const _PasifRozeti();
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 12, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
+    final cs = context.cs;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(Yaricap.s),
+      ),
+      child: Text(
+        'Pasif',
+        style: context.metin.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+      ),
     );
   }
 }

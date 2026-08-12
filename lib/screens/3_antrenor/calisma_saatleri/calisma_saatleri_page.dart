@@ -5,6 +5,7 @@ import 'package:fitcall/models/3_antrenor/calisma_saatleri_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -205,19 +206,23 @@ class _CalismaSaatleriPageState extends State<CalismaSaatleriPage> {
         centerTitle: true,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const IskeletListe(satirSayisi: 7)
           : _hata != null
               ? _hataGorunumu(colorScheme)
               : Column(
                   children: [
                     Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.all(16),
-                        children: [
-                          _bilgiNotu(colorScheme),
-                          const SizedBox(height: 16),
-                          ..._gunler.map((s) => _gunKarti(colorScheme, s)),
-                        ],
+                      child: RefreshIndicator(
+                        onRefresh: _yukle,
+                        child: ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(16),
+                          children: [
+                            _bilgiNotu(colorScheme),
+                            const SizedBox(height: 16),
+                            ..._gunler.map((s) => _gunKarti(colorScheme, s)),
+                          ],
+                        ),
                       ),
                     ),
                     _kaydetButonu(colorScheme),

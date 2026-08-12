@@ -2,13 +2,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_istatistik_kartlar.dart';
-import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_liste_item.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/uye_detay_page.dart';
-import 'package:fitcall/screens/7_yonetici/widgets/skeleton.dart';
+import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UyelerPage extends StatefulWidget {
   const UyelerPage({super.key});
@@ -19,6 +23,8 @@ class UyelerPage extends StatefulWidget {
 
 class _UyelerPageState extends State<UyelerPage> {
   final TextEditingController _aramaController = TextEditingController();
+  final _currency =
+      NumberFormat.currency(locale: 'tr_TR', symbol: '₺', decimalDigits: 0);
 
   // Tüm liste tek seferde çekilir; arama/filtre client-side yapılır (API dövülmez).
   UyeIstatistik? _istatistik;
@@ -118,178 +124,307 @@ class _UyelerPageState extends State<UyelerPage> {
     );
   }
 
+  Future<void> _ara(String? telefon) async {
+    if (telefon == null || telefon.isEmpty) return;
+    HapticFeedback.lightImpact();
+    await launchUrl(Uri.parse('tel:0$telefon'),
+        mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _whatsapp(String? telefon) async {
+    if (telefon == null || telefon.isEmpty) return;
+    HapticFeedback.lightImpact();
+    await launchUrl(Uri.parse('https://wa.me/90$telefon'),
+        mode: LaunchMode.externalApplication);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.06),
-              colorScheme.surface,
-            ],
-            stops: const [0.0, 0.3],
-          ),
+      body: RefreshIndicator(
+        onRefresh: _loadData,
+        // Yenilemede iskelet çıkmaz; mevcut liste durur, üstte çubuk döner.
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            _baslikBari(context),
+            ..._govde(context),
+            const SliverToBoxAdapter(child: SizedBox(height: 80)),
+          ],
         ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Üyeler',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _aramaController,
-                      decoration: InputDecoration(
-                        hintText: 'İsim, telefon veya üye no ile ara...',
-                        prefixIcon: const Icon(Icons.search, size: 20),
-                        suffixIcon: _aramaController.text.isNotEmpty
-                            ? IconButton(
-                                tooltip: 'Temizle',
-                                icon: const Icon(Icons.clear, size: 18),
-                                onPressed: () => _aramaController.clear(),
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: colorScheme.surfaceContainerHighest
-                            .withValues(alpha: 0.5),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  /// Başlık + arama + filtre çipleri.
+  ///
+  /// `floating` + `snap`: aşağı kaydırınca yukarı kayar, yukarı çekince anında
+  /// geri gelir — arama kutusu için liste başına dönmek gerekmiyor.
+  Widget _baslikBari(BuildContext context) {
+    final cs = context.cs;
+
+    return SliverAppBar(
+      floating: true,
+      snap: true,
+      automaticallyImplyLeading: false,
+      title: const Text('Üyeler'),
+      actions: [
+        if (_istatistik != null)
+          Padding(
+            padding: const EdgeInsets.only(right: Bosluk.l),
+            child: Center(
+              child: Text(
+                '${_istatistik!.toplamUye} kayıt',
+                style: context.metin.bodySmall,
+              ),
+            ),
+          ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: Size.fromHeight(_aramaSeridiYuksekligi(context)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  Bosluk.l, 0, Bosluk.l, Bosluk.s),
+              child: TextField(
+                controller: _aramaController,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: 'İsim, telefon veya üye no',
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  suffixIcon: _aramaController.text.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: 'Temizle',
+                          icon: const Icon(Icons.clear_rounded, size: 18),
+                          onPressed: () => _aramaController.clear(),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildFiltreler(colorScheme),
-                  ],
+                  fillColor: cs.surfaceContainer,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: Bosluk.l,
+                    vertical: Bosluk.m,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(Yaricap.m),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(Yaricap.m),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
-              Expanded(child: _buildContent()),
-            ],
-          ),
+            ),
+            SizedBox(
+              height: _cipYuksekligi(context),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: Bosluk.l),
+                children: [
+                  for (final (deger, etiket) in const [
+                    ('tumu', 'Tümü'),
+                    ('aktif', 'Aktif'),
+                    ('pasif', 'Pasif'),
+                    ('borclu', 'Borçlular'),
+                  ])
+                    Padding(
+                      padding: const EdgeInsets.only(right: Bosluk.s),
+                      child: _FilterChip(
+                        label: etiket,
+                        selected: _filtre == deger,
+                        onSelected: () => _onFiltreChanged(deger),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildFiltreler(ColorScheme colorScheme) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _FilterChip(
-            label: 'Tümü',
-            selected: _filtre == 'tumu',
-            onSelected: () => _onFiltreChanged('tumu'),
-          ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Aktif',
-            selected: _filtre == 'aktif',
-            onSelected: () => _onFiltreChanged('aktif'),
-          ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Pasif',
-            selected: _filtre == 'pasif',
-            onSelected: () => _onFiltreChanged('pasif'),
-          ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Borçlular',
-            selected: _filtre == 'borclu',
-            onSelected: () => _onFiltreChanged('borclu'),
-          ),
-        ],
-      ),
-    );
+  /// Arama kutusu + çip şeridinin toplam yüksekliği. Yazı ölçeği 1.3'e
+  /// çıkabildiği için sabit değer taşma üretiyordu.
+  double _aramaSeridiYuksekligi(BuildContext context) {
+    final olcek = MediaQuery.textScalerOf(context);
+    final arama = olcek.scale(16) * 1.4 + Bosluk.m * 2 + 2;
+    return arama + Bosluk.s + _cipYuksekligi(context) + Bosluk.s;
   }
 
-  Widget _buildContent() {
+  double _cipYuksekligi(BuildContext context) =>
+      MediaQuery.textScalerOf(context).scale(13) * 1.3 + Bosluk.s * 2;
+
+  List<Widget> _govde(BuildContext context) {
     if (_loading) {
-      return const UyeListeSkeleton();
+      return const [
+        SliverToBoxAdapter(child: IskeletListe(kaydirilabilir: false)),
+      ];
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline,
-                  size: 48, color: Theme.of(context).colorScheme.error),
-              const SizedBox(height: 16),
-              Text(_errorMessage!, textAlign: TextAlign.center),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: _loadData,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Tekrar Dene'),
-              ),
-            ],
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: BosDurum(
+            ikon: Icons.error_outline_rounded,
+            baslik: 'Liste alınamadı',
+            aciklama: _errorMessage!,
+            ikonRengi: context.renkler.hata,
+            eylemEtiketi: 'Tekrar dene',
+            eylemIkonu: Icons.refresh_rounded,
+            onEylem: _loadData,
           ),
         ),
-      );
+      ];
     }
 
     final uyeler = _filtrelenmis;
 
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: uyeler.length + 2, // +1 istatistik, +1 boşluk/boş-durum
+    if (uyeler.isEmpty) {
+      final aramaVar = _aramaController.text.trim().isNotEmpty;
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: BosDurum(
+            ikon: aramaVar
+                ? Icons.search_off_rounded
+                : Icons.people_outline_rounded,
+            baslik: aramaVar ? 'Sonuç yok' : 'Üye yok',
+            aciklama: aramaVar
+                ? '"${_aramaController.text.trim()}" için eşleşen üye '
+                    'bulunamadı. Farklı bir arama deneyin.'
+                : 'Bu filtreye uyan üye bulunmuyor.',
+            eylemEtiketi: aramaVar ? 'Aramayı temizle' : null,
+            eylemIkonu: Icons.clear_rounded,
+            onEylem: aramaVar ? _aramaController.clear : null,
+          ),
+        ),
+      ];
+    }
+
+    // Yöneticinin listede aradığı ilk şey borç durumu; gruplar ona göre.
+    final borclular = uyeler.where((u) => u.bakiye < 0).toList();
+    final guncel = uyeler.where((u) => u.bakiye >= 0).toList();
+
+    return [
+      if (_istatistik != null)
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+                Bosluk.l, Bosluk.s, Bosluk.l, Bosluk.l),
+            child: UyeIstatistikKartlar(data: _istatistik!),
+          ),
+        ),
+      ..._grup(context, 'Borçlu', borclular),
+      ..._grup(context, 'Güncel', guncel),
+    ];
+  }
+
+  /// Yapışkan grup başlığı + satırlar. Grup boşsa hiç çizilmez.
+  List<Widget> _grup(
+    BuildContext context,
+    String baslik,
+    List<UyeListeItem> uyeler,
+  ) {
+    if (uyeler.isEmpty) return const [];
+
+    return [
+      SliverPersistentHeader(
+        pinned: true,
+        delegate: ListeGrupBasligiDelegate(
+          baslik: baslik,
+          sayi: uyeler.length,
+          yukseklik: listeGrupBasligiYuksekligi(context),
+        ),
+      ),
+      SliverList.builder(
+        itemCount: uyeler.length,
         itemBuilder: (context, index) {
-          if (index == 0) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _istatistik != null
-                  ? UyeIstatistikKartlar(data: _istatistik!)
-                  : const SizedBox.shrink(),
-            );
-          }
-          if (index == uyeler.length + 1) {
-            if (uyeler.isEmpty) {
-              return Padding(
-                padding: const EdgeInsets.only(top: 40),
-                child: Center(
-                  child: Text(
-                    'Üye bulunamadı',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  ),
-                ),
-              );
-            }
-            return const SizedBox(height: 80);
-          }
-          final uye = uyeler[index - 1];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: UyeListeItemWidget(
-              uye: uye,
-              onTap: () => _acUyeDetay(uye),
-            ),
+          final uye = uyeler[index];
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (index > 0) const ListeAyraci(),
+              _satir(context, uye),
+            ],
           );
         },
+      ),
+    ];
+  }
+
+  Widget _satir(BuildContext context, UyeListeItem uye) {
+    final renkler = context.renkler;
+    final telVar = uye.telefon != null && uye.telefon!.isNotEmpty;
+
+    final (Color degerRengi, ListeTonu avatarTonu) = switch (uye) {
+      _ when !uye.aktifMi => (context.cs.onSurfaceVariant, ListeTonu.notr),
+      _ when uye.bakiye < 0 => (renkler.hata, ListeTonu.hata),
+      _ when uye.bakiye > 0 => (renkler.basari, ListeTonu.bilgi),
+      _ => (context.cs.onSurfaceVariant, ListeTonu.bilgi),
+    };
+
+    return ListeSatiri(
+      onGorsel: ListeAvatari(
+        basHarfler: ListeAvatari.harfler(uye.adSoyad),
+        ton: avatarTonu,
+      ),
+      baslik: uye.adSoyad,
+      rozet: uye.aktifMi ? null : const _PasifRozeti(),
+      altBaslik: _altBaslik(uye),
+      deger: _currency.format(uye.bakiye),
+      degerRengi: degerRengi,
+      altDeger: '#${uye.uyeNo}',
+      onTap: () => _acUyeDetay(uye),
+      eylemler: [
+        if (telVar)
+          ListeEylemi(
+            etiket: 'Ara',
+            ikon: Icons.phone_rounded,
+            ton: ListeTonu.basari,
+            onSec: () => _ara(uye.telefon),
+          ),
+        if (telVar)
+          ListeEylemi(
+            etiket: 'WhatsApp',
+            ikon: Icons.chat_rounded,
+            ton: ListeTonu.bilgi,
+            onSec: () => _whatsapp(uye.telefon),
+          ),
+      ],
+    );
+  }
+
+  /// Telefon ve üye no aramada zaten eşleşiyor; ikinci satırda üyeyi
+  /// hatırlatan bilgi durur.
+  String _altBaslik(UyeListeItem uye) {
+    final parcalar = <String>[
+      if (uye.seviyeRengi.isNotEmpty) '${uye.seviyeRengi} seviye',
+      uye.uyeTuru,
+      if (uye.yas != null) '${uye.yas} yaş',
+    ];
+    return parcalar.join(' · ');
+  }
+}
+
+class _PasifRozeti extends StatelessWidget {
+  const _PasifRozeti();
+
+  @override
+  Widget build(BuildContext context) {
+    final renkler = context.renkler;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: renkler.uyariZemin,
+        borderRadius: BorderRadius.circular(Yaricap.s),
+      ),
+      child: Text(
+        'Pasif',
+        style: context.metin.labelSmall?.copyWith(color: renkler.uyari),
       ),
     );
   }
@@ -308,29 +443,32 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = context.cs;
 
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onSelected();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected
-              ? colorScheme.primary
-              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-            color:
-                selected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onSelected();
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: selected ? cs.primary : cs.surfaceContainer,
+            borderRadius: BorderRadius.circular(Yaricap.xl),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: selected ? cs.onPrimary : cs.onSurfaceVariant,
+            ),
           ),
         ),
       ),

@@ -9,6 +9,10 @@ import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_istatist
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart';
 import 'package:fitcall/screens/1_common/hakedis/hakedis_ay_panosu_page.dart';
 import 'package:fitcall/screens/1_common/hakedis/hakedis_veri_kaynagi.dart';
+import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
+import 'package:fitcall/common/tema.dart';
 
 class AntrenorlerPage extends StatefulWidget {
   const AntrenorlerPage({super.key});
@@ -166,61 +170,64 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
 
   Widget _buildContent() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const IskeletListe();
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline,
-                  size: 48, color: Theme.of(context).colorScheme.error),
-              const SizedBox(height: 16),
-              Text(_errorMessage!, textAlign: TextAlign.center),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: _loadData,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Tekrar Dene'),
-              ),
-            ],
-          ),
-        ),
+      return BosDurum(
+        ikon: Icons.error_outline_rounded,
+        baslik: 'Liste alınamadı',
+        aciklama: _errorMessage!,
+        ikonRengi: context.renkler.hata,
+        eylemEtiketi: 'Tekrar dene',
+        eylemIkonu: Icons.refresh_rounded,
+        onEylem: _loadData,
       );
     }
 
     if (_data == null || _data!.antrenorler.isEmpty) {
-      return Center(
-        child: Text(
-          'Antrenör bulunamadı',
-          style:
-              TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      return RefreshIndicator(
+        onRefresh: _loadData,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(height: MediaQuery.sizeOf(context).height * 0.1),
+            const BosDurum(
+              ikon: Icons.sports_tennis_outlined,
+              baslik: 'Antrenör yok',
+              aciklama: 'Bu filtreye uyan antrenör bulunmuyor.',
+            ),
+          ],
         ),
       );
     }
 
+    final antrenorler = _data!.antrenorler;
+
     return RefreshIndicator(
       onRefresh: _loadData,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _data!.antrenorler.length + 1,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: Bosluk.xxl),
+        itemCount: antrenorler.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) {
             return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.fromLTRB(
+                  Bosluk.l, 0, Bosluk.l, Bosluk.l),
               child: AntrenorIstatistikKartlar(data: _data!.istatistikler),
             );
           }
-          final antrenor = _data!.antrenorler[index - 1];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: AntrenorListeItemWidget(
-              antrenor: antrenor,
-              onTap: () => _hakedisAc(antrenor),
-            ),
+          final antrenor = antrenorler[index - 1];
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (index > 1) const ListeAyraci(),
+              AntrenorListeItemWidget(
+                antrenor: antrenor,
+                onTap: () => _hakedisAc(antrenor),
+              ),
+            ],
           );
         },
       ),

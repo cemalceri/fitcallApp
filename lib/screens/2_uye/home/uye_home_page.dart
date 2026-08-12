@@ -25,6 +25,7 @@ import 'package:fitcall/services/etkinlik/etkinlik_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:fitcall/services/uye/uye_odul_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
@@ -374,8 +375,13 @@ class _UyeHomePageState extends State<UyeHomePage> {
           color: colorScheme.outlineVariant.withValues(alpha: 0.3),
         ),
       ),
-      child: const Center(
-        child: CircularProgressIndicator(),
+      clipBehavior: Clip.antiAlias,
+      child: const Parilti(
+        child: IskeletKutu(
+          genislik: double.infinity,
+          yukseklik: 180,
+          yaricap: 20,
+        ),
       ),
     );
   }

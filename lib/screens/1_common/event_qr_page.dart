@@ -11,6 +11,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/api_result.dart';
 import 'package:fitcall/services/core/ekran_parlaklik_service.dart';
 import 'package:fitcall/services/core/qr_code_api_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -287,16 +288,7 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
               ],
             ),
           ),
-          child: const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Etkinlik bilgileri yükleniyor...'),
-              ],
-            ),
-          ),
+          child: const IskeletKart(anaKartYuksekligi: 240, seritKutusu: 0),
         ),
       );
     }

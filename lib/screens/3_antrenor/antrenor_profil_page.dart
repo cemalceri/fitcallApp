@@ -8,6 +8,7 @@ import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/screens/3_antrenor/calisma_saatleri/calisma_saatleri_page.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -35,9 +36,7 @@ class AntrenorProfilPage extends StatelessWidget {
                   ],
                 ),
               ),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: const IskeletKart(),
             ),
           );
         } else if (snapshot.hasError) {

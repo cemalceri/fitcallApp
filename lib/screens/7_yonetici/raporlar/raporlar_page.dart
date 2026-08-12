@@ -1,5 +1,6 @@
 // lib/screens/7_yonetici/raporlar/raporlar_page.dart
 
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
@@ -138,7 +139,7 @@ class _RaporlarPageState extends State<RaporlarPage> {
 
   Widget _buildContent() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const IskeletKart(anaKartYuksekligi: 110);
     }
 
     if (_errorMessage != null) {

@@ -1,9 +1,14 @@
 // lib/screens/7_yonetici/dersler/widgets/ders_liste_item.dart
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
+import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
+import 'package:flutter/material.dart';
 
+/// Ders listesi satırı — ortak [ListeSatiri] kalıbı üzerine kurulu.
+///
+/// Avatar yerine saat bloğu duruyor: ders listesinde satırı ayırt eden şey
+/// kişi değil, saat.
 class DersListeItemWidget extends StatelessWidget {
   final DersListeItem ders;
   final VoidCallback? onTap;
@@ -14,185 +19,83 @@ class DersListeItemWidget extends StatelessWidget {
     this.onTap,
   });
 
-  String _katilimciMetni() {
-    final sayi = '${ders.katilimciSayisi} katılımcı';
-    if (ders.katilimcilar.isEmpty) return sayi;
-    final isimler = ders.katilimcilar.map((k) => k.adSoyad).take(2).join(', ');
-    return '$sayi • $isimler';
+  /// Ders durumunun anlam tonu — renkler temadan gelir, sabit `Colors.green`
+  /// gibi değerler koyu temada okunmuyordu.
+  static ListeTonu tonu(String durum) => switch (durum) {
+        'tamamlandi' => ListeTonu.basari,
+        'devam_ediyor' => ListeTonu.bilgi,
+        'iptal' => ListeTonu.hata,
+        _ => ListeTonu.uyari,
+      };
+
+  String _altBaslik() {
+    final antrenor = ders.antrenorAdi ?? 'Antrenör belirtilmedi';
+    return '$antrenor · ${ders.katilimciSayisi} katılımcı';
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final ton = tonu(ders.durum);
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap?.call();
-        },
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              // Saat ve durum
-              Container(
-                width: 56,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: ders.durumRenk.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      ders.saat,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: ders.durumRenk,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: ders.durumRenk,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 14),
-              // Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            ders.kortAdi ?? 'Kort belirtilmedi',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        // Badge dar alanda taşmasın diye küçülebilir
-                        Flexible(
-                          child: _DurumBadge(
-                              durum: ders.durum, durumText: ders.durumText),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.sports_tennis,
-                            size: 12, color: colorScheme.onSurfaceVariant),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            ders.antrenorAdi ?? 'Antrenör belirtilmedi',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.people,
-                            size: 12, color: colorScheme.onSurfaceVariant),
-                        const SizedBox(width: 4),
-                        // Sayı + isimler tek esnek metinde: yazı büyüse de Row
-                        // taşmaz, fazlası ellipsis'e düşer.
-                        Expanded(
-                          child: Text(
-                            _katilimciMetni(),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                color: colorScheme.onSurfaceVariant,
-                size: 20,
-              ),
-            ],
-          ),
+    return ListeSatiri(
+      onGorsel: _SaatBloku(saat: ders.saat, ton: ton),
+      baslik: ders.kortAdi ?? 'Kort belirtilmedi',
+      rozet: _DurumRozeti(ton: ton, etiket: ders.durumText),
+      altBaslik: _altBaslik(),
+      okGoster: onTap != null,
+      onTap: onTap,
+    );
+  }
+}
+
+/// Satırın solundaki saat bloğu — durum rengiyle zeminlenmiş.
+class _SaatBloku extends StatelessWidget {
+  final String saat;
+  final ListeTonu ton;
+
+  const _SaatBloku({required this.saat, required this.ton});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 52,
+      padding: const EdgeInsets.symmetric(vertical: Bosluk.s),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: ton.zemin(context),
+        borderRadius: BorderRadius.circular(Yaricap.m),
+      ),
+      child: Text(
+        saat,
+        maxLines: 1,
+        style: context.metin.titleSmall?.copyWith(
+          fontWeight: FontWeight.w700,
+          color: ton.on(context),
         ),
       ),
     );
   }
 }
 
-class _DurumBadge extends StatelessWidget {
-  final String durum;
-  final String durumText;
+class _DurumRozeti extends StatelessWidget {
+  final ListeTonu ton;
+  final String etiket;
 
-  const _DurumBadge({required this.durum, required this.durumText});
-
-  Color get _renk {
-    switch (durum) {
-      case 'tamamlandi':
-        return Colors.green;
-      case 'devam_ediyor':
-        return Colors.blue;
-      case 'iptal':
-        return Colors.red;
-      default:
-        return Colors.orange;
-    }
-  }
+  const _DurumRozeti({required this.ton, required this.etiket});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
       decoration: BoxDecoration(
-        color: _renk.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
+        color: ton.zemin(context),
+        borderRadius: BorderRadius.circular(Yaricap.s),
       ),
       child: Text(
-        durumText,
+        etiket,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: _renk,
-        ),
+        style: context.metin.labelSmall?.copyWith(color: ton.on(context)),
       ),
     );
   }

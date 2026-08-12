@@ -5,6 +5,7 @@ import 'package:fitcall/models/3_antrenor/ogrenci_detay_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -117,7 +118,7 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
         centerTitle: true,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const IskeletKart()
           : _hata != null
               ? _hataGorunumu(colorScheme)
               : RefreshIndicator(

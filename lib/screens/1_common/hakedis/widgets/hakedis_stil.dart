@@ -11,6 +11,7 @@
 // temada ise açılır.
 
 import 'package:fitcall/models/1_common/hakedis_models.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 
 /* -------------------------------------------------------------------------- */
@@ -259,7 +260,7 @@ class HakedisDurumGovdesi extends StatelessWidget {
     final renk = Theme.of(context).colorScheme;
 
     if (yukleniyor) {
-      return const Center(child: CircularProgressIndicator());
+      return const IskeletListe();
     }
 
     if (hata != null) {

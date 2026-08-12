@@ -5,6 +5,7 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/takvim_constants.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -160,9 +161,7 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
       backgroundColor: _bgGray,
       body: SafeArea(
         child: _loading
-            ? Center(
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: context.takvim.primary))
+            ? const IskeletKart(seritKutusu: 0)
             : _hata != null
                 ? _buildHataView(_hata!)
                 : _buildContent(),

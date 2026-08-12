@@ -6,6 +6,7 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
@@ -236,7 +237,7 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
     if (_loading) {
       return const SizedBox(
         height: 200,
-        child: Center(child: CircularProgressIndicator()),
+        child: IskeletListe(satirSayisi: 3, kaydirilabilir: false),
       );
     }
 

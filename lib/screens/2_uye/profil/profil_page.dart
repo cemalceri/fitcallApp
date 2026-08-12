@@ -8,6 +8,7 @@ import 'package:fitcall/screens/2_uye/profil/widgets/profile_header.dart';
 import 'package:fitcall/screens/2_uye/profil/widgets/quick_info_section.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -47,7 +48,7 @@ class ProfilePage extends StatelessWidget {
                   ],
                 ),
               ),
-              child: const Center(child: CircularProgressIndicator()),
+              child: const IskeletKart(),
             ),
           );
         } else if (snapshot.hasError) {

@@ -2,6 +2,8 @@
 
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
@@ -337,17 +339,8 @@ class _NotificationPageState extends State<NotificationPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: context.bildirimRenk.yaziAna,
-            ),
-          ),
-        ),
+        // Diğer liste ekranlarıyla aynı grup başlığı kalıbı.
+        ListeGrupBasligi(baslik: title, sayi: items.length),
         ...items.map(
           (n) => Dismissible(
             key: ValueKey('bildirim_${n.id}'),
@@ -421,14 +414,7 @@ class _NotificationPageState extends State<NotificationPage> {
     await _router.route(context, notif);
   }
 
-  Widget _buildLoadingState() {
-    return Center(
-      child: CircularProgressIndicator(
-        strokeWidth: 2,
-        color: context.bildirimRenk.yaziIkincil,
-      ),
-    );
-  }
+  Widget _buildLoadingState() => const IskeletListe();
 
   Widget _buildEmptyState() {
     return Center(

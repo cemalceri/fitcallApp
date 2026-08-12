@@ -2,6 +2,7 @@
 
 import 'package:fitcall/models/2_uye/basit_uye_model.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -155,7 +156,7 @@ class _PlanDisiUyeSecimSheetState extends State<PlanDisiUyeSecimSheet> {
 
   Widget _buildListContent() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const IskeletListe();
     }
     if (_error != null) {
       return Center(

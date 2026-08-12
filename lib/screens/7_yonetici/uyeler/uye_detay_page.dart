@@ -1,5 +1,6 @@
 // lib/screens/7_yonetici/uyeler/uye_detay_page.dart
 
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/models/9_yonetici/uye_detay_models.dart';
@@ -136,7 +137,7 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
 
   Widget _buildContent() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const IskeletKart();
     }
 
     if (_errorMessage != null) {

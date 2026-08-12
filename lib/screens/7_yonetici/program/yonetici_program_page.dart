@@ -11,6 +11,7 @@ import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/yonetici/yonetici_etkinlik_service.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -284,7 +285,7 @@ class _YoneticiProgramPageState extends State<YoneticiProgramPage> {
   /// Yükleniyor / hata durumları (dolu durum ProgramGorunumu'nda)
   Widget _durumGovdesi() {
     if (_yukleniyor) {
-      return const Center(child: CircularProgressIndicator());
+      return const IskeletTakvim();
     }
 
     if (_hata != null) {
