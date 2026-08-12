@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `main`, `pubspec` sürümü **3.8.0+40** — tasarım sistemi + koyu tema turu içeride |
-| Testler | `flutter test` **755 geçiyor**, `flutter analyze` temiz |
+| Testler | `flutter test` **768 geçiyor**, `flutter analyze` temiz |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
 | Mağaza | Son yayınlanan sürüm **3.6.0**; 3.7.0 build'i Codemagic'te alınacak |
 
@@ -366,7 +366,7 @@ Kullanıcı testi sonrası tespit edilen hata/düzeltmeler.
 
 | Tarih | Ekran/Özellik | Sorun | Durum |
 |-------|---------------|-------|-------|
-| — | — | — | — |
+| 2026-08-12 | Üye + antrenör takvimi, liste (ajanda) görünümü | Üstteki hafta şeridinden hangi güne basılırsa basılsın liste değişmiyor, birden fazla günün dersi görünüyordu (ajanda haftanın tamamını besliyor, `secilenGun`'u kullanmıyordu). | ✅ Liste haftalık kaldı ama seçili günün başlığına kayıyor; başlık vurgulanıyor, o günde ders yoksa "ders yok" satırı çıkıyor. Yan fayda: yapışkan başlıklar `SliverMainAxisGroup` ile artık tepede yığılmıyor. `test/takvim_ajanda_test.dart` |
 
 ---
 

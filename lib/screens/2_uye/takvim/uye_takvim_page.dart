@@ -289,6 +289,7 @@ class _DersListesiPageState extends State<DersListesiPage>
                     child: _ajandaGorunumu
                         ? TakvimAjanda(
                             dersler: _haftaDersleri,
+                            secilenGun: _selectedDay,
                             onLessonTap: _onLessonTap,
                           )
                         : TakvimZamanCizelgesi(

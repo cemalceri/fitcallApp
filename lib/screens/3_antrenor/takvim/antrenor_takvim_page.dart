@@ -356,6 +356,7 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
                 : _ajandaGorunumu
                     ? TakvimAjanda(
                         dersler: _haftaDersleri(),
+                        secilenGun: _selectedDay,
                         onLessonTap: _onLessonTap,
                         onLessonLongPress: _dersMenusu,
                       )

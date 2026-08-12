@@ -709,6 +709,20 @@ void main() {
       () => TakvimAjanda(dersler: const [], onLessonTap: (_) {}),
     );
 
+    // Seçili günde ders yoksa başlık + "ders yok" satırı çizilir.
+    tasmaTesti('TakvimAjanda (seçili gün boş)', () {
+      return TakvimAjanda(
+        dersler: [
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T15:30:00+03:00'),
+        ],
+        secilenGun: DateTime(2026, 7, 24),
+        onLessonTap: (_) {},
+        durumEtiketi: (_) => 'Onay bekliyor',
+      );
+    });
+
     tasmaTesti('UyeOzetSerit', () {
       return UyeOzetSerit(
         ozet: UyeOzetModel.fromJson(const {
