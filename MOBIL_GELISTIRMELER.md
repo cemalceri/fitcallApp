@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `main`, `pubspec` sürümü **3.8.0+40** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
-| Testler | `flutter test` **939 geçiyor**, `flutter analyze` temiz |
+| Testler | `flutter test` **942 geçiyor**, `flutter analyze` temiz |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
 | Mağaza | Son yayınlanan sürüm **3.6.0**; 3.7.0 build'i Codemagic'te alınacak |
 
@@ -436,6 +436,17 @@ Kullanıcı testi sonrası tespit edilen hata/düzeltmeler.
 ---
 
 ## 🗄️ Arşiv — çözülmüş kritik bug'lar
+
+**Kilitli derste "Ders Yapılmadı" yanlış görünüyor (2026-08-15 çözüldü).**
+Antrenör, yönetici onaylı bir dersi açtığında kırmızı "Ders Yapılmadı" + kilit notu görüyordu;
+oysa ne antrenör ne yönetici böyle bir şey işaretlemişti. `EtkinlikOnayModel`'de yönetici ve
+antrenör **ayrı satırlar**; yönetici onayı antrenör satırını yazmaz. `getDersKatilimlari` yanıtı
+başlığı antrenör satırından (`antrenor_onayi`), kilidi yönetici satırından (`kilitli_mi`) besliyor;
+dialog `ao?.tamamlandi == true` yazdığı için **satır yok (null)** hali `false` ile aynı kovaya
+düşüyordu. Prod'da 3.960 ders bu durumdaydı. Düzeltme mobil tarafta: üç durum ayrıldı
+(`yoklamaDurumu` — yapıldı / yapılmadı / **yoklama alınmadı**), backend değişmedi. Takvim bloğu ve
+üye geçmiş listesi zaten üç durumu ayırıyordu. Kural: `bool?` onay alanlarında **null'ı asla
+`== true`/`?? false` ile ikiye indirme** — kayıt yokluğu bir karar değildir.
 
 **Takvimde hiç ders gelmiyor / "Dersler yüklenirken timeout" (2026-07-28 çözüldü).**
 Uzun süre `TenantManager` filtresi ve backend commit `9d8f554` suçlandı — **ikisi de yanlıştı**

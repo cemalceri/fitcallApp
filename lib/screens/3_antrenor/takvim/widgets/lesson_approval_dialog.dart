@@ -17,6 +17,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
 
+/// Kilitli derste antrenörün gördüğü yoklama durumu.
+///
+/// Üç hal var, ikisi değil: yönetici onayı antrenör onay satırını yazmıyor,
+/// dolayısıyla satırın hiç olmaması "ders yapılmadı" DEĞİL, "antrenör yoklama
+/// almadı" demek. İkisini aynı kovaya koymak antrenöre vermediği kararı
+/// göstermek olur.
+@visibleForTesting
+enum YoklamaDurumu { yapildi, yapilmadi, alinmadi }
+
+@visibleForTesting
+YoklamaDurumu yoklamaDurumu(bool? tamamlandi) => switch (tamamlandi) {
+      true => YoklamaDurumu.yapildi,
+      false => YoklamaDurumu.yapilmadi,
+      null => YoklamaDurumu.alinmadi,
+    };
+
 class LessonApprovalDialog extends StatefulWidget {
   final EtkinlikModel ders;
   final int userId;
@@ -195,9 +211,25 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
 
   Widget _buildKilitliView() {
     final ao = _katilimData?.antrenorOnayi;
-    final isYapildi = ao?.tamamlandi == true;
-    final color =
-        isYapildi ? context.takvim.completed : context.takvim.cancelled;
+    final durum = yoklamaDurumu(ao?.tamamlandi);
+    final (color, ikon, baslik) = switch (durum) {
+      YoklamaDurumu.yapildi => (
+          context.takvim.completed,
+          Icons.check_circle_rounded,
+          'Ders Yapıldı',
+        ),
+      YoklamaDurumu.yapilmadi => (
+          context.takvim.notDone,
+          Icons.cancel_rounded,
+          'Ders Yapılmadı',
+        ),
+      // Takvim bloğu da bu dersi "bekliyor" rengiyle çiziyor; aynı ton.
+      YoklamaDurumu.alinmadi => (
+          context.takvim.pending,
+          Icons.help_outline_rounded,
+          'Yoklama Alınmadı',
+        ),
+    };
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -225,13 +257,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                           color: color.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(
-                          isYapildi
-                              ? Icons.check_circle_rounded
-                              : Icons.cancel_rounded,
-                          color: color,
-                          size: 24,
-                        ),
+                        child: Icon(ikon, color: color, size: 24),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -239,18 +265,27 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              isYapildi ? 'Ders Yapıldı' : 'Ders Yapılmadı',
+                              baslik,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: color,
                               ),
                             ),
-                            if (ao?.onayRedIptalNedeni != null) ...[
+                            if (durum == YoklamaDurumu.alinmadi) ...[
                               const SizedBox(height: 4),
                               Text(
-                                _getNedenLabel(
-                                    ao!.onayRedIptalNedeni, isYapildi),
+                                'Bu derse yoklama girmemişsiniz',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: context.takvim.textSecondary,
+                                ),
+                              ),
+                            ] else if (ao?.onayRedIptalNedeni != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                _getNedenLabel(ao!.onayRedIptalNedeni,
+                                    durum == YoklamaDurumu.yapildi),
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: context.takvim.textSecondary,
@@ -309,7 +344,9 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Yönetici onayı verildiği için bu ders kilitlenmiştir. Değişiklik için yöneticinizle iletişime geçin.',
+                          durum == YoklamaDurumu.alinmadi
+                              ? 'Siz yoklama girmeden yönetici bu dersi sonuçlandırdığı için kayıt kilitlenmiştir. Değişiklik için yöneticinizle iletişime geçin.'
+                              : 'Yönetici onayı verildiği için bu ders kilitlenmiştir. Değişiklik için yöneticinizle iletişime geçin.',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.blue.shade700,
