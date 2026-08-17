@@ -273,7 +273,9 @@ Future<String> _bildirimIzni() async {
           return "gecici";
       }
     }
-    return _izinOku(Permission.notification);
+    // await şart: try içinde await'siz dönülen future'ın hatasını buradaki
+    // catch yakalamaz.
+    return await _izinOku(Permission.notification);
   } catch (e) {
     return "bilinmiyor";
   }
