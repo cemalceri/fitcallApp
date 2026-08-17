@@ -102,36 +102,42 @@ ayarlarına elle eklemek gerekir. Webhook yoksa tag push'u build tetiklemez.
   `internal` yapıp, App Store tarafında `submit_to_app_store: false` ile
   deneyip, her şey yolundaysa `production` / `true` yapmak mantıklı.
 
-## Bilinen kırılma noktası: Flutter stable ↔ AGP
+## Bilinen kırılma noktası: Flutter stable ↔ Android araç zinciri
 
 `codemagic.yaml` `flutter: stable` kullanıyor, yani Flutter sürümü **build
-sırasında** belirleniyor ve zamanla ilerliyor. Flutter'ın gradle eklentisi
-desteklediği **en düşük Android Gradle Plugin (AGP)** sürümünü zorluyor; stable
-ilerlediğinde bu alt sınır yükselebiliyor ve projedeki AGP eski kaldığı için
-build `bundleRelease` adımında kırılıyor:
+sırasında** belirleniyor ve zamanla ilerliyor. Flutter'ın gradle eklentisi her
+build'in başında dört bağımlılığı doğruluyor — **Gradle, JDK, AGP ve Kotlin
+(KGP)** — ve alt sınırın altında kalan ilkinde `bundleRelease` adımını kırıyor:
 
 ```
 Error: Your project's Android Gradle Plugin version (8.9.1) is lower than
 Flutter's minimum supported version of Android Gradle Plugin version 8.11.1.
+
+Error: Your project's Kotlin version (2.1.21) is lower than Flutter's
+minimum supported version of 2.2.20.
 ```
 
-Bu hata **lokalde görünmez** — geliştirme makinesindeki Flutter daha eskiyse o
-kontrolü hiç yapmaz. (2026-08-17'de 3.8.0 yayını böyle kırıldı.)
+Bu hatalar **lokalde görünmez** — geliştirme makinesindeki Flutter daha eskiyse
+o kontrolleri hiç yapmaz. Doğrulama **tek tek** kırıldığı için arka arkaya build
+kaybedilebilir: önce AGP kırar, düzeltilince sıra Kotlin'e gelir. (2026-08-17'de
+3.8.0 yayınında ikisi de yaşandı.)
 
-**Çözüm:** `android/settings.gradle` içindeki `com.android.application`
-sürümünü hatanın istediği değere çıkar, sonra iki uyumu doğrula:
+**Çözüm:** hatanın istediği sürümü `android/settings.gradle`'ın `plugins`
+bloğunda yükselt, sonra dördünü birden gözden geçir:
 
-| Bağımlılık | Nerede | Kural |
+| Bağımlılık | Nerede | 2026-08 değeri |
 |---|---|---|
-| Gradle wrapper | `android/gradle/wrapper/gradle-wrapper.properties` | AGP 8.11–8.13 için en az Gradle **8.13** (bizde 8.14.1) |
-| JDK | `codemagic.yaml` → `java: 17` | AGP 8.11+ için en az 17 |
+| AGP (`com.android.application`) | `android/settings.gradle` | 8.11.1 |
+| Kotlin (`org.jetbrains.kotlin.android`) | `android/settings.gradle` | 2.2.20 |
+| Gradle wrapper | `android/gradle/wrapper/gradle-wrapper.properties` | 8.14.1 (AGP 8.11–8.13 en az 8.13 istiyor) |
+| JDK | `codemagic.yaml` → `java: 17` | 17 (AGP 8.11+ için en az 17) |
 
 **AGP 9'a geçmeyin.** Flutter'ın kendi uyarısı da bunu söylüyor: AGP 9 yalnız
 yeni DSL'i okuyor ve Flutter gradle eklentisi `app/build.gradle`'a
-uygulanırken kırılıyor.
+uygulanırken kırılıyor. "AGP 9.0.1'e çıkın" satırı uyarıdır, build'i durdurmaz.
 
 Bu tekrar yaşanmasın isteniyorsa `flutter: stable` yerine son başarılı build'in
-sürümü (`flutter: 3.x.y`) sabitlenmeli — o zaman AGP alt sınırı da sabit kalır.
+sürümü (`flutter: 3.x.y`) sabitlenmeli — o zaman alt sınırlar da sabit kalır.
 
 ## Hâlâ elle yapılması gerekenler
 
