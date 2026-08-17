@@ -8,19 +8,19 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-08-12)
+## 📌 Şu anki durum (2026-08-17)
 
 | | |
 |---|---|
 | Mobil | `main`, `pubspec` sürümü **3.8.0+40** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
 | Testler | `flutter test` **942 geçiyor**, `flutter analyze` temiz |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
-| Mağaza | Son yayınlanan sürüm **3.6.0**; 3.7.0 build'i Codemagic'te alınacak |
+| Mağaza | 3.7.0 tag'lendi ve mağazalara gönderildi; **3.8.0** `v3.8.0` tag'iyle Codemagic'e verildi, inceleme bekleniyor |
 
-**Sıradaki adım — 3.7.0 yayını.** Mobil hakediş ekranı backend uçları olmadan çalışmaz
-("Beklenmeyen bir hata oluştu" + boş antrenör listesi = uçlar canlıda yok demektir), o yüzden sıra şu:
-1. `git push heroku master` (migration `0080`/`0081` dahil) — deploy kullanıcının işi
-2. Codemagic build'i (`version:` zaten 3.7.0), mağaza metni `SURUM_NOTLARI.md`'de hazır
+**3.8.0 yayını.** `v3.8.0` tag'i push edildi → Codemagic `yayin` workflow'u Play "production" ve
+App Store incelemesine yüklüyor. Mağaza metni `SURUM_NOTLARI.md`'de, son kullanıcı özeti
+`Binay_Akademi_3.8.0_Yenilikler.pdf`'te. Sonraki sürümde yapılacak tek elle iş yine
+`pubspec.yaml`'daki `version:` bump'ı + tag.
 
 Codemagic sürüm adını `pubspec.yaml`'daki `version:` alanından, build numarasını mağazadaki
 son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `version:` bump'lanır**.

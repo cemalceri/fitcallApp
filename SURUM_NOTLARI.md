@@ -8,7 +8,7 @@
 > gizlilik metni de istiyor — çıkmak istemediğimiz bir bakım yükü.
 > (3.6.0 ve öncesindeki en-US bölümleri tarihsel kayıt olarak duruyor.)
 
-## 3.8.0 — 2026-08-11
+## 3.8.0 — 2026-08-17
 
 ### Mağaza metni (tr-TR)
 
@@ -24,11 +24,22 @@ Uygulama baştan aşağı yenilendi: koyu tema geldi, kulüp renklerine geçildi
   olduğunuz görünüyor.
 - **Takvim:** Hafta değiştirmek için şeridi yana kaydırmak yeterli. Yeni **Ajanda** görünümü
   derslerinizi gün başlıklarıyla liste hâlinde gösteriyor; ızgara görünümüne tek dokunuşla
-  dönülüyor.
+  dönülüyor. Şeritten bir güne dokununca liste o güne kayıyor, o gün ders yoksa bunu yazıyor.
+- **Yeni liste tasarımı:** Üye, öğrenci, ders, geçmiş ders ve hesap hareketi listeleri kart yığını
+  yerine düz satıra geçti — aynı ekranda yaklaşık %60 daha fazla kayıt görünüyor. Grup başlıkları
+  (Borçlu/Güncel, aylar) kaydırırken tepede kalıyor, satırı yana kaydırınca Ara/WhatsApp gibi
+  işlemler çıkıyor.
+- **Yükleme göstergesi:** Dönen çark yerine gelecek içeriğin taslağı beliriyor; kısa yüklemelerde
+  hiç gösterilmiyor, aşağı çekip yenilerken mevcut liste ekranda kalıyor.
 - **Ders işlemleri:** Antrenörde onay, iptal, devir ve detay ekranları alttan açılıyor — tek elle
-  ulaşılabiliyor. Ders kutusuna uzun basınca kısayol menüsü çıkıyor.
-- **Yardım & SSS:** Arama kutusu eklendi; antrenör tarafında bölüm filtreleri var.
+  ulaşılabiliyor. Ders kutusuna uzun basınca kısayol menüsü çıkıyor, ders onay ekranı yenilendi.
+  Kilitli derste "yapıldı / yapılmadı / yoklama alınmadı" ayrı ayrı gösteriliyor.
+- **Yardım & SSS:** Arama kutusu eklendi. Antrenöre özel, 10 bölüm 50 soruluk yeni bir yardım
+  sayfası var; bölüm filtreleriyle taranıyor.
 - **Bildirimler:** Bildirimi yana kaydırarak silebiliyorsunuz, yanlışlıkla sildiyseniz "Geri al".
+  Liste sadeleşti, okunmamış işareti belirginleşti. Oturum açıkken **üç günden eski** teyit
+  bildiriminden de derse katılım bildirilebiliyor; süresi geçen durumlar teknik hata metni yerine
+  ne yapılacağını anlatan bir ekranla karşılanıyor.
 - **Giriş ekranı** sadeleşti ve şifre yöneticileri artık kullanıcı adı/şifreyi doldurabiliyor.
 - **Profil** sayfaları kısaldı, bilgiye kaydırmadan ulaşılıyor.
 
@@ -58,8 +69,31 @@ Uygulama baştan aşağı yenilendi: koyu tema geldi, kulüp renklerine geçildi
   `lib/screens/1_common/hesap/` altında ortaklaştı).
 - **Erişilebilirlik:** giriş formunda `AutofillGroup` + autofill hints, yeni bileşenlerde
   `Semantics`, ikon-only 40 `IconButton`'a tooltip.
+- **Ortak liste kalıbı:** `lib/screens/1_common/widgets/liste_satiri.dart` — `ListeSatiri`,
+  `ListeAvatari`, `ListeAyraci`, `ListeGrupBasligi` (+ yapışkan sliver delegate), `ListeTonu` ve
+  `ListeEylemi`. Kaydırma `Dismissible` değil tek sürükleme denetleyicisi: satır listeden atılmıyor,
+  yerinde kalıp eylem şeridini açıyor; aynı eylemler uzun basınca alt sayfada (kaydırma jesti ekran
+  okuyucuyla kullanılamıyor). Yönetici üyeler/borçlular/dersler/antrenörler, antrenör öğrencilerim,
+  üye geçmiş dersler ve hesap hareketleri bu kalıba geçti; `uye_liste_item.dart` ve `_StudentCard`
+  silindi.
+- **İskelet yükleme:** `lib/screens/1_common/widgets/iskelet.dart` (`Parilti` ShaderMask ile, harici
+  paket yok) + `IskeletListe/Kart/Takvim/Dashboard`. 300 ms'den kısa yüklemede gösterilmiyor,
+  aşağı çekip yenilemede çıkmıyor. Sayfa/bölüm seviyesinde `CircularProgressIndicator` kalmadı;
+  kalan 36 kullanım buton içi / auth-rota / belirlenimli görsel ilerlemesi.
+- **Ajanda seçili gün:** `TakvimAjanda.secilenGun` — sliver'lar görüş alanı dışında layout
+  edilmediğinden `ensureVisible` çalışmıyor, kaydırma hedefi sabit satır yüksekliğiyle hesaplanıyor;
+  gün başlıkları `SliverMainAxisGroup` altında (pinned başlıklar üst üste yığılmıyordu).
+- **Teyit uç seçimi:** oturum açıkken teyit auth'lu `setDersTeyit` ucundan gidiyor; login'siz token
+  ucu (72 saatlik pencere) yalnız oturum yokken yedek. Okundu işareti de aynı şekilde auth'lu uca
+  alındı — eski bildirim açılışları sunucuda 410 + WARNING üretiyordu (30 günlük log'un %22'si).
+- **Simge rozeti (Android):** `app_badge_plus` MIUI/HyperOS'ta rozeti N yapmak için **N adet sahte
+  bildirim** gönderiyor (okunmamışı 15 olan cihazda bildirim gölgesine 15 satır düştü). Android'de
+  plugin'e artık yalnız `0` yazılıyor; pozitif sayıyı gerçek bildirimin `number` alanı taşıyor.
+  iOS etkilenmiyor (APNs payload'ı).
+- **İzin durumu telemetrisi:** cihaz kaydına `bildirim_izni` / `kamera_izni` / `takvim_izni`
+  ekleniyor (`izinDurumlari()`; yalnız sorgular, izin istemez). Backend `auths` migration `0009`.
 - **Testler:** taşma matrisi uygulamanın gerçek temasıyla koşuyor ve her bileşen için bir de koyu
-  tema koşusu yapıyor; toplam **755 test** geçiyor, `flutter analyze` temiz.
+  tema koşusu yapıyor; toplam **942 test** geçiyor, `flutter analyze` temiz.
 
 ## 3.7.0 — 2026-08-08
 
