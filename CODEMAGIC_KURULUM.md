@@ -102,6 +102,37 @@ ayarlarına elle eklemek gerekir. Webhook yoksa tag push'u build tetiklemez.
   `internal` yapıp, App Store tarafında `submit_to_app_store: false` ile
   deneyip, her şey yolundaysa `production` / `true` yapmak mantıklı.
 
+## Bilinen kırılma noktası: Flutter stable ↔ AGP
+
+`codemagic.yaml` `flutter: stable` kullanıyor, yani Flutter sürümü **build
+sırasında** belirleniyor ve zamanla ilerliyor. Flutter'ın gradle eklentisi
+desteklediği **en düşük Android Gradle Plugin (AGP)** sürümünü zorluyor; stable
+ilerlediğinde bu alt sınır yükselebiliyor ve projedeki AGP eski kaldığı için
+build `bundleRelease` adımında kırılıyor:
+
+```
+Error: Your project's Android Gradle Plugin version (8.9.1) is lower than
+Flutter's minimum supported version of Android Gradle Plugin version 8.11.1.
+```
+
+Bu hata **lokalde görünmez** — geliştirme makinesindeki Flutter daha eskiyse o
+kontrolü hiç yapmaz. (2026-08-17'de 3.8.0 yayını böyle kırıldı.)
+
+**Çözüm:** `android/settings.gradle` içindeki `com.android.application`
+sürümünü hatanın istediği değere çıkar, sonra iki uyumu doğrula:
+
+| Bağımlılık | Nerede | Kural |
+|---|---|---|
+| Gradle wrapper | `android/gradle/wrapper/gradle-wrapper.properties` | AGP 8.11–8.13 için en az Gradle **8.13** (bizde 8.14.1) |
+| JDK | `codemagic.yaml` → `java: 17` | AGP 8.11+ için en az 17 |
+
+**AGP 9'a geçmeyin.** Flutter'ın kendi uyarısı da bunu söylüyor: AGP 9 yalnız
+yeni DSL'i okuyor ve Flutter gradle eklentisi `app/build.gradle`'a
+uygulanırken kırılıyor.
+
+Bu tekrar yaşanmasın isteniyorsa `flutter: stable` yerine son başarılı build'in
+sürümü (`flutter: 3.x.y`) sabitlenmeli — o zaman AGP alt sınırı da sabit kalır.
+
 ## Hâlâ elle yapılması gerekenler
 
 - Ekran görüntüsü, açıklama, kategori, gizlilik bilgileri değişecekse mağaza
