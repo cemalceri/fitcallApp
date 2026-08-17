@@ -141,6 +141,11 @@ sürümü (`flutter: 3.x.y`) sabitlenmeli — o zaman alt sınırlar da sabit ka
 
 ## Hâlâ elle yapılması gerekenler
 
+- **Yayından sonra `mobil_uygulama_konfig`** (Django admin → Mobil Uygulama
+  Konfigurasyonlari): `onerilen` ve `en_son` yeni sürüme çekilir. Bu tablo
+  uygulama içindeki güncelleme uyarısını sürüyor — güncellenmezse eski sürümdeki
+  kullanıcıya uygulama "yeni sürüm var" demez (mağazadan elle güncelleme yine
+  çalışır). Kayıtları **kullanıcı yönetiyor**, prod DB'ye yazılmaz.
 - Ekran görüntüsü, açıklama, kategori, gizlilik bilgileri değişecekse mağaza
   konsolları.
 - Apple/Google inceleme reddi gelirse cevaplamak.
