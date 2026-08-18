@@ -8,6 +8,38 @@
 > gizlilik metni de istiyor — çıkmak istemediğimiz bir bakım yükü.
 > (3.6.0 ve öncesindeki en-US bölümleri tarihsel kayıt olarak duruyor.)
 
+## 3.8.1 — 2026-08-18
+
+### Mağaza metni (tr-TR)
+
+App Store'da yayındaki sürüm 3.7.0'da kaldığı için metin 3.8.0 + 3.8.1'i birlikte özetliyor;
+`release_notes.json`'da `tr` ve `tr-TR` girdileri **aynı** (Play sınırı 500 karakter, metin 420).
+
+- Koyu tema eklendi; Ayarlar'dan Sistem, Açık veya Koyu seçilebiliyor.
+- Takvime liste (Ajanda) görünümü eklendi.
+- Kayıt ol ve şifremi unuttum ekranları yenilendi, uygulama içinde açılıyor.
+- Yeni Ayarlar sayfası: tema, bildirim, şifre ve hesap işlemleri tek yerde.
+- Arayüz kulüp renklerine geçti, alt menü sabitlendi.
+- Listeler sadeleşti, aynı ekranda daha fazla kayıt görünüyor.
+- Çeşitli hata düzeltmeleri yapıldı.
+
+Ayrıntılı 3.8.0 metni aşağıdaki 3.8.0 bölümünde duruyor; mağazaya kısa hâli gidiyor.
+
+### Teknik
+
+- **Kayıt/şifre sıfırlama native:** `RegisterPage` ve `ForgotPasswordPage` web view'dan çıkarıldı;
+  yeni uçlar `kayitFormVerileri`, `uyeBasvuru`, `sifremiUnuttum`, `sifreSifirlamaGonder`
+  ([api_urls.dart](lib/common/api_urls.dart)) — backend `master`'da canlıda. `MaterialApp`'e tr-TR
+  yerelleştirme delegeleri eklendi.
+- **Takvim açılmama hatası:** uygulama genelindeki yazı ölçeği clamp'i ile Material tarih
+  seçicisinin kendi clamp'i çakışıp `maxScale > minScale` hatası veriyordu. Hazır `TextScaler.clamp`
+  yerine aynı işi yapan kendi ölçekleyicimiz yazıldı ([ui_scale.dart](lib/common/ui_scale.dart));
+  sihirbaz testi gerçek `MaterialApp.builder` kurulumuyla eşitlendi, 0.85/1.0 cihaz ölçeklerinde
+  takvimin açıldığı iki test eklendi.
+- **Release notes akışı:** `release_notes.json` bu sürümden itibaren her yayında yeniden yazılıyor.
+  Codemagic dosyayı repo kökünde kendisi buluyor (yaml'da referansı yok); 3.7.0 ve 3.8.0'da dosya
+  güncellenmediği için mağazalara kurulumdan kalma jenerik metin gitmişti.
+
 ## 3.8.0 — 2026-08-17
 
 ### Mağaza metni (tr-TR)

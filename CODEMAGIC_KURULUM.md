@@ -75,8 +75,21 @@ ayarlarına elle eklemek gerekir. Webhook yoksa tag push'u build tetiklemez.
 1. `pubspec.yaml` içindeki `version:` satırında **sadece sürüm adını** güncelle
    (örn. `3.5.0+36` → `3.6.0+36`). Build numarası artık önemsiz; Codemagic her
    iki mağazadaki en yüksek değeri okuyup +1 veriyor.
-2. `release_notes.txt` dosyasına bu sürümün notlarını yaz.
-   > Apple `<` ve `>` karakterlerini kabul etmiyor.
+2. **`release_notes.json` dosyasını bu sürüm için baştan yaz.** Codemagic bu
+   dosyayı repo kökünde kendisi arar — `codemagic.yaml`'da referansı yoktur, yani
+   dosya güncellenmezse mağazalara **bir önceki sürümün metni** gider. Kural:
+   her yayında son kullanıcıyı ilgilendiren **yenilikler + hata düzeltmeleri**
+   yeniden yazılır, hiçbir sürüm eski metinle çıkmaz.
+   - `tr-TR` girdisi → Google Play "Yenilikler". **Sınır 500 karakter.** Play'de
+     yayında olan sürümden bu yana gelenler yazılır.
+   - `tr` girdisi → App Store Connect (TestFlight "What to Test" + inceleme
+     gönderiminde "What's New"). Sınır 4000 karakter. App Store'da yayında olan
+     sürüm Play'dekinden geride kalabiliyor; o zaman bu metin **daha eski bir
+     sürümden bu yana** gelen her şeyi kapsar (3.8.1'de olduğu gibi).
+   - Apple `<` ve `>` karakterlerini kabul etmiyor (API `409` döner). Metinde
+     "Ayarlar > Tema" gibi bir yol yazılacaksa düz cümleye çevir.
+   - Uzun anlatım ve teknik özet `SURUM_NOTLARI.md`'ye yazılır; bu dosya sadece
+     mağaza metnidir.
 3. Commit + push.
 4. Tag at:
    ```bash
@@ -89,10 +102,10 @@ ayarlarına elle eklemek gerekir. Webhook yoksa tag push'u build tetiklemez.
 
 ## İlk çalıştırmada kontrol edilecekler
 
-- **Release notes dili:** Düz `release_notes.txt`, Google Play'e `en-US` olarak
-  gönderiliyor. Play mağaza kaydında `en-US` yerelleştirmesi yoksa hata verir;
-  bu durumda dosyayı `release_notes_tr-TR.txt` yap ya da `release_notes.json`
-  ile çok dilli tanımla.
+- **Release notes dili:** `release_notes.json` kullanılıyor; Codemagic sadece
+  ilgili mağazanın tanıdığı dil kodunu alır, tanımadığını atlar. Play `tr-TR`,
+  App Store Connect `tr` bekler — bu yüzden dosyada iki girdi var ve ikisi aynı
+  metin olmak zorunda değildir.
 - **Android versionCode:** Build log'unda "Android: 3.6.0+37" satırının doğru
   olduğunu doğrula.
 - **Flutter sürümü:** `flutter: stable` kullanılıyor. Flutter'ın yeni bir

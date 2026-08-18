@@ -12,21 +12,22 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 | | |
 |---|---|
-| Mobil | `main`, `pubspec` sürümü **3.8.0+40** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
+| Mobil | `main`, `pubspec` sürümü **3.8.1+41** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
 | Testler | `flutter test` **1009 geçiyor**, `flutter analyze` temiz; backend süiti **610 geçiyor** |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
-| Mağaza | 3.7.0 tag'lendi ve mağazalara gönderildi; **3.8.0** `v3.8.0` tag'iyle Codemagic'e verildi, inceleme bekleniyor |
+| Mağaza | Play'de **3.8.0** yayında; App Store'da 3.8.0 gönderimi iptal edildi, yayındaki sürüm **3.7.0**. **3.8.1** `v3.8.1` tag'iyle gönderildi |
 
-**Yayınlanmayı bekleyen:** aşağıdaki "Kayıt ve şifremi unuttum native oldu (2026-08-18)" ve
-"Test turu düzeltmeleri (2026-08-17)" turları `main`'de duruyor; sürüm **bump'lanmadı**, mağazaya
-gönderilmedi (kullanıcı kararı). İkisi de backend'i değiştiriyor — yayın sırası **önce backend
-deploy, sonra Codemagic**. Kayıt/şifre ekranları yeni uçlara bağlı olduğu için backend canlıya
-çıkmadan mobil sürüm gönderilemez.
+**3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
+olduğu uçlar (`kayitFormVerileri`, `uyeBasvuru`, `sifremiUnuttum`, `sifreSifirlamaGonder`) canlıda
+doğrulandı, yayın sırası **önce backend deploy, sonra Codemagic** kuralına uyuldu. `v3.8.1` tag'i
+push edildi → Codemagic `yayin` workflow'u Play "production" ve App Store incelemesine yüklüyor.
 
-**3.8.0 yayını.** `v3.8.0` tag'i push edildi → Codemagic `yayin` workflow'u Play "production" ve
-App Store incelemesine yüklüyor. Mağaza metni `SURUM_NOTLARI.md`'de, son kullanıcı özeti
-`Binay_Akademi_3.8.0_Yenilikler.pdf`'te. Sonraki sürümde yapılacak tek elle iş yine
-`pubspec.yaml`'daki `version:` bump'ı + tag.
+**Sürüm başına elle yapılacak iş:** `pubspec.yaml`'daki `version:` bump'ı + **`release_notes.json`'ı
+o sürüm için yeniden yazmak** + tag. Release notes dosyası güncellenmezse mağazaya bir önceki metin
+gider — 3.7.0 ve 3.8.0'da olan buydu. Metin **kısa madde listesi** olarak yazılıyor ve `tr-TR`
+(Play) ile `tr` (App Store) girdilerine aynı şekilde konuyor; Play sınırı 500 karakter, uzun
+anlatım `SURUM_NOTLARI.md`'de kalıyor. Yayın sonrası
+`mobil_uygulama_konfig` adımı aşağıdaki listede.
 
 Codemagic sürüm adını `pubspec.yaml`'daki `version:` alanından, build numarasını mağazadaki
 son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `version:` bump'lanır**.

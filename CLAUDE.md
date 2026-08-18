@@ -13,7 +13,7 @@ Read by need, not all at once — only `CLAUDE.md` is loaded automatically.
 | File | Read it when |
 |---|---|
 | [MOBIL_GELISTIRMELER.md](MOBIL_GELISTIRMELER.md) | **Start of any feature or planning session.** The single status doc: current state (version, test count, what's deployed), open items, the next-phase backlog, and an archive of solved critical bugs. Update it when a round of work lands or an item is closed — do not create a second "pending work" file. |
-| [SURUM_NOTLARI.md](SURUM_NOTLARI.md) | Cutting a release. Store "what's new" text (**tr-TR only** — an en-US listing would oblige us to supply English screenshots and metadata to Apple) plus a technical summary, newest first. Add a section whenever `version:` in `pubspec.yaml` is bumped. |
+| [SURUM_NOTLARI.md](SURUM_NOTLARI.md) | Cutting a release. Store "what's new" text (**tr-TR only** — an en-US listing would oblige us to supply English screenshots and metadata to Apple) plus a technical summary, newest first. Add a section whenever `version:` in `pubspec.yaml` is bumped. Every release must also rewrite `release_notes.json` at the repo root — that file (not `codemagic.yaml`) is what Codemagic sends to the stores: `tr-TR` → Play, max 500 chars; `tr` → App Store Connect; no `<`/`>`. Never ship a version with the previous release's text. |
 | [CODEMAGIC_KURULUM.md](CODEMAGIC_KURULUM.md) | Touching `codemagic.yaml` or the release pipeline. One-time setup of Play/App Store credentials, keystore, webhook. |
 
 `README.md` is unmodified Flutter boilerplate — ignore it.
