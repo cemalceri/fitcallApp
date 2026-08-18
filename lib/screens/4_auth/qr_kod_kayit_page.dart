@@ -6,6 +6,7 @@ import 'dart:math' as math;
 
 import 'package:fitcall/models/1_common/event/gecis_model.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
+import 'package:fitcall/screens/1_common/widgets/qr_kod_gorseli.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/api_result.dart';
@@ -609,43 +610,11 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
               // QR Container with animation
               AnimatedBuilder(
                 animation: _pulseController,
-                builder: (context, child) {
-                  return Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: const Color(0xFF2E7D6B).withValues(
-                          alpha: 0.2 + (_pulseController.value * 0.15),
-                        ),
-                        width: 3,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF2E7D6B).withValues(
-                            alpha: 0.1 + (_pulseController.value * 0.1),
-                          ),
-                          blurRadius: 20,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: QrImageView(
-                      data: sp.code,
-                      version: QrVersions.auto,
-                      size: 260,
-                      eyeStyle: const QrEyeStyle(
-                        eyeShape: QrEyeShape.square,
-                        color: Colors.black,
-                      ),
-                      dataModuleStyle: const QrDataModuleStyle(
-                        dataModuleShape: QrDataModuleShape.square,
-                        color: Colors.black,
-                      ),
-                    ),
-                  );
-                },
+                builder: (context, child) => QrKodGorseli(
+                  kod: sp.code,
+                  boyut: 260,
+                  nabiz: _pulseController.value,
+                ),
               ),
 
               const SizedBox(height: 20),

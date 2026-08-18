@@ -24,7 +24,12 @@ import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_w
 import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
+import 'package:fitcall/models/4_auth/kayit_secenekleri_model.dart';
+import 'package:fitcall/models/4_auth/sifre_sifirlama_model.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
+import 'package:fitcall/screens/1_common/widgets/qr_kod_gorseli.dart';
+import 'package:fitcall/screens/4_auth/widgets/hesap_secim_listesi.dart';
+import 'package:fitcall/screens/4_auth/widgets/kayit_sihirbazi.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uyeler_gorunumu.dart';
 import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
@@ -530,6 +535,12 @@ void main() {
       () => HakedisDersKarti(ders: _hakedisDersIptal()),
       sar: kaydirilabilir,
     );
+
+    tasmaTesti(
+      'HakedisDersKarti (hakediş dışı, yönetici almaz dedi)',
+      () => HakedisDersKarti(ders: _hakedisDersAlmaz()),
+      sar: kaydirilabilir,
+    );
   });
 
   /* ================= ORTAK — LİSTE VE İSKELET BİLEŞENLERİ ================= */
@@ -789,7 +800,12 @@ void main() {
     tasmaTesti(
       'YoklamaHizliSecim',
       () => YoklamaHizliSecim(
-        planliSayi: 4,
+        katilimcilar: const [
+          'Ayşe Yılmaz',
+          'Mehmet Şahinoğlu',
+          'Zeynep Karaca',
+          'Abdülkadir Küçükdağdelen',
+        ],
         onHepsiGeldi: () {},
         onEksikFazla: () {},
         onYapilmadi: () {},
@@ -800,7 +816,7 @@ void main() {
     tasmaTesti(
       'YoklamaHizliSecim (kaydediliyor, planlı yok)',
       () => YoklamaHizliSecim(
-        planliSayi: 0,
+        katilimcilar: const [],
         kaydediliyor: true,
         onHepsiGeldi: () {},
         onEksikFazla: () {},
@@ -926,6 +942,21 @@ void main() {
       );
     });
 
+    // Antrenörün ajandasında alt satır katılımcı isimleri: uzun isim listesi
+    // tek satıra sığmalı (kesilerek).
+    tasmaTesti('TakvimAjanda (katılımcı adlı alt satır)', () {
+      return TakvimAjanda(
+        dersler: [
+          _etkinlik(
+              bas: '2026-07-23T14:30:00+03:00',
+              bit: '2026-07-23T15:30:00+03:00',
+              katilimci: 4),
+        ],
+        onLessonTap: (_) {},
+        altSatir: (ders) => ders.uyeList.map((u) => u.adSoyad).join(', '),
+      );
+    });
+
     tasmaTesti(
       'TakvimAjanda (boş)',
       () => TakvimAjanda(dersler: const [], onLessonTap: (_) {}),
@@ -1038,6 +1069,54 @@ void main() {
     });
   });
 
+  /* ======================= GİRİŞ ÖNCESİ EKRANLAR ======================= */
+
+  group('Kayıt ve şifre sıfırlama', () {
+    // Sihirbazın ilk adımı: uzun kulüp adı + 1.3x yazıda açılır liste ve
+    // ilerleme başlığı taşmamalı.
+    tasmaTesti(
+      'KayitSihirbazi (ilk adım)',
+      () => KayitSihirbazi(
+        secenekler: _kayitSecenekleri(),
+        onGonder: (_) async {},
+      ),
+      sar: (w) => SingleChildScrollView(child: w),
+    );
+
+    tasmaTesti(
+      'KayitSihirbazi (gönderiliyor)',
+      () => KayitSihirbazi(
+        secenekler: _kayitSecenekleri(),
+        gonderiliyor: true,
+        onGonder: (_) async {},
+      ),
+      sar: (w) => SingleChildScrollView(child: w),
+    );
+
+    tasmaTesti(
+      'HesapSecimListesi (iki hesap)',
+      () => HesapSecimListesi(
+        hesaplar: const [
+          SifirlamaHesabi(
+            userId: 1,
+            maskeliAd: 'Me**** Ka*********',
+            maskeliEposta: 'me***@example.com',
+            epostaVarMi: true,
+          ),
+          SifirlamaHesabi(
+            userId: 2,
+            maskeliAd: 'El** Ka*********',
+            maskeliEposta: '',
+            epostaVarMi: false,
+          ),
+        ],
+        onSec: (_) {},
+        onVazgec: () {},
+      ),
+      sar: (w) => SingleChildScrollView(child: w),
+    );
+  });
+
   group('QR sayfaları', () {
     // Metin iki durumda da farklı uzunlukta; ikisi de test edilir.
     tasmaTesti('ParlaklikIpucu (otomatik artırıldı)',
@@ -1045,6 +1124,13 @@ void main() {
 
     tasmaTesti('ParlaklikIpucu (manuel yönerge)',
         () => ParlaklikIpucu(maksimumda: ValueNotifier<bool>(false)));
+
+    // 260 px'lik kod dar ekranda yatay boşluğu taşırmamalı.
+    tasmaTesti(
+      'QrKodGorseli',
+      () => const QrKodGorseli(kod: 'BINAY-TEST-0001', boyut: 260),
+      sar: (w) => SingleChildScrollView(child: w),
+    );
   });
 
   group('Bildirimler', () {
@@ -1457,6 +1543,28 @@ HakedisAntrenorListesi _hakedisAntrenorListesi() =>
     });
 
 /// Uzun isimli, plan dışı katılımcı içeren kalabalık grup dersi.
+/// Kayıt formunun açılır listeleri — uzun kulüp/okul adları bilinçli.
+KayitSecenekleri _kayitSecenekleri() => const KayitSecenekleri(
+      isletmeler: [
+        Secenek(deger: '1', etiket: 'Binay Tenis Akademi Spor Kulübü Derneği'),
+      ],
+      okullar: [
+        Secenek(deger: '7', etiket: 'Şehit Öğretmen Cumhuriyet Ortaokulu'),
+      ],
+      cinsiyetler: [
+        Secenek(deger: 'Erkek', etiket: 'Erkek'),
+        Secenek(deger: 'Kadın', etiket: 'Kadın'),
+      ],
+      tenisGecmisi: [
+        Secenek(deger: 'Var', etiket: 'Var'),
+        Secenek(deger: 'Yok', etiket: 'Yok'),
+      ],
+      programTercihleri: [
+        Secenek(deger: 'Altyapı', etiket: 'Altyapı'),
+        Secenek(deger: 'Hobi', etiket: 'Hobi'),
+      ],
+    );
+
 HakedisDers _hakedisDers() => HakedisDers.fromJson(const {
       'id': 41,
       'baslangic': '2026-07-14T18:00:00+03:00',
@@ -1542,8 +1650,9 @@ HakedisDers _hakedisDersYapilmadi() => HakedisDers.fromJson(const {
       'kort_adi': 'Açık Kort 3',
       'urun_adi': 'Özel Ders',
       'urun_tipi': 'TEK_SEFERLIK',
-      'iptal_mi': true,
+      'iptal_mi': false,
       'yonetici_tamamlandi': false,
+      'hakedis_bayragi': true,
       'onay_nedeni': 'Hava muhalefeti',
       'onay_aciklamasi':
           'Yağmur nedeniyle ders yapılamadı, antrenör kortta hazır bekledi.',
@@ -1552,6 +1661,34 @@ HakedisDers _hakedisDersYapilmadi() => HakedisDers.fromJson(const {
           'uye_id': 1,
           'ad_soyad': 'Deniz Ayşegül Arslanoğulları',
           'katilim_durum': null,
+          'plan_disi_mi': false,
+        },
+      ],
+    });
+
+/// İptal değil, yönetici açıkça "hakediş almaz" demiş — sebep paneli yazılır.
+HakedisDers _hakedisDersAlmaz() => HakedisDers.fromJson(const {
+      'id': 44,
+      'baslangic': '2026-07-23T07:30:00+03:00',
+      'bitis': '2026-07-23T08:30:00+03:00',
+      'dakika': 60,
+      'rol': 'ana',
+      'durum': 'disi',
+      'kort_adi': 'Açık Kort 5',
+      'urun_adi': 'Sabah Kondisyon Grubu',
+      'urun_tipi': 'ABONELIK',
+      'iptal_mi': false,
+      'yonetici_tamamlandi': true,
+      'hakedis_bayragi': false,
+      'onay_nedeni': 'Diğer',
+      'onay_aciklamasi':
+          'Ders başka bir antrenörle birlikte yürütüldü, hakediş ana antrenöre '
+              'yazıldı.',
+      'katilimcilar': [
+        {
+          'uye_id': 1,
+          'ad_soyad': 'Deniz Ayşegül Arslanoğulları',
+          'katilim_durum': 'katildi',
           'plan_disi_mi': false,
         },
       ],

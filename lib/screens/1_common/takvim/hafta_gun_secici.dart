@@ -166,7 +166,7 @@ class _AyGezinme extends StatelessWidget {
             child: GestureDetector(
               onTap: onBugun,
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12),
+                margin: const EdgeInsets.symmetric(horizontal: 8),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
@@ -188,7 +188,57 @@ class _AyGezinme extends StatelessWidget {
           etiket: 'Sonraki hafta',
           onTap: onIleri,
         ),
+        const SizedBox(width: Bosluk.s),
+        // Yazılı buton: bugüne dönüş eskiden yalnız ay etiketine dokunmakla ya
+        // da başlıktaki takvim ikonuyla oluyordu; ikisi de ne yaptığını
+        // söylemiyordu.
+        _BugunButonu(onTap: onBugun),
       ],
+    );
+  }
+}
+
+/// "Bugün" — ikon + yazı, çünkü tek başına ikon bu işi anlatmıyor.
+class _BugunButonu extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _BugunButonu({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.takvim;
+
+    return Semantics(
+      button: true,
+      label: 'Bugüne git',
+      child: Material(
+        color: t.primaryLight,
+        borderRadius: BorderRadius.circular(Yaricap.s),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(Yaricap.s),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: Bosluk.s, vertical: Bosluk.s),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.today_rounded, size: 18, color: t.primary),
+                const SizedBox(width: 4),
+                Text(
+                  'Bugün',
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: t.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

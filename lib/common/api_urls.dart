@@ -7,9 +7,10 @@ const String baseUrl = baseUrlProd;
 // =================== AUTH ===================
 String createToken = "$baseUrl/createToken";
 String getMyMembers = "$baseUrl/getMyMembers";
-String registerUrl = "${baseUrl.replaceFirst('/api', '/auths')}/register";
-String forgotPasswordUrl =
-    "${baseUrl.replaceFirst('/api', '/auths')}/forgot-password";
+String kayitFormVerileriUrl = "$baseUrl/kayitFormVerileri";
+String uyeBasvuruUrl = "$baseUrl/uyeBasvuru";
+String sifremiUnuttumUrl = "$baseUrl/sifremiUnuttum";
+String sifreSifirlamaGonderUrl = "$baseUrl/sifreSifirlamaGonder";
 String uyeSifreDegistir = "$baseUrl/uyeSifreDegistir";
 String uyeKullaniciSil = "$baseUrl/uyeKullaniciSil";
 

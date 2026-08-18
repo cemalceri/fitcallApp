@@ -8,14 +8,20 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-08-17)
+## 📌 Şu anki durum (2026-08-18)
 
 | | |
 |---|---|
 | Mobil | `main`, `pubspec` sürümü **3.8.0+40** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
-| Testler | `flutter test` **942 geçiyor**, `flutter analyze` temiz |
+| Testler | `flutter test` **1009 geçiyor**, `flutter analyze` temiz; backend süiti **610 geçiyor** |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
 | Mağaza | 3.7.0 tag'lendi ve mağazalara gönderildi; **3.8.0** `v3.8.0` tag'iyle Codemagic'e verildi, inceleme bekleniyor |
+
+**Yayınlanmayı bekleyen:** aşağıdaki "Kayıt ve şifremi unuttum native oldu (2026-08-18)" ve
+"Test turu düzeltmeleri (2026-08-17)" turları `main`'de duruyor; sürüm **bump'lanmadı**, mağazaya
+gönderilmedi (kullanıcı kararı). İkisi de backend'i değiştiriyor — yayın sırası **önce backend
+deploy, sonra Codemagic**. Kayıt/şifre ekranları yeni uçlara bağlı olduğu için backend canlıya
+çıkmadan mobil sürüm gönderilemez.
 
 **3.8.0 yayını.** `v3.8.0` tag'i push edildi → Codemagic `yayin` workflow'u Play "production" ve
 App Store incelemesine yüklüyor. Mağaza metni `SURUM_NOTLARI.md`'de, son kullanıcı özeti
@@ -65,6 +71,83 @@ Ekranın kendi bilgi notu ("üyelerin ders talebi oluştururken gördüğü uygu
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Kayıt ve şifremi unuttum native oldu (2026-08-18)
+
+**Sorun.** İki ekran da ara duraktı: `RegisterPage` / `ForgotPasswordPage` ilk kareden sonra web
+sayfasını (`/auths/register`, `/auths/forgot-password`) tarayıcıda açıp kendini kapatıyordu.
+Kullanıcı uygulamadan çıkmış oluyor, mobil tarih seçici/klavye davranışını kaybediyor, dönüşte ne
+olduğunu anlamıyordu.
+
+**Kayıt — 4 adımlı sihirbaz** ([kayit_sihirbazi.dart](lib/screens/4_auth/widgets/kayit_sihirbazi.dart)).
+Web formundaki alanların **tamamı** duruyor (kullanıcı kararı), yalnız adımlara bölündü:
+
+| Adım | İçerik |
+|---|---|
+| 1 | Kulüp, ad, soyad, doğum tarihi (takvim), cinsiyet |
+| 2 | Cep telefonu, e-posta, adres, acil durum kişisi |
+| 3 | **Doğum tarihine göre değişir:** 18 yaş altı → anne/baba + okul; üstü → meslek |
+| 4 | Tenis geçmişi, program tercihi, KVKK onayı |
+
+Üstte ilerleme çubuğu + "2 / 4"; her adımda kendi `Form`'u doğrulanır, adım değişince sayfa başa
+kayar. Doğrulama **iki katmanlı**: mobil anında geri bildirim verir, son söz sunucudaki
+`UyeMobilKayitForm`'undur — mobil kuralın kopyasını değil özetini taşır.
+
+**Şifremi unuttum.** Kullanıcı adı ya da 10 haneli telefon → sıfırlama bağlantısı e-postaya. Bir
+numara birden çok hesaba bağlıysa (veli kendi numarasını çocuğunun kaydına yazmış) **hesap seçim
+adımı** çıkar; ad ve e-posta maskeli listelenir, çünkü ekran kimlik doğrulamasından önce geliyor.
+Şifrenin kendisi yine e-postadaki tek kullanımlık bağlantıda değiştirilir (mevcut yapı korundu).
+
+**Yan kazanım — Material Türkçesi.** `MaterialApp`'te `localizationsDelegates` hiç tanımlı değildi:
+tarih seçici "Select date" / `mm/dd/yyyy`, metin seçim menüsü "Paste" diyordu. `flutter_localizations`
+eklendi, uygulama `tr-TR`'ye sabitlendi.
+
+**Backend** (`C:\Django\tenis`): `api/auth/kayit_metots.py` — dört kimlik doğrulamasız uç
+(`kayitFormVerileri`, `uyeBasvuru`, `sifremiUnuttum`, `sifreSifirlamaGonder`), IP başına sayaçla
+sınırlı. Şifre sıfırlamanın kimlik tespiti `auths/sifre_sifirlama_service.py`'ye taşındı; web
+ekranı da artık oradan okuyor (kural iki yerde yaşamıyor). Aynı kişinin ikinci başvurusu hata değil,
+"başvurunuz zaten sırada" bilgisi.
+
+**Test:** `test/kayit_sihirbazi_test.dart` (7 akış testi: eksik alan, veli adımı, telefon biçimi,
+KVKK zorunluluğu, gönderilen gövde, takvimin iki cihaz ölçeğinde açılması), taşma matrisine
+`KayitSihirbazi` (2 varyant) ve `HesapSecimListesi`. Backend
+`tests/api/test_mobil_kayit_ve_sifre.py` (15 test).
+
+**Düzeltme — doğum tarihi takvimi açılmıyordu (2026-08-18).** Cihazda "Takvimden seçin"e basınca
+seçici yerine kırmızı hata kutusu çıkıyordu: `'maxScale > minScale': is not true`. Sebep bizim yazı
+ölçeği clamp'imiz ([ui_scale.dart](lib/common/ui_scale.dart)) ile Material tarih seçicisinin kendi
+başlık clamp'inin çakışması — seçici başlığı `min(mevcut ölçek, 1.4)` istiyor, cihaz ölçeği 1.0 (ya
+da altı) iken bu bizim 1.0 alt sınırımızla aynı noktaya düşüyor ve `TextScaler.clamp`'in döndürdüğü
+tip sıfır genişlikli aralığı kabul etmiyor. Hazır `clamp` yerine aynı işi yapan kendi `TextScaler`
+sınıfımızı yazdık; `TextScaler`'ın taban `clamp`'i bu durumu güvenle sabit ölçeğe indiriyor, cihazın
+doğrusal olmayan ölçek eğrisi de korunuyor. Hata yalnız debug build'de patlıyordu (release'de
+`assert` eleniyor), ama sihirbaz testleri de uygulamanın `MaterialApp.builder`'ını kurmadığı için
+görmüyordu — test kurulumu gerçek uygulamayla eşitlendi.
+
+### Test turu düzeltmeleri (2026-08-17)
+
+3.8.0'ın cihazda denenmesinden gelen 11 madde. Sürüm bump'ı **yok** — yayın ayrı kararla yapılacak.
+
+| # | Sorun | Çözüm |
+|---|---|---|
+| 1 | Üyede "Hareketler" sekmesinde geri oku **siyah ekran** bırakıyordu | `MuhasebePage` geri okunu `Navigator.canPop()` ile çiziyor (profil sayfasının kalıbı). Kabuk sekmesi olarak açılınca ok yok. Aynı hata `AntrenorOgrencilerPage`'de de vardı, o da düzeltildi. |
+| 2 | Koyu temada QR kodu okunmuyordu | Yeni ortak `qr_kod_gorseli.dart`: zemin her temada **beyaz**, modüller siyah. Tesis girişi ve etkinlik daveti sayfaları bu widget'ı kullanıyor. |
+| 3 | Antrenör ajandasında satırın altında **antrenörün kendi adı** yazıyordu | `TakvimAjanda.altSatir` geri çağrımı eklendi; antrenör katılımcı adlarını, üye eskisi gibi antrenör adını görüyor. |
+| 4 | Yoklama popup'ında "x kişi katıldı sayılır" | Sayı yerine **isim rozetleri** ("Katıldı sayılacaklar" başlığıyla). |
+| 5 | Ayarlar'daki "Yazı boyutu" yalnız sistem ayarını açıyordu | Satır kaldırıldı. |
+| 6 | İptal edilen dersler hakediş **"Bekliyor"** grubunda çıkıyordu | Kural (`hakedis_servis.hakedis_durumu`) artık iptali kendisi görüyor: bayrak yoksa iptal → `disi`. Yönetici "hakediş alır" işaretlerse ders yine `hakedis` grubunda. Sebep: iptal onay satırı her iptalde yazılmıyor (ürünsüz ders, sinyal kapalıyken yapılan iptal). |
+| 7 | "Hakediş dışı" satırının sebebi görünmüyordu | Backend `hakedis_bayragi` alanını da döndürüyor; kart her `disi` satırında sebep paneli çiziyor: iptal künyesi / "yönetici ders yapılmadı dedi" / "yönetici hakediş almaz dedi". İptal paneli artık alanlar boş gelse de çıkıyor. |
+| 8 | "Yapılacaklar" başlığı | **"Bekleyen İşlemler"** (yardım metni de güncellendi). |
+| 9 | Sonraki ders kartında "Takvime git" | **"Takvime ekle"** — dersi telefonun takvimine ekliyor (üye + antrenör). Ortak yardımcı: `lib/common/cihaz_takvimi.dart`. |
+| 10 | Değerlendirme kartı takvime götürüyordu | Backend kartın rotası `/dersler` → `/uyeGecmisDersler`. |
+| 11 | Takvimdeki "bugüne dön" butonu anlaşılmıyordu | Başlıktaki ikon kaldırıldı; hafta şeridine **yazılı "Bugün" butonu** eklendi (iki rol de aynı şeridi kullanıyor). |
+
+**Backend değişiklikleri** (`C:\Django\tenis`): `api/yonetici/hakedis_servis.py` (kural + `hakedis_bayragi`),
+`api/uye/uye_home_ozet.py` (kart rotası). Süit 595 yeşil; `tests/api/test_hakedis.py`'ye iptal
+kural tablosu ve onay kaydı yazılmamış iptal senaryoları eklendi.
+
+**Taşma testine eklenenler:** `QrKodGorseli`, `TakvimAjanda (katılımcı adlı alt satır)`,
+`HakedisDersKarti (hakediş dışı, yönetici almaz dedi)`.
 
 ### İskelet yükleme + ortak liste kalıbı (2026-08-12)
 

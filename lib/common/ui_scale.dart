@@ -11,6 +11,7 @@
 // Alt sınır 1.0: yazıyı KÜÇÜLTMEYE izin verilmiyor (küçültme okunabilirliği
 // bozar, taşma riski de yok).
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Desteklenen en büyük yazı ölçeği. Android sistem "en büyük" ayarı ~1.3x'e
@@ -19,10 +20,7 @@ const double kMaksYaziOlcegi = 1.3;
 
 /// Cihazın yazı ölçeğini [1.0, kMaksYaziOlcegi] aralığına sıkıştırır.
 TextScaler sinirliYaziOlcegi(BuildContext context) {
-  return MediaQuery.textScalerOf(context).clamp(
-    minScaleFactor: 1.0,
-    maxScaleFactor: kMaksYaziOlcegi,
-  );
+  return _SinirliYaziOlcegi(MediaQuery.textScalerOf(context));
 }
 
 /// MaterialApp.builder için: alt ağacın gördüğü textScaler'ı sınırlar.
@@ -33,4 +31,48 @@ Widget yaziOlceginiSinirla(BuildContext context, Widget? child) {
     data: mq.copyWith(textScaler: sinirliYaziOlcegi(context)),
     child: child ?? const SizedBox.shrink(),
   );
+}
+
+/// Cihaz ölçeğini [1.0, kMaksYaziOlcegi] arasına sıkıştıran ölçekleyici.
+///
+/// Neden hazır `TextScaler.clamp` değil: clamp'in döndürdüğü tip, üstüne ikinci
+/// bir clamp gelip aralık bir noktaya çöktüğünde (alt sınır = üst sınır)
+/// `maxScale > minScale` doğrulamasıyla patlıyor. Material'in tarih seçicisi tam
+/// bunu yapıyor — başlığı `min(mevcut ölçek, 1.4)` ile sınırlıyor; cihaz ölçeği
+/// 1.0 iken bu bizim alt sınırımızla çakışıyor ve doğum tarihi takvimi açılmıyordu.
+/// TextScaler'ın taban `clamp`'i bu durumu güvenle sabit ölçeğe indiriyor; kendi
+/// sınıfımızı yazınca o davranışı miras alıyoruz.
+///
+/// Ölçekleme cihazın kendi eğrisiyle yapılır (Android 14+ doğrusal olmayan yazı
+/// ölçeği korunur), yalnız sonucu sınırlarız.
+class _SinirliYaziOlcegi extends TextScaler {
+  const _SinirliYaziOlcegi(this.cihaz);
+
+  final TextScaler cihaz;
+
+  @override
+  double scale(double yaziBoyutu) => clampDouble(
+        cihaz.scale(yaziBoyutu),
+        yaziBoyutu,
+        yaziBoyutu * kMaksYaziOlcegi,
+      );
+
+  @override
+  // ignore: deprecated_member_use
+  double get textScaleFactor => clampDouble(
+        // ignore: deprecated_member_use
+        cihaz.textScaleFactor,
+        1.0,
+        kMaksYaziOlcegi,
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      other is _SinirliYaziOlcegi && other.cihaz == cihaz;
+
+  @override
+  int get hashCode => cihaz.hashCode;
+
+  @override
+  String toString() => 'sinirli(1.0–$kMaksYaziOlcegi, $cihaz)';
 }

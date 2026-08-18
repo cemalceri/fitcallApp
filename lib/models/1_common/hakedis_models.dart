@@ -449,6 +449,8 @@ class HakedisDers {
   final String? urunTipi;
   final bool iptalMi;
   final bool? yoneticiTamamlandi;
+  final bool? hakedisBayragi;
+
   final String? onayNedeni;
   final String? onayAciklamasi;
 
@@ -473,6 +475,7 @@ class HakedisDers {
     required this.urunTipi,
     required this.iptalMi,
     required this.yoneticiTamamlandi,
+    required this.hakedisBayragi,
     required this.onayNedeni,
     required this.onayAciklamasi,
     required this.iptalEden,
@@ -493,13 +496,22 @@ class HakedisDers {
       yoneticiTamamlandi == false &&
       (onayNedeni?.isNotEmpty == true || onayAciklamasi?.isNotEmpty == true);
 
-  /// İptal paneli gösterilecek mi? (kim/ne zaman/neden alanlarından biri dolu)
-  bool get iptalBilgisiVar =>
-      iptalMi &&
-      (iptalEden?.isNotEmpty == true ||
-          iptalTarihi != null ||
-          iptalSebebi?.isNotEmpty == true ||
-          iptalAciklamasi?.isNotEmpty == true);
+  String? get disiSebebi {
+    if (durum != HakedisDurumu.disi || iptalMi) return null;
+    if (hakedisBayragi == false) {
+      return 'Yönetici "hakediş almaz" olarak işaretledi';
+    }
+    if (yoneticiTamamlandi == false) {
+      return 'Yönetici "ders yapılmadı" olarak işaretledi';
+    }
+    return 'Hakediş dışı';
+  }
+
+  bool get onayNotuVar =>
+      !iptalMi &&
+      (disiSebebi != null ||
+          yapilmadiNotuVar ||
+          onayAciklamasi?.isNotEmpty == true);
 
   factory HakedisDers.fromJson(Map<String, dynamic> j) {
     final liste = (j['katilimcilar'] as List?) ?? const [];
@@ -515,6 +527,7 @@ class HakedisDers {
       urunTipi: j['urun_tipi']?.toString(),
       iptalMi: j['iptal_mi'] == true,
       yoneticiTamamlandi: j['yonetici_tamamlandi'] as bool?,
+      hakedisBayragi: j['hakedis_bayragi'] as bool?,
       onayNedeni: j['onay_nedeni']?.toString(),
       onayAciklamasi: j['onay_aciklamasi']?.toString(),
       iptalEden: j['iptal_eden']?.toString(),

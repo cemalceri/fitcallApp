@@ -259,15 +259,6 @@ class _DersListesiPageState extends State<DersListesiPage>
                 ? Icons.calendar_view_day_rounded
                 : Icons.view_agenda_rounded),
           ),
-          IconButton(
-            tooltip: 'Bugüne git',
-            onPressed: () {
-              final today = simdiKulup();
-              _onPageChanged(today);
-              _onDaySelected(today);
-            },
-            icon: const Icon(Icons.today_rounded),
-          ),
           const SizedBox(width: 4),
         ],
       ),

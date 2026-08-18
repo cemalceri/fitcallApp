@@ -6,11 +6,13 @@
 // katılmadı / yoklama alınmamış, plan dışı eklenenler ayrı işaretli) ve
 // duruma göre bir açıklama paneli:
 //
-//   iptal edilen ders → kim iptal etti, ne zaman, sebep ve açıklama
+//   iptal edilen ders  → kim iptal etti, ne zaman, sebep ve açıklama
 //   yapılmadı işaretli → neden yapılmadı, hakediş verildiyse o da yazar
+//   hakediş dışı       → neden dışı: iptal mi, yapılmadı mı, yönetici "almaz"
+//                        mı dedi
 //
-// İptal edilen dersler "hakediş dışı" grubunda çıkıyor; o satırın karşılığını
-// yönetici ancak bu panelden görebiliyor.
+// "Hakediş dışı" grubundaki her satır kendini açıklamak zorunda: antrenör o
+// listede dersini görüp neden para almadığını soruyor, cevabı başka yerde yok.
 
 import 'package:fitcall/models/1_common/hakedis_models.dart';
 import 'package:flutter/material.dart';
@@ -106,10 +108,13 @@ class HakedisDersKarti extends StatelessWidget {
                   .toList(),
             ),
           ],
-          if (ders.iptalBilgisiVar) ...[
+          // İptal her zaman kendi paneliyle anlatılır: kim/ne zaman/neden
+          // alanları boş gelse bile "iptal edildi" satırı kalmalı, yoksa
+          // "hakediş dışı" grubundaki ders sebepsiz görünüyordu.
+          if (ders.iptalMi) ...[
             const SizedBox(height: 11),
             _IptalPaneli(ders: ders),
-          ] else if (ders.yapilmadiNotuVar || _aciklamaVar) ...[
+          ] else if (ders.onayNotuVar) ...[
             const SizedBox(height: 11),
             _OnayNotu(ders: ders),
           ],
@@ -126,8 +131,6 @@ class HakedisDersKarti extends StatelessWidget {
     if (bit == null) return basMetin;
     return '$basMetin – ${DateFormat('HH:mm').format(bit)}';
   }
-
-  bool get _aciklamaVar => ders.onayAciklamasi?.isNotEmpty == true;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -241,21 +244,77 @@ class _IptalPaneli extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final r = hakedisRenkSeti(context, hakedisKirmizi);
+    return _SebepPaneli(
+      taban: hakedisKirmizi,
+      ikon: Icons.event_busy_rounded,
+      baslik: 'Ders iptal edildi',
+      satirlar: [
+        if (ders.iptalSebebi?.isNotEmpty == true)
+          (Icons.label_outline_rounded, ders.iptalSebebi!),
+        if (ders.iptalEden?.isNotEmpty == true)
+          (Icons.person_outline_rounded, '${ders.iptalEden!} iptal etti'),
+        if (ders.iptalTarihi != null)
+          (
+            Icons.schedule_rounded,
+            DateFormat('d MMMM y · HH:mm', 'tr_TR').format(ders.iptalTarihi!),
+          ),
+        if (ders.iptalAciklamasi?.isNotEmpty == true)
+          (Icons.notes_rounded, ders.iptalAciklamasi!),
+        // İptal normalde hakediş doğurmaz; bu ders yine de hakediş grubundaysa
+        // sebebi yöneticinin kararıdır, yazmazsak satır çelişkili görünür.
+        if (ders.durum == HakedisDurumu.hakedis)
+          (Icons.payments_outlined, 'Yönetici bu derse hakediş verdi'),
+      ],
+    );
+  }
+}
 
-    final satirlar = <(IconData, String)>[
-      if (ders.iptalSebebi?.isNotEmpty == true)
-        (Icons.label_outline_rounded, ders.iptalSebebi!),
-      if (ders.iptalEden?.isNotEmpty == true)
-        (Icons.person_outline_rounded, '${ders.iptalEden!} iptal etti'),
-      if (ders.iptalTarihi != null)
-        (
-          Icons.schedule_rounded,
-          DateFormat('d MMMM y · HH:mm', 'tr_TR').format(ders.iptalTarihi!),
-        ),
-      if (ders.iptalAciklamasi?.isNotEmpty == true)
-        (Icons.notes_rounded, ders.iptalAciklamasi!),
-    ];
+/// İptal dışı sebep: "yapılmadı", "hakediş almaz" ya da yöneticinin açıklaması.
+class _OnayNotu extends StatelessWidget {
+  final HakedisDers ders;
+
+  const _OnayNotu({required this.ders});
+
+  @override
+  Widget build(BuildContext context) {
+    final yapilmadi = ders.yoneticiTamamlandi == false;
+    final baslik = ders.disiSebebi ?? (yapilmadi ? 'Ders yapılmadı' : 'Not');
+
+    return _SebepPaneli(
+      taban: (yapilmadi || ders.disiSebebi != null)
+          ? hakedisTuruncu
+          : hakedisGri,
+      ikon: Icons.info_outline_rounded,
+      baslik: baslik,
+      satirlar: [
+        if (ders.onayNedeni?.isNotEmpty == true)
+          (Icons.label_outline_rounded, ders.onayNedeni!),
+        if (ders.onayAciklamasi?.isNotEmpty == true)
+          (Icons.notes_rounded, ders.onayAciklamasi!),
+        if (yapilmadi && ders.durum == HakedisDurumu.hakedis)
+          (Icons.payments_outlined, 'Yönetici bu derse hakediş verdi'),
+      ],
+    );
+  }
+}
+
+/// "Neden bu gruptayım" panelinin ortak kabuğu: başlık + ikonlu satırlar.
+class _SebepPaneli extends StatelessWidget {
+  final Color taban;
+  final IconData ikon;
+  final String baslik;
+  final List<(IconData, String)> satirlar;
+
+  const _SebepPaneli({
+    required this.taban,
+    required this.ikon,
+    required this.baslik,
+    required this.satirlar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final r = hakedisRenkSeti(context, taban);
 
     return Container(
       width: double.infinity,
@@ -271,12 +330,12 @@ class _IptalPaneli extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.event_busy_rounded, size: 15, color: r.metin),
+              Icon(ikon, size: 15, color: r.metin),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'Ders iptal edildi',
-                  maxLines: 1,
+                  baslik,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 12.5,
@@ -287,12 +346,13 @@ class _IptalPaneli extends StatelessWidget {
               ),
             ],
           ),
-          for (final (ikon, metin) in satirlar) ...[
+          for (final (satirIkonu, metin) in satirlar) ...[
             const SizedBox(height: 6),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(ikon, size: 13, color: r.metin.withValues(alpha: 0.75)),
+                Icon(satirIkonu,
+                    size: 13, color: r.metin.withValues(alpha: 0.75)),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -307,58 +367,6 @@ class _IptalPaneli extends StatelessWidget {
               ],
             ),
           ],
-        ],
-      ),
-    );
-  }
-}
-
-class _OnayNotu extends StatelessWidget {
-  final HakedisDers ders;
-
-  const _OnayNotu({required this.ders});
-
-  /// "Yapılmadı · Hava şartları · Hakediş verildi" biçiminde tek satır.
-  String _metin() {
-    final parcalar = <String>[];
-    if (ders.yoneticiTamamlandi == false) parcalar.add('Yapılmadı');
-    if (ders.onayNedeni?.isNotEmpty == true) parcalar.add(ders.onayNedeni!);
-    if (ders.onayAciklamasi?.isNotEmpty == true) {
-      parcalar.add(ders.onayAciklamasi!);
-    }
-    if (ders.yoneticiTamamlandi == false &&
-        ders.durum == HakedisDurumu.hakedis) {
-      parcalar.add('Hakediş verildi');
-    }
-    return parcalar.join(' · ');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final r = hakedisRenkSeti(
-      context,
-      ders.yoneticiTamamlandi == false ? hakedisTuruncu : hakedisGri,
-    );
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
-      decoration: BoxDecoration(
-        color: r.dolgu,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: r.kenar),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.info_outline_rounded, size: 14, color: r.metin),
-          const SizedBox(width: 7),
-          Expanded(
-            child: Text(
-              _metin(),
-              style: TextStyle(fontSize: 12, height: 1.35, color: r.metin),
-            ),
-          ),
         ],
       ),
     );

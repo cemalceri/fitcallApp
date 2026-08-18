@@ -405,7 +405,10 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
         Flexible(
           child: SingleChildScrollView(
             child: YoklamaHizliSecim(
-              planliSayi: _katilimMap.length,
+              katilimcilar: _katilimMap.values
+                  .map((k) => k.adSoyad.trim())
+                  .where((ad) => ad.isNotEmpty)
+                  .toList(),
               kaydediliyor: _isSaving,
               onHepsiGeldi: _hepsiGeldiKaydet,
               onEksikFazla: () => setState(() {

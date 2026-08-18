@@ -107,18 +107,7 @@ class _AyarlarPageState extends State<AyarlarPage> {
             const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.s, Bosluk.l, Bosluk.xxl),
         children: [
           const _BolumBasligi('Görünüm'),
-          _Kart(
-            children: [
-              const _TemaSecici(),
-              _AyarSatiri(
-                ikon: Icons.text_fields_rounded,
-                baslik: 'Yazı boyutu',
-                altBaslik: 'Telefonun sistem ayarından değişir '
-                    '(uygulama en fazla %30 büyütür)',
-                onTap: openAppSettings,
-              ),
-            ],
-          ),
+          const _Kart(children: [_TemaSecici()]),
           const _BolumBasligi('Bildirimler'),
           _Kart(
             children: [

@@ -21,8 +21,7 @@ import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
 
 class YoklamaHizliSecim extends StatelessWidget {
-  /// Derste planlı görünen katılımcı sayısı.
-  final int planliSayi;
+  final List<String> katilimcilar;
 
   /// Hızlı onay kaydediliyor mu — kart kilitlenir, ikon yerine spinner döner.
   final bool kaydediliyor;
@@ -38,7 +37,7 @@ class YoklamaHizliSecim extends StatelessWidget {
 
   const YoklamaHizliSecim({
     super.key,
-    required this.planliSayi,
+    required this.katilimcilar,
     required this.onHepsiGeldi,
     required this.onEksikFazla,
     required this.onYapilmadi,
@@ -48,13 +47,12 @@ class YoklamaHizliSecim extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding:
-          const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.l),
+      padding: const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.l),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _HerkesGeldiKarti(
-            planliSayi: planliSayi,
+            katilimcilar: katilimcilar,
             kaydediliyor: kaydediliyor,
             onTap: onHepsiGeldi,
           ),
@@ -89,12 +87,12 @@ class YoklamaHizliSecim extends StatelessWidget {
 
 /// Ana seçenek: büyük, ortalanmış, yeşil zeminli tek dokunuş kartı.
 class _HerkesGeldiKarti extends StatelessWidget {
-  final int planliSayi;
+  final List<String> katilimcilar;
   final bool kaydediliyor;
   final VoidCallback onTap;
 
   const _HerkesGeldiKarti({
-    required this.planliSayi,
+    required this.katilimcilar,
     required this.kaydediliyor,
     required this.onTap,
   });
@@ -146,28 +144,61 @@ class _HerkesGeldiKarti extends StatelessWidget {
               ),
             ),
             const SizedBox(height: Bosluk.s),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Bosluk.m,
-                vertical: Bosluk.xs,
-              ),
-              decoration: BoxDecoration(
-                color: renk.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(Yaricap.xl),
-              ),
-              child: Text(
-                planliSayi > 0
-                    ? '$planliSayi kişi katıldı sayılır'
-                    : 'Planlı katılımcı yok',
+            if (katilimcilar.isEmpty)
+              _Rozet(metin: 'Planlı katılımcı yok', renk: renk)
+            else ...[
+              Text(
+                'Katıldı sayılacaklar',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: renk,
+                  color: context.takvim.textSecondary,
                 ),
               ),
-            ),
+              const SizedBox(height: Bosluk.s),
+              // İsimler tek tek: ders saatini görüp "kimdi bunlar" diye
+              // takvime dönmek gerekiyordu.
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: Bosluk.xs,
+                runSpacing: Bosluk.xs,
+                children: [
+                  for (final ad in katilimcilar) _Rozet(metin: ad, renk: renk),
+                ],
+              ),
+            ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Ana karttaki isim/durum rozeti.
+class _Rozet extends StatelessWidget {
+  final String metin;
+  final Color renk;
+
+  const _Rozet({required this.metin, required this.renk});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Bosluk.m,
+        vertical: Bosluk.xs,
+      ),
+      decoration: BoxDecoration(
+        color: renk.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(Yaricap.xl),
+      ),
+      child: Text(
+        metin,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: renk,
         ),
       ),
     );

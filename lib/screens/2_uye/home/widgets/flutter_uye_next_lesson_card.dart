@@ -1,6 +1,6 @@
 // lib/screens/2_uye/home/widgets/uye_next_lesson_card.dart
 
-import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/common/cihaz_takvimi.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/common/tema.dart';
@@ -510,14 +510,11 @@ class _LessonDetailSheet extends StatelessWidget {
                       child: FilledButton.icon(
                         onPressed: () {
                           Navigator.pop(context);
-                          Navigator.pushNamed(
-                            context,
-                            routeEnums[SayfaAdi.dersler]!,
-                          );
+                          dersiCihazTakvimineEkle(lesson);
                         },
-                        icon:
-                            const Icon(Icons.calendar_month_outlined, size: 18),
-                        label: const Text('Takvime Git'),
+                        icon: const Icon(Icons.event_available_outlined,
+                            size: 18),
+                        label: const Text('Takvime Ekle'),
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(

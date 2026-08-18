@@ -289,14 +289,14 @@ class _UyeHomePageState extends State<UyeHomePage> {
                   ),
                 ),
 
-                // ========== YAPILACAKLAR ==========
+                // ========== BEKLEYEN İŞLEMLER ==========
                 SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 20, 0, 0),
                   sliver: SliverToBoxAdapter(
                     child: InfoCardsCarousel(
                       cards: _homeOzet?.kartlar ?? const [],
                       isLoading: _loadingOzet,
-                      title: 'Yapılacaklar',
+                      title: 'Bekleyen İşlemler',
                       hideWhenEmpty: true,
                       onCardTap: _onYapilacakKartTap,
                     ),

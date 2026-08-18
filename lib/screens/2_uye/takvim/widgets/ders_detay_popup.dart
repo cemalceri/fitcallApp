@@ -1,6 +1,6 @@
 // lib/screens/5_etkinlik/takvim/widgets/ders_detay_popup.dart
 
-import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:fitcall/common/cihaz_takvimi.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -55,31 +55,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     super.dispose();
   }
 
-  void _takvimeEkle() {
-    HapticFeedback.lightImpact();
-    final ders = widget.ders;
-    final aciklamaParcalari = [
-      if (ders.antrenorAdi != null && ders.antrenorAdi!.isNotEmpty)
-        'Antrenör: ${ders.antrenorAdi}',
-      if (ders.urunAdi != null && ders.urunAdi!.isNotEmpty)
-        'Program: ${ders.urunAdi}',
-    ];
-    // Add2Calendar tarihi epoch milisaniye olarak gönderir; yani GERÇEK an
-    // gerekir. Uygulamadaki tarihler kulüp duvar saati olduğu için önce
-    // kulupAnI() ile gerçek ana çevriliyor, saat dilimi de açıkça belirtiliyor.
-    // Aksi halde saat dilimi Europe/Istanbul olmayan bir telefonun takviminde
-    // ders yanlış zamana düşer (hatırlatıcı da yanlış saatte çalar).
-    final event = Event(
-      title: 'Tenis Dersi — ${ders.kortAdi}',
-      description: aciklamaParcalari.join('\n'),
-      location: ders.kortAdi,
-      startDate: kulupAnI(ders.baslangicTarihSaat),
-      endDate: kulupAnI(ders.bitisTarihSaat),
-      timeZone: 'Europe/Istanbul',
-      iosParams: const IOSParams(reminder: Duration(hours: 1)),
-    );
-    Add2Calendar.addEvent2Cal(event);
-  }
+  void _takvimeEkle() => dersiCihazTakvimineEkle(widget.ders);
 
   Future<void> _katilacagim() async {
     setState(() => _isLoading = true);

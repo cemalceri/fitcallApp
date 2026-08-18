@@ -178,6 +178,11 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
     if (_ajandaGorunumu) _haftayiYukle();
   }
 
+  /// Ajanda satırının alt bilgisi: antrenör kendi adını değil, o derse kimlerin
+  /// yazılı olduğunu görmek ister.
+  String _katilimcilar(EtkinlikModel ders) =>
+      ders.uyeList.map((u) => u.adSoyad).where((a) => a.isNotEmpty).join(', ');
+
   /// Ders bloğuna uzun basınca açılan bağlam menüsü: onay-iptal-devir tek
   /// dokunuşa iner (iOS/WhatsApp kalıbı).
   Future<void> _dersMenusu(EtkinlikModel ders) async {
@@ -359,6 +364,7 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
                         secilenGun: _selectedDay,
                         onLessonTap: _onLessonTap,
                         onLessonLongPress: _dersMenusu,
+                        altSatir: _katilimcilar,
                       )
                     : TakvimZamanCizelgesi(
                         dersler: selectedDersler,

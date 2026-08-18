@@ -160,28 +160,34 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
   }
 
   Widget _buildAppBar(ColorScheme colorScheme) {
+    // Kabuk sekmesi olarak açıldığında geri okunun gideceği yer yok; pop
+    // kabuğun rotasını kapatıp siyah ekran bırakır (bkz. MuhasebePage).
+    final geriVar = Navigator.of(context).canPop();
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
+      padding: EdgeInsets.fromLTRB(geriVar ? 8 : 16, 8, 16, 8),
       child: Row(
         children: [
-          IconButton(
-            tooltip: 'Geri',
-            onPressed: () => Navigator.pop(context),
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color:
-                    colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 20,
-                color: colorScheme.onSurface,
+          if (geriVar) ...[
+            IconButton(
+              tooltip: 'Geri',
+              onPressed: () => Navigator.pop(context),
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
+            const SizedBox(width: 8),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

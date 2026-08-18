@@ -210,28 +210,36 @@ class _MuhasebePageState extends State<MuhasebePage> {
   }
 
   Widget _buildAppBar(ColorScheme colorScheme) {
+    // Kabuk sekmesi olarak açıldığında (UyeKabuk "Hareketler") geri okunun
+    // gideceği yer yok: pop kabuğun kendi rotasını kapatıp siyah ekran
+    // bırakıyordu. Profil sayfasıyla aynı kalıp — ok yalnız gerçekten
+    // dönülecek bir sayfa varken çıkar.
+    final geriVar = Navigator.of(context).canPop();
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(geriVar ? 8 : 16, 8, 16, 0),
       child: Row(
         children: [
-          IconButton(
-            tooltip: 'Geri',
-            onPressed: () => Navigator.pop(context),
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color:
-                    colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.arrow_back_ios_new_rounded,
-                size: 20,
-                color: colorScheme.onSurface,
+          if (geriVar) ...[
+            IconButton(
+              tooltip: 'Geri',
+              onPressed: () => Navigator.pop(context),
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
+            const SizedBox(width: 8),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

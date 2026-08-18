@@ -47,9 +47,9 @@ class _YardimPageState extends State<YardimPage> {
       question: 'Ana sayfada neler var, menüye nasıl ulaşırım?',
       answer:
           'En üstte bakiyenizi, kalan haklarınızı ve telafi derslerinizi özet'
-          ' kartlarında görürsünüz. "Yapılacaklar" bölümünde sizi bekleyen işlemler'
-          ' (katılım bildirimi, ödeme, ders değerlendirmesi) listelenir. Alttaki'
-          ' çubuktan Takvim, Geçmiş, QR, Hareketler ve Hesabım sayfalarına; sol'
+          ' kartlarında görürsünüz. "Bekleyen İşlemler" bölümünde sizden bir adım'
+          ' bekleyenler (katılım bildirimi, ödeme, ders değerlendirmesi) listelenir. Alttaki'
+          ' çubuktan Ana Sayfa, Takvim, QR, Hareketler ve Hesabım sayfalarına; sol'
           ' üstteki ☰ menüsünden ise tüm sayfalara ve Yardım\'a ulaşabilirsiniz.',
     ),
     _FAQ(

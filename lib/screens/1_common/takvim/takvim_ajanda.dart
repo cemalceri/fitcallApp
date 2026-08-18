@@ -57,6 +57,11 @@ class TakvimAjanda extends StatefulWidget {
   final String Function(EtkinlikModel ders)? durumEtiketi;
   final Color Function(BuildContext context, EtkinlikModel ders)? durumRengi;
 
+  /// Kort adının altındaki satır. Verilmezse antrenörün adı yazılır (üyenin
+  /// merak ettiği budur); antrenör kendi takviminde kendi adını görmek yerine
+  /// katılımcıları görmek ister, o yüzden rol bazında besleniyor.
+  final String Function(EtkinlikModel ders)? altSatir;
+
   const TakvimAjanda({
     super.key,
     required this.dersler,
@@ -65,6 +70,7 @@ class TakvimAjanda extends StatefulWidget {
     this.secilenGun,
     this.durumEtiketi,
     this.durumRengi,
+    this.altSatir,
   });
 
   @override
@@ -221,6 +227,8 @@ class _TakvimAjandaState extends State<TakvimAjanda> {
                           : () => widget.onLessonLongPress!(giris.value[i]),
                       etiket: widget.durumEtiketi?.call(giris.value[i]),
                       renk: widget.durumRengi?.call(context, giris.value[i]),
+                      altSatir: widget.altSatir?.call(giris.value[i]) ??
+                          (giris.value[i].antrenorAdi ?? ''),
                     ),
                   ),
                 ),
@@ -344,10 +352,14 @@ class _AjandaSatiri extends StatelessWidget {
   final String? etiket;
   final Color? renk;
 
+  /// Kort adının altındaki satır; boşsa hiç çizilmez.
+  final String altSatir;
+
   const _AjandaSatiri({
     required this.ders,
     required this.yukseklik,
     required this.onTap,
+    required this.altSatir,
     this.onLongPress,
     this.etiket,
     this.renk,
@@ -412,9 +424,9 @@ class _AjandaSatiri extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: context.metin.titleSmall,
                         ),
-                        if ((ders.antrenorAdi ?? '').isNotEmpty)
+                        if (altSatir.isNotEmpty)
                           Text(
-                            ders.antrenorAdi!,
+                            altSatir,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: context.metin.bodySmall,
