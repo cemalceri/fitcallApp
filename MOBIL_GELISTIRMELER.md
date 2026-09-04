@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `main`, `pubspec` sürümü **3.8.1+41** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
-| Testler | `flutter test` **1126 geçiyor**, `flutter analyze` temiz; backend süiti **702 geçiyor** (2026-09-04 ölçümü) |
+| Testler | `flutter test` **1136 geçiyor**, `flutter analyze` temiz; backend süiti **702 geçiyor** (2026-09-04 ölçümü) |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da 3.8.0 gönderimi iptal edildi, yayındaki sürüm **3.7.0**. **3.8.1** `v3.8.1` tag'iyle gönderildi |
 
@@ -72,6 +72,24 @@ Ekranın kendi bilgi notu ("üyelerin ders talebi oluştururken gördüğü uygu
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Zorunlu güncelleme Android'de geri tuşuyla atlanabiliyordu (2026-09-04)
+- **Sorun:** `force` direktifinde Android'de Play'in tam ekran (immediate) güncelleme akışı
+  açılıyor; kullanıcı orada **geri tuşuna basınca** uygulama eski sürümle çalışmaya devam
+  ediyordu. Zorunlu güncelleme fiilen isteğe bağlıydı.
+- **Sebep:** `in_app_update` eklentisi kullanıcı vazgeçtiğinde `AppUpdateResult.userDeniedUpdate`
+  **döndürüyor** (istisna atmıyor). `InAppUpdateAndroid.immediate()` bu dönüşü yok sayıp koşulsuz
+  `true` dönüyordu; koordinatör "güncellendi" sanıp bloklayan ekranı hiç açmıyordu. Bloklayan
+  ekranın kendisinde `PopScope(canPop: false)` zaten vardı — sorun oraya hiç gelinmemesiydi.
+- **Düzeltme:** dönen sonuç artık okunuyor, yalnız `AppUpdateResult.success` başarı sayılıyor.
+  Aynı hata `flexible()`'da da vardı: indirme reddedilse bile kurulum tamamlanmaya çalışılıyordu.
+  Sarmalayıcıya test için enjeksiyon eklendi (platform + üç Play çağrısı).
+- **Kapsam notu:** `immediate`/`flex` direktifleri bloklamak için değil, "yeni sürüm var" dürtmesi
+  için; oradaki davranış kasıtlı olarak değişmedi. Bloklayan tek direktifler `force`, `blocked`,
+  `maintenance`.
+- **Açık kalan (küçük):** güncelleme kontrolü yalnız `login_page` açılışında koşuyor. Uygulama
+  arka plandayken `force` yayınlanırsa bir sonraki soğuk açılışa kadar zorlanmıyor.
+- Testler: `test/zorunlu_guncelleme_test.dart` (10).
 
 ### Ofis (ön büro) profili — aksiyonlar yöneticiden ayrıldı (2026-09-04)
 - **İstek:** Ofis çalışanı mobilde yönetici ekranlarını kullanıyordu (QR doğrulama, ders iptali).
