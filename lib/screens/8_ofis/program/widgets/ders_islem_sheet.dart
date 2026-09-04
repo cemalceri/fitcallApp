@@ -3,8 +3,10 @@
 // Izgarada bir derse dokunulduğunda açılan özet + işlem menüsü.
 // İşlemi bu sheet yapmaz; seçilen eylemi çağırana döndürür.
 
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'program_constants.dart';
 
@@ -86,8 +88,14 @@ class DersIslemSheet extends StatelessWidget {
                       ders.urunAdi.isEmpty ? '—' : ders.urunAdi, renk),
                   if (ders.sabitPlanMi)
                     _satir(Icons.repeat, 'Sabit plandan üretildi', renk),
-                  if (ders.aciklama != null && ders.aciklama!.isNotEmpty)
+                  if (!ders.iptalMi &&
+                      ders.aciklama != null &&
+                      ders.aciklama!.isNotEmpty)
                     _satir(Icons.notes, ders.aciklama!, renk),
+                  if (ders.iptalKunyesiVar) ...[
+                    const SizedBox(height: 10),
+                    _IptalKunyesi(ders: ders),
+                  ],
                   const SizedBox(height: 10),
                   Text(
                     'Katılımcılar (${ders.katilimciSayisi})',
@@ -171,6 +179,88 @@ class DersIslemSheet extends StatelessWidget {
       leading: Icon(ikon, color: renk),
       title: Text(baslik, style: TextStyle(color: renk)),
       onTap: () => Navigator.pop(context, islem),
+    );
+  }
+}
+
+/// İptal edilmiş dersin künyesi: kim, ne zaman, hangi sebeple iptal etti.
+///
+/// Izgarada ders "İptal" rozetiyle görünüyordu ama sebebi hiçbir yerde yoktu;
+/// ofis üyeye "neden iptal olmuş" diye cevap veremiyordu. Açıklama da buraya
+/// taşındı — iptalde `aciklama` alanı iptal notunu tutuyor
+/// (bkz. calendarapp/services/etkinlik_iptal_service.py).
+class _IptalKunyesi extends StatelessWidget {
+  final ProgramDersi ders;
+
+  const _IptalKunyesi({required this.ders});
+
+  static final _bicim = DateFormat('d MMM yyyy, HH:mm', 'tr_TR');
+
+  @override
+  Widget build(BuildContext context) {
+    final renkler = context.renkler;
+    final not = ders.aciklama?.trim();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(Bosluk.m),
+      decoration: BoxDecoration(
+        color: renkler.hataZemin,
+        borderRadius: BorderRadius.circular(Yaricap.m),
+        border: Border.all(color: renkler.hata.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.event_busy_rounded, size: 16, color: renkler.hata),
+              const SizedBox(width: Bosluk.s),
+              Expanded(
+                child: Text(
+                  'İptal bilgisi',
+                  style: context.metin.labelLarge?.copyWith(
+                    color: renkler.hata,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Bosluk.s),
+          if (ders.iptalEdenAdi != null)
+            _alan(context, 'İptal eden', ders.iptalEdenAdi!),
+          if (ders.iptalTarihi != null)
+            _alan(context, 'Tarih', _bicim.format(ders.iptalTarihi!)),
+          if (ders.iptalSebebi != null)
+            _alan(context, 'Sebep', ders.iptalSebebi!),
+          if (not != null && not.isNotEmpty) _alan(context, 'Not', not),
+        ],
+      ),
+    );
+  }
+
+  Widget _alan(BuildContext context, String etiket, String deger) {
+    final cs = context.cs;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Bosluk.xs),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 74,
+            child: Text(
+              etiket,
+              style:
+                  context.metin.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+            ),
+          ),
+          const SizedBox(width: Bosluk.s),
+          Expanded(
+            child: Text(deger, style: context.metin.bodyMedium),
+          ),
+        ],
+      ),
     );
   }
 }

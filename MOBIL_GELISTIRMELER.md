@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `main`, `pubspec` sürümü **3.8.1+41** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
-| Testler | `flutter test` **1136 geçiyor**, `flutter analyze` temiz; backend süiti **702 geçiyor** (2026-09-04 ölçümü) |
+| Testler | `flutter test` **1195 geçiyor**, `flutter analyze` temiz; backend süiti **716 geçiyor** (2026-09-04 ölçümü) |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da 3.8.0 gönderimi iptal edildi, yayındaki sürüm **3.7.0**. **3.8.1** `v3.8.1` tag'iyle gönderildi |
 
@@ -72,6 +72,25 @@ Ekranın kendi bilgi notu ("üyelerin ders talebi oluştururken gördüğü uygu
 ---
 
 ## ✅ Tamamlanan turlar
+
+### QR sonuç ekranı + iptal künyesi (2026-09-04)
+- **QR doğrulama sonucu yeniden yazıldı.** Eski hâli ortada duran bir karttı ve her hata aynı gri
+  "Bilgi" başlığına düşüyordu: backend'in hata KODU hiç kullanılmıyor, yalnız mesajı basılıyordu.
+  Görevli "kayıt bulunamadı" ile "süresi dolmuş" arasındaki farkı, dolayısıyla ne yapacağını
+  göremiyordu. Yeni ekran (`lib/screens/1_common/widgets/qr_sonuc_gorunumu.dart`) tüm gövdeyi
+  kaplıyor — kapıda uzaktan okunsun diye durum rengi ekranın tamamında. Kod artık yedi duruma
+  eşleniyor (başarılı / süresi dolmuş / bulunamadı / geçersiz / iptal edilmiş / etkinlik uygun
+  değil / genel hata); her birinin kendi ikonu, rengi, başlığı ve **"şimdi ne yapmalı" satırı** var.
+  Okutma saati ve tam genişlikte "Sonrakini tara" eklendi (kapıda sıra beklerken asıl iş o).
+  Renkler `tema.dart` token'larından; eski ekranda gömülü hex vardı, koyu temada okunmuyordu.
+- **İptal künyesi.** Izgarada ders "İptal" rozetiyle görünüyordu ama kimin, ne zaman, hangi sebeple
+  iptal ettiği **hiç gönderilmiyordu** — veri backend'de duruyordu (`iptal_eden`, `iptal_tarihi`,
+  sebep yöneticinin onay kaydında), yalnız haftalık program ucu taşımıyordu. `_blok()` üç alan daha
+  döndürüyor, `iptal_eden` select_related'a eklendi (N+1 yok). Ders işlem sheet'inde kırmızı bir
+  künye paneli: iptal eden, tarih, sebep (kod değil okunur etiket) ve iptal notu. Not, iptalde
+  `aciklama` alanında tutuluyor — o yüzden iptalde ayrı "açıklama" satırı yerine künyenin içinde.
+- Testler: `test/qr_sonuc_test.dart` (15), taşma matrisine 4 QR bileşeni, ders işlem sheet'ine
+  4 künye testi; backend `test_yonetici_etkinlik_api.py`'ye 3 test.
 
 ### Zorunlu güncelleme Android'de geri tuşuyla atlanabiliyordu (2026-09-04)
 - **Sorun:** `force` direktifinde Android'de Play'in tam ekran (immediate) güncelleme akışı

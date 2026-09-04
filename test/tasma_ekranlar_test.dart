@@ -28,6 +28,8 @@ import 'package:fitcall/models/4_auth/kayit_secenekleri_model.dart';
 import 'package:fitcall/models/4_auth/sifre_sifirlama_model.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
 import 'package:fitcall/screens/1_common/widgets/qr_kod_gorseli.dart';
+import 'package:fitcall/screens/1_common/widgets/qr_sonuc_gorunumu.dart';
+import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/4_auth/widgets/hesap_secim_listesi.dart';
 import 'package:fitcall/screens/4_auth/widgets/kayit_sihirbazi.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart';
@@ -749,6 +751,47 @@ void main() {
         ofisAdi: 'Mehmet Yılmazoğulları',
         onTabSelected: (_) {},
       ),
+    );
+  });
+
+  group('QR doğrulama sonucu', () {
+    Widget sonuc(QrSonucu s) => QrSonucGorunumu(
+          sonuc: s,
+          onYenidenTara: () {},
+          onBitir: () {},
+        );
+
+    tasmaTesti(
+      'QrSonucGorunumu (başarılı, uzun ad)',
+      () => sonuc(QrSonucu(
+        tip: QrSonucTipi.basarili,
+        mesaj: 'Hoşgeldiniz, Abdurrahman Çelebioğulları Karahisarlıoğlu',
+        zaman: DateTime(2026, 7, 23, 14, 32),
+      )),
+    );
+
+    tasmaTesti(
+      'QrSonucGorunumu (süresi dolmuş)',
+      () => sonuc(QrSonucu.hatadan(
+        ApiException('QR_EXPIRED', 'QR kodun süresi dolmuş'),
+        zaman: DateTime(2026, 7, 23, 14, 32),
+      )),
+    );
+
+    tasmaTesti(
+      'QrSonucGorunumu (bulunamadı)',
+      () => sonuc(QrSonucu.hatadan(
+        ApiException('QR_NOT_FOUND', 'QR kod bulunamadı'),
+        zaman: DateTime(2026, 7, 23, 14, 32),
+      )),
+    );
+
+    tasmaTesti(
+      'QrSonucGorunumu (genel hata)',
+      () => sonuc(QrSonucu.hatadan(
+        ApiException('TIMEOUT', 'Sunucuya şu an ulaşılamıyor.'),
+        zaman: DateTime(2026, 7, 23, 14, 32),
+      )),
     );
   });
 

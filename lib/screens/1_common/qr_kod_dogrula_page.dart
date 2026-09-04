@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:ui';
 import 'package:fitcall/models/1_common/qr_kod_models.dart';
+import 'package:fitcall/screens/1_common/widgets/qr_sonuc_gorunumu.dart';
 import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -22,8 +23,10 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
   _ScanPhase _phase = _ScanPhase.idle;
   bool _busy = false;
 
-  QrKodVerifyResponse? _result; // success, message
-  String? _errorMessage; // API/parse/okuyamama
+  /// Ekranın çizeceği sonuç. Hem başarıyı hem hata sebebini tek tip taşır;
+  /// eskiden ayrı `_result`/`_errorMessage` alanları vardı ve hata kodu
+  /// kaybolduğu için her hata aynı gri "Bilgi" kartına düşüyordu.
+  QrSonucu? _sonuc;
 
   @override
   void initState() {
@@ -44,8 +47,7 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
   Future<void> _startScan() async {
     setState(() {
       _phase = _ScanPhase.scanning;
-      _result = null;
-      _errorMessage = null;
+      _sonuc = null;
       _busy = false;
     });
     try {
@@ -56,7 +58,11 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
     } catch (_) {
       setState(() {
         _phase = _ScanPhase.result;
-        _errorMessage = 'Kamera başlatılamadı.';
+        _sonuc = QrSonucu(
+          tip: QrSonucTipi.hata,
+          mesaj: 'Kamera başlatılamadı.',
+          zaman: DateTime.now(),
+        );
       });
     }
   }
@@ -76,21 +82,29 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
       final ApiResult<QrKodVerifyResponse> res =
           await QrCodeApiService.qrKodDogrulaApi(kod: code);
 
+      final cevap = res.data;
       setState(() {
-        _result = res.data;
-        _errorMessage = null;
+        _sonuc = QrSonucu(
+          tip: (cevap?.success ?? false)
+              ? QrSonucTipi.basarili
+              : QrSonucTipi.hata,
+          mesaj: cevap?.message ?? 'QR kod doğrulanamadı.',
+          zaman: DateTime.now(),
+        );
         _phase = _ScanPhase.result;
       });
     } on ApiException catch (e) {
       setState(() {
-        _result = null;
-        _errorMessage = e.message;
+        _sonuc = QrSonucu.hatadan(e);
         _phase = _ScanPhase.result;
       });
-    } catch (e) {
+    } catch (_) {
       setState(() {
-        _result = null;
-        _errorMessage = 'Beklenmeyen bir hata oluştu: $e';
+        _sonuc = QrSonucu(
+          tip: QrSonucTipi.hata,
+          mesaj: 'QR kod doğrulanamadı.',
+          zaman: DateTime.now(),
+        );
         _phase = _ScanPhase.result;
       });
     } finally {
@@ -226,88 +240,24 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
       ],
     );
   }
-
-  Widget _resultCard({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String message,
-    String? extra,
-  }) {
-    return Card(
-      elevation: 8,
-      margin: const EdgeInsets.all(18),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(22, 24, 22, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: iconColor.withAlpha((0.12 * 255).toInt()),
-              child: Icon(icon, size: 40, color: iconColor),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                  fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: .2),
-            ),
-            const SizedBox(height: 10),
-            // API mesajı (Hoşgeldiniz vb.) — belirgin ve büyük
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style:
-                  const TextStyle(fontSize: 18.5, fontWeight: FontWeight.w600),
-            ),
-            if (extra != null && extra.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text(
-                extra,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14.5, color: Colors.black54),
-              ),
-            ],
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: _startScan,
-              icon: const Icon(Icons.qr_code_2),
-              label: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text('Yeniden Tara',
-                    style:
-                        TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
+  /// Sonuç paneli. Görsel gövde [QrSonucGorunumu]'nda: kapıda uzaktan
+  /// okunabilsin diye tüm ekranı kaplayan renkli panel, hata sebebine göre
+  /// ayrı ikon/renk ve "şimdi ne yapmalı" satırı.
   Widget _resultView() {
-    if (_result != null) {
-      final r = _result!;
-      return _resultCard(
-        icon: r.success ? Icons.check_circle : Icons.error_outline,
-        iconColor:
-            r.success ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F),
-        title: r.success ? 'Başarılı' : 'Başarısız',
-        message: r.message,
-        extra: null, // yalnızca metin göstereceğiz (geçerlilik/kalan hak yok)
-      );
-    }
+    final sonuc = _sonuc ??
+        QrSonucu(
+          tip: QrSonucTipi.gecersiz,
+          mesaj: 'QR kod okunamadı.',
+          zaman: DateTime.now(),
+        );
 
-    final msg = _errorMessage ?? 'QR kod okunamadı.';
-    return _resultCard(
-      icon: Icons.info_outline,
-      iconColor: const Color(0xFF616161),
-      title: 'Bilgi',
-      message: msg,
+    return QrSonucGorunumu(
+      sonuc: sonuc,
+      onYenidenTara: _startScan,
+      onBitir: () => Navigator.of(context).maybePop(),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

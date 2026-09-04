@@ -2,6 +2,7 @@
 // temel etkileşimlerinin çalıştığını doğrular.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/ders_islem_sheet.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/ders_iptal_dialog.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/ders_sil_dialog.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/etkinlik_form_sheet.dart';
@@ -277,6 +278,88 @@ void main() {
       );
 
       expect(find.byType(RadioListTile<String>), findsNWidgets(4));
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('DersIslemSheet iptal künyesi', () {
+    ProgramDersi ders({
+      bool iptal = true,
+      String? iptalEden = 'Ayşe Yılmaz',
+      String? sebep = 'Hava Koşulları',
+      String? not = 'Yağmur nedeniyle iptal',
+    }) =>
+        ProgramDersi.fromJson({
+          'id': 1,
+          'tarih': '2026-07-23',
+          'kort_id': 1,
+          'kort_adi': 'Kort 1',
+          'antrenor_id': 1,
+          'antrenor_adi': 'Ayşe Yılmaz',
+          'antrenor_renk': '#2563EB',
+          'urun_id': 1,
+          'urun_adi': 'Grup Dersi',
+          'seviye': 'Kirmizi',
+          'seviye_renk': '#e74c3c',
+          'baslangic_tarih_saat': '2026-07-23T10:00:00+03:00',
+          'bitis_tarih_saat': '2026-07-23T11:00:00+03:00',
+          'saat': '10:00',
+          'bitis_saat': '11:00',
+          'iptal_mi': iptal,
+          'sabit_plan_mi': false,
+          'durum': iptal ? 'iptal' : 'planli',
+          'katilimci_sayisi': 1,
+          'katilimcilar': [
+            {'id': 1, 'ad_soyad': 'Ali Veli'}
+          ],
+          'aciklama': not,
+          'iptal_eden_adi': iptal ? iptalEden : null,
+          'iptal_tarihi': iptal ? '2026-07-22T14:30:00+03:00' : null,
+          'iptal_sebebi': iptal ? sebep : null,
+        });
+
+    Future<void> ac(WidgetTester tester, ProgramDersi d) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(body: DersIslemSheet(ders: d)),
+      ));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('iptal edilen derste kim/ne zaman/neden görünür',
+        (tester) async {
+      await ac(tester, ders());
+
+      expect(find.text('İptal bilgisi'), findsOneWidget);
+      expect(find.text('Ayşe Yılmaz'), findsWidgets); // antrenör + iptal eden
+      expect(find.text('Hava Koşulları'), findsOneWidget);
+      expect(find.text('Yağmur nedeniyle iptal'), findsOneWidget);
+      expect(find.textContaining('22 Tem 2026'), findsOneWidget);
+    });
+
+    testWidgets('iptal değilse künye çizilmez', (tester) async {
+      await ac(tester, ders(iptal: false));
+
+      expect(find.text('İptal bilgisi'), findsNothing);
+    });
+
+    testWidgets('eksik alanlar satır olarak çizilmez', (tester) async {
+      await ac(tester, ders(iptalEden: null, sebep: null, not: null));
+
+      // Künye yine açılır (tarih var) ama boş satır çıkmaz.
+      expect(find.text('İptal bilgisi'), findsOneWidget);
+      expect(find.text('İptal eden'), findsNothing);
+      expect(find.text('Sebep'), findsNothing);
+      expect(find.text('Not'), findsNothing);
+      expect(find.text('Tarih'), findsOneWidget);
+    });
+
+    testWidgets('dar ekranda taşma vermez', (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await ac(tester, ders(not: 'Çok uzun bir iptal notu ' * 6));
+
       expect(tester.takeException(), isNull);
     });
   });

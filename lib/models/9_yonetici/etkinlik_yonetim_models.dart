@@ -22,6 +22,13 @@ int _int(dynamic v, [int varsayilan = 0]) {
   return int.tryParse(v?.toString() ?? '') ?? varsayilan;
 }
 
+/// null ve boş metni aynı kefeye koyar: ekran "kim iptal etti" satırını
+/// boş bir değerle çizmesin.
+String? _bosDegilse(dynamic v) {
+  final metin = v?.toString().trim();
+  return (metin == null || metin.isEmpty) ? null : metin;
+}
+
 /* ============================ ORTAK KÜÇÜK MODELLER ============================ */
 
 class SecenekKort {
@@ -186,6 +193,13 @@ class ProgramDersi {
   final List<ProgramKatilimci> katilimcilar;
   final String? aciklama;
 
+  /// İptal künyesi — yalnız [iptalMi] true iken dolu gelir.
+  /// Sebep yöneticinin onay kaydında tutuluyor, backend okunur etikete
+  /// çevirip gönderiyor (bkz. api/yonetici/etkinlik_metots.py).
+  final String? iptalEdenAdi;
+  final DateTime? iptalTarihi;
+  final String? iptalSebebi;
+
   ProgramDersi({
     required this.id,
     required this.baslangic,
@@ -208,6 +222,9 @@ class ProgramDersi {
     this.katilimciSayisi = 0,
     this.katilimcilar = const [],
     this.aciklama,
+    this.iptalEdenAdi,
+    this.iptalTarihi,
+    this.iptalSebebi,
   });
 
   factory ProgramDersi.fromJson(Map<String, dynamic> j) {
@@ -239,10 +256,21 @@ class ProgramDersi {
               ProgramKatilimci.fromJson((e as Map).cast<String, dynamic>()))
           .toList(),
       aciklama: j['aciklama']?.toString(),
+      iptalEdenAdi: _bosDegilse(j['iptal_eden_adi']),
+      iptalTarihi: parseApiTarih(j['iptal_tarihi']),
+      iptalSebebi: _bosDegilse(j['iptal_sebebi']),
     );
   }
 
   int get sureDakika => bitis.difference(baslangic).inMinutes;
+
+  /// İptal künyesinde gösterilecek en az bir bilgi var mı?
+  bool get iptalKunyesiVar =>
+      iptalMi &&
+      (iptalEdenAdi != null ||
+          iptalTarihi != null ||
+          iptalSebebi != null ||
+          (aciklama?.trim().isNotEmpty ?? false));
 }
 
 class ProgramGunu {
