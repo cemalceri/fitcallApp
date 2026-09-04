@@ -8,6 +8,7 @@ import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
+import 'package:fitcall/services/core/izin_durumu.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/services/notification/notification_router.dart';
@@ -43,6 +44,7 @@ class _NotificationPageState extends State<NotificationPage> {
     if (status.isGranted) return;
 
     if (status.isDenied) {
+      await IzinSorgusu.isaretle(IzinAnahtari.bildirim);
       await Permission.notification.request();
       // İzin verilmiş olabilir: hem iOS'ta token ancak izinden sonra geliyor
       // hem de cihaz kaydındaki bildirim_izni alanı böylece güncel kalıyor.

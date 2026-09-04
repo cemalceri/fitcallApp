@@ -8,6 +8,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/services/api_client.dart';
+import 'package:fitcall/services/core/izin_durumu.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -81,9 +82,15 @@ Future<void> sendFCMDevice() async {
       );
 
       log.bilgiEkle('ios_permission', perm.authorizationStatus.toString());
+      await IzinSorgusu.isaretle(IzinAnahtari.bildirim);
 
       if (perm.authorizationStatus == AuthorizationStatus.denied) {
         log.adimEkle('Bildirim izni reddedildi');
+        // İzin yokken FCM token alınamıyor, yani cihaz kaydı yapılamıyor. Yine
+        // de izin durumu bildiriliyor: aksi halde izin vermeyen iOS cihazı
+        // panelde ya hiç görünmüyor ya da bir kere izin verip sonra kapatmışsa
+        // sonsuza kadar 'izinli' kalıyordu.
+        await _izinDurumunuBildir(log);
         await log.basariliGonder('İşlem durduruldu: Kullanıcı izin vermedi');
         return;
       }
@@ -106,6 +113,7 @@ Future<void> sendFCMDevice() async {
 
       if (apnsToken == null) {
         log.adimEkle('APNs token $_apnsMaxRetry denemede alınamadı');
+        await _izinDurumunuBildir(log);
         await log.hataliGonder(
           'APNs token alınamadı, onTokenRefresh ile tekrar denenecek',
           'APNs timeout after $_apnsMaxRetry attempts',
@@ -250,7 +258,7 @@ Future<String> _uygulamaSurumu() async {
 Future<Map<String, String>> izinDurumlari() async {
   return {
     "bildirim_izni": await _bildirimIzni(),
-    "kamera_izni": await _izinOku(Permission.camera),
+    "kamera_izni": await _izinOku(Permission.camera, IzinAnahtari.kamera),
     "takvim_izni": await _takvimIzni(),
   };
 }
@@ -262,51 +270,53 @@ Future<String> _bildirimIzni() async {
   try {
     if (Platform.isIOS) {
       final ayar = await FirebaseMessaging.instance.getNotificationSettings();
-      switch (ayar.authorizationStatus) {
-        case AuthorizationStatus.authorized:
-          return "izinli";
-        case AuthorizationStatus.denied:
-          return "reddedildi";
-        case AuthorizationStatus.notDetermined:
-          return "sorulmadi";
-        case AuthorizationStatus.provisional:
-          return "gecici";
-      }
+      return bildirimIzniMetni(ayar.authorizationStatus);
     }
     // await şart: try içinde await'siz dönülen future'ın hatasını buradaki
     // catch yakalamaz.
-    return await _izinOku(Permission.notification);
+    return await _izinOku(Permission.notification, IzinAnahtari.bildirim);
   } catch (e) {
-    return "bilinmiyor";
+    return IzinDurumu.bilinmiyor;
   }
 }
 
 /// Takvim izni yalnız iOS'ta anlamlı: Android'de add_2_calendar takvim
 /// uygulamasını intent ile açtığı için uygulamanın izne ihtiyacı yok.
 Future<String> _takvimIzni() async {
-  if (!Platform.isIOS) return "uygulanamaz";
-  return _izinOku(Permission.calendarWriteOnly);
+  if (!Platform.isIOS) return IzinDurumu.uygulanamaz;
+  return _izinOku(Permission.calendarWriteOnly, IzinAnahtari.takvim);
 }
 
 /// permission_handler durumunu backend'in IzinDurumu değerlerine eşler.
-Future<String> _izinOku(Permission izin) async {
+/// [damga] izni daha önce sorup sormadığımızı söyler; sorulmamışsa `denied`
+/// "reddedildi" değil "sorulmadi" demektir (bkz. izin_durumu.dart).
+Future<String> _izinOku(Permission izin, String damga) async {
   try {
     final durum = await izin.status;
-    switch (durum) {
-      case PermissionStatus.granted:
-        return "izinli";
-      case PermissionStatus.denied:
-        return "reddedildi";
-      case PermissionStatus.permanentlyDenied:
-        return "kalici_red";
-      case PermissionStatus.restricted:
-      case PermissionStatus.limited:
-        return "kisitli";
-      case PermissionStatus.provisional:
-        return "gecici";
-    }
+    final soruldu = await IzinSorgusu.soruldumu(damga);
+    return izinMetni(durum, soruldu: soruldu);
   } catch (e) {
-    return "bilinmiyor";
+    return IzinDurumu.bilinmiyor;
+  }
+}
+
+/// Push token'ı olmadan yalnız izin durumunu bildirir. Bu uç cihazın
+/// active/fcm_token alanlarına dokunmaz; amacı bildirim gönderimini değil
+/// görünürlüğü sağlamak.
+Future<void> _izinDurumunuBildir(LogFlowBuilder log) async {
+  try {
+    final bilgi = await _collectDeviceInfo();
+    log.bilgiEkle('bildirim_izni', bilgi['bildirim_izni']);
+    await ApiClient.postParsed<Map<String, dynamic>>(
+      cihazIzinGuncelle,
+      bilgi,
+      (json) => (json as Map).cast<String, dynamic>(),
+      auth: true,
+    );
+    log.adimEkle('İzin durumu sunucuya bildirildi');
+  } catch (e) {
+    // Cihaz kaydı zaten yapılamıyor; izin bildirimi de düşerse akışı bozmaz.
+    log.adimEkle('İzin durumu bildirilemedi: $e');
   }
 }
 

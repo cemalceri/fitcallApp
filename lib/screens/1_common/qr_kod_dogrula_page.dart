@@ -4,6 +4,7 @@ import 'package:fitcall/models/1_common/qr_kod_models.dart';
 import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:fitcall/services/core/izin_durumu.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/api_result.dart';
 
@@ -48,6 +49,9 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
       _busy = false;
     });
     try {
+      // Kamera iznini mobile_scanner'ın kendisi soruyor; damgayı biz bırakıyoruz
+      // ki cihaz kaydında "sorulmadı" ile "reddedildi" ayırt edilebilsin.
+      await IzinSorgusu.isaretle(IzinAnahtari.kamera);
       await _controller.start();
     } catch (_) {
       setState(() {

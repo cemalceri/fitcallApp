@@ -82,7 +82,14 @@ class _LoginPageState extends State<LoginPage> {
       _formuGoster();
     }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await GuncellemeKoordinatoru.kontrolVeUygula(context);
+      try {
+        await GuncellemeKoordinatoru.kontrolVeUygula(context);
+      } catch (_) {
+        // Konfig ucuna ulaşılamazsa (ağ yok, 404) açılış DURMAMALI: hata
+        // buradan sızarsa otomatik giriş hiç çalışmıyor ve "beni hatırla"
+        // açıkken form da çizilmediği için uygulama açılış ekranında asılı
+        // kalıyordu. Güncelleme uyarısı atlanır, akış devam eder.
+      }
       await _tryAutoLoginFromApi();
     });
   }

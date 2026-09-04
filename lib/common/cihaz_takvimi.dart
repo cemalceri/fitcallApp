@@ -13,6 +13,7 @@ import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:flutter/services.dart';
+import 'package:fitcall/services/core/izin_durumu.dart';
 
 /// Dersi cihaz takvimine ekler (takvim uygulamasının kendi ekranı açılır).
 Future<void> dersiCihazTakvimineEkle(EtkinlikModel ders) async {
@@ -22,6 +23,10 @@ Future<void> dersiCihazTakvimineEkle(EtkinlikModel ders) async {
     if ((ders.antrenorAdi ?? '').isNotEmpty) 'Antrenör: ${ders.antrenorAdi}',
     if ((ders.urunAdi ?? '').isNotEmpty) 'Program: ${ders.urunAdi}',
   ];
+
+  // Takvim iznini (iOS) add_2_calendar soruyor; damga cihaz kaydında
+  // "sorulmadı" ile "reddedildi"yi ayırmak için.
+  await IzinSorgusu.isaretle(IzinAnahtari.takvim);
 
   await Add2Calendar.addEvent2Cal(
     Event(

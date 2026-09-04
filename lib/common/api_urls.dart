@@ -74,6 +74,9 @@ String odemeDurumUrl = "$baseUrl/odemeDurum/";
 // =================== QR & GEÇİŞ ===================
 String qrKodDogrula = "$baseUrl/qrKodDogrula";
 String cihazKaydetGuncelle = "$baseUrl/cihazKaydetGuncelle";
+// Token gerektirmeyen izin bildirimi: iOS'ta bildirim izni verilmediğinde FCM
+// token alınamadığı için cihazKaydetGuncelle'e hiç gidilemiyor.
+String cihazIzinGuncelle = "$baseUrl/cihazIzinGuncelle";
 
 // =================== EVENT QR ===================
 String getirEventAktif = "$baseUrl/getirEventAktif";

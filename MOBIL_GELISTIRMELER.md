@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `main`, `pubspec` sürümü **3.8.1+41** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
-| Testler | `flutter test` **1009 geçiyor**, `flutter analyze` temiz; backend süiti **610 geçiyor** |
+| Testler | `flutter test` **1018 geçiyor**, `flutter analyze` temiz; backend süiti **664 geçiyor** (2026-09-04 ölçümü) |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da 3.8.0 gönderimi iptal edildi, yayındaki sürüm **3.7.0**. **3.8.1** `v3.8.1` tag'iyle gönderildi |
 
@@ -72,6 +72,39 @@ Ekranın kendi bilgi notu ("üyelerin ders talebi oluştururken gördüğü uygu
 ---
 
 ## ✅ Tamamlanan turlar
+
+### İzin raporlaması düzeltildi — iOS körlüğü (2026-09-04)
+
+Panelde **iOS cihazların %100'ü "bildirim izni verildi"** görünüyordu; aynı sürümde Android'in
+red oranı ~%17 olduğu için bu istatistiksel olarak imkânsızdı. Prod ölçümü: iOS 3.8.x'te 189
+cihazın 189'u `izinli`, tek bir red yok.
+
+- **Kök neden:** `fcm_service.dart` iOS'ta izin reddedilince cihaz kaydını POST etmeden
+  `return` ediyordu. Sonuç: izin vermeyen iOS cihazı panelde **hiç görünmüyor**; bir kere izin
+  verip sonra Ayarlar'dan kapatan kullanıcı ise her girişte aynı `return`'e takıldığı için
+  sonsuza kadar `izinli` kalıyor. Alan "izin verdi"yi değil "bir zamanlar izin vermişti"yi
+  gösteriyordu.
+- **Çözüm:** yeni `cihazIzinGuncelle` ucu (token istemiyor). İzin reddinde ve APNs token
+  alınamadığında yalnız izin durumu bildiriliyor. Uç `active`/`fcm_token` alanlarına
+  **dokunmuyor** — push gönderimi `active=True` filtresine dayanıyor, izin bildirimi hedefi
+  değiştirmemeli. Kaydı olmayan cihaz için satır `active=False` açılıyor.
+- **İkinci hata — "sorulmadı" ile "reddedildi" karışması:** permission_handler iOS'ta ikisine de
+  `denied` diyor, Android'de de ilk sorudan önceki durum `denied`. Bu yüzden 189 iOS cihazın
+  hepsinde kamera ve takvim `reddedildi` görünüyordu; oysa çoğu hiç sorulmamıştı. Artık izni
+  tetikleyen ekran (`qr_kod_dogrula_page`, `cihaz_takvimi`, `notification_page`) damga bırakıyor
+  (`lib/services/core/izin_durumu.dart`), damgasız `denied` → `sorulmadi`. Damgalar oturum
+  verisi değil: `StorageService.clearAll` tema gibi onları da koruyor.
+  **Not:** mevcut kurulumlarda damga yok, yani gerçekten reddetmiş bir kullanıcı da bir süre
+  `sorulmadi` görünür; ilgili ekran bir kez açılınca kendini düzeltir.
+- **Üçüncü hata (ilgisiz, aynı turda):** `login_page._acilisAkisi` güncelleme kontrolünü
+  try/catch'siz çağırıyordu. Konfig ucu hata verirse (ağ yok, 404) istisna postFrame callback'ten
+  sızıyor, `_tryAutoLoginFromApi` hiç çalışmıyor ve "beni hatırla" açıkken form da çizilmediği
+  için uygulama açılış ekranında asılı kalıyordu.
+- Testler: `test/izin_durumu_test.dart` (10 test, eşleme saf fonksiyona çıkarıldı),
+  `tests/api/test_cihaz_kaydi_izinler.py::TestIzinUcu` (5 test).
+
+**Deploy sırası: önce backend, sonra mobil.** Ters sırada mobil `cihazIzinGuncelle`'i 404 alır
+(akış bozulmaz, izin bildirimi sessizce düşer).
 
 ### Kayıt ve şifremi unuttum native oldu (2026-08-18)
 
@@ -466,6 +499,64 @@ Detay `SURUM_NOTLARI.md` → 3.6.0.
   kod**. (29) girdikten sonra yapılmalı, ölü dallar aynı turda temizlenmeli.
 - **(27)** Bildirim tercihleri — kullanıcı hangi bildirim türlerini alacağını seçsin
 - **(28)** Üye ↔ antrenör ↔ yönetim iletişim kısayolu (mesaj/WhatsApp deep-link)
+
+### Etkileşim / oyunlaştırma — araştırma notu (2026-08-21)
+
+**(42) Servis Düellosu — asenkron 1v1 zihin oyunu.** *Fikir aşamasında, kodlanmadı.*
+Amaç uygulamayı oyuna kaydırmak değil; üyenin gün içinde 2-3 kez uygulamaya uğramasını
+sağlayan hafif bir etkileşim katmanı kurmak.
+
+**Neden bu format:** gerçek zamanlı PvP (Tennis Clash modeli) saniyelik eşleştirme havuzu
+ister — akademi ölçeğinde salı 14:00'te rakip bulunamaz. Asenkron sıra tabanlı düello bu
+sorunu kökten ortadan kaldırır ve mevcut REST + FCM altyapısına oturur, WebSocket gerekmez.
+
+**Kanıt tabanı (2026-08-21 araştırması):** tam kombinasyon (tenis + asenkron düello) hit
+olarak yok, ama parçaları ayrı ayrı kanıtlı:
+- *Line Clipper: Tennis Tactics* (Steam, Kas 2025) — sıra tabanlı tenis; el yapısı
+  nişan al → toparlan → **rakibin vuruşunu tahmin et ve karşılığını hazırla** → topa git.
+  Tasarım kanıtı var, ticari kanıt yok (2 inceleme).
+- *Penalty Challenge Multiplayer* — mekanik birebir aynısı, futbol hali; "aynı köşeye çok
+  atarsan okunursun".
+- *Trivia Crack* — 800M indirme; yapısal şablon: asenkron sıra + "rakibin oynadı" push'u.
+- *Yomi* (Sirlin) — ağırlıklı taş-kağıt-makas'ın şans değil beceri olduğunun tasarım kanıtı.
+- Tavan: Top Eleven 300M kayıtlı kullanıcı, Golf Clash 1,2 milyar $ hasılat.
+- Teorik dayanak: teniste servis yönü seçimi literatürde karma strateji dengesi olarak
+  incelenen gerçek bir tahmin düellosu (Walker-Wooders).
+
+**Kurallar (taslak):**
+- Maç = tek oyun (game), 4 sayı alan kazanır; ~10-16 el, 2-3 güne yayılır.
+- El = **eşzamanlı gizli seçim**. Servis atan yön (T / gövde / dışarı) + tip
+  (düz / kick / slice); karşılayan yalnız yön tahmin eder. Sunucu ancak iki taraf da
+  girdiğinde açar — kimse diğerinin seçimini önce göremez.
+- Çözüm ağırlıklı, saf taş-kağıt-makas değil: tahmin tutarsa karşılayan baskın,
+  tutmazsa ace; "gövde" orta risk (tutmasa da tam kaybettirmez, tutunca az kazandırır).
+  Tip katmanı: düz hızlı ama okununca ölür, kick güvenli ama az kazandırır, slice saptırır.
+- Rakibin son 10 seçiminin dağılımı gösterilir (beceriyi bu görünürlük yaratıyor) —
+  **gürültülü ve gecikmeli** gösterilmeli, yoksa sömürülür.
+- Rakip yoksa **hayalet rakip**: gerçek oyuncuların geçmiş seçim dağılımından üretilen bot.
+- **Günlük el hakkı sınırlı** (Wordle mantığı). El hakkı derse katılımdan / kort
+  rezervasyonundan / skor girmekten kazanılır → oyun akademiye trafik pompalar, ondan çalmaz.
+  Oyun puanı gerçek ödüle döner (ücretsiz kort saati, ip/grip, ders indirimi).
+
+**Teknik kapsam (tahmin):** iki tablo (`duello`, `duello_el`), 5-6 endpoint, iki ekran
+(aktif düellolar listesi + el ekranı), bir FCM tetikleyicisi. Kritik nokta: gizli seçimlerin
+sunucu tarafında iki taraf da girene kadar açılmaması.
+
+**Bilinen risk:** mekaniğin derinliği sınırlı, 2-3 hafta sonra düzenli oynayanlar birbirini
+okur. Çözüm: sezon rotasyonu + oyuncu stili kartları (agresif vuruşçu / duvar / servis-vole,
+aralarında gerçek tenisteki üstünlük ilişkisi). Line Clipper'ın çok fazlı ral yapısı derinlik
+eklemenin diğer yolu ama **ilk sürüme koyulmamalı** — önce tek elin tutup tutmadığı
+20-30 kişilik kapalı testle ölçülmeli.
+
+**Alternatif / tamamlayıcı fikirler (aynı araştırmadan):**
+- **(43) Kulüp merdiveni (ladder)** — üye üstündeki 3 kişiden birine meydan okur, kortu
+  uygulamadan ayırır, skoru girer, sıralama oynar. Oyun değil, gerçek maçın oyunlaştırılması;
+  kort doluluğunu ve ders satışını doğrudan artırır. Playtomic (ELO seviye + güvenilirlik
+  yüzdesi) ve Global Tennis Network (~198bin oyuncu, 17 yıl) bu modeli kanıtlamış.
+  Golfte 18Birdies ödül programından sonra uygulamaya geri dönüş %100 artmış.
+- **(44) Turnuva tahmini (pick'em)** — kulüp içi turnuvalarda ve Grand Slam'lerde braket
+  doldurma + kulüp lider tablosu. Geliştirmesi en ucuzu (birkaç gün), ama sezonluk çalışır,
+  sürekli döngü sağlamaz. (42) veya (43) yanında ek olarak iyi.
 
 ### Tasarım / arayüz denetimi — 2026-08-11 turunda **yapıldı**
 
