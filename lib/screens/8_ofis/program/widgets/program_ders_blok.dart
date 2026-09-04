@@ -1,4 +1,4 @@
-// lib/screens/7_yonetici/program/widgets/program_ders_blok.dart
+// lib/screens/8_ofis/program/widgets/program_ders_blok.dart
 //
 // Izgaradaki tek ders bloğu. Yükseklik kısa dersler için çok küçülebildiğinden
 // içerik kademeli gösterilir (taşma yerine bilgi azaltılır).

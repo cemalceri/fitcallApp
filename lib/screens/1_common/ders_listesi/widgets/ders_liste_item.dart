@@ -1,4 +1,4 @@
-// lib/screens/7_yonetici/dersler/widgets/ders_liste_item.dart
+// lib/screens/1_common/ders_listesi/widgets/ders_liste_item.dart
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';

@@ -27,6 +27,9 @@ class NavigationHelper {
       case Roller.yonetici:
         _pushClear(context, routeEnums[SayfaAdi.yoneticiAnasayfa]!);
         break;
+      case Roller.ofis:
+        _pushClear(context, routeEnums[SayfaAdi.ofisAnasayfa]!);
+        break;
       default:
         _pushClear(context, routeEnums[SayfaAdi.uyeAnasayfa]!);
     }

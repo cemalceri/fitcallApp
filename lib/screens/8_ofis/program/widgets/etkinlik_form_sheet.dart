@@ -1,4 +1,4 @@
-// lib/screens/7_yonetici/program/widgets/etkinlik_form_sheet.dart
+// lib/screens/8_ofis/program/widgets/etkinlik_form_sheet.dart
 //
 // Ders oluşturma / düzenleme formu.
 // Web'deki _etkinlik_kaydet_modal.html karşılığı; aynı alanlar ve aynı kurallar

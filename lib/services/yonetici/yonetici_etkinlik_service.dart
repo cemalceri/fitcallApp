@@ -1,7 +1,11 @@
 // lib/services/yonetici/yonetici_etkinlik_service.dart
 //
-// Yönetici ders (etkinlik) yönetimi uçları.
-// Backend: api/yonetici/etkinlik_metots.py
+// Ders (etkinlik) yönetimi uçları.
+// Backend: api/yonetici/etkinlik_metots.py — rol izni: yonetici + ofis.
+//
+// Mobilde bu servisi yalnız OFİS kabuğu kullanıyor (lib/screens/8_ofis/program/);
+// sınıf ve dosya adı, karşılık geldiği backend modülünü izlesin diye "yonetici"
+// kaldı.
 //
 // Kaydetme ve iptal, backend'de web ile ORTAK servis katmanından geçer
 // (calendarapp/services/etkinlik_kaydet_service.py & etkinlik_iptal_service.py);

@@ -119,6 +119,13 @@ const String getKullaniciIptalTalepleriUrl =
 const String getDersIptalTalebiUrl = "$baseUrl/getDersIptalTalebi";
 const String iptalTalebiGeriCekUrl = "$baseUrl/iptalTalebiGeriCek";
 
+// =================== OFİS (ÖN BÜRO) ===================
+// Ders yönetimi uçları yöneticiyle ORTAK (yoneticiEtkinlik*, yoneticiDersler);
+// ofise özel olan yalnız üye uçları, çünkü tek fark alan kırpması: bu uçlar
+// bakiye, para hareketi, adres, meslek, veli ve acil durum bilgisi döndürmez.
+const String ofisUyelerUrl = "$baseUrl/ofisUyeler";
+const String ofisUyeDetayUrl = "$baseUrl/ofisUyeDetay";
+
 // =================== YÖNETİCİ ===================
 const String yoneticiDashboard = "$baseUrl/yoneticiDashboard";
 const String yoneticiRaporlar = "$baseUrl/yoneticiRaporlar";

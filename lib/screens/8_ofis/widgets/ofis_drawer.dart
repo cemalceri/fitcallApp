@@ -1,33 +1,29 @@
-// lib/screens/7_yonetici/widgets/yonetici_drawer.dart
+// lib/screens/8_ofis/widgets/ofis_drawer.dart
 
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/1_common/widgets/yan_menu.dart';
-import 'package:fitcall/screens/7_yonetici/uyeler/borclu_uyeler_page.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Yönetici ana kabuğunun sol menüsü.
+/// Ofis ana kabuğunun sol menüsü.
 ///
-/// Dersler alt bara sığmadığı için burada, kendi "Ders yönetimi" bölümünde en
-/// üstte duruyor. Alt bardaki sekmeler de listede — hangisinde olunduğu aktif
-/// satırla belli olur; drawer yöneticinin tüm ekranlarına açılan tek dizin.
-///
-/// Haftalık Program ve QR Doğrula burada YOK: aksiyon ekranları ofis kabuğuna
-/// taşındı (bkz. lib/screens/8_ofis/). QR Oluştur kaldı; o kişisel bir işlem
-/// (kendi tesis geçişi + misafir daveti), yönetim işlemi değil.
-class YoneticiDrawer extends StatelessWidget {
-  final String yoneticiAdi;
+/// Alt bardaki dört sekme burada da listeleniyor — hangisinde olunduğu aktif
+/// satırla belli olur; drawer ofisin tüm ekranlarına açılan tek dizin.
+/// Ciro, bakiye, hakediş ve raporlar bilinçli olarak yok: onlar yönetici
+/// kabuğunda (bkz. lib/screens/7_yonetici/).
+class OfisDrawer extends StatelessWidget {
+  final String ofisAdi;
 
-  /// Sekme değiştirir (YoneticiMainPage sıralaması).
+  /// Sekme değiştirir (OfisMainPage sıralaması).
   final ValueChanged<int> onTabSelected;
 
   /// Aktif sekme — menüde işaretlenir.
   final int aktifSekme;
 
-  const YoneticiDrawer({
+  const OfisDrawer({
     super.key,
-    required this.yoneticiAdi,
+    required this.ofisAdi,
     required this.onTabSelected,
     this.aktifSekme = 0,
   });
@@ -44,14 +40,6 @@ class YoneticiDrawer extends StatelessWidget {
     Navigator.pushNamed(context, route);
   }
 
-  void _borcluUyeler(BuildContext context) {
-    HapticFeedback.lightImpact();
-    Navigator.pop(context);
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const BorcluUyelerPage()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -59,8 +47,8 @@ class YoneticiDrawer extends StatelessWidget {
         child: Column(
           children: [
             YanMenuBasligi(
-              ad: yoneticiAdi.isNotEmpty ? yoneticiAdi : 'Yönetici Menüsü',
-              altBaslik: 'Yönetim menüsü',
+              ad: ofisAdi.isNotEmpty ? ofisAdi : 'Ofis Menüsü',
+              altBaslik: 'Ön büro menüsü',
             ),
             const Divider(height: 1),
             Expanded(
@@ -69,53 +57,35 @@ class YoneticiDrawer extends StatelessWidget {
                 children: [
                   const YanMenuBolumu('Ders yönetimi'),
                   YanMenuOgesi(
-                    ikon: Icons.event_rounded,
-                    baslik: 'Dersler',
-                    aktif: aktifSekme == 4,
-                    onTap: () => _sekme(context, 4),
-                  ),
-                  const YanMenuBolumu('Panolar'),
-                  YanMenuOgesi(
-                    ikon: Icons.dashboard_rounded,
-                    baslik: 'Dashboard',
+                    ikon: Icons.grid_view_rounded,
+                    baslik: 'Haftalık Program',
                     aktif: aktifSekme == 0,
                     onTap: () => _sekme(context, 0),
                   ),
                   YanMenuOgesi(
-                    ikon: Icons.bar_chart_rounded,
-                    baslik: 'Raporlar',
+                    ikon: Icons.event_rounded,
+                    baslik: 'Dersler',
                     aktif: aktifSekme == 1,
                     onTap: () => _sekme(context, 1),
                   ),
+                  const YanMenuBolumu('Üyeler'),
                   YanMenuOgesi(
                     ikon: Icons.people_rounded,
-                    baslik: 'Üyeler',
+                    baslik: 'Üye Listesi',
                     aktif: aktifSekme == 2,
                     onTap: () => _sekme(context, 2),
                   ),
-                  YanMenuOgesi(
-                    ikon: Icons.sports_tennis_rounded,
-                    baslik: 'Antrenörler',
-                    aktif: aktifSekme == 3,
-                    onTap: () => _sekme(context, 3),
-                  ),
                   const YanMenuBolumu('İşlemler'),
                   YanMenuOgesi(
-                    ikon: Icons.schedule_rounded,
-                    baslik: 'Hakediş Saatleri',
+                    ikon: Icons.qr_code_scanner_rounded,
+                    baslik: 'QR Doğrula',
                     onTap: () =>
-                        _git(context, routeEnums[SayfaAdi.yoneticiHakedis]!),
-                  ),
-                  YanMenuOgesi(
-                    ikon: Icons.account_balance_wallet_rounded,
-                    baslik: 'Borçlu Üyeler',
-                    onTap: () => _borcluUyeler(context),
+                        _git(context, routeEnums[SayfaAdi.qrKodDogrula]!),
                   ),
                   YanMenuOgesi(
                     ikon: Icons.qr_code_rounded,
                     baslik: 'QR Oluştur',
-                    onTap: () =>
-                        _git(context, routeEnums[SayfaAdi.qrKodKayit]!),
+                    onTap: () => _git(context, routeEnums[SayfaAdi.qrKodKayit]!),
                   ),
                   ValueListenableBuilder<int>(
                     valueListenable: NotificationService.unreadCount,
@@ -123,8 +93,8 @@ class YoneticiDrawer extends StatelessWidget {
                       ikon: Icons.notifications_rounded,
                       baslik: 'Bildirimler',
                       rozet: adet,
-                      onTap: () =>
-                          _git(context, routeEnums[SayfaAdi.bildirimler]!),
+                      aktif: aktifSekme == 3,
+                      onTap: () => _sekme(context, 3),
                     ),
                   ),
                 ],

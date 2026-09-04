@@ -1,4 +1,4 @@
-// lib/screens/7_yonetici/program/widgets/program_gun_seridi.dart
+// lib/screens/8_ofis/program/widgets/program_gun_seridi.dart
 //
 // Haftanın gün seçici şeridi.
 //

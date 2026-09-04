@@ -1,4 +1,4 @@
-// lib/screens/7_yonetici/program/widgets/program_constants.dart
+// lib/screens/8_ofis/program/widgets/program_constants.dart
 //
 // Yönetici haftalık program ızgarasının ölçü/renk sabitleri.
 // Web'deki DayPilot "Resources" görünümünün mobil karşılığı: satırlar saat,

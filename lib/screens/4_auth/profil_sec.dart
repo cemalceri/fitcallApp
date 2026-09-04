@@ -65,6 +65,12 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
             color: const Color(0xFFEC4899),
             gradient: const [Color(0xFFEC4899), Color(0xFFF43F5E)],
             label: 'Antrenör');
+      case 'ofis':
+        return _RolTheme(
+            icon: Icons.support_agent_rounded,
+            color: const Color(0xFF0EA5E9),
+            gradient: const [Color(0xFF0EA5E9), Color(0xFF2563EB)],
+            label: 'Ofis');
       case 'cafe':
         return _RolTheme(
             icon: Icons.local_cafe_rounded,
@@ -87,10 +93,10 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
       groupedProfiles.putIfAbsent(p.rol, () => []).add(p);
     }
 
-    // Grupları sabit sırayla göster (Yönetici → Antrenör → Üye → Kafe → diğer);
-    // her grup içinde profilleri ada göre alfabetik sırala. Aksi halde gruplar
-    // en son eklenen veriye göre rastgele sırada geliyordu.
-    const rolSirasi = ['yonetici', 'antrenor', 'uye', 'cafe'];
+    // Grupları sabit sırayla göster (Yönetici → Ofis → Antrenör → Üye → Kafe →
+    // diğer); her grup içinde profilleri ada göre alfabetik sırala. Aksi halde
+    // gruplar en son eklenen veriye göre rastgele sırada geliyordu.
+    const rolSirasi = ['yonetici', 'ofis', 'antrenor', 'uye', 'cafe'];
     int rolIndex(String r) {
       final i = rolSirasi.indexOf(r);
       return i == -1 ? rolSirasi.length : i;

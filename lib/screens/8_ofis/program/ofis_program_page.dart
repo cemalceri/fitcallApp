@@ -1,7 +1,12 @@
-// lib/screens/7_yonetici/program/yonetici_program_page.dart
+// lib/screens/8_ofis/program/ofis_program_page.dart
 //
-// Yöneticinin haftalık ders programı: gün seçici + kort kolonlu ızgara.
+// Ofisin haftalık ders programı: gün seçici + kort kolonlu ızgara.
 // Web'deki /etkinlik-pilot ekranının mobil karşılığı.
+//
+// Mobilde ders açma/düzenleme/iptal/silme aksiyonlarının TAMAMI bu ekranda ve
+// bu ekran yalnız ofis kabuğunda; yönetici kabuğunda aksiyon ekranı yok
+// (o taraf raporlama + genel görünüm). Uçlar backend'de hâlâ yoneticiEtkinlik*
+// adını taşıyor, rol izni "yonetici" + "ofis" olarak genişletildi.
 //
 // Kayıt/güncelleme/iptal işlemleri backend'de web ile ORTAK servis katmanından
 // geçer, dolayısıyla iş kuralları (30 dk katları, telafi hakkı, 24 saat kuralı,
@@ -22,14 +27,18 @@ import 'widgets/etkinlik_form_sheet.dart';
 import 'widgets/program_gorunumu.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
-class YoneticiProgramPage extends StatefulWidget {
-  const YoneticiProgramPage({super.key});
+class OfisProgramPage extends StatefulWidget {
+  /// Kabuğun drawer'ını açar. Ayrı rota olarak açıldığında null gelir ve
+  /// menü ikonu hiç çizilmez.
+  final VoidCallback? onMenuTap;
+
+  const OfisProgramPage({super.key, this.onMenuTap});
 
   @override
-  State<YoneticiProgramPage> createState() => _YoneticiProgramPageState();
+  State<OfisProgramPage> createState() => _OfisProgramPageState();
 }
 
-class _YoneticiProgramPageState extends State<YoneticiProgramPage> {
+class _OfisProgramPageState extends State<OfisProgramPage> {
   HaftalikProgram? _program;
   bool _yukleniyor = true;
   bool _islemDevamEdiyor = false;
@@ -266,6 +275,7 @@ class _YoneticiProgramPageState extends State<YoneticiProgramPage> {
                 onOncekiHafta: _yukleniyor ? null : () => _haftaDegistir(-1),
                 onSonrakiHafta: _yukleniyor ? null : () => _haftaDegistir(1),
                 onBugun: _yukleniyor ? null : _bugune,
+                onMenuTap: widget.onMenuTap,
                 onGunSec: _gunSec,
                 onDersTap: _derseDokunuldu,
                 onBosSlotTap: (kort, baslangic) =>

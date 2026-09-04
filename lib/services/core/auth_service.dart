@@ -143,6 +143,7 @@ class AuthService {
     if (r == Roller.antrenor.name) return Roller.antrenor;
     if (r == Roller.uye.name) return Roller.uye;
     if (r == Roller.yonetici.name) return Roller.yonetici;
+    if (r == Roller.ofis.name) return Roller.ofis;
     if (r == Roller.cafe.name) return Roller.cafe;
 
     throw ApiException(

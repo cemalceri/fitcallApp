@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
-import 'package:fitcall/screens/7_yonetici/widgets/yonetici_ad.dart';
+import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
@@ -50,7 +50,7 @@ class _DashboardHeaderState extends State<DashboardHeader> {
   Future<void> _adYukle() async {
     final profil = await StorageService.uyeProfilBilgileriniGetir();
     if (profil == null || !mounted) return;
-    setState(() => _yoneticiAdi = yoneticiGorunenAd(profil.user));
+    setState(() => _yoneticiAdi = hesapGorunenAdi(profil.user));
   }
 
   String _getGreeting() {

@@ -1,4 +1,4 @@
-// lib/screens/7_yonetici/program/widgets/ders_iptal_dialog.dart
+// lib/screens/8_ofis/program/widgets/ders_iptal_dialog.dart
 //
 // Ders iptali: sebep + açıklama + mod seçimi.
 // Web'deki ders_yonetimi ekranındaki iptal penceresinin karşılığı; aynı

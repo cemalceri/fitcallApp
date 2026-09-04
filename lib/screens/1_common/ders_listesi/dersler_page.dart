@@ -1,12 +1,12 @@
-// lib/screens/7_yonetici/dersler/dersler_page.dart
+// lib/screens/1_common/ders_listesi/dersler_page.dart
 
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
-import 'package:fitcall/screens/7_yonetici/dersler/widgets/ders_istatistik_kartlar.dart';
-import 'package:fitcall/screens/7_yonetici/dersler/widgets/ders_liste_item.dart';
+import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_istatistik_kartlar.dart';
+import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_liste_item.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';

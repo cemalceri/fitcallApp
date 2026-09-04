@@ -1,4 +1,4 @@
-// lib/screens/7_yonetici/program/widgets/uye_secim_sheet.dart
+// lib/screens/8_ofis/program/widgets/uye_secim_sheet.dart
 //
 // Derse katılımcı seçimi: arama + çoklu seçim.
 // Pasif üyeler (düzenlemede hâlâ derste kayıtlı olanlar) "Pasif" etiketiyle

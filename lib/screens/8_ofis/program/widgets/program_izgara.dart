@@ -1,4 +1,4 @@
-// lib/screens/7_yonetici/program/widgets/program_izgara.dart
+// lib/screens/8_ofis/program/widgets/program_izgara.dart
 //
 // Günün kort × saat ızgarası.
 //

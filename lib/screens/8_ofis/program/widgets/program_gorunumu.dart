@@ -1,8 +1,8 @@
-// lib/screens/7_yonetici/program/widgets/program_gorunumu.dart
+// lib/screens/8_ofis/program/widgets/program_gorunumu.dart
 //
 // Program sayfasının GÖRSEL gövdesi — durumsuz ve veriyle beslenen tek parça.
 //
-// Sayfa (YoneticiProgramPage) yalnızca veri çekme/işlem yürütme işini yapar,
+// Sayfa (OfisProgramPage) yalnızca veri çekme/işlem yürütme işini yapar,
 // yerleşimi buraya devreder. Ayrılmasının sebebi: sayfa initState'te API
 // çağırdığı için widget testinde render edilemiyordu; bu yüzden başlık ve gün
 // şeridi hiçbir testin kapsamına girmemiş ve gün şeridindeki 1 piksellik taşma
@@ -29,6 +29,11 @@ class ProgramGorunumu extends StatelessWidget {
   final ValueChanged<ProgramDersi> onDersTap;
   final void Function(SecenekKort kort, DateTime baslangic)? onBosSlotTap;
 
+  /// Sol üstteki menü (hamburger). Kabuğun drawer'ını açar; null ise gizlenir.
+  /// Program ofis kabuğunun açılış sekmesi olduğu için drawer'a buradan
+  /// giriliyor (kenardan kaydırma her sekmede zaten çalışır).
+  final VoidCallback? onMenuTap;
+
   const ProgramGorunumu({
     super.key,
     required this.program,
@@ -40,6 +45,7 @@ class ProgramGorunumu extends StatelessWidget {
     this.onSonrakiHafta,
     this.onBugun,
     this.onBosSlotTap,
+    this.onMenuTap,
   });
 
   String _gunAnahtari(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
@@ -58,6 +64,7 @@ class ProgramGorunumu extends StatelessWidget {
           onOnceki: onOncekiHafta,
           onSonraki: onSonrakiHafta,
           onBugun: onBugun,
+          onMenu: onMenuTap,
         ),
         ProgramGunSeridi(
           gunler: program.gunler,
@@ -100,6 +107,9 @@ class ProgramBaslik extends StatelessWidget {
   final VoidCallback? onSonraki;
   final VoidCallback? onBugun;
 
+  /// Kabuk menüsü. null ise ikon hiç çizilmez (sayfa tek başına açıldığında).
+  final VoidCallback? onMenu;
+
   const ProgramBaslik({
     super.key,
     required this.haftaBaslangic,
@@ -107,6 +117,7 @@ class ProgramBaslik extends StatelessWidget {
     this.onOnceki,
     this.onSonraki,
     this.onBugun,
+    this.onMenu,
   });
 
   @override
@@ -118,6 +129,13 @@ class ProgramBaslik extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 6, 4, 2),
       child: Row(
         children: [
+          if (onMenu != null)
+            IconButton(
+              onPressed: onMenu,
+              icon: const Icon(Icons.menu_rounded),
+              tooltip: 'Menü',
+              visualDensity: VisualDensity.compact,
+            ),
           IconButton(
             onPressed: onOnceki,
             icon: const Icon(Icons.chevron_left),

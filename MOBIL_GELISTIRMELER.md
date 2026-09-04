@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `main`, `pubspec` sürümü **3.8.1+41** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
-| Testler | `flutter test` **1018 geçiyor**, `flutter analyze` temiz; backend süiti **664 geçiyor** (2026-09-04 ölçümü) |
+| Testler | `flutter test` **1126 geçiyor**, `flutter analyze` temiz; backend süiti **702 geçiyor** (2026-09-04 ölçümü) |
 | Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da 3.8.0 gönderimi iptal edildi, yayındaki sürüm **3.7.0**. **3.8.1** `v3.8.1` tag'iyle gönderildi |
 
@@ -72,6 +72,35 @@ Ekranın kendi bilgi notu ("üyelerin ders talebi oluştururken gördüğü uygu
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Ofis (ön büro) profili — aksiyonlar yöneticiden ayrıldı (2026-09-04)
+- **İstek:** Ofis çalışanı mobilde yönetici ekranlarını kullanıyordu (QR doğrulama, ders iptali).
+  Aksiyonlar ofise taşınsın, yönetici raporlama + genel görünümde kalsın, ofis gizli bilgi
+  görmesin. Rol'e göre buton aç/kapa değil, **ayrı kabuk**.
+- **Rol:** Backend'de `RolEnum.OFIS` zaten vardı (web yetkisi + plan dışı katılım bildirimi
+  alıcısı); tıkanan yer mobildi. `Roller` enum'una `ofis` eklendi, `AuthService` rol eşlemesi,
+  `NavigationHelper` yönlendirmesi ve `profil_sec` rol teması/sırası tamamlandı. **Ön koşul:**
+  ofis profilinin `SistemKullaniciModel.isletme` alanı dolu olmalı — `token_user` tenant'ı
+  oradan çözüyor, boşsa 403 `TENANT_REQUIRED`.
+- **Ofise geçen ekranlar:** haftalık program (yeni ders / düzenle / iptal / iptal geri al /
+  kalıcı sil — ders formu **antrenör katsayısı ve ekstra ücret dahil** tam hâliyle), günlük ders
+  listesi (yöneticiyle ortak), kırpılmış üye listesi + detayı, bildirimler (ofise düşen kararlar
+  zaten `rol=ofis`'e gidiyordu, artık mobilde de görünüyor), merkez QR butonunda oluştur+doğrula.
+- **Yöneticide kalanlar:** dashboard, raporlar, üyeler (bakiyeli), antrenörler, hakediş, borçlu
+  üyeler, QR oluştur. Yönetici kabuğunda **aksiyon ekranı kalmadı**; program ızgarası ve QR
+  doğrula çıktı, gün gün ne olduğu Dersler sekmesinden okunuyor.
+- **Gizli bilgi sınırı sunucuda:** yeni `ofisUyeler` / `ofisUyeDetay` uçları (`api/ofis/`) beyaz
+  liste ile çalışıyor — bakiye, para hareketleri, aylık özet, adres, meslek, veli, acil durum ve
+  okul alanları hiç gönderilmiyor. `siralama="bakiye"` ve `filtre="borclu"` de reddediliyor;
+  sıralamanın kendisi borç bilgisi sızdırır. `lib/models/10_ofis/` modellerinde o alanlar tanımlı
+  bile değil, yani ekran yanlışlıkla gösteremez. Ders yönetimi uçları ortak
+  (`@rol_gerekli("yonetici", "ofis")`, 8 uç).
+- **Klasör düzeni:** `7_yonetici/program/` → `8_ofis/program/`, `7_yonetici/dersler/` →
+  `1_common/ders_listesi/` (iki kabukta da kullanılıyor), QR sheet ve görünen-ad yardımcısı
+  `1_common/widgets/` altına alındı. `NotificationPage`'e `gomulu` bayrağı eklendi — sekme
+  içindeyken geri oku kabuğu pop etmesin diye.
+- Testler: `tests/api/test_ofis_uclari.py` (38), `test/ofis_uye_model_test.dart` (9), taşma
+  testine 7 bileşen. `flutter test` 1018 → **1126**, backend 664 → **702**.
 
 ### İzin raporlaması düzeltildi — iOS körlüğü (2026-09-04)
 
@@ -416,8 +445,8 @@ filtrelenerek görülüyor.
   plan dışı kayıtlar antrenör/yönetici ekranlarında da turuncu "Plan Dışı" etiketiyle gösteriliyor.
   Detay sheet'inde ders künyesi + eklenen/çıkarılan kişi listesi (`PlanDisiBildirimOzeti`); sheet
   içeriği artık kaydırılabilir, değişken uzunluktaki liste küçük ekranda taşmasın diye.
-- **Not:** `Roller` enum'unda `ofis` yok — ofis kullanıcısı mobile giriş yapamıyor, bildirimi web
-  zilinde görüyor. Mobil taraf, ofis rolü mobile açılırsa ya da bildirimi gören yönetici için hazır.
+- **Not (güncellendi 2026-09-04):** o tarihte `Roller` enum'unda `ofis` yoktu, bildirim yalnız web
+  zilinde görülüyordu. Ofis profili mobile açıldı; bildirim artık ofis kabuğunun kendi sekmesinde.
 - Testler: `tests/api/test_plan_disi_ofis_bildirimi.py` (19, gerçek uç üzerinden),
   `test/bildirim_plan_disi_test.dart` (10), taşma testine 4 bileşen (36 kombinasyon).
 

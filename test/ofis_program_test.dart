@@ -1,4 +1,4 @@
-// Yönetici haftalık program: model parse + ızgara yerleşimi/taşma testleri.
+// Ofis haftalık programı: model parse + ızgara yerleşimi/taşma testleri.
 //
 // Taşma testleri özellikle önemli: ızgara dar telefon ekranında çok sayıda kort
 // ve uzun isimlerle çalışıyor. Flutter test ortamında RenderFlex overflow bir
@@ -6,8 +6,8 @@
 
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/program_gun_seridi.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/program_izgara.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/program_gun_seridi.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/program_izgara.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 

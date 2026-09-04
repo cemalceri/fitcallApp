@@ -10,7 +10,9 @@ import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
 import 'package:fitcall/screens/7_yonetici/yonetici_main_page.dart';
 import 'package:fitcall/screens/3_antrenor/hakedis/antrenor_hakedis_page.dart';
 import 'package:fitcall/screens/7_yonetici/hakedis/hakedis_antrenor_secim_page.dart';
-import 'package:fitcall/screens/7_yonetici/program/yonetici_program_page.dart';
+import 'package:fitcall/screens/8_ofis/program/ofis_program_page.dart';
+import 'package:fitcall/screens/8_ofis/ofis_main_page.dart';
+import 'package:fitcall/screens/8_ofis/uyeler/ofis_uyeler_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 
@@ -62,8 +64,10 @@ enum SayfaAdi {
   uyeDersTalepleri,
   bildirimler,
   yoneticiAnasayfa,
-  yoneticiProgram,
   yoneticiHakedis,
+  ofisAnasayfa,
+  ofisProgram,
+  ofisUyeler,
   dersTeyit,
   teyitBekleyen,
   yardim,
@@ -95,8 +99,10 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.uyeDersTalepleri: '/uyeDersTalepleri',
   SayfaAdi.bildirimler: '/bildirimler',
   SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
-  SayfaAdi.yoneticiProgram: '/yoneticiProgram',
   SayfaAdi.yoneticiHakedis: '/yoneticiHakedis',
+  SayfaAdi.ofisAnasayfa: '/ofisAnasayfa',
+  SayfaAdi.ofisProgram: '/ofisProgram',
+  SayfaAdi.ofisUyeler: '/ofisUyeler',
   SayfaAdi.dersTeyit: '/dersTeyit',
   SayfaAdi.teyitBekleyen: '/teyitBekleyen',
   SayfaAdi.yardim: '/yardim',
@@ -137,9 +143,11 @@ final Map<String, WidgetBuilder> routes = {
       ),
   routeEnums[SayfaAdi.bildirimler]!: (c) => NotificationPage(),
   routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiMainPage(),
-  routeEnums[SayfaAdi.yoneticiProgram]!: (c) => const YoneticiProgramPage(),
   routeEnums[SayfaAdi.yoneticiHakedis]!: (c) =>
       const HakedisAntrenorSecimPage(),
+  routeEnums[SayfaAdi.ofisAnasayfa]!: (c) => const OfisMainPage(),
+  routeEnums[SayfaAdi.ofisProgram]!: (c) => const OfisProgramPage(),
+  routeEnums[SayfaAdi.ofisUyeler]!: (c) => const OfisUyelerPage(),
   routeEnums[SayfaAdi.dersTeyit]!: (c) => const DersTeyitPage(),
   routeEnums[SayfaAdi.teyitBekleyen]!: (c) => const TeyitBekleyenlerPage(),
   routeEnums[SayfaAdi.yardim]!: (c) => const YardimPage(),
@@ -174,8 +182,9 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.yardim]!: AccessRule.anyone,
   routeEnums[SayfaAdi.antrenorYardim]!: AccessRule.anyone,
   routeEnums[SayfaAdi.ayarlar]!: AccessRule.anyone,
-  routeEnums[SayfaAdi.yoneticiProgram]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yoneticiHakedis]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.ofisProgram]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.ofisUyeler]!: AccessRule.anyone,
   routeEnums[SayfaAdi.antrenorHakedis]!: AccessRule.anyone,
 };
 

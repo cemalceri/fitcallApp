@@ -3,12 +3,12 @@
 // Her widget küçük/normal/geniş ekran × 1.0/1.3/2.0 yazı ölçeği matrisinde
 // render edilir; herhangi bir kombinasyonda taşma olursa test kırılır.
 //
-// Kapsam: yönetici program ekranı (yeni), yönetici liste/kart bileşenleri,
+// Kapsam: ofis program ekranı ve üye listesi, yönetici liste/kart bileşenleri,
 // antrenör takvimi ve üye takvimi/ana sayfa bileşenleri.
 //
 // NOT: sayfaların kendisi initState'te API çağırdığı için doğrudan render
 // edilemiyor; bu yüzden veriyle beslenen sunum widget'ları test ediliyor.
-// Yönetici program sayfasının gövdesi bu amaçla ProgramGorunumu'na ayrıldı.
+// Ofis program sayfasının gövdesi bu amaçla ProgramGorunumu'na ayrıldı.
 
 import 'package:fitcall/models/2_uye/gecmis_ders_model.dart';
 import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
@@ -32,6 +32,10 @@ import 'package:fitcall/screens/4_auth/widgets/hesap_secim_listesi.dart';
 import 'package:fitcall/screens/4_auth/widgets/kayit_sihirbazi.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uyeler_gorunumu.dart';
+import 'package:fitcall/models/10_ofis/ofis_uye_models.dart';
+import 'package:fitcall/screens/8_ofis/uyeler/widgets/ofis_uyeler_gorunumu.dart';
+import 'package:fitcall/screens/8_ofis/widgets/ofis_bottom_bar.dart';
+import 'package:fitcall/screens/8_ofis/widgets/ofis_drawer.dart';
 import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_odul_sayaci.dart';
@@ -46,20 +50,20 @@ import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/misafir_ekle_sheet.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/yoklama_hizli_secim.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
-import 'package:fitcall/screens/7_yonetici/dersler/widgets/ders_liste_item.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/ders_iptal_dialog.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/ders_islem_sheet.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/ders_sil_dialog.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/etkinlik_form_sheet.dart';
+import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_liste_item.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/ders_iptal_dialog.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/ders_islem_sheet.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/ders_sil_dialog.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/etkinlik_form_sheet.dart';
 import 'package:fitcall/models/1_common/hakedis_models.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_antrenor_listesi.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ay_panosu.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ay_izgarasi.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ders_karti.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/program_gorunumu.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/program_gun_seridi.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/program_izgara.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/uye_secim_sheet.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/program_gorunumu.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/program_gun_seridi.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/program_izgara.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/uye_secim_sheet.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_bottom_bar.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
 import 'package:fitcall/common/tema.dart';
@@ -301,6 +305,45 @@ UyeIstatistik _uyeIstatistik() => UyeIstatistik.fromJson({
       'pasif_uye': 23,
       'bu_ay_yeni_kayit': 7,
     });
+
+OfisUyeListeItem _ofisUyeListeItem({int no = 1, bool aktif = true}) =>
+    OfisUyeListeItem.fromJson({
+      'id': no,
+      'uye_no': 10400 + no,
+      'adi': 'Deniz Ayşegül',
+      'soyadi': 'Arslanoğulları $no',
+      'ad_soyad': 'Deniz Ayşegül Arslanoğulları $no',
+      'telefon': '5551112233',
+      'seviye_rengi': 'Kirmizi',
+      'seviye_rengi_hex': '#C2500B',
+      'aktif_mi': aktif,
+      'uye_tipi': 1,
+      'uye_turu': 'Öğrenci (indirimli)',
+      'yas': 14,
+      'son_ders_tarihi': '2026-07-23T10:00:00+03:00',
+    });
+
+/// [OfisUyelerGorunumu] için ortak parametreler.
+Widget _ofisUyelerGorunumu({
+  required List<OfisUyeListeItem> uyeler,
+  bool yukleniyor = false,
+  String? hata,
+  String arama = '',
+}) {
+  return OfisUyelerGorunumu(
+    uyeler: uyeler,
+    yukleniyor: yukleniyor,
+    hata: hata,
+    filtre: 'tumu',
+    aramaDenetleyicisi: TextEditingController(text: arama),
+    onFiltre: (_) {},
+    onYenile: () async {},
+    onYenidenDene: () {},
+    onUyeSec: (_) {},
+    onAra: (_) {},
+    onWhatsapp: (_) {},
+  );
+}
 
 /// [UyelerGorunumu] için ortak parametreler; testler yalnız farkı yazar.
 Widget _uyelerGorunumu({
@@ -655,6 +698,57 @@ void main() {
     tasmaTesti(
       'UyelerGorunumu (arama sonuçsuz)',
       () => _uyelerGorunumu(uyeler: const [], arama: 'zzz'),
+    );
+  });
+
+  /* ============================ OFİS KABUĞU ============================ */
+
+  group('Ofis üye listesi', () {
+    tasmaTesti(
+      'OfisUyelerGorunumu (aktif + pasif grupları)',
+      () => _ofisUyelerGorunumu(uyeler: [
+        _ofisUyeListeItem(no: 1),
+        _ofisUyeListeItem(no: 2),
+        _ofisUyeListeItem(no: 3, aktif: false),
+      ]),
+    );
+
+    tasmaTesti(
+      'OfisUyelerGorunumu (tek grup)',
+      () => _ofisUyelerGorunumu(uyeler: [_ofisUyeListeItem(no: 1)]),
+    );
+
+    tasmaTesti(
+      'OfisUyelerGorunumu (yükleniyor)',
+      () => _ofisUyelerGorunumu(uyeler: const [], yukleniyor: true),
+    );
+
+    tasmaTesti(
+      'OfisUyelerGorunumu (hata)',
+      () => _ofisUyelerGorunumu(
+        uyeler: const [],
+        hata: 'Sunucuya ulaşılamadı, lütfen bağlantını kontrol et.',
+      ),
+    );
+
+    tasmaTesti(
+      'OfisUyelerGorunumu (arama sonuçsuz)',
+      () => _ofisUyelerGorunumu(uyeler: const [], arama: 'zzz'),
+    );
+  });
+
+  group('Ofis kabuk bileşenleri', () {
+    for (var i = 0; i < 4; i++) {
+      tasmaTesti('OfisBottomBar (sekme $i)',
+          () => OfisBottomBar(selectedIndex: i, onTabSelected: (_) {}));
+    }
+
+    tasmaTesti(
+      'OfisDrawer',
+      () => OfisDrawer(
+        ofisAdi: 'Mehmet Yılmazoğulları',
+        onTabSelected: (_) {},
+      ),
     );
   });
 

@@ -1,14 +1,15 @@
-// lib/screens/7_yonetici/widgets/yonetici_qr_sheet.dart
+// lib/screens/1_common/widgets/qr_islem_sheet.dart
 
 import 'package:fitcall/common/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Yöneticinin QR işlemleri seçim sayfası (QR Oluştur / QR Doğrula).
+/// QR işlemleri seçim sayfası (QR Oluştur / QR Doğrula).
 ///
-/// Önce dashboard header'ındaki QR butonuna bağlıydı; alt bardaki merkez QR
-/// butonuna taşınınca ortak hale getirildi.
-Future<void> showYoneticiQrSheet(BuildContext context) {
+/// Yönetici ve ofis kabuklarının alt barındaki merkez QR butonu bunu açar.
+/// İkisi de her iki işleme erişir: doğrulama ön büro işi, oluşturma ise
+/// kullanıcının kendi tesis geçişi ve misafir daveti için.
+Future<void> showQrIslemSheet(BuildContext context) {
   HapticFeedback.lightImpact();
   final colorScheme = Theme.of(context).colorScheme;
 

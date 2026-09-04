@@ -1,11 +1,11 @@
-// Yönetici program ekranındaki sheet/dialog'ların dar ekranda taşmadığını ve
+// Ofis program ekranındaki sheet/dialog'ların dar ekranda taşmadığını ve
 // temel etkileşimlerinin çalıştığını doğrular.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/ders_iptal_dialog.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/ders_sil_dialog.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/etkinlik_form_sheet.dart';
-import 'package:fitcall/screens/7_yonetici/program/widgets/uye_secim_sheet.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/ders_iptal_dialog.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/ders_sil_dialog.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/etkinlik_form_sheet.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/uye_secim_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';

@@ -1,4 +1,4 @@
-// lib/screens/7_yonetici/program/widgets/ders_islem_sheet.dart
+// lib/screens/8_ofis/program/widgets/ders_islem_sheet.dart
 //
 // Izgarada bir derse dokunulduğunda açılan özet + işlem menüsü.
 // İşlemi bu sheet yapmaz; seçilen eylemi çağırana döndürür.

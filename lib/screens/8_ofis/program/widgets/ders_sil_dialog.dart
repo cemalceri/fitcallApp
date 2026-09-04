@@ -1,4 +1,4 @@
-// lib/screens/7_yonetici/program/widgets/ders_sil_dialog.dart
+// lib/screens/8_ofis/program/widgets/ders_sil_dialog.dart
 //
 // Kalıcı silme uyarısı. Silmenin ne yok edeceği backend'den sayıyla gelir
 // (yoneticiEtkinlikSilOnizleme), genel bir metin yerine gerçek etki gösterilir.

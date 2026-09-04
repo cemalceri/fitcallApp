@@ -19,7 +19,15 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
 class NotificationPage extends StatefulWidget {
-  const NotificationPage({super.key});
+  /// Sayfa bir sekmenin içinde mi duruyor?
+  ///
+  /// Ofis kabuğunda bildirimler alt bardaki bir sekme; orada geri oku hem
+  /// anlamsız hem tehlikeli olurdu (kabuğun tamamını pop ederdi). Ayrı bir
+  /// rota olarak açıldığında (drawer, bildirim zili, push tıklaması) ok yerinde
+  /// kalır.
+  final bool gomulu;
+
+  const NotificationPage({super.key, this.gomulu = false});
 
   @override
   State<NotificationPage> createState() => _NotificationPageState();
@@ -277,12 +285,15 @@ class _NotificationPageState extends State<NotificationPage> {
       ),
       child: Row(
         children: [
-          IconButton(
-            tooltip: 'Geri',
-            onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.arrow_back_ios_new_rounded,
-                size: 22, color: context.bildirimRenk.yaziAna),
-          ),
+          if (widget.gomulu)
+            const SizedBox(width: 12)
+          else
+            IconButton(
+              tooltip: 'Geri',
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.arrow_back_ios_new_rounded,
+                  size: 22, color: context.bildirimRenk.yaziAna),
+            ),
           Expanded(
             child: Text(
               'Bildirimler',

@@ -1,4 +1,4 @@
-// lib/screens/7_yonetici/dersler/widgets/ders_istatistik_kartlar.dart
+// lib/screens/1_common/ders_listesi/widgets/ders_istatistik_kartlar.dart
 
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
