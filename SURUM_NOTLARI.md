@@ -8,6 +8,53 @@
 > gizlilik metni de istiyor — çıkmak istemediğimiz bir bakım yükü.
 > (3.6.0 ve öncesindeki en-US bölümleri tarihsel kayıt olarak duruyor.)
 
+## 3.9.0 — 2026-09-08
+
+### Mağaza metni (tr-TR)
+
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 454).
+
+- Ön büro (ofis) profili eklendi: haftalık program, ders açma/düzenleme/iptal ve QR doğrulama tek yerde.
+- QR doğrulama sonucu yenilendi: durum tüm ekranda görünüyor, ne yapılacağı yazıyor, "Sonrakini tara" ile hızlı devam.
+- İptal edilen derste kimin, ne zaman ve neden iptal ettiği görünüyor.
+- Yardım & SSS sayfaları role göre ayrıldı; üye soruları güncellendi.
+- Zorunlu güncelleme ekranının atlanabildiği hata giderildi.
+- Çeşitli hata düzeltmeleri.
+
+### Teknik
+
+- **Ofis (ön büro) kabuğu.** `Roller` enum'una `ofis` eklendi; aksiyon ekranları yöneticiden
+  ayrılıp `lib/screens/8_ofis/` altına taşındı (haftalık program, günlük ders listesi, kırpılmış üye
+  listesi, bildirimler, QR oluştur + doğrula). Yönetici kabuğunda aksiyon ekranı kalmadı.
+  Gizli bilgi sınırı sunucuda beyaz listeyle: `ofisUyeler` / `ofisUyeDetay` bakiye, para hareketleri,
+  adres, meslek, veli, acil durum ve okul alanlarını hiç göndermiyor; `siralama="bakiye"` ve
+  `filtre="borclu"` de reddediliyor. **Ön koşul:** ofis profilinin `SistemKullaniciModel.isletme`
+  alanı dolu olmalı, boşsa 403 `TENANT_REQUIRED`.
+- **QR sonuç ekranı** ([qr_sonuc_gorunumu.dart](lib/screens/1_common/widgets/qr_sonuc_gorunumu.dart)):
+  backend hata kodu yedi duruma eşleniyor, her birinin kendi rengi, ikonu ve "şimdi ne yapmalı"
+  satırı var. Renkler `tema.dart` token'larından — eski ekranda gömülü hex vardı, koyu temada
+  okunmuyordu.
+- **İptal künyesi:** haftalık program ucu `iptal_eden`, `iptal_tarihi` ve sebebi de döndürüyor
+  (`select_related`, N+1 yok); ders işlem sheet'inde künye paneli çiziliyor.
+- **Zorunlu güncelleme:** `InAppUpdateAndroid.immediate()` `AppUpdateResult.userDeniedUpdate`
+  dönüşünü yok sayıp koşulsuz `true` dönüyordu; kullanıcı Play'in tam ekran akışında geri tuşuna
+  basınca eski sürümle devam edebiliyordu. Artık yalnız `success` başarı sayılıyor.
+- **Yardım & SSS üç sayfaya çıktı.** Yönetici ve ofis drawer'larındaki "Yardım" üye SSS'ine
+  gidiyordu — antrenörde 2026-08-10'da düzeltilen hatanın aynısı. Yeni
+  [yonetim_yardim_page.dart](lib/screens/1_common/yonetim_yardim_page.dart) tek dosyada iki kapsam
+  taşıyor (sorular `_Kapsam` etiketli, sayfa role göre süzüyor); üye sayfası ekrana göre yeniden
+  yazıldı, Ayarlar'daki yardım bağlantısı dört rolü de doğru sayfaya götürüyor.
+  Ekran gövdesi ortak [sss_gorunumu.dart](lib/screens/1_common/widgets/sss_gorunumu.dart)'ya
+  çıkarıldı: üye ve antrenör sayfalarındaki gömülü `Colors.white` / `Colors.blue` yüzünden koyu
+  temada beyaz kalan soru kartları da bu sayede token'landı.
+- **İzin raporlaması:** yeni `cihazIzinGuncelle` ucu (token istemiyor) + "sorulmadı / reddedildi"
+  ayrımı için izin damgaları (`lib/services/core/izin_durumu.dart`).
+- **Çalışma saatleri bilgi notu** düzeltildi: "üyelerin ders talebi oluştururken gördüğü saatler"
+  diyordu, öyle bir akış yok. Not artık gerçeği söylüyor (yöneticinin antrenör sayfasında görünür).
+
+**Deploy sırası: önce backend, sonra Codemagic.** Ofis uçları ve iptal künyesi canlıda olmadan
+mobil sürüm çıkarsa ofis kabuğu 404 alır.
+
 ## 3.8.1 — 2026-08-18
 
 ### Mağaza metni (tr-TR)

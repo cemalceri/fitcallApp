@@ -1,4 +1,5 @@
 import 'package:fitcall/screens/1_common/yardim_page.dart';
+import 'package:fitcall/screens/1_common/yonetim_yardim_page.dart';
 import 'package:fitcall/screens/2_uye/uye_kabuk.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_kabuk.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_yardim_page.dart';
@@ -61,6 +62,8 @@ enum SayfaAdi {
   antrenorHakedis,
   antrenorOgrenciler,
   antrenorYardim,
+  yoneticiYardim,
+  ofisYardim,
   uyeDersTalepleri,
   bildirimler,
   yoneticiAnasayfa,
@@ -96,6 +99,8 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.antrenorHakedis: '/antrenorHakedis',
   SayfaAdi.antrenorOgrenciler: '/antrenor_ogrenciler',
   SayfaAdi.antrenorYardim: '/antrenor_yardim',
+  SayfaAdi.yoneticiYardim: '/yonetici_yardim',
+  SayfaAdi.ofisYardim: '/ofis_yardim',
   SayfaAdi.uyeDersTalepleri: '/uyeDersTalepleri',
   SayfaAdi.bildirimler: '/bildirimler',
   SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
@@ -132,6 +137,9 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.antrenorHakedis]!: (c) => const AntrenorHakedisPage(),
   routeEnums[SayfaAdi.antrenorOgrenciler]!: (c) => AntrenorOgrencilerPage(),
   routeEnums[SayfaAdi.antrenorYardim]!: (c) => const AntrenorYardimPage(),
+  routeEnums[SayfaAdi.yoneticiYardim]!: (c) =>
+      const YonetimYardimPage(ofis: false),
+  routeEnums[SayfaAdi.ofisYardim]!: (c) => const YonetimYardimPage(ofis: true),
   routeEnums[SayfaAdi.uyeDersTalepleri]!: (context) => DersTalepPage(
         secimJson: const {
           "kort_id": 0,
@@ -181,6 +189,8 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.qrKodDogrula]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yardim]!: AccessRule.anyone,
   routeEnums[SayfaAdi.antrenorYardim]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.yoneticiYardim]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.ofisYardim]!: AccessRule.anyone,
   routeEnums[SayfaAdi.ayarlar]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yoneticiHakedis]!: AccessRule.anyone,
   routeEnums[SayfaAdi.ofisProgram]!: AccessRule.anyone,

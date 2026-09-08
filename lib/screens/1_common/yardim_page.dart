@@ -1,523 +1,324 @@
-// lib/screens/1_common/help/faq_page.dart
-// ignore_for_file: constant_identifier_names
+// lib/screens/1_common/yardim_page.dart
+//
+// Üyenin Yardım & SSS sayfası.
+//
+// 3.8.x turlarından sonra taslak metin ekranla uyuşmaz hâle gelmişti: "Geçmiş"
+// diye bir alt sekme yok (Geçmiş Dersler ☰ menüde), profil değiştirme üst
+// köşede değil Ayarlar'da, kayıt ve şifre sıfırlama artık tarayıcıda değil
+// uygulama içinde. Koyu tema, ajanda görünümü ve Ayarlar sayfası hiç
+// anlatılmıyordu. Metin bu turda ekrana göre yeniden yazıldı ve konu
+// başlıklarına ayrıldı.
+//
+// Ekranın kendisi ortak `SssGorunumu`'nda; antrenör ve yönetici/ofis yardım
+// sayfaları da aynı gövdeyi kullanıyor.
 
-import 'package:fitcall/screens/1_common/widgets/sss_arama.dart';
+import 'package:fitcall/screens/1_common/widgets/sss_gorunumu.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-class YardimPage extends StatefulWidget {
+class YardimPage extends StatelessWidget {
   const YardimPage({super.key});
 
   @override
-  State<YardimPage> createState() => _YardimPageState();
-}
-
-class _YardimPageState extends State<YardimPage> {
-  final _aramaCtrl = TextEditingController();
-  String _sorgu = '';
-
-  @override
-  void dispose() {
-    _aramaCtrl.dispose();
-    super.dispose();
-  }
-
-  List<_FAQ> get _sonuclar {
-    if (_sorgu.trim().isEmpty) return _faqs;
-    final q = _sorgu.toLowerCase();
-    return _faqs
-        .where((f) =>
-            f.question.toLowerCase().contains(q) ||
-            f.answer.toLowerCase().contains(q))
-        .toList();
-  }
-
-  static const _faqs = <_FAQ>[
-    _FAQ(
-      icon: Icons.person_add_outlined,
-      question: 'Uygulamaya nasıl kayıt olurum?',
-      answer:
-          'Giriş ekranındaki "Kayıt ol" bağlantısıyla bilgilerinizi doldurarak kayıt'
-          ' başvurusunda bulunabilirsiniz. Başvurunuz kulüp tarafından onaylandığında'
-          ' hesabınız aktifleşir; kullanıcı adınız ve şifreniz SMS ve e-posta yoluyla'
-          ' size iletilir.',
-    ),
-    _FAQ(
-      icon: Icons.dashboard_outlined,
-      question: 'Ana sayfada neler var, menüye nasıl ulaşırım?',
-      answer:
-          'En üstte bakiyenizi, kalan haklarınızı ve telafi derslerinizi özet'
-          ' kartlarında görürsünüz. "Bekleyen İşlemler" bölümünde sizden bir adım'
-          ' bekleyenler (katılım bildirimi, ödeme, ders değerlendirmesi) listelenir. Alttaki'
-          ' çubuktan Ana Sayfa, Takvim, QR, Hareketler ve Hesabım sayfalarına; sol'
-          ' üstteki ☰ menüsünden ise tüm sayfalara ve Yardım\'a ulaşabilirsiniz.',
-    ),
-    _FAQ(
-      icon: Icons.calendar_month_outlined,
-      question: 'Derslerimi nereden görürüm?',
-      answer:
-          'Alttaki "Takvim" ekranından haftalar ve günler arasında gezinerek geçmiş'
-          ' ve planlanan derslerinizi görebilirsiniz. Bir güne dokunduğunuzda o günün'
-          ' dersleri, bir derse dokunduğunuzda dersin detayları açılır. Sıradaki'
-          ' dersiniz ana sayfada da gösterilir.',
-    ),
-    _FAQ(
-      icon: Icons.how_to_reg_outlined,
-      question: 'Bir derse katılıp katılmayacağımı nasıl bildiririm?',
-      answer:
-          'Kulüp bir ders için görüş istediğinde ana sayfada "Katılım geri bildirimi'
-          ' bekleniyor" kartı görünür. Bu karta dokunduğunuzda bekleyen dersleriniz'
-          ' listelenir; dersi seçip "Katılacağım" veya "Katılamayacağım" olarak'
-          ' durumunuzu bildirebilirsiniz. Aynı istek size bildirim olarak da'
-          ' ulaşabilir.',
-    ),
-    _FAQ(
-      icon: Icons.event_busy_outlined,
-      question: 'Bir derse katılamayacağımı nasıl bildiririm?',
-      answer: 'Takvimde ilgili derse dokunup "Katılamayacağım" ile durumunuzu'
-          ' iletebilirsiniz. Ders saatinden en az 24 saat önce yapılan bildirimlerde'
-          ' telafi hakkı tanımlanır ve ders bir pakete dahilse paketinizden düşülmez.'
-          ' İstisnai durumlarda kulüple iletişime geçmeniz gerekir; telafi hakkının'
-          ' tanımlanması kulübün değerlendirmesindedir.',
-    ),
-    _FAQ(
-      icon: Icons.notifications_active_outlined,
-      question: 'Dersimi telefon takvimime ekleyebilir miyim?',
-      answer:
-          'Yaklaşan bir dersin detayında "Telefon Takvimine Ekle" butonuyla dersi'
-          ' cihazınızın takvimine kaydedebilirsiniz. Böylece telefonunuz ders'
-          ' öncesinde sizi hatırlatır.',
-    ),
-    _FAQ(
-      icon: Icons.confirmation_number_outlined,
-      question: 'Kalan haklarımı ve paketlerimi nereden görürüm?',
-      answer:
-          'Ana sayfadaki "Kalan Haklarım" kartına ya da menüdeki "Üyelik & Paket'
-          ' Bilgilerim" bölümüne dokunabilirsiniz. Kayıtlarınız Paket, Aidat ve Tek'
-          ' Ders başlıkları altında gruplanır; bir başlığa dokunduğunuzda o gruptaki'
-          ' kayıtlar açılır.',
-    ),
-    _FAQ(
-      icon: Icons.event_repeat_rounded,
-      question: 'Telafi derslerim nedir, nereden takip ederim?',
-      answer: 'Uygun koşullarda katılamadığınız derslerden kazandığınız telafi'
-          ' haklarınızı ana sayfadaki "Telafi Derslerim" kartından veya menüden takip'
-          ' edebilirsiniz. Geçerlilik tarihlerini, kullanılan ve aktif telafilerinizi'
-          ' burada görürsünüz.',
-    ),
-    _FAQ(
-      icon: Icons.account_balance_wallet_outlined,
-      question: 'Bakiyemi ve hesap hareketlerimi nasıl görürüm?',
-      answer:
-          'Ana sayfadaki "Bakiye" kartına ya da alttaki "Hareketler" butonuna'
-          ' dokunarak hesap hareketlerinizi zaman tüneli halinde görebilirsiniz.'
-          ' Ödemeler kulübünüzün belirlediği yöntemlerle yapılır; ayrıntılı bilgi için'
-          ' kulüp yönetimine başvurabilirsiniz.',
-    ),
-    _FAQ(
-      icon: Icons.history_rounded,
-      question: 'Geçmiş derslerimi görüp değerlendirebilir miyim?',
-      answer: 'Alttaki "Geçmiş" ekranında tamamlanan derslerinizi aya göre'
-          ' listeleyebilir, dilerseniz derse puan ve yorum bırakabilirsiniz. Ders'
-          ' durumları renklerle gösterilir: yeşil katıldığınız/yapılan dersler,'
-          ' kırmızı iptaller, sarı ise sonucu henüz girilmemiş (kulüp onayında)'
-          ' derslerdir.',
-    ),
-    _FAQ(
-      icon: Icons.qr_code_rounded,
-      question: 'QR Giriş ne işe yarar?',
-      answer:
-          'Tesise girişte alttaki "QR Giriş" ekranındaki kodu okutarak hızlıca giriş'
-          ' yapabilirsiniz. Kulübünüzde aktif bir etkinlik veya davet varsa, ilgili'
-          ' buton da bu ekranda görünür.',
-    ),
-    _FAQ(
-      icon: Icons.notifications_off_outlined,
-      question: 'Bildirim gelmiyor, ne yapmalıyım?',
-      answer:
-          'Bildirimleri alabilmek için telefonunuzun ayarlarından uygulamaya bildirim'
-          ' izni verdiğinizden emin olun. İzin kapalıyken yaklaşan ders, katılım'
-          ' bildirimi ve duyuru bildirimleri size ulaşmaz.',
-    ),
-    _FAQ(
-      icon: Icons.switch_account_outlined,
-      question: 'Birden fazla profilim var, nasıl geçiş yaparım?',
-      answer:
-          'Hesabınıza birden fazla üye veya antrenör profili bağlıysa, üst köşedeki'
-          ' profil alanından "Profil Seç" ekranına geçerek dilediğiniz profile geçiş'
-          ' yapabilirsiniz.',
-    ),
-  ];
-
-  @override
   Widget build(BuildContext context) {
-    final sonuclar = _sonuclar;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Yardım & SSS'),
-        // Arama kutusu listeyle kaymaz: 14 sorunun içinde cevabı aramak
-        // kaydırmayla değil yazarak yapılır.
-        bottom: SssArama(
-          denetleyici: _aramaCtrl,
-          onDegisti: (v) => setState(() => _sorgu = v),
-          yaziOlcegi: MediaQuery.textScalerOf(context).scale(1.0),
-        ),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          if (_sorgu.isEmpty) SliverToBoxAdapter(child: _buildHeaderCard()),
-          if (sonuclar.isEmpty)
-            SliverToBoxAdapter(child: SssSonucYok(sorgu: _sorgu))
-          else
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              sliver: SliverList.builder(
-                itemCount: sonuclar.length,
-                itemBuilder: (context, index) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _FAQTile(faq: sonuclar[index], index: index),
-                ),
-              ),
-            ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: _buildContactCard(),
-            ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderCard() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.blue.shade400,
-            Colors.blue.shade600,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Size nasıl yardımcı olabiliriz?',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.surface,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'En sık sorulan sorulara göz atın veya bize ulaşın.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              Icons.help_outline_rounded,
-              size: 40,
-              color: Theme.of(context).colorScheme.surface,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactCard() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.orange.withValues(alpha: 0.10),
-            Colors.amber.withValues(alpha: 0.10),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.orange.withValues(alpha: 0.16),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.orange.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => _launchEmail(),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade400,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.mail_outline_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Destek & İletişim',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'binayakademi@gmail.com',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 16,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _launchEmail() async {
-    final uri = Uri(scheme: 'mailto', path: 'binayakademi@gmail.com');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
-  }
-}
-
-class _FAQTile extends StatefulWidget {
-  final _FAQ faq;
-  final int index;
-
-  const _FAQTile({required this.faq, required this.index});
-
-  @override
-  State<_FAQTile> createState() => _FAQTileState();
-}
-
-class _FAQTileState extends State<_FAQTile>
-    with SingleTickerProviderStateMixin {
-  bool _expanded = false;
-  late AnimationController _controller;
-  late Animation<double> _iconRotation;
-  late Animation<double> _expandAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 250),
-      vsync: this,
-    );
-    _iconRotation = Tween<double>(begin: 0, end: 0.5).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-    _expandAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _toggle() {
-    setState(() {
-      _expanded = !_expanded;
-      if (_expanded) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        color: _expanded
-            ? Theme.of(context).colorScheme.surfaceContainerHigh
-            : Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: _expanded
-              ? Colors.blue.shade200
-              : Theme.of(context).colorScheme.outlineVariant,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _expanded
-                ? Colors.blue.withValues(alpha: 0.1)
-                : Colors.black.withValues(alpha: 0.04),
-            blurRadius: _expanded ? 12 : 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: _toggle,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    // Icon
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: _expanded
-                            ? Colors.blue.shade400
-                            : Colors.blue.withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        widget.faq.icon,
-                        size: 20,
-                        color: _expanded ? Colors.white : Colors.blue.shade400,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Question
-                    Expanded(
-                      child: Text(
-                        widget.faq.question,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: _expanded
-                              ? Colors.blue.shade700
-                              : Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                    // Arrow
-                    RotationTransition(
-                      turns: _iconRotation,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: _expanded
-                              ? Colors.blue.shade400
-                              : Theme.of(context).colorScheme.outlineVariant,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          size: 20,
-                          color: _expanded
-                              ? Colors.white
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                // Answer
-                SizeTransition(
-                  sizeFactor: _expandAnimation,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 16, left: 52),
-                    child: Text(
-                      widget.faq.answer,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.5,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return const SssGorunumu(
+      baslik: 'Yardım & SSS',
+      ustAciklama: 'Dersler, paketler, telafi ve bakiye hakkında en çok sorulanlar.',
+      ustIkon: Icons.help_outline_rounded,
+      bolumler: _bolumler,
     );
   }
 }
 
-class _FAQ {
-  final IconData icon;
-  final String question;
-  final String answer;
+const _bolumler = <SssBolum>[
+  /* ----------------------------- BAŞLARKEN ------------------------------ */
+  SssBolum(
+    baslik: 'Başlarken',
+    ikon: Icons.flag_outlined,
+    sorular: [
+      SssSoru(
+        ikon: Icons.person_add_outlined,
+        soru: 'Uygulamaya nasıl kayıt olurum?',
+        cevap:
+            'Giriş ekranındaki "Kayıt ol" bağlantısıyla başvuru formu uygulamanın'
+            ' içinde açılır; dört adımda doldurulur (kulüp ve kimlik bilgileri,'
+            ' iletişim, yaşa göre veli ya da meslek bilgisi, tenis geçmişi ve KVKK'
+            ' onayı). Her adımda kendi alanları denetlenir, üstteki çubuk kaçıncı'
+            ' adımda olduğunuzu gösterir. Başvurunuz kulüp tarafından onaylandığında'
+            ' hesabınız aktifleşir; kullanıcı adınız ve şifreniz SMS ve e-posta ile'
+            ' iletilir. Aynı kişi ikinci kez başvurursa hata almaz, "başvurunuz zaten'
+            ' sırada" bilgisi görür.',
+      ),
+      SssSoru(
+        ikon: Icons.lock_reset_rounded,
+        soru: 'Şifremi unuttum, ne yapmalıyım?',
+        cevap:
+            'Giriş ekranındaki "Şifremi unuttum" ile kullanıcı adınızı ya da 10'
+            ' haneli cep telefonu numaranızı yazmanız yeterli; sıfırlama bağlantısı'
+            ' e-postanıza gelir. Aynı numara birden çok hesaba bağlıysa (örneğin veli'
+            ' kendi numarasını çocuğunun kaydına yazdıysa) önce hesap seçim adımı'
+            ' çıkar; bu ekran kimlik doğrulamasından önce geldiği için ad ve e-posta'
+            ' maskeli gösterilir. Yeni şifreyi e-postadaki tek kullanımlık bağlantıdan'
+            ' belirlersiniz.',
+      ),
+      SssSoru(
+        ikon: Icons.switch_account_outlined,
+        soru: 'Birden fazla profilim var, nasıl geçiş yaparım?',
+        cevap:
+            'Ayarlar sayfasındaki "Profil değiştir" satırı sizi profil seçim ekranına'
+            ' götürür; hesabınıza kaç profil bağlıysa orada listelenir. Satır yalnız'
+            ' birden fazla profili olan hesaplarda görünür. Ayarlar\'a ☰ menüden ya da'
+            ' "Hesabım" sekmesinden ulaşırsınız.',
+      ),
+      SssSoru(
+        ikon: Icons.lock_outline_rounded,
+        soru: '"Erişim kısıtlı" uyarısı görüyorum, neden?',
+        cevap:
+            'Hareketler ve Hesabım sayfalarını yalnızca ana hesap kullanıcısı'
+            ' görebilir. Aile üyeleri tek bir ana hesaba bağlıysa, bakiye ve hesap'
+            ' bilgilerini ana hesap sahibi görür. Ana hesaba geçmek için Ayarlar >'
+            ' Profil değiştir\'i kullanın.',
+      ),
+    ],
+  ),
 
-  const _FAQ({
-    required this.icon,
-    required this.question,
-    required this.answer,
-  });
-}
+  /* ---------------------------- ANA SAYFA ------------------------------- */
+  SssBolum(
+    baslik: 'Ana sayfa',
+    ikon: Icons.dashboard_outlined,
+    sorular: [
+      SssSoru(
+        ikon: Icons.space_dashboard_outlined,
+        soru: 'Ana sayfada neler var, menüye nasıl ulaşırım?',
+        cevap:
+            'En üstte bakiyenizi, kalan haklarınızı ve telafi derslerinizi özet'
+            ' şeridinde görürsünüz; her birine dokununca ilgili sayfa açılır. Altında'
+            ' sıradaki dersiniz ve "Bekleyen İşlemler" bölümü vardır. Alt çubuktan Ana'
+            ' Sayfa, Takvim, Hareketler ve Hesabım sayfalarına, ortadaki düğmeden QR'
+            ' ekranına geçersiniz; sol üstteki ☰ menüsünden Üyelik & Paket, Telafi'
+            ' Derslerim, Geçmiş Dersler, Bildirimler, Event/Davet, Yardım ve Ayarlar\'a'
+            ' ulaşırsınız.',
+      ),
+      SssSoru(
+        ikon: Icons.playlist_add_check_rounded,
+        soru: '"Bekleyen İşlemler" bölümünde neler çıkar?',
+        cevap:
+            'Sizden bir adım bekleyen konular: katılım bildirimi beklenen dersler,'
+            ' ödenmemiş borç, değerlendirmediğiniz dersler, bitmek üzere olan paket ve'
+            ' süresi dolmak üzere olan telafi hakkı. Karta dokunduğunuzda doğrudan'
+            ' ilgili sayfaya gidersiniz. Bekleyen bir işiniz yoksa bölüm hiç çıkmaz.',
+      ),
+    ],
+  ),
+
+  /* -------------------------- TAKVİM VE DERSLER ------------------------- */
+  SssBolum(
+    baslik: 'Takvim ve dersler',
+    ikon: Icons.calendar_month_outlined,
+    sorular: [
+      SssSoru(
+        ikon: Icons.event_available_outlined,
+        soru: 'Derslerimi nereden görürüm?',
+        cevap:
+            'Alt çubuktaki "Takvim" sekmesinden haftalar ve günler arasında gezinerek'
+            ' geçmiş ve planlanan derslerinizi görürsünüz. Bir güne dokununca o günün'
+            ' dersleri, bir derse dokununca dersin detayı açılır. Sıradaki dersiniz ana'
+            ' sayfada da gösterilir.',
+      ),
+      SssSoru(
+        ikon: Icons.view_agenda_outlined,
+        soru: 'Ajanda (liste) görünümü ne işe yarar?',
+        cevap:
+            'Takvimin sağ üstündeki görünüm düğmesiyle ızgara ile ajanda arasında'
+            ' geçiş yaparsınız. Ajanda, derslerinizi gün gün alt alta listeler —'
+            ' "sıradaki derslerim ne zaman" sorusunun cevabı ızgarada saat aralıklarını'
+            ' taramaktan daha hızlı bulunur. Hafta şeridindeki "Bugün" düğmesi hangi'
+            ' görünümde olursanız olun sizi bugüne döndürür.',
+      ),
+      SssSoru(
+        ikon: Icons.how_to_reg_outlined,
+        soru: 'Bir derse katılıp katılmayacağımı nasıl bildiririm?',
+        cevap:
+            'Kulüp bir ders için görüş istediğinde ana sayfada "Katılım geri bildirimi'
+            ' bekleniyor" kartı çıkar. Karta dokunduğunuzda bekleyen dersleriniz'
+            ' listelenir; dersi seçip "Katılacağım" ya da "Katılamayacağım" olarak'
+            ' durumunuzu bildirirsiniz. Aynı istek size bildirim olarak da ulaşabilir.',
+      ),
+      SssSoru(
+        ikon: Icons.event_busy_outlined,
+        soru: 'Bir derse katılamayacağımı nasıl bildiririm?',
+        cevap:
+            'Takvimde ilgili derse dokunup "Katılamayacağım" ile durumunuzu'
+            ' iletebilirsiniz. Ders saatinden en az 24 saat önce yapılan bildirimlerde'
+            ' telafi hakkı tanımlanır ve ders bir pakete dahilse paketinizden düşülmez.'
+            ' Daha geç bildirimlerde bu haklar oluşmaz; istisnai durumlar için kulüple'
+            ' iletişime geçmeniz gerekir. Bildiriminiz ön büroya da düşer.',
+      ),
+      SssSoru(
+        ikon: Icons.event_note_outlined,
+        soru: 'Dersimi telefon takvimime ekleyebilir miyim?',
+        cevap:
+            'Evet. Yaklaşan bir dersin detayındaki "Telefon Takvimine Ekle" ya da ana'
+            ' sayfadaki sıradaki ders kartındaki "Takvime Ekle" ile dersi cihazınızın'
+            ' takvimine kaydedebilirsiniz; hatırlatmayı telefonunuz yapar.',
+      ),
+      SssSoru(
+        ikon: Icons.schedule_rounded,
+        soru: 'Saatler telefonumun saat dilimine göre mi gösteriliyor?',
+        cevap:
+            'Hayır. Uygulama tüm ders saatlerini kulübün saatine göre gösterir;'
+            ' telefonunuzun saat dilimi ne olursa olsun ekranda gördüğünüz saat'
+            ' kulüpteki gerçek ders saatidir.',
+      ),
+    ],
+  ),
+
+  /* ---------------------- PAKET, TELAFİ VE BAKİYE ----------------------- */
+  SssBolum(
+    baslik: 'Paket, telafi ve bakiye',
+    ikon: Icons.confirmation_number_outlined,
+    sorular: [
+      SssSoru(
+        ikon: Icons.card_membership_outlined,
+        soru: 'Kalan haklarımı ve paketlerimi nereden görürüm?',
+        cevap:
+            'Ana sayfadaki "Kalan Haklarım" kartına ya da ☰ menüdeki "Üyelik & Paket'
+            ' Bilgilerim" bölümüne dokunun. Kayıtlarınız Paket, Aidat ve Tek Ders'
+            ' başlıkları altında gruplanır; bir başlığa dokununca o gruptaki kayıtlar'
+            ' açılır.',
+      ),
+      SssSoru(
+        ikon: Icons.event_repeat_rounded,
+        soru: 'Telafi derslerim nedir, nereden takip ederim?',
+        cevap:
+            'Uygun koşullarda katılamadığınız derslerden kazandığınız haklardır. Ana'
+            ' sayfadaki "Telafi Derslerim" kartından ya da ☰ menüden takip edersiniz;'
+            ' aktif ve kullanılmış telafilerinizi geçerlilik tarihleriyle birlikte'
+            ' görürsünüz. Telafi hakkının süresi dolmak üzereyse ana sayfada uyarı'
+            ' kartı çıkar.',
+      ),
+      SssSoru(
+        ikon: Icons.account_balance_wallet_outlined,
+        soru: 'Bakiyemi ve hesap hareketlerimi nasıl görürüm?',
+        cevap:
+            'Ana sayfadaki "Bakiye" kartına ya da alt çubuktaki "Hareketler" sekmesine'
+            ' dokunarak hesap hareketlerinizi zaman tüneli hâlinde görürsünüz. Ödemeler'
+            ' kulübünüzün belirlediği yöntemlerle yapılır; ayrıntı için kulüp yönetimine'
+            ' başvurun.',
+      ),
+      SssSoru(
+        ikon: Icons.hourglass_bottom_rounded,
+        soru: '"Paketiniz bitiyor" uyarısını neden aldım?',
+        cevap:
+            'Kalan ders hakkınız ikiye ya da altına düştüğünde ve paketi son 45 gün'
+            ' içinde kullanmışsanız uyarı çıkar. Amaç düzenli devam ederken paketin'
+            ' habersiz bitmesini önlemek; uzun süredir kullanılmayan paketler için'
+            ' uyarı gösterilmez.',
+      ),
+    ],
+  ),
+
+  /* -------------------- GEÇMİŞ DERSLER VE DEĞERLENDİRME ----------------- */
+  SssBolum(
+    baslik: 'Geçmiş dersler',
+    ikon: Icons.history_rounded,
+    sorular: [
+      SssSoru(
+        ikon: Icons.list_alt_rounded,
+        soru: 'Geçmiş derslerimi nereden görürüm?',
+        cevap:
+            '☰ menüdeki "Geçmiş Dersler" sayfasında tamamlanan dersleriniz aya göre'
+            ' gruplanmış olarak listelenir. Durumlar renk ve etikete göre ayrılır:'
+            ' katıldığınız/yapılan dersler, iptaller, kulüp onayında bekleyenler,'
+            ' yöneticinin "yapılmadı" dediği dersler ve katılmadığınız dersler.',
+      ),
+      SssSoru(
+        ikon: Icons.star_outline_rounded,
+        soru: 'Dersi değerlendirebilir miyim?',
+        cevap:
+            'Evet. Geçmiş Dersler listesinde bir derse dokunup puan ve yorum'
+            ' bırakabilirsiniz. Değerlendirmediğiniz ders varsa ana sayfadaki Bekleyen'
+            ' İşlemler bölümünde hatırlatma kartı çıkar ve karta dokununca doğrudan bu'
+            ' sayfaya gelirsiniz.',
+      ),
+    ],
+  ),
+
+  /* --------------------------- QR VE DAVETLER --------------------------- */
+  SssBolum(
+    baslik: 'QR ve davetler',
+    ikon: Icons.qr_code_rounded,
+    sorular: [
+      SssSoru(
+        ikon: Icons.qr_code_scanner_rounded,
+        soru: 'QR kod ekranı ne işe yarar?',
+        cevap:
+            'Alt çubuğun ortasındaki QR düğmesi tesis giriş ekranını açar. Üstte'
+            ' "Kişisel QR Kodunuz" bölümü vardır; görevliye okutarak hızlıca giriş'
+            ' yaparsınız. Kod ekranda dururken parlaklık otomatik artar ve zemin her'
+            ' temada beyaz kalır, böylece koyu temada da okunur.',
+      ),
+      SssSoru(
+        ikon: Icons.person_add_alt_rounded,
+        soru: 'Misafir davet edebilir miyim?',
+        cevap:
+            'Evet. Aynı QR ekranındaki "Misafir Davetlerim" bölümünden misafirin adını'
+            ' ve kodun kaç süre geçerli olacağını yazarak davet oluşturursunuz. Kod,'
+            ' kalan süresiyle listede durur; WhatsApp ya da başka bir uygulamayla'
+            ' paylaşabilir, gerekirse süresi dolmadan silebilirsiniz. Sildiğiniz bir'
+            ' davet kapıda okutulduğunda görevli "giriş iptal edilmiş" uyarısı görür.',
+      ),
+      SssSoru(
+        ikon: Icons.celebration_outlined,
+        soru: 'Event / Davet bölümü nedir?',
+        cevap:
+            '☰ menüdeki bu bölüm, kulübün düzenlediği etkinlik için ayrı bir giriş'
+            ' kodu ve davetli listesi tutar. Etkinliğe özel kotanız varsa kaç davet'
+            ' hakkınızın kaldığı yazar. Bölüm yalnız aktif bir etkinlik varsa anlamlıdır;'
+            ' yoksa liste boş görünür.',
+      ),
+    ],
+  ),
+
+  /* ------------------------ BİLDİRİM VE AYARLAR ------------------------- */
+  SssBolum(
+    baslik: 'Bildirimler ve ayarlar',
+    ikon: Icons.settings_outlined,
+    sorular: [
+      SssSoru(
+        ikon: Icons.notifications_off_outlined,
+        soru: 'Bildirim gelmiyor, ne yapmalıyım?',
+        cevap:
+            'Ayarlar > Bildirim izni satırı iznin açık mı kapalı mı olduğunu yazar;'
+            ' kapalıysa dokunduğunuzda telefonun uygulama ayarları açılır. İzin'
+            ' kapalıyken ders hatırlatması, katılım isteği ve duyuru bildirimleri size'
+            ' ulaşmaz. İzni açtıktan sonra Bildirimler sayfasını bir kez açın; cihaz'
+            ' kaydınız orada tazelenir.',
+      ),
+      SssSoru(
+        ikon: Icons.dark_mode_outlined,
+        soru: 'Koyu temayı nasıl açarım?',
+        cevap:
+            'Ayarlar > Tema bölümünden Sistem, Açık veya Koyu seçebilirsiniz. "Sistem"'
+            ' seçiliyken telefonunuzun karanlık mod ayarına uyar. Seçiminiz uygulamayı'
+            ' kapatıp açsanız da korunur.',
+      ),
+      SssSoru(
+        ikon: Icons.password_rounded,
+        soru: 'Şifremi nasıl değiştiririm?',
+        cevap:
+            'Ayarlar > Şifreyi değiştir ile mevcut şifrenizi girerek yenisini'
+            ' belirlersiniz. Şifrenizi hatırlamıyorsanız çıkış yapıp giriş ekranındaki'
+            ' "Şifremi unuttum" akışını kullanmanız gerekir.',
+      ),
+      SssSoru(
+        ikon: Icons.privacy_tip_outlined,
+        soru: 'Verilerim nasıl işleniyor, hesabımı sildirebilir miyim?',
+        cevap:
+            'Ayarlar > KVKK aydınlatma metni verilerin nasıl işlendiğini ve saklandığını'
+            ' anlatır. Aynı sayfadaki "Hesabı kalıcı sil" ile hesap silme talebinde'
+            ' bulunabilirsiniz; işlem geri alınamaz, bu yüzden onay istenir. Ödeme ve'
+            ' üyelik kayıtlarınızla ilgili sorularınız için kulüp yönetimine başvurun.',
+      ),
+    ],
+  ),
+];

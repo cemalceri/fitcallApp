@@ -64,6 +64,16 @@ class _AyarlarPageState extends State<AyarlarPage> {
 
   bool get _antrenorMu => _profil?.rol == Roller.antrenor.name;
   bool get _yoneticiMi => _profil?.rol == Roller.yonetici.name;
+  bool get _ofisMi => _profil?.rol == Roller.ofis.name;
+
+  /// Yardım sayfası role göre seçilir: dört rolün de kendi SSS'i var, hepsini
+  /// üye sayfasına yollamak antrenörde çözülen hatanın tekrarı olurdu.
+  String get _yardimRotasi {
+    if (_antrenorMu) return routeEnums[SayfaAdi.antrenorYardim]!;
+    if (_yoneticiMi) return routeEnums[SayfaAdi.yoneticiYardim]!;
+    if (_ofisMi) return routeEnums[SayfaAdi.ofisYardim]!;
+    return routeEnums[SayfaAdi.yardim]!;
+  }
 
   Future<void> _profilDegistir() async {
     final jsonStr =
@@ -163,12 +173,7 @@ class _AyarlarPageState extends State<AyarlarPage> {
                 ikon: Icons.help_outline_rounded,
                 baslik: 'Yardım & SSS',
                 altBaslik: 'Sık sorulan sorular ve rehber',
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  _antrenorMu
-                      ? routeEnums[SayfaAdi.antrenorYardim]!
-                      : routeEnums[SayfaAdi.yardim]!,
-                ),
+                onTap: () => Navigator.pushNamed(context, _yardimRotasi),
               ),
             ],
           ),

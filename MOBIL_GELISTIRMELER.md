@@ -8,14 +8,14 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-08-18)
+## 📌 Şu anki durum (2026-09-08)
 
 | | |
 |---|---|
-| Mobil | `main`, `pubspec` sürümü **3.8.1+41** — tasarım sistemi + koyu tema + iskelet/liste kalıbı turu içeride |
-| Testler | `flutter test` **1195 geçiyor**, `flutter analyze` temiz; backend süiti **716 geçiyor** (2026-09-04 ölçümü) |
-| Backend | `master` = `origin/master`; hakediş uçları + migration `0080`/`0081` **canlıda değilse** önce onlar gider |
-| Mağaza | Play'de **3.8.0** yayında; App Store'da 3.8.0 gönderimi iptal edildi, yayındaki sürüm **3.7.0**. **3.8.1** `v3.8.1` tag'iyle gönderildi |
+| Mobil | `main`, `pubspec` sürümü **3.9.0+42** — ofis kabuğu + QR sonuç ekranı + rol'e göre yardım sayfaları içeride |
+| Testler | `flutter test` **1232 geçiyor**, `flutter analyze` temiz; backend süiti **716 geçiyor** (2026-09-04 ölçümü) |
+| Backend | `master` = `origin/master` ve **canlıda** (ofis uçları + iptal künyesi dahil) |
+| Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0 tag bekliyor** |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
 olduğu uçlar (`kayitFormVerileri`, `uyeBasvuru`, `sifremiUnuttum`, `sifreSifirlamaGonder`) canlıda
@@ -37,9 +37,10 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 ## 🔴 Açık işler
 
 ### 1. SSS/Yardım metni onayı
-Antrenör tarafı yazıldı ve kullanıcı onayından geçti (bkz. tamamlanan turlar).
-**Üye tarafı** (`lib/screens/1_common/yardim_page.dart`) hâlâ **taslak**; onay/düzeltme bekliyor.
-Yönetici için ayrı bir yardım sayfası hiç yok — antrenör sayfası kalıp olarak kullanılabilir.
+Üç sayfanın da metni yazıldı (bkz. 2026-09-08 turu): antrenör onaydan geçmişti, **üye sayfası
+ekrana göre yeniden yazıldı**, **yönetici/ofis sayfası yeni**. Kalan tek iş kullanıcı okuması:
+üye ve yönetici/ofis metinleri **onay/düzeltme bekliyor**. Cevaplar kural kaynaklarından türetildi,
+yani bir kural değişirse ilgili soru da güncellenmeli.
 
 ### 2. Heroku Scheduler — komutlar büyük olasılıkla HİÇ koşmuyor
 Faz 1'in periyodik komutları Scheduler'a eklenmiş varsayılıyordu; `tenis/history.md`'nin
@@ -54,12 +55,16 @@ dyno yok. Yani şu komutlar üretimde tetiklenmiyor olmalı:
 hazır ama pratikte ölü. Yardım sayfasına bu iki konuda soru **bilerek konulmadı** — özellik
 çalışmadan cevap yazmak kullanıcıyı yanıltır. Scheduler kurulunca ikisi de eklenmeli.
 
-### 2b. Çalışma saatlerini okuyan canlı akış yok
-`AntrenorCalismaGunleriModel` yazılıyor ama hiçbir yerde tüketilmiyor: mobilde
-`getAntrenorUygunSaatleri` çağıran ekran yok, web'deki `uygun_saatler_view` ölü uç
-(bkz. `tenis/history.md` 2026-07-30) ve `DersTalepPage` rotasına hiçbir yerden yönlendirme yok.
-Ekranın kendi bilgi notu ("üyelerin ders talebi oluştururken gördüğü uygun saatleriniz") şu an
-**karşılığı olmayan bir vaat** — ya ders talep akışı tamamlanmalı ya da not düzeltilmeli.
+### 2b. Ders talep akışı yok (yanıltıcı not düzeltildi)
+`AntrenorCalismaGunleriModel` **mobilde** tüketilmiyor: `getAntrenorUygunSaatleri` çağıran ekran
+yok, web'deki `uygun_saatler_view` ölü uç (bkz. `tenis/history.md` 2026-07-30) ve `DersTalepPage`
+rotasına hiçbir yerden yönlendirme yok. Veri tümüyle ölü değil — web'de **yöneticinin antrenör
+profil sayfasında** listeleniyor (`calendarapp/views/antrenor_views.py`, `profil.html`).
+
+2026-09-08'de ekranın "üyelerin ders talebi oluştururken gördüğü uygun saatleriniz" notu
+düzeltildi (artık müsaitliğin yöneticiye bildirim olduğunu söylüyor) ve antrenör SSS'ine "bu
+saatleri kim görüyor" sorusu eklendi. **Açık kalan asıl iş:** üyenin ders talebi oluşturduğu akış
+hâlâ yok; yapılırsa `DersTalepPage` ve uygun saat ucu birlikte canlandırılmalı.
 
 ### 3. Deploy sonrası gözlem (backend canlıya çıktı, izlenmeli)
 - **İptal signal'ları:** `etkinlik_signals/` paketine `__init__.py` eklenmesiyle ~5,5 aydır işlemeyen
@@ -72,6 +77,40 @@ Ekranın kendi bilgi notu ("üyelerin ders talebi oluştururken gördüğü uygu
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Rol'e göre yardım sayfaları + 3.9.0 hazırlığı (2026-09-08)
+
+- **Yönetici ve ofis drawer'ındaki "Yardım" üye SSS'ine gidiyordu.** Antrenörde 2026-08-10'da
+  düzeltilen hatanın aynısı bu iki kabukta duruyordu: ofis çalışanı "bakiyemi nasıl görürüm",
+  "paketim nereden görünür" gibi kendisinde karşılığı olmayan 13 soru okuyordu. Yeni
+  [yonetim_yardim_page.dart](lib/screens/1_common/yonetim_yardim_page.dart) **tek dosyada iki
+  kapsam** taşıyor: sorular `_Kapsam` (ortak / ofis / yönetici) ile etiketli, sayfa role göre
+  süzüyor. Ayrı iki dosya tutmak ortak soruları (QR, bildirim, tema) iki yerde güncellemek olurdu.
+  7 bölüm, 30 soru (6 ortak); **ofis 21, yönetici 15** soru görüyor. Yeni rotalar
+  `/yonetici_yardim` ve `/ofis_yardim`.
+- **Cevaplar kural kaynaklarından türetildi**, ekran metninden değil: iptal modları ve ürün tipi
+  kısıtı `etkinlik_iptal_service.py`, kalıcı silmenin etkisi `etkinlik_silme_service.py`, ofisin
+  göremediği alanlar `api/ofis/metots.py` beyaz listesi, hakediş grupları `hakedis_servis.py`,
+  QR sonuç kodları `qr_sonuc_gorunumu.dart`, bildirim türleri `notification.py`.
+  Yazarken doğrulanan gerçek: **yönetici rolüne otomatik gönderilen bildirim türü yok** — bu bir
+  soru olarak yazıldı, "gelmiyor" diye şikâyet gelmeden önce cevabı olsun diye.
+- **Üye SSS'i ekrana göre yeniden yazıldı.** Taslak metin 3.8.x'ten geride kalmıştı: "Geçmiş" diye
+  bir alt sekme yok (Geçmiş Dersler ☰ menüde), profil değiştirme üst köşede değil Ayarlar'da, kayıt
+  ve şifre sıfırlama artık tarayıcıda değil uygulama içinde; koyu tema, ajanda görünümü, Ayarlar
+  sayfası, misafir daveti ve "erişim kısıtlı" (ana hesap) hiç anlatılmıyordu. 13 düz soru → **7
+  bölüm, 25 soru**.
+- **Ayarlar'daki yardım bağlantısı dört rolü de doğru sayfaya götürüyor.** Eskiden yalnız
+  `_antrenorMu` kontrol ediliyordu, yönetici ve ofis üye sayfasına düşüyordu.
+- **Ortak gövde çıkarıldı:** [sss_gorunumu.dart](lib/screens/1_common/widgets/sss_gorunumu.dart)
+  (`SssGorunumu`, `SssBolum`, `SssSoru`, `SssKarti`). Üç sayfa artık yalnız veri tutuyor. Yan
+  kazanım: üye ve antrenör sayfalarındaki gömülü `Colors.white` / `Colors.blue` yüzünden **koyu
+  temada beyaz kalan** soru kartları token'landı.
+- **Çalışma saatleri bilgi notu** düzeltildi (bkz. açık iş 2b).
+- Testler: `test/yonetim_yardim_test.dart` (7), taşma matrisine 3 yardım sayfası.
+  `flutter test` 1195 → **1232**.
+- **Sürüm hazırlığı:** `pubspec` 3.9.0+42, `release_notes.json` 3.9.0 için yeniden yazıldı
+  (454 karakter, Play sınırı 500), `SURUM_NOTLARI.md`'ye 3.9.0 bölümü eklendi,
+  `api_urls.dart` local'den prod'a geri alındı.
 
 ### QR sonuç ekranı + iptal künyesi (2026-09-04)
 - **QR doğrulama sonucu yeniden yazıldı.** Eski hâli ortada duran bir karttı ve her hata aynı gri

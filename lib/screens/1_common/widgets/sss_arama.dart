@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 
 /// Yardım sayfalarının arama kutusu (+ isteğe bağlı bölüm çipleri).
 ///
-/// Antrenör SSS'inde 50, üye SSS'inde 14 soru var ve ikisinde de arama yoktu:
-/// cevabı bulmanın tek yolu kaydırmaktı. Kutu `AppBar.bottom` içinde durur,
-/// böylece liste kaysa da ekranda kalır.
+/// Yardım sayfalarında onlarca soru var (antrenör 51, üye 25, yönetici/ofis 30)
+/// ve başlangıçta hiçbirinde arama yoktu: cevabı bulmanın tek yolu kaydırmaktı.
+/// Kutu `AppBar.bottom` içinde durur, böylece liste kaysa da ekranda kalır.
 class SssArama extends StatelessWidget implements PreferredSizeWidget {
   final TextEditingController denetleyici;
   final ValueChanged<String> onDegisti;

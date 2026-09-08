@@ -104,7 +104,7 @@ class OfisDrawer extends StatelessWidget {
             YanMenuOgesi(
               ikon: Icons.help_outline_rounded,
               baslik: 'Yardım',
-              onTap: () => _git(context, routeEnums[SayfaAdi.yardim]!),
+              onTap: () => _git(context, routeEnums[SayfaAdi.ofisYardim]!),
             ),
             YanMenuOgesi(
               ikon: Icons.settings_outlined,

@@ -259,8 +259,9 @@ class _CalismaSaatleriPageState extends State<CalismaSaatleriPage> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Buradaki saatler, üyelerin ders talebi oluştururken gördüğü '
-              'uygun saatlerinizi belirler.',
+              'Buradaki saatler kulübe bildirdiğiniz müsaitliğinizdir; '
+              'yöneticinin antrenör sayfasında görünür ve program yapılırken '
+              'dikkate alınır.',
               style: TextStyle(
                 fontSize: 13,
                 color: colorScheme.onSurfaceVariant,

@@ -1,10 +1,10 @@
 [
     {
         "language": "tr",
-        "text": "- Koyu tema eklendi; Ayarlar'dan Sistem, Açık veya Koyu seçilebiliyor.\n- Takvime liste (Ajanda) görünümü eklendi.\n- Kayıt ol ve şifremi unuttum ekranları yenilendi, uygulama içinde açılıyor.\n- Yeni Ayarlar sayfası: tema, bildirim, şifre ve hesap işlemleri tek yerde.\n- Arayüz kulüp renklerine geçti, alt menü sabitlendi.\n- Listeler sadeleşti, aynı ekranda daha fazla kayıt görünüyor.\n- Çeşitli hata düzeltmeleri yapıldı."
+        "text": "- Ön büro (ofis) profili eklendi: haftalık program, ders açma/düzenleme/iptal ve QR doğrulama tek yerde.\n- QR doğrulama sonucu yenilendi: durum tüm ekranda görünüyor, ne yapılacağı yazıyor, \"Sonrakini tara\" ile hızlı devam.\n- İptal edilen derste kimin, ne zaman ve neden iptal ettiği görünüyor.\n- Yardım & SSS sayfaları role göre ayrıldı; üye soruları güncellendi.\n- Zorunlu güncelleme ekranının atlanabildiği hata giderildi.\n- Çeşitli hata düzeltmeleri."
     },
     {
         "language": "tr-TR",
-        "text": "- Koyu tema eklendi; Ayarlar'dan Sistem, Açık veya Koyu seçilebiliyor.\n- Takvime liste (Ajanda) görünümü eklendi.\n- Kayıt ol ve şifremi unuttum ekranları yenilendi, uygulama içinde açılıyor.\n- Yeni Ayarlar sayfası: tema, bildirim, şifre ve hesap işlemleri tek yerde.\n- Arayüz kulüp renklerine geçti, alt menü sabitlendi.\n- Listeler sadeleşti, aynı ekranda daha fazla kayıt görünüyor.\n- Çeşitli hata düzeltmeleri yapıldı."
+        "text": "- Ön büro (ofis) profili eklendi: haftalık program, ders açma/düzenleme/iptal ve QR doğrulama tek yerde.\n- QR doğrulama sonucu yenilendi: durum tüm ekranda görünüyor, ne yapılacağı yazıyor, \"Sonrakini tara\" ile hızlı devam.\n- İptal edilen derste kimin, ne zaman ve neden iptal ettiği görünüyor.\n- Yardım & SSS sayfaları role göre ayrıldı; üye soruları güncellendi.\n- Zorunlu güncelleme ekranının atlanabildiği hata giderildi.\n- Çeşitli hata düzeltmeleri."
     }
 ]
