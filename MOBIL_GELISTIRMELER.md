@@ -15,7 +15,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | Mobil | `main`, `pubspec` sürümü **3.9.0+42** — ofis kabuğu + QR sonuç ekranı + rol'e göre yardım sayfaları içeride |
 | Testler | `flutter test` **1232 geçiyor**, `flutter analyze` temiz; backend süiti **716 geçiyor** (2026-09-04 ölçümü) |
 | Backend | `master` = `origin/master` ve **canlıda** (ofis uçları + iptal künyesi dahil) |
-| Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0 tag bekliyor** |
+| Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08) |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
 olduğu uçlar (`kayitFormVerileri`, `uyeBasvuru`, `sifremiUnuttum`, `sifreSifirlamaGonder`) canlıda
