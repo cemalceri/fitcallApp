@@ -24,7 +24,7 @@ class DersListeItemWidget extends StatelessWidget {
   static ListeTonu tonu(String durum) => switch (durum) {
         'tamamlandi' => ListeTonu.basari,
         'devam_ediyor' => ListeTonu.bilgi,
-        'iptal' => ListeTonu.hata,
+        'iptal' || 'yapilmadi' => ListeTonu.hata,
         _ => ListeTonu.uyari,
       };
 
@@ -35,7 +35,7 @@ class DersListeItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ton = tonu(ders.durum);
+    final ton = tonu(ders.gorunenDurum);
 
     return ListeSatiri(
       onGorsel: _SaatBloku(saat: ders.saat, ton: ton),

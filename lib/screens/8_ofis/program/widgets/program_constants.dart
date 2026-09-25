@@ -46,6 +46,7 @@ class ProgramRenkleri {
   static Color durumRengi(String durum) {
     switch (durum) {
       case 'iptal':
+      case 'yapilmadi':
         return iptal;
       case 'tamamlandi':
         return tamamlandi;
@@ -68,6 +69,8 @@ class ProgramRenkleri {
         return 'Devam ediyor';
       case 'onay_bekliyor':
         return 'Onay bekliyor';
+      case 'yapilmadi':
+        return 'Yapılmadı';
       default:
         return 'Planlı';
     }

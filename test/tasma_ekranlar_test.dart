@@ -53,6 +53,7 @@ import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/misafir_ekle_sheet.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/yoklama_hizli_secim.dart';
+import 'package:fitcall/screens/7_yonetici/dashboard/widgets/daily_summary_card.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_liste_item.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/ders_iptal_dialog.dart';
@@ -389,7 +390,9 @@ AntrenorListeItem _antrenorListeItem({bool puanli = true}) =>
       'ogrenci_sayisi': 126,
     });
 
-DersListeItem _dersListeItem() => DersListeItem.fromJson({
+DersListeItem _dersListeItem(
+        {String durum = 'planli', String onayDurumu = 'bekliyor'}) =>
+    DersListeItem.fromJson({
       'id': 1,
       'baslangic_tarih_saat': '2026-07-23T10:00:00+03:00',
       'bitis_tarih_saat': '2026-07-23T11:00:00+03:00',
@@ -412,8 +415,8 @@ DersListeItem _dersListeItem() => DersListeItem.fromJson({
             'telefon': '5550000000'
           }
       ],
-      'durum': 'planli',
-      'onay_durumu': 'bekliyor',
+      'durum': durum,
+      'onay_durumu': onayDurumu,
       'aciklama': 'Açıklama',
     });
 
@@ -809,6 +812,19 @@ void main() {
   group('Yönetici mevcut bileşenler', () {
     tasmaTesti('DersListeItemWidget',
         () => DersListeItemWidget(ders: _dersListeItem(), onTap: () {}));
+
+    tasmaTesti(
+        'DersListeItemWidget (Yapılmadı)',
+        () => DersListeItemWidget(
+            ders: _dersListeItem(
+                durum: 'onay_bekliyor', onayDurumu: 'reddedildi'),
+            onTap: () {}));
+
+    tasmaTesti('DailySummaryCard', () {
+      return DailySummaryCard(
+        data: GununOzeti(yeniKayit: 12, telafiDers: 41, dolulukYuzdesi: 38.4),
+      );
+    });
 
     tasmaTesti('StatCard', () {
       return const StatCard(

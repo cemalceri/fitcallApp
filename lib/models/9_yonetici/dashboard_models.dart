@@ -789,7 +789,7 @@ class DersListeItem {
   final int katilimciSayisi;
   final List<DersKatilimci> katilimcilar;
   final String durum; // planli, devam_ediyor, tamamlandi, iptal, onay_bekliyor
-  final String onayDurumu; // bekliyor, onaylandi, reddedildi
+  final String onayDurumu; // bekliyor, onaylandi, reddedildi (= Yapılmadı)
   final String? aciklama;
 
   DersListeItem({
@@ -840,13 +840,22 @@ class DersListeItem {
     );
   }
 
+  /// Ekranda gösterilecek durum. Yönetici "Yapılmadı" dediyse backend
+  /// geriye uyum için `durum`u 'onay_bekliyor' bırakıyor, kararı
+  /// `onay_durumu` ('reddedildi') taşıyor; burada 'yapilmadi'ya çevrilir.
+  String get gorunenDurum =>
+      durum == 'onay_bekliyor' && onayDurumu == 'reddedildi'
+          ? 'yapilmadi'
+          : durum;
+
   Color get durumRenk {
-    switch (durum) {
+    switch (gorunenDurum) {
       case 'tamamlandi':
         return Colors.green;
       case 'devam_ediyor':
         return Colors.blue;
       case 'iptal':
+      case 'yapilmadi':
         return Colors.red;
       case 'onay_bekliyor':
         return Colors.amber;
@@ -856,13 +865,15 @@ class DersListeItem {
   }
 
   String get durumText {
-    switch (durum) {
+    switch (gorunenDurum) {
       case 'tamamlandi':
         return 'Tamamlandı';
       case 'devam_ediyor':
         return 'Devam Ediyor';
       case 'iptal':
         return 'İptal';
+      case 'yapilmadi':
+        return 'Yapılmadı';
       case 'onay_bekliyor':
         return 'Onay Bekliyor';
       default:

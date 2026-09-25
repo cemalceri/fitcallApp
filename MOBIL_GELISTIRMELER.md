@@ -8,13 +8,13 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-09-08)
+## 📌 Şu anki durum (2026-09-25)
 
 | | |
 |---|---|
-| Mobil | `main`, `pubspec` sürümü **3.9.0+42** — ofis kabuğu + QR sonuç ekranı + rol'e göre yardım sayfaları içeride |
-| Testler | `flutter test` **1232 geçiyor**, `flutter analyze` temiz; backend süiti **716 geçiyor** (2026-09-04 ölçümü) |
-| Backend | `master` = `origin/master` ve **canlıda** (ofis uçları + iptal künyesi dahil) |
+| Mobil | `main`, `pubspec` sürümü **3.9.0+42** — ofis kabuğu + QR sonuç ekranı + rol'e göre yardım sayfaları içeride. Yönetici ekranı düzeltmelerinin mobil kısmı (bkz. açık iş 4) `main`'de ama **sürüme girmedi** (bilerek: version bump/tag yok) |
+| Testler | `flutter test` **1257 geçiyor**, `flutter analyze` temiz; backend süiti **812 geçiyor**, 0 kırık (2026-09-25) |
+| Backend | `origin/master`'da yönetici ekranı düzeltmeleri var; **canlıya deploy edilmedi** — canlı hâlâ `bc21164` (v296). Deploy: `git push heroku master` |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08) |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
@@ -74,9 +74,52 @@ hâlâ yok; yapılırsa `DersTalepPage` ve uygun saat ucu birlikte canlandırıl
   verisi karışıyordu). Düzeltildikten sonra dashboard/rapor rakamlarının düşmesi **beklenen**
   davranıştır, hata değil.
 
+### 4. Yönetici ekranı veri düzeltmeleri — deploy ve karar bekliyor (2026-09-25)
+Yönetici ekranlarında yanlış gösterilen rakamlar düzeltildi (ayrıntı: aşağıdaki tur ve
+`tenis/history.md` 2026-09-25). Kalanlar:
+- **Deploy:** düzeltmelerin çoğu backend'de, deploy edilince **mevcut 3.9.0 sürümünde de**
+  düzelir. Mobil kısım (reddedilen dersin "Yapılmadı" etiketi, "Bekleyen Telafi" etiketi)
+  bir sonraki sürümü bekler; eski sürüm reddedilen dersi eskisi gibi "Onay Bekliyor" gösterir
+  (backend `durum` alanını bilerek değiştirmedi).
+- **Ciro kararı (bilinçli olarak dokunulmadı):** ciro yalnız yönetici onaylı dersleri sayıyor ve
+  `urun.toplam_ucret` üzerinden hesaplanıyor. Borç ise `ucret` + fiyat geçmişi + katılımcı sayısıyla
+  yazılıyor. Onaylar Haziran'dan beri birikiyor (Eylül'de biten derslerin ~%5'i onaylı), bu yüzden
+  ciro kartı gerçeğin çok altında. Geç iptal edilip "yapıldı" sayılan dersler de ciroya girmiyor.
+- **Süreç:** onay birikimi aynı zamanda tek seferlik derslerin borcunu da bekletiyor (borç onayda
+  yazılıyor) — gösterim değil, faturalama konusu.
+
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Yönetici ekranı veri denetimi ve düzeltmeleri (2026-09-25)
+
+Backend uçlarıyla karşılaştırmalı denetim, bağımsız ikinci bir denetimle ve salt-okunur prod
+ölçümüyle doğrulandı. Düzeltmeler (ciro hariç, bkz. açık iş 4):
+- **Dersler sekmesi 20 derste kesiliyordu** (günde 50–67 ders var). `yoneticiDersler` artık günün
+  tüm derslerini tek seferde döndürüyor; mobilde değişiklik gerekmedi. Ofisin Dersler sekmesi de düzeldi.
+- **Antrenör performansı şişiyordu** (onay satırlarına JOIN: 2 ders 7 görünüyordu); "x/y ders"teki
+  toplam artık iptalleri içermiyor.
+- **Toplam Alacak kartı ≠ açtığı Borçlu Üyeler listesi** (kart yalnız aktifleri sayıyordu). Kart
+  artık listenin sorgusundan hesaplanıyor.
+- **"Ders (Yapılan/Planlanan)"** paydasından iptaller çıktı; Raporlar'daki "Toplam Ders" ile aynı.
+- **Doluluk tek tanım:** kortta ders olan süre / kulüp günü (07–23, ofis program ızgarasıyla aynı).
+  Önceden dashboard'daki "%doluluk" aslında onay oranıydı, kort raporundaki "dolu saat" ders
+  sayısıydı ve kapasite sabit 12 saatti. Kortun `max_etkinlik_sayisi` alanı kullanılmıyor: prod'da
+  "Tekli Kapalı" kortunda 5 olduğundan kapasiteyi beşe katlıyordu.
+- **Bugünün Özeti:** doluluk seçili dönemden bağımsız olarak hep bugün; "Telafi Ders" etiketi
+  **"Bekleyen Telafi"** oldu (değer, kullanılmamış telafi hakkı sayısı — bugünkü telafi dersi değil).
+- **Kıyas yüzdeleri** aynı uzunlukta dönemle yapılıyor (bu ay 1→bugün ↔ geçen ay 1→aynı gün).
+  Haftalık grafik takvim haftası (Pzt→Paz), toplamı "Bu Hafta" kartına eşit. "Bugün" sekmesinde
+  tahsilat yüzdesi gösterilmiyor: ödemelerin %74'ü sisteme günler sonra toplu giriliyor, yarım gün
+  ile tam gün kıyası da "aynı saate kadar" kıyası da yanıltıcıydı.
+- **Reddedilen ders "Onay Bekliyor" görünüyordu** → "Yapılmadı" (web ile aynı kelime). Dersler
+  listesi ve ofis programı aynı kuralı kullanıyor: `durum` geriye uyum için `onay_bekliyor`
+  kalıyor, karar `onay_durumu = reddedildi` alanından okunuyor.
+- **Isı haritası** 08:00'den önceki dersleri atıyordu; satırlar 07–22 ve dışına taşan saatler.
+- Yan bulgu: `DailySummaryCard` başlığı 320px/1.3x'te taşıyordu (taşma matrisinde yoktu); düzeltildi.
+- Testler: backend `tests/api/test_yonetici_ekran_dogrulugu.py`; mobil `test/ders_durumu_test.dart`,
+  taşma matrisine `DailySummaryCard` ve "Yapılmadı" satırı.
 
 ### Rol'e göre yardım sayfaları + 3.9.0 hazırlığı (2026-09-08)
 

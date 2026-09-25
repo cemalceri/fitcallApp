@@ -189,6 +189,10 @@ class ProgramDersi {
   final bool sabitPlanMi;
   final String
       durum; // planli | devam_ediyor | tamamlandi | iptal | onay_bekliyor
+
+  /// Yönetici kararı: bekliyor | onaylandi | reddedildi (= "Yapılmadı").
+  /// Eski backend göndermez; o zaman 'bekliyor' kabul edilir.
+  final String onayDurumu;
   final int katilimciSayisi;
   final List<ProgramKatilimci> katilimcilar;
   final String? aciklama;
@@ -219,6 +223,7 @@ class ProgramDersi {
     this.iptalMi = false,
     this.sabitPlanMi = false,
     this.durum = 'planli',
+    this.onayDurumu = 'bekliyor',
     this.katilimciSayisi = 0,
     this.katilimcilar = const [],
     this.aciklama,
@@ -250,6 +255,7 @@ class ProgramDersi {
       iptalMi: j['iptal_mi'] == true,
       sabitPlanMi: j['sabit_plan_mi'] == true,
       durum: j['durum']?.toString() ?? 'planli',
+      onayDurumu: j['onay_durumu']?.toString() ?? 'bekliyor',
       katilimciSayisi: _int(j['katilimci_sayisi']),
       katilimcilar: (j['katilimcilar'] as List? ?? const [])
           .map((e) =>
@@ -263,6 +269,14 @@ class ProgramDersi {
   }
 
   int get sureDakika => bitis.difference(baslangic).inMinutes;
+
+  /// Ekranda gösterilecek durum: yönetici "Yapılmadı" dediyse backend
+  /// `durum`u geriye uyum için 'onay_bekliyor' bırakıyor; 'yapilmadi'ya
+  /// burada çevrilir (Dersler listesindeki DersListeItem ile aynı kural).
+  String get gorunenDurum =>
+      durum == 'onay_bekliyor' && onayDurumu == 'reddedildi'
+          ? 'yapilmadi'
+          : durum;
 
   /// İptal künyesinde gösterilecek en az bir bilgi var mı?
   bool get iptalKunyesiVar =>

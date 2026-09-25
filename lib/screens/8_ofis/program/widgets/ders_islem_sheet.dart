@@ -29,7 +29,7 @@ class DersIslemSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final renk = Theme.of(context).colorScheme;
-    final durumRenk = ProgramRenkleri.durumRengi(ders.durum);
+    final durumRenk = ProgramRenkleri.durumRengi(ders.gorunenDurum);
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -70,7 +70,7 @@ class DersIslemSheet extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          ProgramRenkleri.durumMetni(ders.durum),
+                          ProgramRenkleri.durumMetni(ders.gorunenDurum),
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w700,

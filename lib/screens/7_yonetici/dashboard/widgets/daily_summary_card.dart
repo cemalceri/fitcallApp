@@ -46,12 +46,16 @@ class DailySummaryCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              Text(
-                'Bugünün Özeti',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
+              Expanded(
+                child: Text(
+                  'Bugünün Özeti',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
             ],
@@ -72,9 +76,11 @@ class DailySummaryCard extends StatelessWidget {
                 color: colorScheme.outlineVariant.withValues(alpha: 0.3),
               ),
               Expanded(
+                // Bugün yapılan telafi dersi değil: kullanılmamış, süresi
+                // geçmemiş telafi hakkı sayısı (backend `telafi_bekleyen`).
                 child: _SummaryItem(
                   value: data.telafiDers.toString(),
-                  label: 'Telafi Ders',
+                  label: 'Bekleyen Telafi',
                   color: Colors.orange,
                 ),
               ),
