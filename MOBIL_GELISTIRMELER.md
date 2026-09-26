@@ -14,7 +14,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 |---|---|
 | Mobil | `main`, `pubspec` sürümü **3.9.0+42** — ofis kabuğu + QR sonuç ekranı + rol'e göre yardım sayfaları içeride. Yönetici ekranı düzeltmelerinin mobil kısmı (bkz. açık iş 4) `main`'de ama **sürüme girmedi** (bilerek: version bump/tag yok) |
 | Testler | `flutter test` **1257 geçiyor**, `flutter analyze` temiz; backend süiti **812 geçiyor**, 0 kırık (2026-09-25) |
-| Backend | `origin/master`'da yönetici ekranı düzeltmeleri var; **canlıya deploy edilmedi** — canlı hâlâ `bc21164` (v296). Deploy: `git push heroku master` |
+| Backend | `master` = `origin/master` = **canlı** (`322354c`, Heroku v297, 2026-09-26) — yönetici ekranı düzeltmeleri dahil |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08) |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
@@ -77,10 +77,10 @@ hâlâ yok; yapılırsa `DersTalepPage` ve uygun saat ucu birlikte canlandırıl
 ### 4. Yönetici ekranı veri düzeltmeleri — deploy ve karar bekliyor (2026-09-25)
 Yönetici ekranlarında yanlış gösterilen rakamlar düzeltildi (ayrıntı: aşağıdaki tur ve
 `tenis/history.md` 2026-09-25). Kalanlar:
-- **Deploy:** düzeltmelerin çoğu backend'de, deploy edilince **mevcut 3.9.0 sürümünde de**
-  düzelir. Mobil kısım (reddedilen dersin "Yapılmadı" etiketi, "Bekleyen Telafi" etiketi)
-  bir sonraki sürümü bekler; eski sürüm reddedilen dersi eskisi gibi "Onay Bekliyor" gösterir
-  (backend `durum` alanını bilerek değiştirmedi).
+- **Deploy:** backend canlıda (v297, 2026-09-26); düzeltmelerin çoğu **mevcut 3.9.0 sürümünde
+  de** görünüyor. Mobil kısım (reddedilen dersin "Yapılmadı" etiketi, "Bekleyen Telafi" etiketi)
+  `main`'de, bir sonraki sürümü bekliyor; o zamana kadar uygulama reddedilen dersi eskisi gibi
+  "Onay Bekliyor" gösterir (backend `durum` alanını bilerek değiştirmedi).
 - **Ciro kararı (bilinçli olarak dokunulmadı):** ciro yalnız yönetici onaylı dersleri sayıyor ve
   `urun.toplam_ucret` üzerinden hesaplanıyor. Borç ise `ucret` + fiyat geçmişi + katılımcı sayısıyla
   yazılıyor. Onaylar Haziran'dan beri birikiyor (Eylül'de biten derslerin ~%5'i onaylı), bu yüzden
