@@ -8,13 +8,13 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-09-25)
+## 📌 Şu anki durum (2026-09-29)
 
 | | |
 |---|---|
-| Mobil | `main`, `pubspec` sürümü **3.9.0+42** — ofis kabuğu + QR sonuç ekranı + rol'e göre yardım sayfaları içeride. Yönetici ekranı düzeltmelerinin mobil kısmı (bkz. açık iş 4) `main`'de ama **sürüme girmedi** (bilerek: version bump/tag yok) |
-| Testler | `flutter test` **1257 geçiyor**, `flutter analyze` temiz; backend süiti **812 geçiyor**, 0 kırık (2026-09-25) |
-| Backend | `master` = `origin/master` = **canlı** (`322354c`, Heroku v297, 2026-09-26) — yönetici ekranı düzeltmeleri dahil |
+| Mobil | `pubspec` sürümü **3.9.0+42** — ofis kabuğu + QR sonuç ekranı + rol'e göre yardım sayfaları içeride. Yönetici ekranı düzeltmeleri (açık iş 4) ve 2026-09-29 güvenlik/temizlik turu **sürüme girmedi** (bilerek: version bump/tag yok). 09-29 turu `claude/cool-mayer-zurn6j` dalında |
+| Testler | `flutter test` **1281 geçiyor**, `flutter analyze` temiz; backend süiti **877 geçiyor**, 0 kırık (2026-09-29) |
+| Backend | Canlı: `322354c` (Heroku v297, 2026-09-26). 09-29 turu `claude/cool-mayer-zurn6j` dalında, **deploy bekliyor** (açık iş 5) |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08) |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
@@ -36,40 +36,24 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 
 ## 🔴 Açık işler
 
-### 1. SSS/Yardım metni onayı
-Üç sayfanın da metni yazıldı (bkz. 2026-09-08 turu): antrenör onaydan geçmişti, **üye sayfası
-ekrana göre yeniden yazıldı**, **yönetici/ofis sayfası yeni**. Kalan tek iş kullanıcı okuması:
-üye ve yönetici/ofis metinleri **onay/düzeltme bekliyor**. Cevaplar kural kaynaklarından türetildi,
-yani bir kural değişirse ilgili soru da güncellenmeli.
+### 2. Heroku Scheduler — kurulu (kullanıcı teyidi 2026-09-29)
+Bu maddede "Scheduler addon'u yok, periyodik komutlar koşmuyor olmalı" deniyordu (dayanak:
+`tenis/history.md` 2026-08-10). **Kullanıcı teyidi: Scheduler kurulu, bildirimler gidiyor.** Push'u
+gönderen tek yol `process_notifications` olduğu için bu, `ders_bildirimleri` /
+`paket_bitis_bildirim` / `update_antrenor_home_cards`'ın da koştuğu anlamına geliyor.
 
-### 2. Heroku Scheduler — komutlar büyük olasılıkla HİÇ koşmuyor
-Faz 1'in periyodik komutları Scheduler'a eklenmiş varsayılıyordu; `tenis/history.md`'nin
-2026-08-10 log bakımı girdisi **Scheduler addon'unun olmadığını** söylüyor (o yüzden `log_temizle`
-`Procfile`'ın release fazına alınmıştı). `Procfile`'da da yalnız `release` ve `web` var — clock
-dyno yok. Yani şu komutlar üretimde tetiklenmiyor olmalı:
-- `ders_bildirimleri` (10 dk) — üyeye `DERS_HATIRLATMA`, antrenöre `YOKLAMA_HATIRLATMA` push
-- `paket_bitis_bildirim` (günlük)
-- `update_antrenor_home_cards` — antrenör ana sayfasındaki bilgi kartlarını üreten tek yol
-
-**Mobil etkisi:** yoklama hatırlatma bildirimi ve antrenör bilgi kartı karuseli kodda tamamen
-hazır ama pratikte ölü. Yardım sayfasına bu iki konuda soru **bilerek konulmadı** — özellik
-çalışmadan cevap yazmak kullanıcıyı yanıltır. Scheduler kurulunca ikisi de eklenmeli.
-
-### 2b. Ders talep akışı yok (yanıltıcı not düzeltildi)
-`AntrenorCalismaGunleriModel` **mobilde** tüketilmiyor: `getAntrenorUygunSaatleri` çağıran ekran
-yok, web'deki `uygun_saatler_view` ölü uç (bkz. `tenis/history.md` 2026-07-30) ve `DersTalepPage`
-rotasına hiçbir yerden yönlendirme yok. Veri tümüyle ölü değil — web'de **yöneticinin antrenör
-profil sayfasında** listeleniyor (`calendarapp/views/antrenor_views.py`, `profil.html`).
-
-2026-09-08'de ekranın "üyelerin ders talebi oluştururken gördüğü uygun saatleriniz" notu
-düzeltildi (artık müsaitliğin yöneticiye bildirim olduğunu söylüyor) ve antrenör SSS'ine "bu
-saatleri kim görüyor" sorusu eklendi. **Açık kalan asıl iş:** üyenin ders talebi oluşturduğu akış
-hâlâ yok; yapılırsa `DersTalepPage` ve uygun saat ucu birlikte canlandırılmalı.
+**Kalan küçük iş:** antrenör SSS'ine yoklama hatırlatma bildirimi ve bilgi kartları hakkında soru
+**bilerek konulmamıştı** (özellik çalışmıyor sanılıyordu). Artık eklenebilir.
 
 ### 3. Deploy sonrası gözlem (backend canlıya çıktı, izlenmeli)
 - **İptal signal'ları:** `etkinlik_signals/` paketine `__init__.py` eklenmesiyle ~5,5 aydır işlemeyen
-  telafi/paket iadesi/borç mantığı devreye girdi. İlk iptallerin finansal kayıtları gözle kontrol
-  edilmeli. Geçmiş 5,5 ay geriye dönük işlenmiyor.
+  telafi/paket iadesi/borç mantığı devreye girdi. **2026-09-29 kod denetimi:** 24 saat kuralı,
+  telafi / paket / borç dalları ve tekrar çalışma güvenliği doğru; iki hata bulundu ve düzeltildi
+  (iptal geri almada onay/finans kalıyordu; iptal tek transaction değildi — bkz. 09-29 turu).
+  Prod verisi bu ortamdan okunamadı; kontrol için deploy sonrası çalıştırılacak komut:
+  `heroku run python manage.py veri_tutarlilik_kontrol --ders-basi 2026-07-23 --kategori paket,tekders,telafi,onay,ekstra`
+  (yeni `ONAY-IPTAL-GERI-ALMA-KALINTISI` bulgusu eski geri almaların bıraktığı kalıntıyı listeler).
+  Geçmiş 5,5 ay geriye dönük işlenmiyor.
 - **Tenant düzeltmesi:** 8 yönetici API ucu kimlik doğrulamasız ve tenant'sızdı (iki işletmenin
   verisi karışıyordu). Düzeltildikten sonra dashboard/rapor rakamlarının düşmesi **beklenen**
   davranıştır, hata değil.
@@ -88,9 +72,58 @@ Yönetici ekranlarında yanlış gösterilen rakamlar düzeltildi (ayrıntı: a�
 - **Süreç:** onay birikimi aynı zamanda tek seferlik derslerin borcunu da bekletiyor (borç onayda
   yazılıyor) — gösterim değil, faturalama konusu.
 
+### 5. 2026-09-29 turunun deploy'u
+- **Önce backend:** `tenis` `claude/cool-mayer-zurn6j` → `master` merge + Heroku deploy. Migration
+  `0089` ders talep tablolarını (`ders_talep`, `genel_ders_talep`, `genel_ders_talep_zaman`) **siler**
+  — kullanıcı kararı, içlerindeki eski talepler geri gelmez.
+- Mobil değişiklikler (ders talep kodu silindi, yardım metinleri, zorunlu güncelleme sayfası)
+  backend'e bağımlı değil; bir sonraki sürümle çıkar. Yayındaki sürümler kırılmıyor: kaldırılan uçları
+  hiçbir ekran çağırmıyordu, tesis/event QR uçları zaten token gönderen istemcilerle çalışıyor.
+- Deploy sonrası `veri_tutarlilik_kontrol` (açık iş 3).
+
+### 6. Repodaki sırlar — şimdilik bekliyor (kullanıcı kararı 2026-09-29)
+`tenis/eventcalendar/settings.py`'de prod DB şifresi, SMS/e-posta/Param şifreleri, repoda da Firebase
+servis anahtarı (`eventcalendar/keys/serviceAccountKey.json`) duruyor. Heroku config var'a taşıma +
+anahtar yenileme ileride yapılacak.
+
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Güvenlik turu + iptal geri alma + ders talep akışı kaldırıldı (2026-09-29)
+
+Mobil + backend baştan sona gözden geçirildi. Ayrıntı `tenis/history.md` 2026-09-29.
+- **Ders talep akışı tümüyle kaldırıldı** (kullanıcı kararı; yapılacaksa baştan tasarlanacak). Mobil:
+  `DersTalepPage`, servisi, iki DTO, rota ve URL sabitleri. Backend: `setDersTalep`,
+  `setGenelDersTalep`, talep listesi/silme, `getUrunListesiVeUyePaketleri`, `getAntrenorUygunSaatleri`,
+  `getKortveAntrenorList`, web `ders-talepleri/` ekranı, ölü `uygun_saatler_view` ve modeller
+  (migration `0089`). Antrenörün "Çalışma Saatlerim" ekranı **duruyor** (web'de yönetici görüyor).
+- **Güvenlik (backend):** oturum istemeyen web uçları kapatıldı — `sms/send/` (herkes firma adına SMS
+  atabiliyordu), `muhasebe/kaydet-odeme/`, muhasebe pencereleri, duyuru ajax'ları; `iptal-zorla` silindi.
+  Tesis QR uçları oturumsuzdu ve kullanıcıyı gövdedeki `user_id`'den alıyordu (herkes herkes adına
+  tesis giriş kodu üretebiliyordu) → token zorunlu, kullanıcı token'dan; event QR'da da aynı. Mobil
+  **değişmedi**: `postParsed` zaten token gönderiyor, `user_id` hâlâ gönderiliyor ve yok sayılıyor.
+  `getBildirimById` / `uyeKaydet` (oturumsuz, kullanılmıyordu) silindi.
+- **Zorunlu güncelleme Android'de hâlâ geri tuşuyla atlanıyordu.** Kök neden: istemci düzeltmesi
+  3.9.0'da, `force` ise tanım gereği eski sürümlere gidiyor. Sunucu artık 3.9.0 altı Android'e `blocked`
+  gönderiyor (eski sürümler onu geri tuşunu yutan sayfayla gösteriyor — 3.6.0–3.8.1 kodunda doğrulandı).
+  "Arka plandan dönüşte de kontrol" kullanıcı kararıyla **yapılmadı**.
+  Mobil yan düzeltmeler: iOS zorunlu sayfasında boş "Mevcut: v" (yüklü sürüm artık okunuyor); bloklayan
+  ve zorunlu sayfalar küçük ekran + büyük yazıda taşıyordu (kaydırılabilir oldu, taşma matrisine girdi);
+  iki sayfanın geri tuşunu yuttuğu widget testiyle sabitlendi.
+- **İptal geri alma:** iptalin otomatik onay satırı ve geç iptalin paket düşümü / tek ders borcu kalıyordu
+  → geri almada siliniyor, ders yeniden onay bekliyor. İptal/geri alma tek transaction.
+- **Paket kalan hakkı** "paket satın alanlar" ve plan dışı karar penceresinde satır sayısıyla
+  hesaplanıyordu → düşüm toplamı (mobille aynı kural). İşlevsiz "Seriyi Sil" (web) kalktı, `etkinlik/sil`
+  POST oldu.
+- **Yardım metinleri onaylandı** (eski açık iş 1), üç düzeltmeyle: üye "Katılamayacağım" cevabı kuralı
+  yanlış anlatıyordu (ders yalnız tek kişilikse / herkes hayır dediyse iptal olur; telafi yalnız aidat
+  dersinde; geç iptal yapılmış sayılır), "Erişim kısıtlı" listesi eksikti, yönetim "İptali geri al"
+  cevabı yeni davranışa göre güncellendi.
+- Testler: backend 812 → **877** (`test_qr_ve_kaldirilan_uclar`, `test_web_uclari_yetki`,
+  `test_mobil_konfig_direktif`, `test_iptal_geri_alma`, `test_paket_kalan_hak_tek_kural`, tutarlılık
+  komutuna 1); mobil 1257 → **1281**. Güvenlik ve iptal düzeltmeleri mutasyonla doğrulandı (koruma
+  kaldırılınca ilgili testler düşüyor).
 
 ### Yönetici ekranı veri denetimi ve düzeltmeleri (2026-09-25)
 
@@ -148,7 +181,7 @@ Backend uçlarıyla karşılaştırmalı denetim, bağımsız ikinci bir denetim
   (`SssGorunumu`, `SssBolum`, `SssSoru`, `SssKarti`). Üç sayfa artık yalnız veri tutuyor. Yan
   kazanım: üye ve antrenör sayfalarındaki gömülü `Colors.white` / `Colors.blue` yüzünden **koyu
   temada beyaz kalan** soru kartları token'landı.
-- **Çalışma saatleri bilgi notu** düzeltildi (bkz. açık iş 2b).
+- **Çalışma saatleri bilgi notu** düzeltildi (ders talep akışı 2026-09-29'da tümüyle silindi).
 - Testler: `test/yonetim_yardim_test.dart` (7), taşma matrisine 3 yardım sayfası.
   `flutter test` 1195 → **1232**.
 - **Sürüm hazırlığı:** `pubspec` 3.9.0+42, `release_notes.json` 3.9.0 için yeniden yazıldı
@@ -188,8 +221,11 @@ Backend uçlarıyla karşılaştırmalı denetim, bağımsız ikinci bir denetim
 - **Kapsam notu:** `immediate`/`flex` direktifleri bloklamak için değil, "yeni sürüm var" dürtmesi
   için; oradaki davranış kasıtlı olarak değişmedi. Bloklayan tek direktifler `force`, `blocked`,
   `maintenance`.
-- **Açık kalan (küçük):** güncelleme kontrolü yalnız `login_page` açılışında koşuyor. Uygulama
-  arka plandayken `force` yayınlanırsa bir sonraki soğuk açılışa kadar zorlanmıyor.
+- **Bilinçli olarak açık:** güncelleme kontrolü yalnız `login_page` açılışında koşuyor; uygulama
+  arka plandayken `force` yayınlanırsa bir sonraki soğuk açılışa kadar zorlanmıyor (kullanıcı kararı
+  2026-09-29: gerek yok).
+- **Güncelleme (2026-09-29):** bu düzeltme 3.9.0'da, ama `force` eski sürümlere gittiği için açık
+  sürüyordu; sunucu artık 3.9.0 altı Android'e `blocked` gönderiyor (bkz. 09-29 turu).
 - Testler: `test/zorunlu_guncelleme_test.dart` (10).
 
 ### Ofis (ön büro) profili — aksiyonlar yöneticiden ayrıldı (2026-09-04)
@@ -416,7 +452,7 @@ iskelet matrise eklendi.
   `api/antrenor/gunluk_ozet.py`. **Kural değişirse bu sayfa da güncellenmeli.**
 - **Yazarken doğrulanan üç yanlış varsayım** — karşılığı olmadığı için soru olarak
   yazılmadı: yoklama hatırlatma bildirimi ve antrenör bilgi kartları Scheduler'a bağlı (açık iş 2),
-  çalışma saatlerini okuyan canlı akış yok (açık iş 2b).
+  çalışma saatlerini okuyan canlı akış yok (ders talep akışı 2026-09-29'da silindi).
 - **Dikkat çeken cevaplar:** "Öğrencilerim" listesi ders verilen herkesi değil yalnız *sorumlu
   hocası siz olan* aktif üyeleri gösteriyor; "yapılmadı" nedenleri hiçbir otomatik işlem
   tetiklemiyor, yalnız yöneticinin kararına dayanak oluyor; hakediş bayrağı ders onayını eziyor.
@@ -622,7 +658,8 @@ Detay `SURUM_NOTLARI.md` → 3.6.0.
 ### Üye
 - **(6)** Gelişim/istatistik ekranı — aylık ders sayısı, katılım %, seviye ilerlemesi, rozet
 - **(7)** Antrenör karnesi — ders sonrası not/puanın üyeye "karne" akışıyla açılması (`GorusmeNotu` + `EtkinlikDegerlendirme` altyapısı hazır)
-- **(8)** Ders talep sihirbazı — antrenör kartları + uygun saat ısı haritası (`getAntrenorUygunSaatleri` mevcut)
+- **(8)** Ders talep sihirbazı — antrenör kartları + uygun saat ısı haritası. Eski yarım akış (`DersTalepPage`,
+  `setDersTalep`, `getAntrenorUygunSaatleri`, tablolar) 2026-09-29'da **tümüyle silindi**; yapılırsa baştan tasarlanacak
 - **(9)** Self-servis telafi — telafi hakkını boş slotlardan üyenin planlaması
 - **(10)** Veli görünümü — ana hesabın birden çok çocuğun dersini/borcunu tek ekranda görmesi
 - **(11)** Kayıtlı kart / tek tık ödeme + PDF makbuz

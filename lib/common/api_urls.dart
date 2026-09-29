@@ -18,7 +18,6 @@ String uyeKullaniciSil = "$baseUrl/uyeKullaniciSil";
 String getUyeDersProgramiUrl = "$baseUrl/getUyeDersProgrami";
 String getUyeUrunList = "$baseUrl/getUyeUrunList";
 String getHaftalikDersBilgilerim = "$baseUrl/getHaftalikDersBilgilerim";
-String getUrunListesiVeUyePaketleri = "$baseUrl/getUrunListesiVeUyePaketleri";
 String getTelafiDersBilgileriUrl = "$baseUrl/getTelafiDersBilgileri";
 String getAktifUyeListesiUrl = "$baseUrl/getAktifUyeListesi";
 String getUyeHomeOzetUrl = "$baseUrl/getUyeHomeOzet";
@@ -50,7 +49,6 @@ const String antrenorHakedisDerslerUrl = "$baseUrl/antrenorHakedisDersler";
 
 // =================== ETKİNLİK ===================
 String setDersTeyit = "$baseUrl/setDersTeyit";
-String setDersTalep = "$baseUrl/setDersTalep";
 String setTeyitOkundu = "$baseUrl/setTeyitOkundu";
 String getTeyitDetay = "$baseUrl/getTeyitDetay";
 String getUyeTeyitBekleyenlerUrl = "$baseUrl/getUyeTeyitBekleyenler";

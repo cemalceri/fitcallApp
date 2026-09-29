@@ -73,10 +73,11 @@ const _bolumler = <SssBolum>[
         ikon: Icons.lock_outline_rounded,
         soru: '"Erişim kısıtlı" uyarısı görüyorum, neden?',
         cevap:
-            'Hareketler ve Hesabım sayfalarını yalnızca ana hesap kullanıcısı'
-            ' görebilir. Aile üyeleri tek bir ana hesaba bağlıysa, bakiye ve hesap'
-            ' bilgilerini ana hesap sahibi görür. Ana hesaba geçmek için Ayarlar >'
-            ' Profil değiştir\'i kullanın.',
+            'Hareketler, Hesabım, Üyelik & Paket, Telafi Derslerim ve Bildirimler'
+            ' sayfalarını yalnızca ana hesap kullanıcısı görebilir. Aile üyeleri tek'
+            ' bir ana hesaba bağlıysa bakiye, paket ve hesap bilgilerini ana hesap'
+            ' sahibi görür. Ana hesaba geçmek için Ayarlar > Profil değiştir\'i'
+            ' kullanın.',
       ),
     ],
   ),
@@ -148,10 +149,13 @@ const _bolumler = <SssBolum>[
         soru: 'Bir derse katılamayacağımı nasıl bildiririm?',
         cevap:
             'Takvimde ilgili derse dokunup "Katılamayacağım" ile durumunuzu'
-            ' iletebilirsiniz. Ders saatinden en az 24 saat önce yapılan bildirimlerde'
-            ' telafi hakkı tanımlanır ve ders bir pakete dahilse paketinizden düşülmez.'
-            ' Daha geç bildirimlerde bu haklar oluşmaz; istisnai durumlar için kulüple'
-            ' iletişime geçmeniz gerekir. Bildiriminiz ön büroya da düşer.',
+            ' iletebilirsiniz; bildiriminiz ön büroya ve antrenörünüze düşer. Ders'
+            ' tek kişilikse ya da derse kayıtlı herkes katılamayacağını bildirdiyse'
+            ' ders iptal edilir. Ders saatine en az 24 saat varken iptal olursa aidat'
+            ' dersinde telafi hakkı tanımlanır, paket dersinde hakkınız düşülmez, tek'
+            ' derste ücret yansımaz. Daha geç iptalde ders yapılmış sayılır. Grup'
+            ' dersinde diğer katılımcılar geliyorsa ders iptal olmaz; istisnai'
+            ' durumlar için kulüple iletişime geçin.',
       ),
       SssSoru(
         ikon: Icons.event_note_outlined,

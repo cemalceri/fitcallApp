@@ -241,11 +241,14 @@ const _tumBolumler = <_KapsamliBolum>[
           soru: 'Yanlışlıkla iptal ettim, geri alabilir miyim?',
           cevap:
               'Evet. İptal edilmiş dersin bloğuna dokunup "İptali geri al" deyin; ders'
-              ' yeniden aktif olur ve açıklamasına kimin geri aldığı not düşülür. Telafi'
-              ' tarafı da toparlanır, ama her şey otomatik dönmeyebilir: iptalden doğan'
-              ' telafi hakkı bu arada KULLANILMIŞSA ya da telafi dersine yeniden'
-              ' bağlanacak hak kalmamışsa ekranda uyarı çıkar. O uyarıyı okumadan'
-              ' geçmeyin.',
+              ' yeniden aktif olur ve açıklamasına kimin geri aldığı not düşülür.'
+              ' İptalin otomatik yazdığı onay kaydı silinir: son 24 saatte yapılan'
+              ' iptalde düşülen paket hakkı ya da yazılan tek ders borcu geri alınır,'
+              ' antrenörün hakedişi yeniden karar bekler ve ders yeniden yönetici onayı'
+              ' ister. Telafi tarafı da toparlanır, ama her şey otomatik dönmeyebilir:'
+              ' iptalden doğan telafi hakkı bu arada KULLANILMIŞSA ya da telafi'
+              ' dersine yeniden bağlanacak hak kalmamışsa ekranda uyarı çıkar. O'
+              ' uyarıyı okumadan geçmeyin.',
         ),
       ),
       _KapsamliSoru(

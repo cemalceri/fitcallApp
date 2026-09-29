@@ -70,6 +70,7 @@ import 'package:fitcall/screens/8_ofis/program/widgets/program_gun_seridi.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/program_izgara.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/uye_secim_sheet.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_bottom_bar.dart';
+import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
@@ -1034,6 +1035,34 @@ void main() {
         () => const YonetimYardimPage(ofis: false));
     tasmaTesti(
         'YonetimYardimPage (ofis)', () => const YonetimYardimPage(ofis: true));
+  });
+
+  group('Zorunlu güncelleme sayfaları', () {
+    // Zorunlu güncelleme / bakım sayfaları: sunucudan gelen başlık ve mesaj
+    // uzunluğu bilinmiyor, dar ekran + büyük yazıda taşmamalılar.
+    tasmaTesti(
+      'BloklayanSayfa',
+      () => BloklayanSayfa(
+        title: 'Bu sürüm artık desteklenmiyor, lütfen güncelleyin',
+        message:
+            'Uygulamanın kullandığınız sürümü yeni kurallarla uyumlu değil.'
+            ' Devam etmek için mağazadan son sürümü yükleyin; verileriniz korunur.',
+        actionText: 'Güncelle',
+        onAction: () async {},
+      ),
+    );
+    tasmaTesti(
+      'ZorunluGuncellemeSayfasi',
+      () => const ZorunluGuncellemeSayfasi(
+        appStoreUrl: 'https://apps.apple.com/app/id1',
+        storeVersion: '3.10.12',
+        currentVersion: '3.8.1',
+        title: 'Güncelleme gerekli — yeni sürüm yayında',
+        message:
+            'Devam etmek için uygulamanın son sürümünü yüklemeniz gerekiyor.'
+            ' Güncelleme birkaç dakika sürer, verileriniz korunur.',
+      ),
+    );
   });
 
   /* ===================== ÜYE ===================== */

@@ -7,7 +7,9 @@
 // koordinatör "güncellendi" sanıp bloklayan ekranı hiç açmıyordu; uygulama
 // eski sürümle çalışmaya devam ediyordu.
 
+import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
 import 'package:fitcall/services/core/app_update/in_app_update_android.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_update/in_app_update.dart';
 
@@ -152,6 +154,67 @@ void main() {
 
       expect(await servis.flexible(), isFalse);
       expect(baslatildi, isFalse);
+    });
+  });
+
+  // Eski (3.9.0 altı) Android istemcilere sunucu artık `force` yerine
+  // `blocked` gönderiyor; o yol doğrudan BloklayanSayfa'yı açar. Sayfaların
+  // sistem geri tuşunu yuttuğu burada sabitleniyor.
+  group('bloklayan sayfalar geri tuşuyla kapanmaz', () {
+    Future<void> sayfayiAcVeGeriBas(WidgetTester tester, Widget sayfa) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => sayfa)),
+            child: const Text('aç'),
+          ),
+        ),
+      ));
+      await tester.tap(find.text('aç'));
+      await tester.pumpAndSettle();
+      // Android'in sistem geri tuşu
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('BloklayanSayfa', (tester) async {
+      await sayfayiAcVeGeriBas(
+        tester,
+        BloklayanSayfa(
+          title: 'Erişim Engellendi',
+          message: 'Bu sürüm kullanılamaz.',
+          actionText: 'Güncelle',
+          onAction: () async {},
+        ),
+      );
+      expect(find.text('Erişim Engellendi'), findsOneWidget);
+    });
+
+    testWidgets('ZorunluGuncellemeSayfasi', (tester) async {
+      await sayfayiAcVeGeriBas(
+        tester,
+        const ZorunluGuncellemeSayfasi(
+          appStoreUrl: 'https://apps.apple.com/app/id1',
+          storeVersion: '3.9.0',
+          currentVersion: '3.8.1',
+          title: 'Güncelleme gerekli',
+          message: 'Devam etmek için güncelleyin.',
+        ),
+      );
+      expect(find.text('Güncelleme gerekli'), findsOneWidget);
+      expect(find.text('Mevcut: v3.8.1  •  Mağaza: v3.9.0'), findsOneWidget);
+    });
+  });
+
+  group('sürüm satırı', () {
+    test('iki sürüm de biliniyorsa ikisini yazar', () {
+      expect(
+          surumSatiri('3.8.1', '3.9.0'), 'Mevcut: v3.8.1  •  Mağaza: v3.9.0');
+    });
+
+    test('yüklü sürüm okunamazsa boş "Mevcut: v" yazmaz', () {
+      expect(surumSatiri('', '3.9.0'), 'Mağaza: v3.9.0');
     });
   });
 }

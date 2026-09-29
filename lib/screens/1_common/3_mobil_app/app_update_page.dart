@@ -4,6 +4,7 @@
 import 'package:fitcall/models/1_common/mobil_uygulama_konfig_model.dart';
 import 'package:fitcall/services/core/app_update/app_update_service.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 
@@ -55,8 +56,7 @@ class GuncellemeKoordinatoru {
           await _pushZorunlu(
             context,
             cfg: karar.konfig,
-            currentVersionText:
-                null, // istersen PackageInfo’dan çekip iletebilirsin
+            currentVersionText: await _mevcutSurum(),
           );
         }
         break;
@@ -97,6 +97,15 @@ class GuncellemeKoordinatoru {
 
       case GuncellemeDirektifi.none:
         break;
+    }
+  }
+
+  /// Yüklü sürüm; okunamazsa null (sayfa o parçayı yazmaz).
+  static Future<String?> _mevcutSurum() async {
+    try {
+      return (await PackageInfo.fromPlatform()).version;
+    } catch (_) {
+      return null;
     }
   }
 
@@ -169,6 +178,13 @@ class GuncellemeKoordinatoru {
   }
 }
 
+/// "Mevcut: v3.8.1  •  Mağaza: v3.9.0". Bilinmeyen parça yazılmaz — eskiden
+/// yüklü sürüm hiç iletilmediği için ekranda boş "Mevcut: v" duruyordu.
+String surumSatiri(String mevcut, String magaza) => [
+      if (mevcut.isNotEmpty) 'Mevcut: v$mevcut',
+      if (magaza.isNotEmpty) 'Mağaza: v$magaza',
+    ].join('  •  ');
+
 /// iOS (ve genel) zorunlu güncelleme sayfası
 class ZorunluGuncellemeSayfasi extends StatelessWidget {
   final String appStoreUrl;
@@ -192,11 +208,13 @@ class ZorunluGuncellemeSayfasi extends StatelessWidget {
       canPop: false,
       child: Scaffold(
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Center(
+          // Başlık ve mesaj sunucudan gelir, uzunluğu bilinmez: küçük ekran +
+          // büyük yazıda sabit Column taşıyordu. Kısa içerik yine ortada durur.
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.system_update, size: 72),
                   const SizedBox(height: 16),
@@ -205,7 +223,7 @@ class ZorunluGuncellemeSayfasi extends StatelessWidget {
                           fontSize: 22, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center),
                   const SizedBox(height: 8),
-                  Text('Mevcut: v$currentVersion  •  Mağaza: v$storeVersion',
+                  Text(surumSatiri(currentVersion, storeVersion),
                       textAlign: TextAlign.center),
                   const SizedBox(height: 24),
                   ElevatedButton(
@@ -251,11 +269,13 @@ class BloklayanSayfa extends StatelessWidget {
       canPop: false,
       child: Scaffold(
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Center(
+          // Başlık ve mesaj sunucudan gelir, uzunluğu bilinmez: küçük ekran +
+          // büyük yazıda sabit Column taşıyordu. Kısa içerik yine ortada durur.
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.info_outline, size: 72),
                   const SizedBox(height: 16),

@@ -29,7 +29,6 @@ import 'package:fitcall/screens/2_uye/profil/profil_page.dart';
 import 'package:fitcall/screens/2_uye/profil/widgets/telafi_haklari_page.dart';
 import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_page.dart';
 import 'package:fitcall/screens/6_muhasebe/muhasebe_page.dart';
-import 'package:fitcall/screens/5_etkinlik/ders_talep_page.dart';
 
 import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_ogrenciler_page.dart';
@@ -38,7 +37,6 @@ import 'package:fitcall/screens/3_antrenor/eksik_yoklama/antrenor_eksik_yoklama_
 import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
 import 'package:fitcall/screens/1_common/ayarlar/ayarlar_page.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
-import 'package:fitcall/common/tarih_util.dart';
 
 /// Uygulama genelinde kullanacağımız sayfaların enum değerleri
 enum SayfaAdi {
@@ -64,7 +62,6 @@ enum SayfaAdi {
   antrenorYardim,
   yoneticiYardim,
   ofisYardim,
-  uyeDersTalepleri,
   bildirimler,
   yoneticiAnasayfa,
   yoneticiHakedis,
@@ -101,7 +98,6 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.antrenorYardim: '/antrenor_yardim',
   SayfaAdi.yoneticiYardim: '/yonetici_yardim',
   SayfaAdi.ofisYardim: '/ofis_yardim',
-  SayfaAdi.uyeDersTalepleri: '/uyeDersTalepleri',
   SayfaAdi.bildirimler: '/bildirimler',
   SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
   SayfaAdi.yoneticiHakedis: '/yoneticiHakedis',
@@ -140,15 +136,6 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.yoneticiYardim]!: (c) =>
       const YonetimYardimPage(ofis: false),
   routeEnums[SayfaAdi.ofisYardim]!: (c) => const YonetimYardimPage(ofis: true),
-  routeEnums[SayfaAdi.uyeDersTalepleri]!: (context) => DersTalepPage(
-        secimJson: const {
-          "kort_id": 0,
-          "antrenor_id": 0,
-          "kort_adi": "",
-          "antrenor_adi": ""
-        },
-        baslangic: simdiKulup(),
-      ),
   routeEnums[SayfaAdi.bildirimler]!: (c) => NotificationPage(),
   routeEnums[SayfaAdi.yoneticiAnasayfa]!: (c) => YoneticiMainPage(),
   routeEnums[SayfaAdi.yoneticiHakedis]!: (c) =>
@@ -179,7 +166,6 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.uyelikPaket]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.telafiHaklari]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.muhasebe]!: AccessRule.anaHesapOnly,
-  routeEnums[SayfaAdi.uyeDersTalepleri]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.bildirimler]!: AccessRule.anaHesapOnly,
 
   // Örnekler (şimdilik serbest):
