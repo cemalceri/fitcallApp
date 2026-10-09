@@ -2,7 +2,7 @@
 
 import 'dart:async';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
-import 'package:fitcall/screens/2_uye/home/widgets/duyuru_detay_sheet.dart';
+import 'package:fitcall/screens/1_common/widgets/duyuru_detay_sheet.dart';
 import 'package:flutter/material.dart';
 
 /// Instagram Stories tarzı duyuru carousel
@@ -91,13 +91,7 @@ class _DuyuruCarouselState extends State<DuyuruCarousel>
   }
 
   void _openDuyuruDetay(DuyuruModel duyuru) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => DuyuruDetaySheet(duyuru: duyuru),
-    );
+    DuyuruDetaySheet.ac(context, duyuru);
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:fitcall/models/3_antrenor/antrenor_model.dart';
 import 'package:fitcall/models/4_auth/group_model.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fitcall/services/core/acilis_popup_service.dart';
 import 'package:fitcall/services/core/izin_durumu.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
@@ -18,12 +19,18 @@ class StorageService {
   static Future<String?> getToken() =>
       SecureStorageService.getValue<String>('token');
 
-  /// Oturum verilerini siler. Tema tercihi ve izin sorma damgaları oturuma
-  /// bağlı değil — çıkışta sıfırlanmamaları için okunup geri yazılır. (Damga
-  /// silinirse daha önce sorulmuş bir izin panelde 'sorulmadi' görünür.)
+  /// Oturum verilerini siler. Tema tercihi, izin sorma damgaları ve açılış
+  /// popup'larının "gösterildi" kayıtları oturuma bağlı değil — çıkışta
+  /// sıfırlanmamaları için okunup geri yazılır. (Damga silinirse daha önce
+  /// sorulmuş bir izin panelde 'sorulmadi' görünür; popup kaydı silinirse
+  /// aynı gün tekrar giriş yapan kullanıcı kutlamayı yeniden görür.)
   static Future<void> clearAll() async {
     final korunacak = <String, String>{};
-    for (final anahtar in ['tema_modu', ...IzinAnahtari.tumu]) {
+    for (final anahtar in [
+      'tema_modu',
+      ...IzinAnahtari.tumu,
+      ...AcilisPopupKayitlari.tumu,
+    ]) {
       final deger = await SecureStorageService.getValue<String>(anahtar);
       if (deger != null) korunacak[anahtar] = deger;
     }

@@ -19,6 +19,9 @@ import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
+import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/screens/1_common/acilis_popup/widgets/dogum_gunu_popup.dart';
+import 'package:fitcall/screens/1_common/acilis_popup/widgets/duyuru_popup.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_sheet.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
@@ -1377,7 +1380,55 @@ void main() {
       ),
     );
   });
+
+  group("Açılış popup'ları", () {
+    // Uzun ad iki satıra iner; içerik küçük ekranda FittedBox ile küçülür.
+    tasmaTesti(
+      'DogumGunuPopup (uzun ad + imza)',
+      () => DogumGunuPopup(
+        ad: 'Ayşegül Defne Nur',
+        imza: 'Binay Akademi',
+        onKapat: () {},
+      ),
+    );
+
+    tasmaTesti(
+      'DuyuruPopup (görselsiz, uzun başlık/özet, detaylı)',
+      () => DuyuruPopup(
+        duyuru: _popupDuyurusu(
+          baslik: 'Kış kampı kayıtları açıldı: 22 Aralık – 5 Ocak arası '
+              'yoğunlaştırılmış program',
+          altBaslik: '7-14 yaş grubu için günde iki seans antrenman, kondisyon '
+              've maç pratiği. Kontenjan sınırlı; kayıtlar ofisten ve '
+              'uygulamadan alınır, erken kayıtta indirim uygulanır.',
+        ),
+        onKapat: () {},
+        onDetay: () {},
+      ),
+    );
+
+    tasmaTesti(
+      'DuyuruPopup (kısa, yalnız Tamam)',
+      () => DuyuruPopup(
+        duyuru: _popupDuyurusu(baslik: 'Tesis Pazartesi kapalı'),
+        onKapat: () {},
+      ),
+    );
+  });
 }
+
+DuyuruModel _popupDuyurusu({
+  required String baslik,
+  String altBaslik = '',
+}) =>
+    DuyuruModel.fromMap({
+      'id': 7,
+      'baslik': baslik,
+      'alt_baslik': altBaslik,
+      'icerik': 'Ayrıntılar detay sayfasında.',
+      'yayin_baslangic': '2026-10-01T09:00:00+03:00',
+      'yayin_bitis': '2026-10-31T23:59:00+03:00',
+    });
 
 /* ========================== BİLDİRİM ÖRNEK VERİ ========================== */
 

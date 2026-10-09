@@ -1,4 +1,4 @@
-// lib/screens/5_etkinlik/widgets/duyuru_detay_sheet.dart
+// lib/screens/1_common/widgets/duyuru_detay_sheet.dart
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
@@ -14,10 +14,27 @@ import 'package:intl/intl.dart';
 class DuyuruDetaySheet extends StatefulWidget {
   final DuyuruModel duyuru;
 
+  /// Okuma kaydının ölçüm kaynağı: ana sayfa carousel'i (varsayılan, sunucuya
+  /// parametre gitmez) ya da açılış popup'ındaki "Detaylı bilgi".
+  final String? kaynak;
+
   const DuyuruDetaySheet({
     super.key,
     required this.duyuru,
+    this.kaynak,
   });
+
+  /// Sayfayı alttan açar (carousel ve açılış popup'ı aynı yolu kullanır).
+  static Future<void> ac(BuildContext context, DuyuruModel duyuru,
+      {String? kaynak}) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DuyuruDetaySheet(duyuru: duyuru, kaynak: kaynak),
+    );
+  }
 
   @override
   State<DuyuruDetaySheet> createState() => _DuyuruDetaySheetState();
@@ -36,7 +53,11 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
 
   void _markAsRead() {
     if (widget.duyuru.id <= 0) return;
-    DuyuruService.setDuyuruOkundu(duyuruId: widget.duyuru.id).catchError(
+    DuyuruService.setDuyuruOkundu(
+      duyuruId: widget.duyuru.id,
+      kaynak: widget.kaynak,
+      detayAcildi: widget.kaynak == null ? null : true,
+    ).catchError(
       (_) => ApiResult<Map<String, dynamic>>(mesaj: ''),
     );
   }

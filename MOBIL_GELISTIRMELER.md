@@ -8,12 +8,12 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-09-29)
+## 📌 Şu anki durum (2026-10-09)
 
 | | |
 |---|---|
 | Mobil | `pubspec` sürümü **3.9.0+42** — ofis kabuğu + QR sonuç ekranı + rol'e göre yardım sayfaları içeride. Yönetici ekranı düzeltmeleri (açık iş 4) ve 2026-09-29 güvenlik/temizlik turu **sürüme girmedi** (bilerek: version bump/tag yok). 09-29 turu `claude/cool-mayer-zurn6j` dalında |
-| Testler | `flutter test` **1281 geçiyor**, `flutter analyze` temiz; backend süiti **877 geçiyor**, 0 kırık (2026-09-29) |
+| Testler | `flutter test` **1324 geçiyor**, `flutter analyze` temiz; backend süiti **923 geçiyor**, 0 kırık (2026-10-09) |
 | Backend | Canlı: `322354c` (Heroku v297, 2026-09-26). 09-29 turu `claude/cool-mayer-zurn6j` dalında, **deploy bekliyor** (açık iş 5) |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08) |
 
@@ -81,6 +81,13 @@ Yönetici ekranlarında yanlış gösterilen rakamlar düzeltildi (ayrıntı: a�
   hiçbir ekran çağırmıyordu, tesis/event QR uçları zaten token gönderen istemcilerle çalışıyor.
 - Deploy sonrası `veri_tutarlilik_kontrol` (açık iş 3).
 
+### 7. Açılış popup'ları — deploy sırası (2026-10-09)
+- **Önce backend:** migration `0090` (`DuyuruModel.popup_goster`, `DuyuruOkumaModel.kaynak/detay_acildi`) +
+  `getPopupDuyuru` ucu canlıya çıkmadan mobil sürüm yayınlanmamalı — eski backend'de uç 404 döner; istemci bunu
+  sessizce yutar (popup çıkmaz) ama doğum günü dışında özellik çalışmaz.
+- Yayından sonra akademiye not: popup yalnız aksiyon gerektiren duyurular için, aynı anda tek popup (form 1'den
+  fazlasında uyarıyor), alt başlık popup'ta özet olarak görünür (~120 karakter), kare görsel önerilir.
+
 ### 6. Repodaki sırlar — şimdilik bekliyor (kullanıcı kararı 2026-09-29)
 `tenis/eventcalendar/settings.py`'de prod DB şifresi, SMS/e-posta/Param şifreleri, repoda da Firebase
 servis anahtarı (`eventcalendar/keys/serviceAccountKey.json`) duruyor. Heroku config var'a taşıma +
@@ -89,6 +96,29 @@ anahtar yenileme ileride yapılacak.
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Açılış popup'ları: doğum günü kutlaması + popup duyurusu (2026-10-09)
+
+Talep: doğum gününde "patlayan konfeti"li kutlama; bazı duyurular açılışta popup, tamamı sığmazsa
+"Detaylı bilgi". Son kullanıcı / ürün yöneticisi / sosyal medya uzmanı perspektifleriyle iki tur tartışıldı,
+kullanıcı tam ekran tasarımı (seçenek C) seçti. Backend ayrıntısı `tenis/history.md` 2026-10-09.
+- **Tek altyapı, tek kural:** `lib/screens/1_common/acilis_popup/` — `AcilisPopuplari.calistir` üye ve antrenör
+  kabuğunun `initState`'inden çağrılır. Tetik profil seçimi değil **kabuk açılışı** (token geçerliyken profil
+  seçimi atlanıyor). **Açılış başına en fazla bir popup**, doğum günü önce; duyuru bir sonraki açılışa kalır.
+  Bildirim akışı sürerken ya da kullanıcı başka sayfaya geçtiyse araya girmez. Kurallar ve kayıtlar
+  `lib/services/core/acilis_popup_service.dart`'ta (saf fonksiyonlar, testli).
+- **Doğum günü:** yalnız aktif üye profili (antrenör/yöneticide doğum tarihi yok), profil + yıl başına bir kez,
+  kayıt cihazda (iki telefonda ikisinde de birer kez — bilinçli). **1 Ocak kutlanmaz** (kullanıcı kararı: yer
+  tutucu/sahte tarihler). 29 Şubat → artık olmayan yılda 28 Şubat. Metin kullanıcıdan: "İyi ki doğdun, iyi ki
+  bizimlesin! / Tenis, sağlık ve neşe dolu bir sene dileriz." İmza işletme adı (iki işletme var). Konfeti paket
+  değil, `KonfetiPatlamasi` (CustomPainter, ~2,4 sn, "hareketi azalt" açıksa yok).
+- **Duyuru:** yalnız üye + antrenör (kullanıcı kararı), hesap başına bir kez (sunucu `DuyuruOkuma`; cihaz kaydı
+  yalnız ağ hatasına yedek). Görsel ekranın ~2/3'ü, **kırpılmadan sığdırılır** (boşluk bulanık kopyayla dolar);
+  görsel yoksa kodla çizilmiş turuncu "DUYURU" posteri. Özet alt başlık, boşsa içerik (4 satır). "Detaylı bilgi"
+  yalnız gösterilecek fazlası varsa; `DuyuruDetaySheet`'i açar (sheet `1_common/widgets/`'a taşındı).
+- "Gösterildi" kayıtları çıkışta silinmiyor (`StorageService.clearAll` koruma listesi).
+- Testler: mobil 1281 → **1324** (`acilis_popup_test.dart` + taşma matrisine iki popup); backend
+  `test_popup_duyuru.py` (10).
 
 ### Güvenlik turu + iptal geri alma + ders talep akışı kaldırıldı (2026-09-29)
 

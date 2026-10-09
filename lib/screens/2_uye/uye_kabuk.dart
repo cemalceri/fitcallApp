@@ -1,6 +1,7 @@
 // lib/screens/2_uye/uye_kabuk.dart
 
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
 import 'package:fitcall/screens/1_common/widgets/erisim_kisitli.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
 import 'package:fitcall/screens/2_uye/home/uye_home_page.dart';
@@ -42,6 +43,10 @@ class _UyeKabukState extends State<UyeKabuk> {
     super.initState();
     _acilanlar.add(_aktif);
     _anaHesapKontrol();
+    // Doğum günü / popup duyurusu — açılış başına en fazla bir tane.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AcilisPopuplari.calistir(context);
+    });
   }
 
   Future<void> _anaHesapKontrol() async {

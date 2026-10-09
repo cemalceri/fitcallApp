@@ -1,0 +1,268 @@
+// lib/screens/1_common/acilis_popup/widgets/duyuru_popup.dart
+
+import 'dart:ui' show ImageFilter;
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/services/core/acilis_popup_service.dart';
+import 'package:flutter/material.dart';
+
+/// Tam ekran duyuru popup'ı: üstte görsel (ekranın ~2/3'ü), altta başlık,
+/// kısa özet ve butonlar.
+///
+/// Görsel kırpılmadan sığdırılır (afiş üstündeki yazılar kesilmesin); boşluk
+/// aynı görselin bulanık kopyasıyla dolar. Görsel yoksa ya da yüklenemezse
+/// kodla çizilmiş varsayılan poster gösterilir.
+class DuyuruPopup extends StatelessWidget {
+  final DuyuruModel duyuru;
+  final VoidCallback onKapat;
+
+  /// null ise "Detaylı bilgi" gizlenir (gösterilecek fazlası yok).
+  final VoidCallback? onDetay;
+
+  const DuyuruPopup({
+    super.key,
+    required this.duyuru,
+    required this.onKapat,
+    this.onDetay,
+  });
+
+  /// Popup'ı açar. "Detaylı bilgi"ye basıldıysa true döner.
+  static Future<bool> goster(BuildContext context, DuyuruModel duyuru) async {
+    final detayVar = duyuruDetayiVarMi(duyuru);
+    final sonuc = await showGeneralDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'Duyuru',
+      transitionDuration: const Duration(milliseconds: 280),
+      pageBuilder: (ctx, _, __) => DuyuruPopup(
+        duyuru: duyuru,
+        onKapat: () => Navigator.of(ctx).pop(false),
+        onDetay: detayVar ? () => Navigator.of(ctx).pop(true) : null,
+      ),
+      transitionBuilder: (_, animasyon, __, child) {
+        final egri =
+            CurvedAnimation(parent: animasyon, curve: Curves.easeOutCubic);
+        return FadeTransition(
+          opacity: egri,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.04),
+              end: Offset.zero,
+            ).animate(egri),
+            child: child,
+          ),
+        );
+      },
+    );
+    return sonuc ?? false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = context.cs;
+    final metin = context.metin;
+    final ozet = duyuruPopupOzeti(duyuru);
+    final ekranYuksekligi = MediaQuery.sizeOf(context).height;
+
+    return Material(
+      color: cs.surface,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Görsel kalan alanı doldurur; metin bloğu en az ekranın ~1/3'ünü
+          // aldığı için görsel en fazla ~2/3 olur, uzun metinde küçülür.
+          Expanded(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                DuyuruPopupGorseli(url: duyuru.ilkResim),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: const EdgeInsets.all(Bosluk.s),
+                      child: IconButton(
+                        tooltip: 'Kapat',
+                        onPressed: onKapat,
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.black.withValues(alpha: 0.35),
+                          foregroundColor: Colors.white,
+                        ),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: ekranYuksekligi * 0.33),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    Bosluk.xl, Bosluk.l, Bosluk.xl, Bosluk.l),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          duyuru.baslik,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: metin.titleLarge,
+                        ),
+                        if (ozet.isNotEmpty) ...[
+                          const SizedBox(height: Bosluk.s),
+                          Text(
+                            ozet,
+                            maxLines: 4,
+                            overflow: TextOverflow.ellipsis,
+                            style: metin.bodyMedium
+                                ?.copyWith(color: cs.onSurfaceVariant),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: Bosluk.l),
+                    _butonlar(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _butonlar() {
+    final detay = onDetay;
+    if (detay == null) {
+      return FilledButton(onPressed: onKapat, child: const Text('Tamam'));
+    }
+    return Row(
+      children: [
+        Expanded(
+          child: TextButton(onPressed: onKapat, child: const Text('Tamam')),
+        ),
+        const SizedBox(width: Bosluk.m),
+        Expanded(
+          flex: 2,
+          child: FilledButton(
+            onPressed: detay,
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: Bosluk.m),
+            ),
+            child: const Text('Detaylı bilgi'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Popup'ın görsel alanı. Boş [url] → varsayılan poster.
+class DuyuruPopupGorseli extends StatelessWidget {
+  final String url;
+
+  const DuyuruPopupGorseli({super.key, required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    if (url.isEmpty) return const DuyuruVarsayilanPoster();
+    final gorsel = CachedNetworkImageProvider(url);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Yüklenirken düz marka zemini (iskelet değil: tek görsel, kısa süre).
+        const ColoredBox(color: Marka.mavi),
+        ImageFiltered(
+          imageFilter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+          child: Image(
+            image: gorsel,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          ),
+        ),
+        ColoredBox(color: Colors.black.withValues(alpha: 0.25)),
+        Image(
+          image: gorsel,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => const DuyuruVarsayilanPoster(),
+        ),
+      ],
+    );
+  }
+}
+
+/// Görseli olmayan duyurular için kodla çizilmiş poster: turuncu zemin,
+/// dekoratif halkalar, megafon ve "DUYURU" etiketi. Başlık zaten altta.
+class DuyuruVarsayilanPoster extends StatelessWidget {
+  const DuyuruVarsayilanPoster({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    Widget daire(double cap, double opaklik) => Container(
+          width: cap,
+          height: cap,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: opaklik),
+          ),
+        );
+
+    return ClipRect(
+      child: ColoredBox(
+        color: Marka.turuncu,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned(top: -70, right: -50, child: daire(240, 0.12)),
+            Positioned(bottom: -90, left: -60, child: daire(260, 0.10)),
+            Positioned(bottom: 40, right: 30, child: daire(56, 0.14)),
+            Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 92,
+                      height: 92,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.campaign_rounded,
+                          size: 48, color: Colors.white),
+                    ),
+                    const SizedBox(height: Bosluk.m),
+                    Text(
+                      'DUYURU',
+                      style: context.metin.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

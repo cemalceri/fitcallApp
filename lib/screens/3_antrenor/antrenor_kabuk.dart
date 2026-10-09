@@ -1,6 +1,7 @@
 // lib/screens/3_antrenor/antrenor_kabuk.dart
 
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_ogrenciler_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
@@ -29,6 +30,10 @@ class _AntrenorKabukState extends State<AntrenorKabuk> {
   void initState() {
     super.initState();
     _acilanlar.add(_aktif);
+    // Doğum günü / popup duyurusu — açılış başına en fazla bir tane.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AcilisPopuplari.calistir(context);
+    });
   }
 
   Widget _sayfa(int indeks) {
