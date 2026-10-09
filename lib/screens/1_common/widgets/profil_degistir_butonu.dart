@@ -20,6 +20,14 @@ class ProfilDegistirButonu extends StatelessWidget {
 
   const ProfilDegistirButonu({super.key, this.renk = const Color(0xFF8B5CF6)});
 
+  /// Hesapta birden fazla profil varsa true — buton yalnız o zaman gösterilir.
+  static Future<bool> gosterilmeliMi() async {
+    final jsonStr =
+        await SecureStorageService.getValue<String>('kullanici_profiller');
+    if (jsonStr == null) return false;
+    return (jsonDecode(jsonStr) as List).length > 1;
+  }
+
   Future<void> _profilDegistir(BuildContext context) async {
     HapticFeedback.lightImpact();
     final jsonStr =

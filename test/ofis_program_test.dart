@@ -6,10 +6,13 @@
 
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
+import 'package:fitcall/screens/8_ofis/program/widgets/program_gorunumu.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/program_gun_seridi.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/program_izgara.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 Map<String, dynamic> _dersJson({
   required int id,
@@ -457,6 +460,34 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Tanımlı kort bulunamadı.'), findsOneWidget);
+    });
+  });
+
+  group('ProgramBaslik profil değiştirme', () {
+    setUpAll(() => initializeDateFormatting('tr', null));
+
+    Future<void> ac(WidgetTester tester, {required bool profilDegistir}) =>
+        tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+            body: ProgramBaslik(
+              haftaBaslangic: DateTime(2026, 7, 20),
+              haftaBitis: DateTime(2026, 7, 26),
+              onMenu: () {},
+              profilDegistir: profilDegistir,
+            ),
+          ),
+        ));
+
+    // Ofis kabuğunda diğer rollerdeki başlık yok; buton programın başlığında.
+    testWidgets('birden fazla profil varsa buton görünür', (tester) async {
+      await ac(tester, profilDegistir: true);
+      expect(find.byType(ProfilDegistirButonu), findsOneWidget);
+      expect(find.byTooltip('Profil değiştir'), findsOneWidget);
+    });
+
+    testWidgets('tek profilde buton yok', (tester) async {
+      await ac(tester, profilDegistir: false);
+      expect(find.byType(ProfilDegistirButonu), findsNothing);
     });
   });
 }

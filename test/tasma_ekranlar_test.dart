@@ -463,6 +463,19 @@ void main() {
       );
     });
 
+    // Ofis kabuğundaki en kalabalık hâl: menü + profil değiştirme butonu.
+    tasmaTesti('ProgramBaslik (menü + profil değiştir)', () {
+      return ProgramBaslik(
+        haftaBaslangic: DateTime(2026, 7, 20),
+        haftaBitis: DateTime(2026, 7, 26),
+        onOnceki: () {},
+        onSonraki: () {},
+        onBugun: () {},
+        onMenu: () {},
+        profilDegistir: true,
+      );
+    });
+
     tasmaTesti('ProgramGunSeridi', () {
       final p = _program();
       return ProgramGunSeridi(

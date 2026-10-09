@@ -9,6 +9,7 @@
 // ancak cihazda ortaya çıkmıştı. Bu widget testte doğrudan render edilebilir.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -34,6 +35,11 @@ class ProgramGorunumu extends StatelessWidget {
   /// giriliyor (kenardan kaydırma her sekmede zaten çalışır).
   final VoidCallback? onMenuTap;
 
+  /// Başlıkta profil değiştirme butonu (hesapta birden fazla profil varsa).
+  /// Ofisin ana sayfası bu program; diğer rollerde buton ana sayfa
+  /// başlığında, ofiste de burada.
+  final bool profilDegistir;
+
   const ProgramGorunumu({
     super.key,
     required this.program,
@@ -46,6 +52,7 @@ class ProgramGorunumu extends StatelessWidget {
     this.onBugun,
     this.onBosSlotTap,
     this.onMenuTap,
+    this.profilDegistir = false,
   });
 
   String _gunAnahtari(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
@@ -65,6 +72,7 @@ class ProgramGorunumu extends StatelessWidget {
           onSonraki: onSonrakiHafta,
           onBugun: onBugun,
           onMenu: onMenuTap,
+          profilDegistir: profilDegistir,
         ),
         ProgramGunSeridi(
           gunler: program.gunler,
@@ -110,6 +118,9 @@ class ProgramBaslik extends StatelessWidget {
   /// Kabuk menüsü. null ise ikon hiç çizilmez (sayfa tek başına açıldığında).
   final VoidCallback? onMenu;
 
+  /// true ise sağda ortak profil değiştirme butonu (bkz. ProgramGorunumu).
+  final bool profilDegistir;
+
   const ProgramBaslik({
     super.key,
     required this.haftaBaslangic,
@@ -118,6 +129,7 @@ class ProgramBaslik extends StatelessWidget {
     this.onSonraki,
     this.onBugun,
     this.onMenu,
+    this.profilDegistir = false,
   });
 
   @override
@@ -185,6 +197,7 @@ class ProgramBaslik extends StatelessWidget {
             ),
             child: const Text('Bugün', maxLines: 1),
           ),
+          if (profilDegistir) const ProfilDegistirButonu(),
         ],
       ),
     );
