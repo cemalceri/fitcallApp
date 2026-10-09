@@ -113,8 +113,11 @@ const _tumBolumler = <_KapsamliBolum>[
           cevap:
               'Ayarlar sayfasındaki "Profil değiştir" ile profil seçim ekranına'
               ' dönersiniz; oradan diğer profilinizi seçtiğinizde uygulama o rolün'
-              ' kabuğuyla açılır. Her profil kendi oturum anahtarıyla çalışır, yani'
-              ' yönetici olarak gördüğünüz veri ofis profiline taşınmaz.',
+              ' kabuğuyla açılır. Aynı yere ana ekranın üst köşesindeki çift oklu'
+              ' (⇄) butonla da gidebilirsiniz: yöneticide dashboard başlığında, ofiste'
+              ' haftalık programın başlığında, "Bugün"ün yanında. Her profil kendi'
+              ' oturum anahtarıyla çalışır, yani yönetici olarak gördüğünüz veri ofis'
+              ' profiline taşınmaz.',
         ),
       ),
       _KapsamliSoru(
