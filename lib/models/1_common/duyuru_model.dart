@@ -10,6 +10,9 @@ class DuyuruModel {
   final String hedefKitle;
   final String? hedefKitleDisplay;
   final bool onemliMi;
+
+  /// Açılış popup'ında gösterilen duyuru mu.
+  final bool popupGoster;
   final String? kapakResmi;
   final int resimSayisi;
   final List<DuyuruResimModel> resimler;
@@ -26,6 +29,7 @@ class DuyuruModel {
     this.hedefKitle = 'herkes',
     this.hedefKitleDisplay,
     this.onemliMi = false,
+    this.popupGoster = false,
     this.kapakResmi,
     this.resimSayisi = 0,
     this.resimler = const [],
@@ -71,6 +75,7 @@ class DuyuruModel {
       hedefKitle: map['hedef_kitle'] ?? 'herkes',
       hedefKitleDisplay: map['hedef_kitle_display'],
       onemliMi: map['onemli_mi'] ?? false,
+      popupGoster: map['popup_goster'] ?? false,
       kapakResmi: map['kapak_resmi'],
       resimSayisi: map['resim_sayisi'] ?? resimler.length,
       resimler: resimler,
@@ -90,6 +95,7 @@ class DuyuruModel {
       'hedef_kitle': hedefKitle,
       'hedef_kitle_display': hedefKitleDisplay,
       'onemli_mi': onemliMi,
+      'popup_goster': popupGoster,
       'kapak_resmi': kapakResmi,
       'resim_sayisi': resimSayisi,
       'resimler': resimler.map((r) => r.toMap()).toList(),

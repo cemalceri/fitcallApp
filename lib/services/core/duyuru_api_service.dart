@@ -2,6 +2,7 @@
 
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/models/1_common/duyuru_okuma_models.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
@@ -65,6 +66,27 @@ class DuyuruService {
         if (detayAcildi != null) 'detay_acildi': detayAcildi,
       },
       (json) => (json as Map?)?.cast<String, dynamic>() ?? {},
+    );
+  }
+
+  /// Yönetici/ofis: duyuru listesi + gören / hedef hesap sayıları.
+  static Future<ApiResult<List<DuyuruYonetimSatiri>>> yonetimListesi() {
+    return ApiClient.postParsed<List<DuyuruYonetimSatiri>>(
+      yoneticiDuyurularUrl,
+      const {},
+      (json) => ApiParsing.parseList<DuyuruYonetimSatiri>(
+        json,
+        DuyuruYonetimSatiri.fromJson,
+      ),
+    );
+  }
+
+  /// Yönetici/ofis: bir duyurunun içeriği, özeti, görenler ve görmeyenler.
+  static Future<ApiResult<DuyuruOkumaDurumu>> okumaDurumu(int duyuruId) {
+    return ApiClient.postParsed<DuyuruOkumaDurumu>(
+      yoneticiDuyuruOkumaDurumuUrl,
+      {'duyuru_id': duyuruId},
+      (json) => ApiParsing.parseObject(json, DuyuruOkumaDurumu.fromJson),
     );
   }
 }

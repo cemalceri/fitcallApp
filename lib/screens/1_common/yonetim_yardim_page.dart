@@ -121,6 +121,23 @@ const _tumBolumler = <_KapsamliBolum>[
         ),
       ),
       _KapsamliSoru(
+        _Kapsam.ortak,
+        SssSoru(
+          ikon: Icons.campaign_outlined,
+          soru: 'Bir duyuruyu kimlerin gördüğünü nasıl anlarım?',
+          cevap:
+              '☰ menüdeki "Duyurular" sayfası duyuruları Yayında / Planlanan /'
+              ' Geçmiş diye listeler; sağdaki oran, duyuruyu görebilecek hesapların'
+              ' kaçının gördüğüdür. Duyuruya dokununca "Gördü" ve "Görmedi"'
+              ' listeleri açılır; çocuk adıyla arayabilir, üyeye dokunup detayından'
+              ' arayabilirsiniz. Sayım hesap bazındadır (veli ve çocukları tek hesap).'
+              ' Ana sayfadaki duyuru yalnız açılınca, açılış popup\'ı ise ekrana'
+              ' geldiğinde sayılır. Uygulamayı son 60 günde kullanmamış hesaplar'
+              ' ayrı grupta durur. Duyuru oluşturma ve yayından kaldırma web'
+              ' panelindedir; sayfanın sağ üstündeki bağlantı web panelinde açar.',
+        ),
+      ),
+      _KapsamliSoru(
         _Kapsam.ofis,
         SssSoru(
           ikon: Icons.lock_outline_rounded,

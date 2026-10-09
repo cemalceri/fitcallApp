@@ -20,21 +20,30 @@ class DuyuruDetaySheet extends StatefulWidget {
   /// parametre gitmez) ya da açılış popup'ındaki "Detaylı bilgi".
   final String? kaynak;
 
+  /// false ise açılış sunucuya "okundu" yazmaz. Yönetici/ofis duyurunun
+  /// içeriğine bakınca ölçüme (gören sayısı) karışmasın diye.
+  final bool okunduIsaretle;
+
   const DuyuruDetaySheet({
     super.key,
     required this.duyuru,
     this.kaynak,
+    this.okunduIsaretle = true,
   });
 
   /// Sayfayı alttan açar (carousel ve açılış popup'ı aynı yolu kullanır).
   static Future<void> ac(BuildContext context, DuyuruModel duyuru,
-      {String? kaynak}) {
+      {String? kaynak, bool okunduIsaretle = true}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => DuyuruDetaySheet(duyuru: duyuru, kaynak: kaynak),
+      builder: (_) => DuyuruDetaySheet(
+        duyuru: duyuru,
+        kaynak: kaynak,
+        okunduIsaretle: okunduIsaretle,
+      ),
     );
   }
 
@@ -54,7 +63,7 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
   }
 
   void _markAsRead() {
-    if (widget.duyuru.id <= 0) return;
+    if (!widget.okunduIsaretle || widget.duyuru.id <= 0) return;
     DuyuruService.setDuyuruOkundu(
       duyuruId: widget.duyuru.id,
       kaynak: widget.kaynak,

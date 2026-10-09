@@ -1,3 +1,4 @@
+import 'package:fitcall/screens/1_common/duyurular/duyuru_yonetim_page.dart';
 import 'package:fitcall/screens/1_common/yardim_page.dart';
 import 'package:fitcall/screens/1_common/yonetim_yardim_page.dart';
 import 'package:fitcall/screens/2_uye/uye_kabuk.dart';
@@ -8,11 +9,13 @@ import 'package:fitcall/screens/3_antrenor/takvim/antrenor_takvim_page.dart';
 import 'package:fitcall/screens/4_auth/forgot_password_page.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
 import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
+import 'package:fitcall/screens/7_yonetici/uyeler/uye_detay_page.dart';
 import 'package:fitcall/screens/7_yonetici/yonetici_main_page.dart';
 import 'package:fitcall/screens/3_antrenor/hakedis/antrenor_hakedis_page.dart';
 import 'package:fitcall/screens/7_yonetici/hakedis/hakedis_antrenor_secim_page.dart';
 import 'package:fitcall/screens/8_ofis/program/ofis_program_page.dart';
 import 'package:fitcall/screens/8_ofis/ofis_main_page.dart';
+import 'package:fitcall/screens/8_ofis/uyeler/ofis_uye_detay_page.dart';
 import 'package:fitcall/screens/8_ofis/uyeler/ofis_uyeler_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
@@ -68,6 +71,8 @@ enum SayfaAdi {
   ofisAnasayfa,
   ofisProgram,
   ofisUyeler,
+  yoneticiDuyurular,
+  ofisDuyurular,
   dersTeyit,
   teyitBekleyen,
   yardim,
@@ -104,6 +109,8 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.ofisAnasayfa: '/ofisAnasayfa',
   SayfaAdi.ofisProgram: '/ofisProgram',
   SayfaAdi.ofisUyeler: '/ofisUyeler',
+  SayfaAdi.yoneticiDuyurular: '/yoneticiDuyurular',
+  SayfaAdi.ofisDuyurular: '/ofisDuyurular',
   SayfaAdi.dersTeyit: '/dersTeyit',
   SayfaAdi.teyitBekleyen: '/teyitBekleyen',
   SayfaAdi.yardim: '/yardim',
@@ -143,6 +150,19 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.ofisAnasayfa]!: (c) => const OfisMainPage(),
   routeEnums[SayfaAdi.ofisProgram]!: (c) => const OfisProgramPage(),
   routeEnums[SayfaAdi.ofisUyeler]!: (c) => const OfisUyelerPage(),
+  // Aynı ekran; kabuklar yalnız üye satırının açtığı detay sayfasında ayrılır.
+  routeEnums[SayfaAdi.yoneticiDuyurular]!: (c) => DuyuruYonetimPage(
+        uyeDetayAc: (ctx, p) => Navigator.of(ctx).push(MaterialPageRoute(
+          builder: (_) =>
+              UyeDetayPage(uyeId: p.uyeId!, baslangicAdSoyad: p.ad),
+        )),
+      ),
+  routeEnums[SayfaAdi.ofisDuyurular]!: (c) => DuyuruYonetimPage(
+        uyeDetayAc: (ctx, p) => Navigator.of(ctx).push(MaterialPageRoute(
+          builder: (_) =>
+              OfisUyeDetayPage(uyeId: p.uyeId!, baslangicAdSoyad: p.ad),
+        )),
+      ),
   routeEnums[SayfaAdi.dersTeyit]!: (c) => const DersTeyitPage(),
   routeEnums[SayfaAdi.teyitBekleyen]!: (c) => const TeyitBekleyenlerPage(),
   routeEnums[SayfaAdi.yardim]!: (c) => const YardimPage(),

@@ -20,6 +20,9 @@ import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/models/1_common/duyuru_okuma_models.dart';
+import 'package:fitcall/screens/1_common/duyurular/widgets/duyuru_yonetim_listesi.dart';
+import 'package:fitcall/screens/1_common/duyurular/widgets/okuma_durumu_gorunumu.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/dogum_gunu_popup.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/duyuru_popup.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_detay_sheet.dart';
@@ -82,6 +85,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'support/duyuru_ornekleri.dart';
 import 'support/tasma_yardimcisi.dart';
 
 import 'package:fitcall/screens/3_antrenor/eksik_yoklama/widgets/eksik_yoklama_listesi.dart';
@@ -1414,6 +1418,66 @@ void main() {
         subtitle: 'Bu ders için daha önce cevap verdiniz.',
         showChangeHint: true,
         onClose: () {},
+      ),
+    );
+  });
+
+  group('Yönetici/ofis duyurular', () {
+    // Uzun başlık + uzun alt satır + üç grup; ölçülmeyen ve planlı satırlar.
+    tasmaTesti('DuyuruYonetimListesi', () {
+      DuyuruYonetimSatiri satir(int id, String durum,
+              {int? goren, int? hedef, String kitle = 'herkes'}) =>
+          DuyuruYonetimSatiri.fromJson({
+            'id': id,
+            'baslik': 'Eylül 2026 ücret artışı bilgilendirmesi ve yeni dönem '
+                'kayıt takvimi',
+            'hedef_kitle': kitle,
+            'durum': durum,
+            'onemli_mi': id.isOdd,
+            'popup_goster': true,
+            'aktif_mi': durum != 'gecmis',
+            'yayin_baslangic': '2026-09-28T09:00:00+03:00',
+            'yayin_bitis': '2026-10-17T23:59:00+03:00',
+            'goren_sayisi': goren,
+            'hedef_sayisi': hedef,
+          });
+      return DuyuruYonetimListesi(
+        duyurular: [
+          satir(1, 'yayinda', goren: 1027, hedef: 1027),
+          satir(2, 'yayinda', goren: 1, hedef: 1027),
+          satir(3, 'planli', goren: 0, hedef: 1027),
+          satir(4, 'gecmis', kitle: 'antrenorler'),
+        ],
+        onSec: (_) {},
+        onYenile: () async {},
+      );
+    });
+
+    tasmaTesti(
+      'OkumaDurumuGorunumu (gördü)',
+      () => OkumaDurumuGorunumu(
+        veri: DuyuruOkumaDurumu.fromJson(okumaDurumuJson()),
+        onIcerikGor: () {},
+        onYenile: () async {},
+        onHesapSec: (_) {},
+      ),
+    );
+
+    tasmaTesti(
+      'OkumaDurumuGorunumu (ölçülmüyor)',
+      () => OkumaDurumuGorunumu(
+        veri: DuyuruOkumaDurumu.fromJson(okumaDurumuJson(olculuyor: false)),
+        onIcerikGor: () {},
+        onYenile: () async {},
+      ),
+    );
+
+    tasmaTesti(
+      'OkumaDurumuGorunumu (planlı)',
+      () => OkumaDurumuGorunumu(
+        veri: DuyuruOkumaDurumu.fromJson(okumaDurumuJson(durum: 'planli')),
+        onIcerikGor: () {},
+        onYenile: () async {},
       ),
     );
   });

@@ -75,6 +75,12 @@ class OfisDrawer extends StatelessWidget {
                     aktif: aktifSekme == 2,
                     onTap: () => _sekme(context, 2),
                   ),
+                  YanMenuOgesi(
+                    ikon: Icons.campaign_rounded,
+                    baslik: 'Duyurular',
+                    onTap: () =>
+                        _git(context, routeEnums[SayfaAdi.ofisDuyurular]!),
+                  ),
                   const YanMenuBolumu('İşlemler'),
                   YanMenuOgesi(
                     ikon: Icons.qr_code_scanner_rounded,

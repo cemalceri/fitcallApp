@@ -4,6 +4,10 @@ const String baseUrlLocal = "http://10.0.2.2:8000/api";
 const String baseUrl = baseUrlProd;
 // const String baseUrl = baseUrlLocal;
 
+/// Web panelinin kökü (API kökünden "/api" atılır). Mobilden web sayfası
+/// açmak için, ör. duyurunun "Web panelinde aç" bağlantısı.
+final String webKokUrl = baseUrl.replaceFirst(RegExp(r'/api/?$'), '');
+
 // =================== AUTH ===================
 String createToken = "$baseUrl/createToken";
 String getMyMembers = "$baseUrl/getMyMembers";
@@ -100,6 +104,8 @@ String getAktifDuyurularUrl = "$baseUrl/getAktifDuyurular";
 String getDuyuruDetayUrl = "$baseUrl/getDuyuruDetay";
 String setDuyuruOkunduUrl = "$baseUrl/setDuyuruOkundu";
 String getPopupDuyuruUrl = "$baseUrl/getPopupDuyuru";
+String yoneticiDuyurularUrl = "$baseUrl/yoneticiDuyurular";
+String yoneticiDuyuruOkumaDurumuUrl = "$baseUrl/yoneticiDuyuruOkumaDurumu";
 
 // Ders Onay
 const String getDersOnayBilgisiUrl = "$baseUrl/getDersOnayBilgisi";

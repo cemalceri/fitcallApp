@@ -99,6 +99,12 @@ class YoneticiDrawer extends StatelessWidget {
                     aktif: aktifSekme == 3,
                     onTap: () => _sekme(context, 3),
                   ),
+                  YanMenuOgesi(
+                    ikon: Icons.campaign_rounded,
+                    baslik: 'Duyurular',
+                    onTap: () =>
+                        _git(context, routeEnums[SayfaAdi.yoneticiDuyurular]!),
+                  ),
                   const YanMenuBolumu('İşlemler'),
                   YanMenuOgesi(
                     ikon: Icons.schedule_rounded,

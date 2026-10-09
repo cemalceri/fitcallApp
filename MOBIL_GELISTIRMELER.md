@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `pubspec` sürümü **3.9.0+42** — ofis kabuğu + QR sonuç ekranı + rol'e göre yardım sayfaları içeride. Yönetici ekranı düzeltmeleri (açık iş 4) ve 2026-09-29 güvenlik/temizlik turu **sürüme girmedi** (bilerek: version bump/tag yok). 09-29 turu `claude/cool-mayer-zurn6j` dalında |
-| Testler | `flutter test` **1358 geçiyor**, `flutter analyze` temiz; backend süiti **923 geçiyor**, 0 kırık (2026-10-09) |
+| Testler | `flutter test` **1432 geçiyor**, `flutter analyze` temiz; backend süiti **944 geçiyor**, 0 kırık (2026-10-09) |
 | Backend | Canlı: `322354c` (Heroku v297, 2026-09-26). 09-29 turu `claude/cool-mayer-zurn6j` dalında, **deploy bekliyor** (açık iş 5) |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08) |
 
@@ -81,9 +81,11 @@ Yönetici ekranlarında yanlış gösterilen rakamlar düzeltildi (ayrıntı: a�
   hiçbir ekran çağırmıyordu, tesis/event QR uçları zaten token gönderen istemcilerle çalışıyor.
 - Deploy sonrası `veri_tutarlilik_kontrol` (açık iş 3).
 
-### 7. Açılış popup'ları — deploy sırası (2026-10-09)
-- **Önce backend:** migration `0090` (`DuyuruModel.popup_goster`, `DuyuruOkumaModel.kaynak/detay_acildi`) +
-  `getPopupDuyuru` ucu canlıya çıkmadan mobil sürüm yayınlanmamalı — eski backend'de uç 404 döner; istemci bunu
+### 7. Açılış popup'ları + yönetici/ofis duyuruları — deploy sırası (2026-10-09)
+- **Not:** migration `0090` prod DB'ye **uygulandı** (yerel test için; eski kod bozulmasın diye üç sütuna DB varsayılanı
+  verildi), kod Heroku'ya deploy **edilmedi**.
+- **Önce backend:** `getPopupDuyuru`, `yoneticiDuyurular`, `yoneticiDuyuruOkumaDurumu` uçları canlıya çıkmadan mobil
+  sürüm yayınlanmamalı — eski backend'de uç 404 döner; istemci bunu
   sessizce yutar (popup çıkmaz) ama doğum günü dışında özellik çalışmaz.
 - Yayından sonra akademiye not: popup yalnız aksiyon gerektiren duyurular için, aynı anda tek popup (form 1'den
   fazlasında uyarıyor), alt başlık popup'ta özet olarak görünür (~120 karakter), kare görsel önerilir.
@@ -96,6 +98,27 @@ anahtar yenileme ileride yapılacak.
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Yönetici/ofis: Duyurular ve kimlerin gördüğü (2026-10-09)
+
+Talep: yönetici ve ofise "duyurular" ve "duyuruyu okuyanlar" menüsü. Geliştirici / ürün yöneticisi / tasarımcı /
+son kullanıcı perspektifleriyle iki tur tartışılıp ortak tasarım çıktı (backend: `tenis/history.md` 2026-10-09).
+- **Salt-okunur, tek ekran iki kabuk:** `lib/screens/1_common/duyurular/`; ☰ menüde "Duyurular" (yöneticide Panolar,
+  ofiste Üyeler bölümü). Rotalar `yoneticiDuyurular` / `ofisDuyurular` aynı `DuyuruYonetimPage`'i açar; tek fark üye
+  satırına dokununca açılan detay (yönetici `UyeDetayPage`, ofis `OfisUyeDetayPage`) — ekran role bakmaz, kabuk geri
+  çağırım verir. Oluşturma/düzenleme/kaldırma web'de: okuma durumu sayfasının sağ üstünde "Web panelinde aç".
+- **Liste:** Yayında / Planlanan / Geçmiş yapışkan grupları; satırda megafon (önemli → turuncu), alt satır
+  "Herkes · 3–17 Eki · Popup · Önemli", sağda "%38" + "54/142"; planlıda başlangıç, ölçülmeyende "ölçülmüyor".
+- **Okuma durumu:** özet kartı (oran + çubuk, "Ana sayfadan açan · Popup'ta gören · Detayı açan · N hesap uygulamayı
+  kullanmıyor", "İçeriği gör"), isimle arama (Türkçe harf duyarsız), Gördü | Görmedi segmenti. Görmedi iki grup:
+  uygulamayı kullananlar / kullanmayanlar (son 60 günde aktif cihaz). Satır başlığı hesabın **profil adları** (veli adı
+  ofise gitmiyor); çok profilde hangi üyenin açılacağı sorulur. Segment/arama/kaydırma detaydan dönünce korunur.
+- **Ölçüm dili "gördü":** ana sayfa şeridi kaydı yalnız detay açılınca yazıldığı için satırda "Ana sayfadan açtı";
+  popupsuz duyurularda oran bu yüzden düşük görünür (prod: ~%1–18). Hesap bazında, payda bugünkü hedef kitle.
+- `DuyuruDetaySheet(okunduIsaretle: false)`: yönetici/ofis içeriğe bakınca kendi okuma kaydı yazılmaz.
+- Testler: mobil +74 (`duyuru_okuma_test.dart` + taşma matrisine 4 görünüm); backend `test_duyuru_okuma_durumu.py` (7).
+- **v2 adayları** (tartışmada ertelendi): "bugün/yarın dersi olup görmeyenler" filtresi (son kullanıcının en çok
+  istediği), yönetici dashboard kartı, görmeyenlere push hatırlatma, mobilde "yayından kaldır".
 
 ### Açılış popup'ları: doğum günü kutlaması + popup duyurusu (2026-10-09)
 
