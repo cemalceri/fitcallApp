@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `pubspec` sürümü **3.9.0+42** — ofis kabuğu + QR sonuç ekranı + rol'e göre yardım sayfaları içeride. Yönetici ekranı düzeltmeleri (açık iş 4) ve 2026-09-29 güvenlik/temizlik turu **sürüme girmedi** (bilerek: version bump/tag yok). 09-29 turu `claude/cool-mayer-zurn6j` dalında |
-| Testler | `flutter test` **1324 geçiyor**, `flutter analyze` temiz; backend süiti **923 geçiyor**, 0 kırık (2026-10-09) |
+| Testler | `flutter test` **1358 geçiyor**, `flutter analyze` temiz; backend süiti **923 geçiyor**, 0 kırık (2026-10-09) |
 | Backend | Canlı: `322354c` (Heroku v297, 2026-09-26). 09-29 turu `claude/cool-mayer-zurn6j` dalında, **deploy bekliyor** (açık iş 5) |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08) |
 
@@ -119,6 +119,12 @@ kullanıcı tam ekran tasarımı (seçenek C) seçti. Backend ayrıntısı `teni
 - "Gösterildi" kayıtları çıkışta silinmiyor (`StorageService.clearAll` koruma listesi).
 - Testler: mobil 1281 → **1324** (`acilis_popup_test.dart` + taşma matrisine iki popup); backend
   `test_popup_duyuru.py` (10).
+- **Cihaz testi sonrası (aynı gün):** duyuru detay sayfası koyu temada okunmuyordu (gömülü açık tema
+  renkleri) → tema token'ları, resimsizde aynı varsayılan poster. Ana sayfa duyuru şeridi yeniden
+  tasarlandı (kullanıcı seçimi A): başlık artık görselin **üstüne yazılmıyor** (beyaz afişte beyaz
+  başlık okunmuyordu) — üstte kapak görseli (`DuyuruGorseli`, popup'la ortak: kırpmadan sığdır +
+  bulanık dolgu, yoksa poster), altta düz zeminde başlık + özet + "Detaylar"; renk paletleri kalktı,
+  şerit 180 → 210 px. Ofise profil değiştirme butonu (haftalık program başlığında) + yardım metni.
 
 ### Güvenlik turu + iptal geri alma + ders talep akışı kaldırıldı (2026-09-29)
 

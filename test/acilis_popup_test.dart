@@ -7,7 +7,9 @@ import 'package:fitcall/screens/1_common/acilis_popup/widgets/dogum_gunu_popup.d
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/duyuru_popup.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/konfeti_patlamasi.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_detay_sheet.dart';
+import 'package:fitcall/screens/1_common/widgets/duyuru_gorseli.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_varsayilan_poster.dart';
+import 'package:fitcall/screens/2_uye/home/widgets/duyuru_carousel.dart';
 import 'package:fitcall/services/core/acilis_popup_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -172,6 +174,43 @@ void main() {
       expect(renk('Kış kampı'), yaziRengi);
       expect(renk('Kayıtlar ofiste.'), yaziRengi);
       expect(find.byType(DuyuruVarsayilanPoster), findsOneWidget);
+    });
+  });
+
+  group('DuyuruCarousel', () {
+    // Başlık eskiden görselin üstüne beyaz yazılıyordu; beyaz bir afişte
+    // okunmuyordu. Artık görselin dışında, tema zemininde.
+    testWidgets('başlık görselin dışında, önemli rozeti görselin üstünde',
+        (tester) async {
+      await _ac(
+        tester,
+        DuyuruCarousel(
+          height: 210,
+          duyurular: [
+            DuyuruModel.fromMap({
+              'id': 1,
+              'baslik': 'Kış kampı kayıtları açıldı',
+              'alt_baslik': '7-14 yaş, kontenjan sınırlı',
+              'onemli_mi': true,
+              'yayin_baslangic': '2026-10-01T09:00:00+03:00',
+            }),
+          ],
+        ),
+      );
+
+      final baslik = find.text('Kış kampı kayıtları açıldı');
+      expect(baslik, findsOneWidget);
+      expect(
+        find.descendant(of: find.byType(DuyuruGorseli), matching: baslik),
+        findsNothing,
+      );
+      expect(find.byType(DuyuruVarsayilanPoster), findsOneWidget);
+      expect(find.text('Önemli'), findsOneWidget);
+      expect(find.text('7-14 yaş, kontenjan sınırlı'), findsOneWidget);
+      expect(
+        tester.widget<Text>(baslik).style?.color,
+        FitcallTema.acik.colorScheme.onSurface,
+      );
     });
   });
 

@@ -4,13 +4,16 @@ import 'dart:async';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_detay_sheet.dart';
+import 'package:fitcall/screens/1_common/widgets/duyuru_gorseli.dart';
+import 'package:fitcall/services/core/acilis_popup_service.dart';
 import 'package:flutter/material.dart';
 
 /// Instagram Stories tarzı duyuru carousel
 /// - Progress bar ile otomatik geçiş (5 saniye)
 /// - Dokunulduğunda durur
 /// - Swipe ile manuel geçiş
-/// - Her duyuru için farklı renk paleti
+/// - Kart: üstte kapak görseli (yoksa varsayılan poster), altta başlık —
+///   metin görselin üstüne yazılmaz (açık renkli afişte okunmuyordu)
 class DuyuruCarousel extends StatefulWidget {
   final List<DuyuruModel> duyurular;
   final double height;
@@ -19,7 +22,7 @@ class DuyuruCarousel extends StatefulWidget {
   const DuyuruCarousel({
     super.key,
     required this.duyurular,
-    this.height = 180,
+    this.height = 210,
     this.autoPlayDuration = const Duration(seconds: 5),
   });
 
@@ -145,7 +148,6 @@ class _DuyuruCarouselState extends State<DuyuruCarousel>
                 return _DuyuruKart(
                   duyuru: duyuru,
                   onTap: () => _openDuyuruDetay(duyuru),
-                  index: index,
                 );
               },
             ),
@@ -198,262 +200,144 @@ class _ProgressBar extends StatelessWidget {
   }
 }
 
-/// Tek duyuru kartı - Index'e göre farklı renkler
+/// Tek duyuru kartı: üstte kapak görseli, altta düz zeminde başlık.
+///
+/// Başlık eskiden görselin (ya da renkli gradyanın) üstüne beyaz yazılıyordu;
+/// açık renkli bir afişte okunmuyordu. Artık görselin üstünde yalnız kendi
+/// zemini olan rozetler var, metin görselin dışında.
 class _DuyuruKart extends StatelessWidget {
   final DuyuruModel duyuru;
   final VoidCallback onTap;
-  final int index;
 
-  const _DuyuruKart({
-    required this.duyuru,
-    required this.onTap,
-    required this.index,
-  });
+  const _DuyuruKart({required this.duyuru, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final cs = context.cs;
+    final metin = context.metin;
+    final renkler = context.renkler;
+    final ozet = duyuruPopupOzeti(duyuru);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
+        margin: const EdgeInsets.symmetric(horizontal: Bosluk.l),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(Yaricap.l),
+          border: Border.all(color: cs.outlineVariant),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  DuyuruGorseli(url: duyuru.ilkResim),
+                  if (duyuru.onemliMi)
+                    Positioned(
+                      top: Bosluk.s,
+                      left: Bosluk.s,
+                      child: _GorselRozeti(
+                        ikon: Icons.star_rounded,
+                        metin: 'Önemli',
+                        renk: renkler.uyari,
+                        zemin: renkler.uyariZemin,
+                      ),
+                    ),
+                  if (duyuru.resimSayisi > 1)
+                    Positioned(
+                      top: Bosluk.s,
+                      right: Bosluk.s,
+                      child: _GorselRozeti(
+                        ikon: Icons.photo_library_rounded,
+                        metin: '${duyuru.resimSayisi}',
+                        renk: Colors.white,
+                        zemin: Colors.black.withValues(alpha: 0.55),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: cs.outlineVariant),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  Bosluk.m, Bosluk.s, Bosluk.m, Bosluk.s),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    duyuru.baslik,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: metin.titleSmall,
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          ozet,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: metin.bodySmall,
+                        ),
+                      ),
+                      const SizedBox(width: Bosluk.s),
+                      Text(
+                        'Detaylar',
+                        style: metin.labelMedium?.copyWith(color: cs.primary),
+                      ),
+                      Icon(Icons.chevron_right_rounded,
+                          size: 16, color: cs.primary),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Gradient background
-              _buildGradientBackground(),
-
-              // İçerik
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Üst kısım: Badge'ler
-                    Row(
-                      children: [
-                        if (duyuru.onemliMi)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFDC2626),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.star_rounded,
-                                  size: 14,
-                                  color: Colors.white,
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  'Önemli',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        if (duyuru.resimSayisi > 1) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.photo_library_rounded,
-                                  size: 14,
-                                  color: Colors.white,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${duyuru.resimSayisi}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-
-                    const Spacer(),
-
-                    // Alt kısım: Başlık ve alt başlık
-                    Text(
-                      duyuru.baslik,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (duyuru.altBaslik.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        duyuru.altBaslik,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-
-                    const SizedBox(height: 8),
-
-                    // "Detaylar" butonu
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.25),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.4),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Detaylar',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(width: 4),
-                              Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 12,
-                                color: Colors.white,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildGradientBackground() {
-    // 10 farklı renk paleti - beyaz yazıya uygun koyu tonlar
-    // 15 duyuru olsa bile döngüsel olarak bu renkler tekrar eder (index % 10)
-    final List<List<Color>> colorPalettes = [
-      // 4. Koyu Mavi
-      [const Color(0xFF1E3A8A), const Color(0xFF2563EB)],
+/// Görselin üstündeki küçük rozet; kendi zemini olduğu için görselin
+/// renginden bağımsız okunur.
+class _GorselRozeti extends StatelessWidget {
+  final IconData ikon;
+  final String metin;
+  final Color renk;
+  final Color zemin;
 
-      // 5. Koyu Yeşil
-      [const Color(0xFF065F46), const Color(0xFF059669)],
+  const _GorselRozeti({
+    required this.ikon,
+    required this.metin,
+    required this.renk,
+    required this.zemin,
+  });
 
-      // 6. Koyu Pembe
-      [const Color(0xFF9F1239), const Color(0xFFE11D48)],
-
-      // 7. Koyu Cyan
-      [const Color(0xFF155E75), const Color(0xFF0891B2)],
-
-      // 8. Koyu İndigo
-      [const Color(0xFF3730A3), const Color(0xFF4F46E5)],
-
-      // 9. Koyu Amber
-      [const Color(0xFF92400E), const Color(0xFFF59E0B)],
-
-      // 10. Koyu Teal
-      [const Color(0xFF134E4A), const Color(0xFF14B8A6)],
-
-      // 1. Koyu Turuncu
-      [const Color(0xFFB45309), const Color(0xFFD97706)],
-
-      // 2. Koyu Kırmızı
-      [const Color(0xFF991B1B), const Color(0xFFDC2626)],
-
-      // 3. Koyu Mor
-      [const Color(0xFF6B21A8), const Color(0xFF9333EA)],
-    ];
-
-    // Önemli duyurular için daha dramatik renkler
-    final List<List<Color>> importantPalettes = [
-      [const Color(0xFF7C2D12), const Color(0xFFDC2626)],
-      [const Color(0xFF881337), const Color(0xFFE11D48)],
-      [const Color(0xFF581C87), const Color(0xFF9333EA)],
-      [const Color(0xFF172554), const Color(0xFF3B82F6)],
-      [const Color(0xFF78350F), const Color(0xFFF59E0B)],
-    ];
-
-    final List<Color> colors;
-    if (duyuru.onemliMi) {
-      // Önemli duyurular: 5 palet arasından seç (mod 5)
-      colors = importantPalettes[index % importantPalettes.length];
-    } else {
-      // Normal duyurular: 10 palet arasından seç (mod 10)
-      colors = colorPalettes[index % colorPalettes.length];
-    }
-
+  @override
+  Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Bosluk.s, vertical: 3),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: colors,
-        ),
+        color: zemin,
+        borderRadius: BorderRadius.circular(Yaricap.m),
       ),
-      child: Center(
-        child: Icon(
-          Icons.campaign_rounded,
-          size: 60,
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(ikon, size: 13, color: renk),
+          const SizedBox(width: Bosluk.xs),
+          Text(
+            metin,
+            style: context.metin.labelSmall?.copyWith(color: renk),
+          ),
+        ],
       ),
     );
   }

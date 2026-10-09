@@ -343,7 +343,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
                             padding: const EdgeInsets.symmetric(horizontal: 0),
                             child: DuyuruCarousel(
                               duyurular: _duyurular,
-                              height: 180,
+                              height: 210,
                             ),
                           ),
                       ],
@@ -367,7 +367,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
   /// Duyuru yüklenirken gösterilecek widget
   Widget _buildDuyuruLoading(ColorScheme colorScheme) {
     return Container(
-      height: 180,
+      height: 210,
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),

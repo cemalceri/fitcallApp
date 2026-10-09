@@ -1,11 +1,8 @@
 // lib/screens/1_common/acilis_popup/widgets/duyuru_popup.dart
 
-import 'dart:ui' show ImageFilter;
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
-import 'package:fitcall/screens/1_common/widgets/duyuru_varsayilan_poster.dart';
+import 'package:fitcall/screens/1_common/widgets/duyuru_gorseli.dart';
 import 'package:fitcall/services/core/acilis_popup_service.dart';
 import 'package:flutter/material.dart';
 
@@ -78,7 +75,7 @@ class DuyuruPopup extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                DuyuruPopupGorseli(url: duyuru.ilkResim),
+                DuyuruGorseli(url: duyuru.ilkResim),
                 Positioned(
                   top: 0,
                   right: 0,
@@ -167,40 +164,6 @@ class DuyuruPopup extends StatelessWidget {
             ),
             child: const Text('Detaylı bilgi'),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Popup'ın görsel alanı. Boş [url] → varsayılan poster.
-class DuyuruPopupGorseli extends StatelessWidget {
-  final String url;
-
-  const DuyuruPopupGorseli({super.key, required this.url});
-
-  @override
-  Widget build(BuildContext context) {
-    if (url.isEmpty) return const DuyuruVarsayilanPoster();
-    final gorsel = CachedNetworkImageProvider(url);
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Yüklenirken düz marka zemini (iskelet değil: tek görsel, kısa süre).
-        const ColoredBox(color: Marka.mavi),
-        ImageFiltered(
-          imageFilter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
-          child: Image(
-            image: gorsel,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-          ),
-        ),
-        ColoredBox(color: Colors.black.withValues(alpha: 0.25)),
-        Image(
-          image: gorsel,
-          fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) => const DuyuruVarsayilanPoster(),
         ),
       ],
     );

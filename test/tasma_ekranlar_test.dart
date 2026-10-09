@@ -23,6 +23,7 @@ import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/dogum_gunu_popup.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/duyuru_popup.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_detay_sheet.dart';
+import 'package:fitcall/screens/2_uye/home/widgets/duyuru_carousel.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_sheet.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
@@ -1437,6 +1438,28 @@ void main() {
           'hedef_kitle_display': 'Sadece Üyeler',
           'yayin_baslangic': '2026-10-01T09:00:00+03:00',
         }),
+      ),
+    );
+
+    // Ana sayfa şeridi: görsel üstte, başlık altta. Görselsiz (poster),
+    // önemli ve çok resimli rozetlerle en kalabalık hâl.
+    tasmaTesti(
+      'DuyuruCarousel (önemli, çok resimli, uzun başlık)',
+      () => DuyuruCarousel(
+        height: 210,
+        duyurular: [
+          DuyuruModel.fromMap({
+            'id': 1,
+            'baslik': 'Kış kampı kayıtları açıldı: 22 Aralık – 5 Ocak arası '
+                'yoğunlaştırılmış program',
+            'alt_baslik': '7-14 yaş grubu, kontenjan sınırlı, erken kayıtta '
+                'indirim',
+            'onemli_mi': true,
+            'resim_sayisi': 4,
+            'yayin_baslangic': '2026-10-01T09:00:00+03:00',
+          }),
+          _popupDuyurusu(baslik: 'Tesis Pazartesi kapalı'),
+        ],
       ),
     );
 
