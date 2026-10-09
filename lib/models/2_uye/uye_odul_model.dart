@@ -45,6 +45,10 @@ class OdulDurumModel {
   /// Ödülün hak edilmesi için gereken giriş sayısı (yönetici değiştirebilir).
   final int esik;
 
+  /// Ödül alındıktan sonra kodun kaç gün geçerli olduğu. Bu alanı göndermeyen
+  /// eski backend'lerde 0 gelir; bilgi sayfası o satırı atlar.
+  final int gecerlilikGun;
+
   /// Sayaç değeri; eşiği aşan geçişler devretmediği için eşikte durur.
   final int sayac;
   final int kalan;
@@ -57,6 +61,7 @@ class OdulDurumModel {
     this.aciklama,
     required this.ikon,
     required this.esik,
+    this.gecerlilikGun = 0,
     required this.sayac,
     required this.kalan,
     required this.hakEdildi,
@@ -73,6 +78,7 @@ class OdulDurumModel {
       aciklama: json['aciklama'] as String?,
       ikon: (json['ikon'] as String?) ?? 'kahve',
       esik: (json['esik'] as num?)?.toInt() ?? 0,
+      gecerlilikGun: (json['gecerlilik_gun'] as num?)?.toInt() ?? 0,
       sayac: (json['sayac'] as num?)?.toInt() ?? 0,
       kalan: (json['kalan'] as num?)?.toInt() ?? 0,
       hakEdildi: json['hak_edildi'] == true,

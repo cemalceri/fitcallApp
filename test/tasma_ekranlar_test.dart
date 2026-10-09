@@ -1208,6 +1208,28 @@ void main() {
     tasmaTesti('UyeOdulSayaci (yükleniyor)',
         () => const UyeOdulSayaci(isLoading: true));
 
+    tasmaTesti('OdulBilgiSheet (açıklamalı, sayıyor)',
+        () => OdulBilgiSheet(durum: _odul(sayac: 7)));
+
+    tasmaTesti(
+        'OdulBilgiSheet (açıklamasız, kahve olmayan, kod hazır)',
+        () => OdulBilgiSheet(
+              durum: OdulDurumModel.fromJson({
+                'aktif': true,
+                'odul_adi': 'Akademi logolu havlu ve su şişesi seti',
+                'ikon': 'havlu',
+                'esik': 30,
+                'sayac': 30,
+                'kalan': 0,
+                'hak_edildi': true,
+                'bekleyen_odul': const {
+                  'kod': 'BK-7F3Q',
+                  'durum': 'BEKLIYOR',
+                  'son_kullanma_metin': '05.08.2026',
+                },
+              }),
+            ));
+
     tasmaTesti(
         'UyeNextLessonCard', () => UyeNextLessonCard(nextLesson: _etkinlik()));
 
@@ -1994,8 +2016,11 @@ OdulDurumModel _odul({int sayac = 14, bool kod = false}) =>
     OdulDurumModel.fromJson({
       'aktif': true,
       'odul_adi': 'Kahve',
+      'aciklama': 'Kafede sıcak ya da soğuk kahve seçebilirsin. '
+          'Tatlı ve atıştırmalıklar ödüle dahil değildir.',
       'ikon': 'kahve',
       'esik': 20,
+      'gecerlilik_gun': 7,
       'sayac': sayac,
       'kalan': 20 - sayac,
       'hak_edildi': sayac >= 20 || kod,

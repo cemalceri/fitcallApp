@@ -14,6 +14,17 @@ const Color _kKahveKoyu = Color(0xFF78350F);
 const Color _kKahve = Color(0xFFB45309);
 const Color _kKahveAcik = Color(0xFFF59E0B);
 
+/// Ödül tanımındaki `ikon` anahtarının Material karşılığı. Tanımsız anahtarlar
+/// genel hediye ikonuna düşer; ödül her zaman kahve olmayabilir.
+IconData odulIkonu(String ikon) {
+  switch (ikon) {
+    case 'kahve':
+      return Icons.local_cafe_rounded;
+    default:
+      return Icons.card_giftcard_rounded;
+  }
+}
+
 class UyeOdulSayaci extends StatefulWidget {
   final OdulDurumModel? durum;
   final bool isLoading;
@@ -46,13 +57,25 @@ class _UyeOdulSayaciState extends State<UyeOdulSayaci> {
     }
   }
 
-  void _kodGoster(BuildContext context, OdulKoduModel kod, String odulAdi) {
+  void _kodGoster(
+      BuildContext context, OdulKoduModel kod, OdulDurumModel durum) {
     HapticFeedback.lightImpact();
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _OdulKodSheet(kod: kod, odulAdi: odulAdi),
+      builder: (_) =>
+          _OdulKodSheet(kod: kod, odulAdi: durum.odulAdi, ikon: durum.ikon),
+    );
+  }
+
+  void _bilgiGoster(BuildContext context, OdulDurumModel durum) {
+    HapticFeedback.selectionClick();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => OdulBilgiSheet(durum: durum),
     );
   }
 
@@ -67,84 +90,103 @@ class _UyeOdulSayaciState extends State<UyeOdulSayaci> {
     final colorScheme = Theme.of(context).colorScheme;
     final hazir = durum.kodHazir || durum.talepEdilebilir;
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color:
-            hazir ? _kKahveAcik.withValues(alpha: 0.10) : colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: hazir
-              ? _kKahveAcik.withValues(alpha: 0.35)
-              : colorScheme.outlineVariant.withValues(alpha: 0.3),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _kKahve.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+    // Sayma aşamasında kartın tamamı bilgi sayfasını açar; buton çıktığında
+    // karta dokunmak butonla karışmasın diye yalnız ⓘ açar.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: hazir ? null : () => _bilgiGoster(context, durum),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color:
+              hazir ? _kKahveAcik.withValues(alpha: 0.10) : colorScheme.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: hazir
+                ? _kKahveAcik.withValues(alpha: 0.35)
+                : colorScheme.outlineVariant.withValues(alpha: 0.3),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _Fincan(doluluk: durum.doluluk),
-              const SizedBox(width: 14),
-              Expanded(child: _Metinler(durum: durum)),
-            ],
-          ),
-          if (durum.talepEdilebilir) ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: _talepEdiliyor ? null : _odulAl,
-                style: FilledButton.styleFrom(
-                  backgroundColor: _kKahve,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                icon: _talepEdiliyor
-                    ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Theme.of(context).colorScheme.surface,
-                        ),
-                      )
-                    : const Icon(Icons.card_giftcard_rounded, size: 18),
-                label: Text(_talepEdiliyor ? 'Alınıyor...' : 'Ödülü al'),
-              ),
-            ),
-          ] else if (durum.kodHazir) ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () =>
-                    _kodGoster(context, durum.bekleyenOdul!, durum.odulAdi),
-                style: FilledButton.styleFrom(
-                  backgroundColor: _kKahve,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                icon: const Icon(Icons.qr_code_2_rounded, size: 18),
-                label: const Text('Kodu göster'),
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: _kKahve.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
-        ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _Fincan(doluluk: durum.doluluk),
+                const SizedBox(width: 14),
+                Expanded(child: _Metinler(durum: durum)),
+                IconButton(
+                  onPressed: () => _bilgiGoster(context, durum),
+                  tooltip: 'Ödül nasıl kazanılır?',
+                  icon: Icon(
+                    Icons.info_outline_rounded,
+                    size: 20,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints:
+                      const BoxConstraints.tightFor(width: 32, height: 32),
+                ),
+              ],
+            ),
+            if (durum.talepEdilebilir) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _talepEdiliyor ? null : _odulAl,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _kKahve,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  icon: _talepEdiliyor
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Theme.of(context).colorScheme.surface,
+                          ),
+                        )
+                      : const Icon(Icons.card_giftcard_rounded, size: 18),
+                  label: Text(_talepEdiliyor ? 'Alınıyor...' : 'Ödülü al'),
+                ),
+              ),
+            ] else if (durum.kodHazir) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () =>
+                      _kodGoster(context, durum.bekleyenOdul!, durum),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _kKahve,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  icon: const Icon(Icons.qr_code_2_rounded, size: 18),
+                  label: const Text('Kodu göster'),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -328,8 +370,13 @@ class _FincanPainter extends CustomPainter {
 class _OdulKodSheet extends StatelessWidget {
   final OdulKoduModel kod;
   final String odulAdi;
+  final String ikon;
 
-  const _OdulKodSheet({required this.kod, required this.odulAdi});
+  const _OdulKodSheet({
+    required this.kod,
+    required this.odulAdi,
+    required this.ikon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -355,7 +402,7 @@ class _OdulKodSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            Icon(Icons.local_cafe_rounded, size: 34, color: _kKahve),
+            Icon(odulIkonu(ikon), size: 34, color: _kKahve),
             const SizedBox(height: 10),
             Text(
               '$odulAdi ikramın hazır',
@@ -436,6 +483,180 @@ class _OdulKodSheet extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "Bu ne?" sorusunun cevabı: ödülün nasıl kazanıldığını anlatan alt sayfa.
+///
+/// Ödüle özgü metinler (ad, açıklama, ikon, eşik, geçerlilik) ödül tanımından
+/// gelir; kuralların kendisi (gün sayımı, sıfırlanma) backend'deki
+/// odul_service ile aynı olduğu için burada sabit yazılır.
+class OdulBilgiSheet extends StatelessWidget {
+  final OdulDurumModel durum;
+
+  const OdulBilgiSheet({super.key, required this.durum});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final aciklama = durum.aciklama?.trim() ?? '';
+
+    final adimlar = <String>[
+      'Turnikeden tesise giriş yaptığın her gün 1 sayılır. '
+          'Aynı gün birden fazla giriş tek sayılır.',
+      '${durum.esik} güne ulaşınca "Ödülü al" butonu çıkar; '
+          'dokununca sana özel bir kod oluşur.',
+      durum.gecerlilikGun > 0
+          ? 'Kod ${durum.gecerlilikGun} gün geçerlidir. '
+              'Görevliye göstererek kullanırsın.'
+          : 'Kodu görevliye göstererek kullanırsın.',
+      'Kod kullanılınca sayaç sıfırdan başlar. Süresi dolarsa hakkın '
+          'kaybolmaz, yeni kod alabilirsin.',
+    ];
+
+    final String durumMetni;
+    if (durum.kodHazir) {
+      durumMetni = 'Kodun hazır, kullanılmayı bekliyor.';
+    } else if (durum.hakEdildi) {
+      durumMetni = 'Ödülünü hak ettin, kodunu alabilirsin.';
+    } else {
+      durumMetni = 'Şu an ${durum.sayac} / ${durum.esik} · '
+          '${durum.kalan} gün kaldı';
+    }
+
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _kKahveAcik.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child:
+                        Icon(odulIkonu(durum.ikon), size: 22, color: _kKahve),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      '${durum.odulAdi} nasıl kazanılır?',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (aciklama.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  aciklama,
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.4,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 14),
+              for (var i = 0; i < adimlar.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 22,
+                        height: 22,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: _kKahveAcik.withValues(alpha: 0.18),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${i + 1}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: _kKahveKoyu,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          adimlar[i],
+                          style: TextStyle(
+                            fontSize: 13,
+                            height: 1.4,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 4),
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: _kKahveAcik.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  durumMetni,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _kKahveKoyu,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: FilledButton.styleFrom(backgroundColor: _kKahve),
+                  child: const Text('Tamam'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
