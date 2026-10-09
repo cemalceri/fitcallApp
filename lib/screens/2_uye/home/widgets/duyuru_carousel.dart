@@ -1,6 +1,7 @@
-// lib/screens/5_etkinlik/widgets/duyuru_carousel.dart
+// lib/screens/2_uye/home/widgets/duyuru_carousel.dart
 
 import 'dart:async';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_detay_sheet.dart';
 import 'package:flutter/material.dart';
@@ -169,6 +170,7 @@ class _ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dolgu = context.cs.primary;
     return Container(
       height: 3,
       decoration: BoxDecoration(
@@ -178,7 +180,7 @@ class _ProgressBar extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(2),
         child: isCompleted
-            ? Container(color: const Color(0xFF2563EB))
+            ? ColoredBox(color: dolgu)
             : isActive && animation != null
                 ? AnimatedBuilder(
                     animation: animation!,
@@ -186,13 +188,7 @@ class _ProgressBar extends StatelessWidget {
                       return FractionallySizedBox(
                         alignment: Alignment.centerLeft,
                         widthFactor: animation!.value,
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
-                            ),
-                          ),
-                        ),
+                        child: ColoredBox(color: dolgu),
                       );
                     },
                   )
@@ -216,8 +212,6 @@ class _DuyuruKart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Theme.of(context);
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -265,7 +259,7 @@ class _DuyuruKart extends StatelessWidget {
                                 Icon(
                                   Icons.star_rounded,
                                   size: 14,
-                                  color: Theme.of(context).colorScheme.surface,
+                                  color: Colors.white,
                                 ),
                                 SizedBox(width: 4),
                                 Text(
@@ -299,7 +293,7 @@ class _DuyuruKart extends StatelessWidget {
                                 Icon(
                                   Icons.photo_library_rounded,
                                   size: 14,
-                                  color: Theme.of(context).colorScheme.surface,
+                                  color: Colors.white,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -376,7 +370,7 @@ class _DuyuruKart extends StatelessWidget {
                               Icon(
                                 Icons.arrow_forward_ios_rounded,
                                 size: 12,
-                                color: Theme.of(context).colorScheme.surface,
+                                color: Colors.white,
                               ),
                             ],
                           ),

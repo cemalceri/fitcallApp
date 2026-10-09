@@ -6,9 +6,12 @@ import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/dogum_gunu_popup.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/duyuru_popup.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/konfeti_patlamasi.dart';
+import 'package:fitcall/screens/1_common/widgets/duyuru_detay_sheet.dart';
+import 'package:fitcall/screens/1_common/widgets/duyuru_varsayilan_poster.dart';
 import 'package:fitcall/services/core/acilis_popup_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 DuyuruModel _duyuru({
   String altBaslik = '',
@@ -45,6 +48,10 @@ Future<void> _ac(WidgetTester tester, Widget popup,
 }
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('tr', null);
+  });
+
   group('dogumGunuMu', () {
     test('ay ve gün eşleşince kutlanır, yıl önemsiz', () {
       expect(dogumGunuMu(DateTime(2012, 10, 9), DateTime(2026, 10, 9, 8)),
@@ -133,6 +140,38 @@ void main() {
       await _ac(tester, DuyuruPopup(duyuru: _duyuru(), onKapat: () {}));
       expect(find.text('Detaylı bilgi'), findsNothing);
       expect(find.text('Tamam'), findsOneWidget);
+    });
+  });
+
+  group('DuyuruDetaySheet', () {
+    // Koyu temada başlık ve içerik gömülü açık-tema renkleriyle (#111827,
+    // #374151) çizildiği için okunmuyordu; artık tema rengini almalı.
+    testWidgets('koyu temada başlık ve içerik tema yazı rengini alır',
+        (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(MaterialApp(
+        theme: FitcallTema.koyu,
+        home: Scaffold(
+          body: DuyuruDetaySheet(
+            duyuru: DuyuruModel.fromMap({
+              'id': 0,
+              'baslik': 'Kış kampı',
+              'icerik': 'Kayıtlar ofiste.',
+              'yayin_baslangic': '2026-10-01T09:00:00+03:00',
+            }),
+          ),
+        ),
+      ));
+      await tester.pump();
+
+      final yaziRengi = FitcallTema.koyu.colorScheme.onSurface;
+      Color? renk(String metin) =>
+          tester.widget<Text>(find.text(metin)).style?.color;
+      expect(renk('Kış kampı'), yaziRengi);
+      expect(renk('Kayıtlar ofiste.'), yaziRengi);
+      expect(find.byType(DuyuruVarsayilanPoster), findsOneWidget);
     });
   });
 

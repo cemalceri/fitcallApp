@@ -22,6 +22,7 @@ import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/dogum_gunu_popup.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/duyuru_popup.dart';
+import 'package:fitcall/screens/1_common/widgets/duyuru_detay_sheet.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_sheet.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
@@ -1404,6 +1405,25 @@ void main() {
         ),
         onKapat: () {},
         onDetay: () {},
+      ),
+    );
+
+    // id 0: sayfa açılışta "okundu" isteği atmaz (testte ağ yok).
+    tasmaTesti(
+      'DuyuruDetaySheet (görselsiz, önemli, hedef kitleli)',
+      () => DuyuruDetaySheet(
+        duyuru: DuyuruModel.fromMap({
+          'id': 0,
+          'baslik': 'Kış kampı kayıtları açıldı: 22 Aralık – 5 Ocak arası '
+              'yoğunlaştırılmış program',
+          'alt_baslik': '7-14 yaş grubu, kontenjan sınırlı',
+          'icerik': 'Günde iki seans antrenman, kondisyon ve maç pratiği.\n\n'
+              'Kayıtlar ofisten alınır.',
+          'onemli_mi': true,
+          'hedef_kitle': 'uyeler',
+          'hedef_kitle_display': 'Sadece Üyeler',
+          'yayin_baslangic': '2026-10-01T09:00:00+03:00',
+        }),
       ),
     );
 

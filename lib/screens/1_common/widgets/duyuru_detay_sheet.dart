@@ -1,7 +1,9 @@
 // lib/screens/1_common/widgets/duyuru_detay_sheet.dart
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/screens/1_common/widgets/duyuru_varsayilan_poster.dart';
 import 'package:fitcall/services/api_result.dart';
 import 'package:fitcall/services/core/duyuru_api_service.dart';
 import 'package:flutter/material.dart';
@@ -87,30 +89,34 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final cs = context.cs;
+    final metin = context.metin;
+    final renkler = context.renkler;
     final screenHeight = MediaQuery.of(context).size.height;
-    final resimler = widget.duyuru.tumResimUrlleri;
-    final hasContent = widget.duyuru.icerik.isNotEmpty;
+    final duyuru = widget.duyuru;
+    final resimler = duyuru.tumResimUrlleri;
+    final hasContent = duyuru.icerik.isNotEmpty;
 
     return Container(
       height: screenHeight * 0.92,
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        color: cs.surface,
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(Yaricap.sayfa)),
       ),
       child: Column(
         children: [
           // Handle bar
-          const SizedBox(height: 12),
+          const SizedBox(height: Bosluk.m),
           Container(
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.outlineVariant,
+              color: cs.outlineVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: Bosluk.s),
 
           // Scrollable içerik
           Expanded(
@@ -119,104 +125,75 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Resim Galerisi veya Gradient Header
+                  // Resim galerisi; görsel yoksa popup'la aynı varsayılan poster
                   if (resimler.isNotEmpty)
                     _buildImageGallery(resimler)
                   else
-                    _buildGradientHeader(),
+                    const SizedBox(
+                      height: 200,
+                      width: double.infinity,
+                      child: DuyuruVarsayilanPoster(),
+                    ),
 
-                  // İçerik alanı
                   Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(Bosluk.xl),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Badge'ler
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                          spacing: Bosluk.s,
+                          runSpacing: Bosluk.s,
                           children: [
-                            if (widget.duyuru.onemliMi)
-                              _buildBadge(
-                                icon: Icons.star_rounded,
-                                text: 'Önemli Duyuru',
-                                backgroundColor: const Color(0xFFF59E0B)
-                                    .withValues(alpha: 0.12),
-                                textColor: const Color(0xFFB45309),
-                                borderColor: const Color(0xFFF59E0B)
-                                    .withValues(alpha: 0.3),
+                            if (duyuru.onemliMi)
+                              _rozet(
+                                ikon: Icons.star_rounded,
+                                metin: 'Önemli Duyuru',
+                                renk: renkler.uyari,
+                                zemin: renkler.uyariZemin,
                               ),
-                            _buildBadge(
-                              icon: Icons.calendar_today_rounded,
-                              text: _formatDate(widget.duyuru.yayinBaslangic),
-                              backgroundColor: const Color(0xFF2563EB)
-                                  .withValues(alpha: 0.1),
-                              textColor: const Color(0xFF1D4ED8),
-                              borderColor: const Color(0xFF2563EB)
-                                  .withValues(alpha: 0.25),
+                            _rozet(
+                              ikon: Icons.calendar_today_rounded,
+                              metin: _formatDate(duyuru.yayinBaslangic),
+                              renk: renkler.bilgi,
+                              zemin: renkler.bilgiZemin,
                             ),
-                            if (widget.duyuru.hedefKitleDisplay != null &&
-                                widget.duyuru.hedefKitle != 'herkes')
-                              _buildBadge(
-                                icon: Icons.people_rounded,
-                                text: widget.duyuru.hedefKitleDisplay!,
-                                backgroundColor: const Color(0xFF10B981)
-                                    .withValues(alpha: 0.1),
-                                textColor: const Color(0xFF047857),
-                                borderColor: const Color(0xFF10B981)
-                                    .withValues(alpha: 0.25),
+                            if (duyuru.hedefKitleDisplay != null &&
+                                duyuru.hedefKitle != 'herkes')
+                              _rozet(
+                                ikon: Icons.people_rounded,
+                                metin: duyuru.hedefKitleDisplay!,
+                                renk: renkler.basari,
+                                zemin: renkler.basariZemin,
                               ),
                           ],
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: Bosluk.l),
 
-                        // Başlık
-                        Text(
-                          widget.duyuru.baslik,
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            height: 1.2,
-                            color: const Color(0xFF111827),
-                          ),
-                        ),
+                        Text(duyuru.baslik, style: metin.headlineSmall),
 
-                        // Alt başlık
-                        if (widget.duyuru.altBaslik.isNotEmpty) ...[
-                          const SizedBox(height: 8),
+                        if (duyuru.altBaslik.isNotEmpty) ...[
+                          const SizedBox(height: Bosluk.s),
                           Text(
-                            widget.duyuru.altBaslik,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontSize: 17,
+                            duyuru.altBaslik,
+                            style: metin.titleMedium?.copyWith(
+                              color: cs.onSurfaceVariant,
                               fontWeight: FontWeight.w500,
-                              color: const Color(0xFF6B7280),
                             ),
                           ),
                         ],
 
-                        // Divider ve İçerik
                         if (hasContent) ...[
-                          const SizedBox(height: 24),
-                          // Divider
-                          Container(
-                            height: 1,
-                            width: double.infinity,
-                            color: const Color(0xFFE5E7EB),
-                          ),
-                          const SizedBox(height: 24),
-                          // İçerik metni
+                          const SizedBox(height: Bosluk.xl),
+                          const Divider(),
+                          const SizedBox(height: Bosluk.xl),
                           Text(
-                            widget.duyuru.icerik,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              fontSize: 16,
-                              height: 1.75,
-                              color: const Color(0xFF374151),
-                            ),
+                            duyuru.icerik,
+                            style: metin.bodyLarge?.copyWith(height: 1.65),
                           ),
                         ],
 
-                        const SizedBox(height: 40),
+                        const SizedBox(height: Bosluk.xxl),
                       ],
                     ),
                   ),
@@ -225,28 +202,16 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
             ),
           ),
 
-          // Alt buton
+          // Alt buton — tema birincil rengi (koyu temada yazı rengi de doğru gelir)
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+              padding: const EdgeInsets.fromLTRB(
+                  Bosluk.xl, Bosluk.s, Bosluk.xl, Bosluk.m),
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: () => Navigator.pop(context),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: const Text(
-                    'Kapat',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
+                  child: const Text('Kapat'),
                 ),
               ),
             ),
@@ -364,7 +329,6 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
                       loadingProgress.expectedTotalBytes!
                   : null,
               strokeWidth: 2,
-              color: const Color(0xFF2563EB),
             ),
           ),
         );
@@ -372,81 +336,30 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
     );
   }
 
-  Widget _buildGradientHeader() {
-    final colors = widget.duyuru.onemliMi
-        ? [const Color(0xFFF59E0B), const Color(0xFFEF4444)]
-        : [const Color(0xFF2563EB), const Color(0xFF7C3AED)];
-
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: colors,
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Dekoratif daire
-          Positioned(
-            top: -50,
-            right: -50,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
-          ),
-          // Merkez ikon
-          Center(
-            child: Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(
-                Icons.campaign_rounded,
-                size: 36,
-                color: Colors.white.withValues(alpha: 0.9),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBadge({
-    required IconData icon,
-    required String text,
-    required Color backgroundColor,
-    required Color textColor,
-    required Color borderColor,
+  /// Durum rozeti. Renkler tema uzantısından: koyu temada açık metin + koyu
+  /// zemin, açıkta tersi — sabit hex ikisinden birinde okunmuyordu.
+  Widget _rozet({
+    required IconData ikon,
+    required String metin,
+    required Color renk,
+    required Color zemin,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+          horizontal: Bosluk.m, vertical: Bosluk.xs + 2),
       decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
+        color: zemin,
+        borderRadius: BorderRadius.circular(Yaricap.xl),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: textColor),
+          Icon(ikon, size: 14, color: renk),
           const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: Text(
+              metin,
+              style: context.metin.labelLarge?.copyWith(color: renk),
             ),
           ),
         ],

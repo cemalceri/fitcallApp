@@ -5,6 +5,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/screens/1_common/widgets/duyuru_varsayilan_poster.dart';
 import 'package:fitcall/services/core/acilis_popup_service.dart';
 import 'package:flutter/material.dart';
 
@@ -202,67 +203,6 @@ class DuyuruPopupGorseli extends StatelessWidget {
           errorBuilder: (_, __, ___) => const DuyuruVarsayilanPoster(),
         ),
       ],
-    );
-  }
-}
-
-/// Görseli olmayan duyurular için kodla çizilmiş poster: turuncu zemin,
-/// dekoratif halkalar, megafon ve "DUYURU" etiketi. Başlık zaten altta.
-class DuyuruVarsayilanPoster extends StatelessWidget {
-  const DuyuruVarsayilanPoster({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    Widget daire(double cap, double opaklik) => Container(
-          width: cap,
-          height: cap,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: opaklik),
-          ),
-        );
-
-    return ClipRect(
-      child: ColoredBox(
-        color: Marka.turuncu,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Positioned(top: -70, right: -50, child: daire(240, 0.12)),
-            Positioned(bottom: -90, left: -60, child: daire(260, 0.10)),
-            Positioned(bottom: 40, right: 30, child: daire(56, 0.14)),
-            Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 92,
-                      height: 92,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.campaign_rounded,
-                          size: 48, color: Colors.white),
-                    ),
-                    const SizedBox(height: Bosluk.m),
-                    Text(
-                      'DUYURU',
-                      style: context.metin.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
