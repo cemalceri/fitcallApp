@@ -8,14 +8,14 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-10-09)
+## 📌 Şu anki durum (2026-10-10)
 
 | | |
 |---|---|
-| Mobil | `pubspec` sürümü **3.9.0+42** — ofis kabuğu + QR sonuç ekranı + rol'e göre yardım sayfaları içeride. Yönetici ekranı düzeltmeleri (açık iş 4) ve 2026-09-29 güvenlik/temizlik turu **sürüme girmedi** (bilerek: version bump/tag yok). 09-29 turu `claude/cool-mayer-zurn6j` dalında |
-| Testler | `flutter test` **1432 geçiyor**, `flutter analyze` temiz; backend süiti **944 geçiyor**, 0 kırık (2026-10-09) |
-| Backend | Canlı: `322354c` (Heroku v297, 2026-09-26). 09-29 turu `claude/cool-mayer-zurn6j` dalında, **deploy bekliyor** (açık iş 5) |
-| Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08) |
+| Mobil | `pubspec` sürümü **3.10.0+43** — renk temaları (takım renkleri + geçişli tasarım dili), açılış popup'ları, yönetici/ofis Duyurular ekranı, ödül "nasıl kazanılır?", yönetici ekranı etiketleri ve 09-29 temizliği içeride. `v3.10.0` tag'iyle Codemagic'e gönderildi (2026-10-10) |
+| Testler | `flutter test` **2132 geçiyor** (renk temaları turuyla 1432'den), `flutter analyze` temiz; backend süiti **944 geçiyor**, 0 kırık (2026-10-10) |
+| Backend | Canlı: `1d527c5` (Heroku **v305**, 2026-10-10) — 09-29 turu, açılış popup'ları ve yönetici/ofis duyuru uçları dahil; bekleyen migration yok |
+| Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08); **3.10.0** `v3.10.0` tag'iyle gönderildi (2026-10-10) |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
 olduğu uçlar (`kayitFormVerileri`, `uyeBasvuru`, `sifremiUnuttum`, `sifreSifirlamaGonder`) canlıda
@@ -58,13 +58,11 @@ gönderen tek yol `process_notifications` olduğu için bu, `ders_bildirimleri` 
   verisi karışıyordu). Düzeltildikten sonra dashboard/rapor rakamlarının düşmesi **beklenen**
   davranıştır, hata değil.
 
-### 4. Yönetici ekranı veri düzeltmeleri — deploy ve karar bekliyor (2026-09-25)
+### 4. Yönetici ekranı veri düzeltmeleri — ciro kararı bekliyor (2026-09-25)
 Yönetici ekranlarında yanlış gösterilen rakamlar düzeltildi (ayrıntı: aşağıdaki tur ve
 `tenis/history.md` 2026-09-25). Kalanlar:
-- **Deploy:** backend canlıda (v297, 2026-09-26); düzeltmelerin çoğu **mevcut 3.9.0 sürümünde
-  de** görünüyor. Mobil kısım (reddedilen dersin "Yapılmadı" etiketi, "Bekleyen Telafi" etiketi)
-  `main`'de, bir sonraki sürümü bekliyor; o zamana kadar uygulama reddedilen dersi eskisi gibi
-  "Onay Bekliyor" gösterir (backend `durum` alanını bilerek değiştirmedi).
+- **Deploy:** tamam. Backend canlıda (v297'den beri); mobil kısım (reddedilen dersin "Yapılmadı"
+  etiketi, "Bekleyen Telafi" etiketi) **3.10.0** ile gönderildi.
 - **Ciro kararı (bilinçli olarak dokunulmadı):** ciro yalnız yönetici onaylı dersleri sayıyor ve
   `urun.toplam_ucret` üzerinden hesaplanıyor. Borç ise `ucret` + fiyat geçmişi + katılımcı sayısıyla
   yazılıyor. Onaylar Haziran'dan beri birikiyor (Eylül'de biten derslerin ~%5'i onaylı), bu yüzden
@@ -72,23 +70,21 @@ Yönetici ekranlarında yanlış gösterilen rakamlar düzeltildi (ayrıntı: a�
 - **Süreç:** onay birikimi aynı zamanda tek seferlik derslerin borcunu da bekletiyor (borç onayda
   yazılıyor) — gösterim değil, faturalama konusu.
 
-### 5. 2026-09-29 turunun deploy'u
-- **Önce backend:** `tenis` `claude/cool-mayer-zurn6j` → `master` merge + Heroku deploy. Migration
-  `0089` ders talep tablolarını (`ders_talep`, `genel_ders_talep`, `genel_ders_talep_zaman`) **siler**
-  — kullanıcı kararı, içlerindeki eski talepler geri gelmez.
-- Mobil değişiklikler (ders talep kodu silindi, yardım metinleri, zorunlu güncelleme sayfası)
-  backend'e bağımlı değil; bir sonraki sürümle çıkar. Yayındaki sürümler kırılmıyor: kaldırılan uçları
-  hiçbir ekran çağırmıyordu, tesis/event QR uçları zaten token gönderen istemcilerle çalışıyor.
-- Deploy sonrası `veri_tutarlilik_kontrol` (açık iş 3).
-
-### 7. Açılış popup'ları + yönetici/ofis duyuruları — deploy sırası (2026-10-09)
-- **Not:** migration `0090` prod DB'ye **uygulandı** (yerel test için; eski kod bozulmasın diye üç sütuna DB varsayılanı
-  verildi), kod Heroku'ya deploy **edilmedi**.
-- **Önce backend:** `getPopupDuyuru`, `yoneticiDuyurular`, `yoneticiDuyuruOkumaDurumu` uçları canlıya çıkmadan mobil
-  sürüm yayınlanmamalı — eski backend'de uç 404 döner; istemci bunu
-  sessizce yutar (popup çıkmaz) ama doğum günü dışında özellik çalışmaz.
-- Yayından sonra akademiye not: popup yalnız aksiyon gerektiren duyurular için, aynı anda tek popup (form 1'den
+### 7. Açılış popup'ları + yönetici/ofis duyuruları — yayında (2026-10-10)
+- Backend uçları (`getPopupDuyuru`, `yoneticiDuyurular`, `yoneticiDuyuruOkumaDurumu`) Heroku v305'te canlı, mobil 3.10.0
+  ile gönderildi.
+- Akademiye not (yapılacak): popup yalnız aksiyon gerektiren duyurular için, aynı anda tek popup (form 1'den
   fazlasında uyarıyor), alt başlık popup'ta özet olarak görünür (~120 karakter), kare görsel önerilir.
+
+### 8. Renk temaları — 3.10.0 ile gönderildi (2026-10-10)
+Mağaza ekran görüntüleri güncellenecekse **Binay temasıyla** çekilmeli; mağaza metninde kulüp adı geçmez (bkz.
+tamamlanan turlar → Renk temaları). Yayın öncesi ekran denetiminde ertelenen küçük maddeler:
+- Yönetici rapor bölümleri (üye/antrenör istatistik kartları, ciro/tahsilat/doluluk/performans) hâlâ çok renkli ve
+  açık modda bazı ikon/yazılar düşük kontrastlı (turuncu ~2,2, amber "Ort. Puan" ~1,6) — dashboard gibi ana renge
+  çekilmeli.
+- Antrenör profil başlığı kısa içerikte tam kapanamıyor (kimlik kartından ince şerit kalıyor).
+- Takvim bloğu 1.3 yazı ölçeğinde bir saatlik dersi kompakt moda düşürüyor; temanın `showDragHandle`'ı ders
+  iptal sayfasında ikinci tutamaç çiziyor; devir bildirimindeki "Reddet" butonları dolu kırmızı.
 
 ### 6. Repodaki sırlar — şimdilik bekliyor (kullanıcı kararı 2026-09-29)
 `tenis/eventcalendar/settings.py`'de prod DB şifresi, SMS/e-posta/Param şifreleri, repoda da Firebase
@@ -98,6 +94,41 @@ anahtar yenileme ileride yapılacak.
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Renk temaları: takım renkleri + geçişli tasarım dili (2026-10-10)
+
+Talep: Galatasaray, Fenerbahçe, Trabzonspor, Beşiktaş ve milli takım renkleriyle temalar; Binay Akademi beyaz-turuncu
+kurumsal kalsın; her temada yazı okunur olsun; "renk geçişli, modern, sade, rengarenk olmasın"; tüm ekranlar temaya
+göre. Üç tasarımcı ajanı (spor uygulamaları / fintech-taraftar ürünleri / modern tema kişiselleştirme) iki tur
+tartışıp ortak tasarım çıkardı; kullanıcı HTML maketi onayladı.
+- **Temalar** (`TakimTemasi`, `lib/common/tema.dart`): Binay Akademi (bugünkü açık/koyu palet **aynen**), Sarı-Kırmızı,
+  Sarı-Lacivert, Bordo-Mavi, Siyah-Beyaz, Ay-Yıldız. Ana etiket renk adı, kulüp adı yalnız küçük alt yazıda; arma/logo
+  yok. Seçim **cihaz bazlı** (`TemaKontrol.takim`, anahtar `tema_takim`, çıkışta korunur), mod (Sistem/Açık/Koyu) ondan
+  bağımsız. Ayarlar > Görünüm'de önizlemeli karolar (`RenkTemasiSecici`).
+- **Tasarım dili** (`TemaGecisleri` ThemeExtension): ekranda en fazla bir **kimlik yüzeyi** (`KimlikYuzeyi` /
+  `KimlikBaslik`: üye ve antrenörde sonraki ders, Hareketler'de bakiye, yöneticide Bugünün Özeti, detay/profil
+  başlıkları, giriş bandı, QR kartı, telafi özeti); her sayfanın üstünde zemine sönen **yıkama** (açıkta iki takım rengi
+  arasında, koyuda tek ton); ikinci takım rengi yalnız 3 dp **şeritte** (kimlik alt kenarı, QR halkası, ödül çubuğu).
+  Butonlar, seçili gün/sekme/çip, listeler, takvim, ızgara, grafikler düz; durum renkleri her temada aynı.
+- **Altyapı:** yıkama sayfalarda yazılmaz — tema sayfa geçişini sarıp her rotanın altına `SayfaZemini` koyar; Scaffold
+  şeffaf, AppBar üstte şeffaf ve içerik altına kayınca zemin rengi (`WidgetState.scrolledUnder`). Elle yazılmış
+  `primary %6` yıkamalar (9 sayfa) kaldırıldı. Liste satırı şeffaf (kaydırma eylemleri açılan genişlik kadar çizilir).
+- **Erişilebilirlik paketi:** iptal edilen ders üç takvimde de taramalı (`IptalTaramasi`) + üstü çizili + ikonlu;
+  yıkıcı aksiyonlar kenarlıklı (`YikiciButon`, 8 yer); Ay-Yıldız'da butonlar antrasit (bayrak kırmızısı hata
+  kırmızısından ayırt edilemiyor).
+- **Bugünkü hatalar düzeldi:** `uzerineYazi` artık iki adayın kontrastını karşılaştırıyor (eski 0.45 eşiği açık
+  turuncuda 2.2:1 veriyordu); profil seç ekranı sade düz listeye çevrildi (koyu modda kartların yarısı beyaz
+  kalıyordu); koyu modda okunmayan "Bugün" rozeti, seçili çipler, alt bar QR ikonu, surface'ı yazı rengi yapan
+  yerler, kod penceresindeki koyu kahve yazı, giriş logosunun koyu zemini, üye takvimindeki açık pembe iptal bloğu;
+  butonlardaki sabit beyaz yükleniyor göstergeleri butonun yazı rengini alıyor (`ButonYukleniyorGostergesi`);
+  günlük kokpit başlığı dar ekranda taşıyordu (yeni taşma testi yakaladı).
+- **Rengarenkliğin kaynağı temizlendi:** gömülü hex 225 → 50; temaya ait olmayan eski palet (indigo, mor, QR
+  turkuazı, telafi moru, pembe…) sıfır. Kalan hex'ler bilinçli: QR siyah-beyazı, top seviye renkleri, antrenör renkleri,
+  fincandaki kahve. `HomeCardModel.color` → `ton` (`ListeTonu`, artık `tema.dart`'ta).
+- **Testler (+681):** `tema_kontrast_test.dart` (6 tema × 2 mod, tüm yazı/zemin çiftleri; gradyanlarda 41 noktanın en
+  kötüsü; ödül çubuğu görünürlüğü; tasarım kararları), `renk_temasi_test.dart` (tercih/saklama/çıkış, SayfaZemini,
+  bileşenler), `gomulu_renk_mandal_test.dart` (gömülü renk sayısı artamaz, eski palet geri gelemez); taşma
+  matrisindeki her bileşen ayrıca üç uç takım temasında çiziliyor.
 
 ### Yönetici/ofis: Duyurular ve kimlerin gördüğü (2026-10-09)
 

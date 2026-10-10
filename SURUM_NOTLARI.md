@@ -8,6 +8,65 @@
 > gizlilik metni de istiyor — çıkmak istemediğimiz bir bakım yükü.
 > (3.6.0 ve öncesindeki en-US bölümleri tarihsel kayıt olarak duruyor.)
 
+## 3.10.0 — 2026-10-10
+
+### Mağaza metni (tr-TR)
+
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 480).
+Mağaza metninde kulüp adı geçmiyor (yalnız renk adları); mağaza ekran görüntüleri Binay temasıyla.
+
+- Renk temaları: Binay Akademi'nin yanında Sarı-Kırmızı, Sarı-Lacivert, Bordo-Mavi, Siyah-Beyaz ve Ay-Yıldız. Ayarlar'daki Görünüm bölümünden seçin.
+- Ekranlar renk geçişli, sade bir tasarımla yenilendi; koyu temada okunmayan yazılar düzeltildi.
+- Doğum gününüzde kutlama, önemli duyurular açılışta.
+- Yönetici ve ön büro için Duyurular: kimlerin gördüğü listelenir.
+- Ödül sayacına "Nasıl kazanılır?" bilgisi eklendi.
+- Profil seçme ekranı sadeleşti.
+- Çeşitli hata düzeltmeleri.
+
+### Teknik
+
+- **Renk temaları** (`TakimTemasi`, [tema.dart](lib/common/tema.dart)): Binay Akademi (önceki açık/koyu
+  palet aynen) + beş takım rengi teması. Seçim cihaz bazlı (`TemaKontrol.takim`, anahtar `tema_takim`,
+  çıkışta korunur), açık/koyu moddan bağımsız; Ayarlar > Görünüm'de önizlemeli karolar.
+- **Geçişli tasarım dili** (`TemaGecisleri` ThemeExtension): ekranda en fazla bir kimlik yüzeyi
+  (`KimlikYuzeyi` / `KimlikBaslik`), her rotanın altında tema geçişinin çizdiği sayfa yıkaması
+  (`SayfaZemini`; Scaffold şeffaf, AppBar içerik altına kayınca zemin rengi), ikinci takım rengi yalnız
+  3 dp şeritte. Butonlar, listeler, takvim ve grafikler düz; durum renkleri her temada aynı.
+- **Erişilebilirlik:** iptal edilen ders üç takvimde de taramalı (`IptalTaramasi`); yıkıcı aksiyonlar
+  kenarlıklı `YikiciButon`; buton içi göstergeler butonun yazı rengini alıyor
+  (`ButonYukleniyorGostergesi`); `uzerineYazi` iki adayın kontrastını karşılaştırıyor.
+- **Düzeltmeler:** profil seç ekranı sade düz liste (koyu modda kartların yarısı beyaz kalıyordu); koyu
+  modda okunmayan rozet/çip/ikonlar; günlük kokpit başlığı dar ekranda taşıyordu.
+- **Bu sürüme giren önceki turlar:** açılış popup'ları (doğum günü kutlaması + popup duyurusu), yönetici
+  ve ofis Duyurular ekranı (kimlerin gördüğü), ödül sayacı "nasıl kazanılır?" sayfası, duyuru şeridi
+  kapak görseli, ofiste profil değiştirme butonu, yönetici ekranında "Yapılmadı" / "Bekleyen Telafi"
+  etiketleri, ders talep kodunun kaldırılması.
+- **Yayın öncesi ekran denetimi** (üç UI/UX ajanı: üye / antrenör-takvim / yönetici-ofis-ortak; 6 tema ×
+  açık/koyu, gerçek fontla). Renk temalarından gelen engel çıkmadı; bulunanlar düzeltildi:
+  - Önceden var olan kırık akış: antrenörün ders iptal talebinde "İptal Talebi Gönder" yazı girilince
+    etkinleşmiyordu (alan yeniden çizim tetiklemiyordu).
+  - Koyu modda okunmayan alanlar: "Katılamayacağım" açıklama kutusu ve kayıtlı değerlendirme yorumu
+    beyaz zemindeydi; değerlendirme/ders detayı, devir, yoklama kilidi ve devir bildirimi kutularındaki
+    sabit kırmızı/mavi/amber yazılar durum token'larına taşındı; QR doğrula açıklaması (1,05:1), ofis
+    ızgarasında antrenör adı ve saat etiketleri, ısı haritası hücre yazısı, öğrenci istatistiklerinde
+    sarı zemine beyaz sayı, takvim "İPTAL" rozeti, teyit ikonları.
+  - Durum çubuğu şeffaf verildi (Android 14 ve altında yıkamanın üstünde gri bant kalıyordu); gezinme
+    çubuğuna dokunulmuyor.
+  - Tasarım kuralı: antrenörde "Dersi İptal Et" kenarlıklı `YikiciButon`, antrenör takviminde iptal adı
+    üstü çizili, kendi zeminini çizen dört sayfa `SayfaZemini`'ne bırakıldı, giriş bandında logo
+    ortalandı, alt bar QR halkasındaki boşluk görünür ve tüm sütun dokunulabilir, renk teması seçicisi
+    alt etiketler kesilmesin diye telefonda iki sütun, hakedişte gri taban koyu modda pembeye dönmüyor.
+  - Yönetici panosu istatistik kartları 360 dp'de taşıyordu: yükseklik artık içerikten, tutar
+    sığmazsa küçülüyor (taşma testine eklendi).
+- **Testler:** `flutter test` 2132 (1432'den); yeni `tema_kontrast_test.dart` (6 tema × 2 mod, tüm
+  yazı/zemin çiftleri, gradyanlarda 41 noktanın en kötüsü), `renk_temasi_test.dart`,
+  `gomulu_renk_mandal_test.dart` (gömülü renk sayısı artamaz: hex 42, `Colors.x` 176); taşma matrisi
+  üç uç takım temasında da.
+
+**Deploy sırası: önce backend, sonra Codemagic.** Yönetici/ofis Duyurular ekranı `yoneticiDuyurular`
+ucunu kullanıyor; backend canlıda olmadan çıkarsa ekran 404 alır. Uyuldu: backend `1d527c5` Heroku
+**v305** (2026-10-10, migration yok), uçlar 401 dönüyor (404 değil); ardından `v3.10.0` tag'i.
+
 ## 3.9.0 — 2026-09-08
 
 ### Mağaza metni (tr-TR)
