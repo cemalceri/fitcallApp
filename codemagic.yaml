@@ -30,12 +30,12 @@ workflows:
 
     environment:
       flutter: stable
-      # Sabit sürüm: 3.10.0 build'i `latest` ile saatlerce kuyrukta kaldı
-      # (2026-10-10); `latest` o sırada yeni major Xcode 27 imajına geçmiş
-      # olabilir. 26.6 Codemagic'in varsayılan imajı (en geniş makine havuzu)
-      # ve 3.9.0'ın derlendiği 26.x serisi.
-      # Yükseltirken https://docs.codemagic.io/specs/versions-macos/ sayfasına bakın.
-      xcode: "26.6"
+      # Sabit sürüm (2026-10-10): 3.10.0 build'i hem `latest` hem 26.6 ile
+      # saatlerce kuyrukta kaldı. Codemagic 26.6 havuzundaki aşırı yükü doğruladı
+      # ve 26.5/26.4'ü önerdi (github.com/orgs/codemagic-ci-cd/discussions/3570).
+      # Kuyruk normale dönünce yükseltilebilir; önce
+      # https://docs.codemagic.io/specs/versions-macos/ sayfasına bakın.
+      xcode: "26.5"
       cocoapods: default
       java: 17
 
