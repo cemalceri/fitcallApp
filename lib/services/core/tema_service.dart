@@ -1,35 +1,54 @@
 // lib/services/core/tema_service.dart
 //
-// Tema modu tercihi (Sistem / Açık / Koyu).
+// Tema tercihleri: mod (Sistem / Açık / Koyu) ve renk teması (Binay ya da
+// takım renkleri).
 //
-// Tercih cihazda saklanır; uygulama açılışında `TemaKontrol.yukle()` ile
-// okunur ve `main.dart` bu notifier'ı dinleyerek `MaterialApp.themeMode`'u
-// besler. Çıkış yapıldığında güvenli depo temizlendiği için tercih
-// `StorageService.cikisYap()` içinde korunup geri yazılır — kullanıcı
-// oturumdan çıkınca teması sıfırlanmasın.
+// İki tercih birbirinden bağımsızdır ("Sarı-Lacivert + Koyu" gibi her
+// kombinasyon geçerli). İkisi de cihazda saklanır, yani telefondaki tüm
+// profiller aynı temayı görür. Uygulama açılışında `TemaKontrol.yukle()` ile
+// okunur; `main.dart` iki notifier'ı dinleyip `MaterialApp`'i besler. Çıkışta
+// güvenli depo temizlendiği için anahtarlar `StorageService.clearAll()` içinde
+// korunup geri yazılır — kullanıcı oturumdan çıkınca teması sıfırlanmasın.
 
 import 'package:flutter/material.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 
 class TemaKontrol {
   TemaKontrol._();
 
   static const String anahtar = 'tema_modu';
+  static const String takimAnahtari = 'tema_takim';
 
   /// Aktif tema modu. `MaterialApp` bunu dinler.
   static final ValueNotifier<ThemeMode> modu =
       ValueNotifier<ThemeMode>(ThemeMode.system);
 
-  /// Açılışta cihazdaki tercihi okur. Kayıt yoksa sistem teması kullanılır.
+  /// Aktif renk teması. Kayıt yoksa Binay Akademi.
+  static final ValueNotifier<TakimTemasi> takim =
+      ValueNotifier<TakimTemasi>(TakimTemasi.binay);
+
+  /// Açılışta cihazdaki tercihleri okur. Kayıt yoksa sistem modu ve Binay.
   static Future<void> yukle() async {
-    final kayit = await SecureStorageService.getValue<String>(anahtar);
-    modu.value = cozumle(kayit);
+    final kayitlar = await Future.wait([
+      SecureStorageService.getValue<String>(anahtar),
+      SecureStorageService.getValue<String>(takimAnahtari),
+    ]);
+    modu.value = cozumle(kayitlar[0]);
+    takim.value = TakimTemasi.cozumle(kayitlar[1]);
   }
 
-  /// Tercihi değiştirir ve cihaza yazar.
+  /// Mod tercihini değiştirir ve cihaza yazar.
   static Future<void> ayarla(ThemeMode yeni) async {
     modu.value = yeni;
     await SecureStorageService.setValue<String>(anahtar, kodla(yeni));
+  }
+
+  /// Renk temasını değiştirir ve cihaza yazar. Değişiklik anında uygulanır;
+  /// geri almak tek dokunuş.
+  static Future<void> takimAyarla(TakimTemasi yeni) async {
+    takim.value = yeni;
+    await SecureStorageService.setValue<String>(takimAnahtari, yeni.kod);
   }
 
   static String kodla(ThemeMode m) => switch (m) {

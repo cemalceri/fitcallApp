@@ -18,6 +18,8 @@ import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/core/tema_service.dart';
+import 'package:fitcall/screens/1_common/ayarlar/widgets/renk_temasi_secici.dart';
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -117,7 +119,7 @@ class _AyarlarPageState extends State<AyarlarPage> {
             const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.s, Bosluk.l, Bosluk.xxl),
         children: [
           const _BolumBasligi('Görünüm'),
-          const _Kart(children: [_TemaSecici()]),
+          const _Kart(children: [_RenkTemasiBolumu(), _TemaSecici()]),
           const _BolumBasligi('Bildirimler'),
           _Kart(
             children: [
@@ -219,6 +221,50 @@ class _AyarlarPageState extends State<AyarlarPage> {
   }
 }
 
+/* ========================= Renk teması seçici ========================= */
+
+class _RenkTemasiBolumu extends StatelessWidget {
+  const _RenkTemasiBolumu();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = context.cs;
+
+    return Padding(
+      padding:
+          const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.l, Bosluk.l, Bosluk.xs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.color_lens_outlined, size: 20, color: cs.primary),
+              const SizedBox(width: Bosluk.m),
+              Expanded(
+                child: Text('Renk teması', style: context.metin.titleSmall),
+              ),
+            ],
+          ),
+          const SizedBox(height: Bosluk.xs),
+          Text(
+            'Seçim bu telefondaki tüm profillere uygulanır.',
+            style:
+                context.metin.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+          const SizedBox(height: Bosluk.m),
+          ValueListenableBuilder<TakimTemasi>(
+            valueListenable: TemaKontrol.takim,
+            builder: (context, secili, _) => RenkTemasiSecici(
+              secili: secili,
+              onSec: TemaKontrol.takimAyarla,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /* ============================ Tema seçici ============================ */
 
 class _TemaSecici extends StatelessWidget {
@@ -236,10 +282,12 @@ class _TemaSecici extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.palette_outlined, size: 20, color: cs.primary),
+              Icon(Icons.contrast_rounded, size: 20, color: cs.primary),
               const SizedBox(width: Bosluk.m),
               Expanded(
-                child: Text('Tema', style: context.metin.titleSmall),
+                // Renk temasından ayrı bir tercih: her renk teması açık ve
+                // koyu modda çalışır.
+                child: Text('Açık / koyu mod', style: context.metin.titleSmall),
               ),
             ],
           ),
@@ -457,16 +505,16 @@ class _OnaySayfasi extends StatelessWidget {
                 ),
                 const SizedBox(width: Bosluk.m),
                 Expanded(
-                  child: FilledButton(
-                    style: yikici
-                        ? FilledButton.styleFrom(
-                            backgroundColor: cs.error,
-                            foregroundColor: cs.onError,
-                          )
-                        : null,
-                    onPressed: () => Navigator.pop(context, true),
-                    child: Text(onayEtiketi),
-                  ),
+                  // Yıkıcı onay kenarlıklı kırmızı; diğerleri düz ana renk.
+                  child: yikici
+                      ? YikiciButon(
+                          etiket: onayEtiketi,
+                          onPressed: () => Navigator.pop(context, true),
+                        )
+                      : FilledButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: Text(onayEtiketi),
+                        ),
                 ),
               ],
             ),

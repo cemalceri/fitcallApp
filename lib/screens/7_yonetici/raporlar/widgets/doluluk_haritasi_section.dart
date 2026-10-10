@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
+import 'package:fitcall/common/tema.dart';
 
 /// Saat x haftanın günü ders yoğunluğu ısı haritası.
 class DolulukHaritasiSection extends StatelessWidget {
@@ -9,24 +10,27 @@ class DolulukHaritasiSection extends StatelessWidget {
 
   const DolulukHaritasiSection({super.key, required this.data});
 
-  static const _base = Color(0xFF3B82F6); // mavi ramp
-
+  // Isı haritası tek renk: temanın ana renginin açıklık basamakları.
   Color _hucreRenk(int deger, ColorScheme colorScheme) {
+    final base = colorScheme.primary;
     if (deger <= 0) {
       return colorScheme.surfaceContainerHighest.withValues(alpha: 0.35);
     }
     final t = data.maxSayi > 0 ? deger / data.maxSayi : 0.0;
     return Color.lerp(
-      _base.withValues(alpha: 0.18),
-      _base,
+      base.withValues(alpha: 0.18),
+      base,
       t.clamp(0.0, 1.0),
     )!;
   }
 
+  // Yazı, hücrenin kart zemini üstündeki gerçek renginden seçilir: sabit bir
+  // eşik koyu modda orta hücrelerde açık yazıyı açık zemine düşürüyordu.
   Color _yaziRenk(int deger, ColorScheme colorScheme) {
     if (deger <= 0) return Colors.transparent;
-    final t = data.maxSayi > 0 ? deger / data.maxSayi : 0.0;
-    return t > 0.5 ? Colors.white : colorScheme.onSurface;
+    return uzerineYazi(
+      Color.alphaBlend(_hucreRenk(deger, colorScheme), colorScheme.surface),
+    );
   }
 
   @override
@@ -49,10 +53,11 @@ class DolulukHaritasiSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: _base.withValues(alpha: 0.1),
+                  color: colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.grid_on, size: 18, color: _base),
+                child:
+                    Icon(Icons.grid_on, size: 18, color: colorScheme.primary),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -162,7 +167,8 @@ class DolulukHaritasiSection extends StatelessWidget {
             height: 10,
             margin: const EdgeInsets.symmetric(horizontal: 1),
             decoration: BoxDecoration(
-              color: Color.lerp(_base.withValues(alpha: 0.18), _base, t),
+              color: Color.lerp(colorScheme.primary.withValues(alpha: 0.18),
+                  colorScheme.primary, t),
               borderRadius: BorderRadius.circular(2),
             ),
           );

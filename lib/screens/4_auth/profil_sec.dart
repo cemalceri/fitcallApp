@@ -1,4 +1,19 @@
 // ignore_for_file: use_build_context_synchronously
+//
+// Profil seçimi: bir hesabın üye / antrenör / yönetici profilleri arasından
+// biri seçilir.
+//
+// Sade düz liste: grup başlığı, yuvarlak avatar, iki satır, ince ayraç. Eski
+// tasarımda her profil beyazdan şeffafa geçen gradyanlı bir karttı; koyu
+// modda kartların yarısı beyaz kalıyor, isimler okunmuyordu. Artık kart,
+// gradyan ve gölge yok: zemin her temada ve modda tek parça (üstte temanın
+// sayfa yıkaması). Rol başına ayrı renk de yok; hangi rol olduğu grup
+// başlığından ve ikondan okunur.
+
+import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
+import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
@@ -18,10 +33,23 @@ class ProfilSecPage extends StatefulWidget {
 class _ProfilSecPageState extends State<ProfilSecPage> {
   bool _routing = false;
 
+  /// Şu an açık olan profil (profil değiştirirken halkayla gösterilir).
+  int? _aktifProfilId;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _runFlow());
+    _aktifProfiliOku();
+  }
+
+  Future<void> _aktifProfiliOku() async {
+    try {
+      final aktif = await StorageService.uyeProfilBilgileriniGetir();
+      if (mounted && aktif != null) setState(() => _aktifProfilId = aktif.id);
+    } catch (_) {
+      // Okunamazsa halka gösterilmez; seçim yine çalışır.
+    }
   }
 
   Future<void> _runFlow() async {
@@ -51,39 +79,19 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     }
   }
 
-  _RolTheme _getRolTheme(String rol) {
-    switch (rol) {
-      case 'yonetici':
-        return _RolTheme(
-            icon: Icons.shield_rounded,
-            color: const Color(0xFF6366F1),
-            gradient: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-            label: 'Yönetici');
-      case 'antrenor':
-        return _RolTheme(
-            icon: Icons.sports_tennis_rounded,
-            color: const Color(0xFFEC4899),
-            gradient: const [Color(0xFFEC4899), Color(0xFFF43F5E)],
-            label: 'Antrenör');
-      case 'ofis':
-        return _RolTheme(
-            icon: Icons.support_agent_rounded,
-            color: const Color(0xFF0EA5E9),
-            gradient: const [Color(0xFF0EA5E9), Color(0xFF2563EB)],
-            label: 'Ofis');
-      case 'cafe':
-        return _RolTheme(
-            icon: Icons.local_cafe_rounded,
-            color: const Color(0xFF8B5CF6),
-            gradient: const [Color(0xFF8B5CF6), Color(0xFFA855F7)],
-            label: 'Kafe');
-      default:
-        return _RolTheme(
-            icon: Icons.person_rounded,
-            color: const Color(0xFF10B981),
-            gradient: const [Color(0xFF10B981), Color(0xFF059669)],
-            label: 'Üye');
-    }
+  static (String, IconData) _rolBilgisi(String rol) => switch (rol) {
+        'yonetici' => ('Yönetici', Icons.shield_outlined),
+        'antrenor' => ('Antrenör', Icons.sports_tennis_rounded),
+        'ofis' => ('Ofis', Icons.support_agent_rounded),
+        'cafe' => ('Kafe', Icons.local_cafe_outlined),
+        _ => ('Üye', Icons.person_outline_rounded),
+      };
+
+  String _profilAdi(KullaniciProfilModel p) {
+    final ad = p.uye?.adi ?? p.antrenor?.adi ?? p.user.firstName;
+    final soy = p.uye?.soyadi ?? p.antrenor?.soyadi ?? p.user.lastName;
+    final tamAd = '$ad $soy'.trim();
+    return tamAd.isEmpty ? p.user.username : tamAd;
   }
 
   @override
@@ -112,280 +120,188 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
           _profilAdi(a).toLowerCase().compareTo(_profilAdi(b).toLowerCase()));
     }
 
-    final isEmpty = widget.kullaniciProfilList.isEmpty;
-
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              _buildHeader(),
-              const SizedBox(height: 8),
-              if (isEmpty)
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _baslik(context),
+            Expanded(
+              child: widget.kullaniciProfilList.isEmpty
+                  ? BosDurum(
+                      ikon: Icons.inbox_rounded,
+                      baslik: 'Profil bulunamadı',
+                      aciklama: 'Bu hesaba bağlı bir profil yok.',
+                      ikonRengi: context.cs.onSurfaceVariant,
+                      eylemEtiketi: 'Çıkış yap',
+                      eylemIkonu: Icons.logout_rounded,
+                      onEylem: () => AuthService.logout(context),
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.only(bottom: Bosluk.xl),
                       children: [
-                        Icon(
-                          Icons.inbox_rounded,
-                          size: 80,
-                          color: Theme.of(context).colorScheme.outlineVariant,
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Profil Bulunamadı',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Mevcut profil yok',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        ElevatedButton.icon(
-                          onPressed: () => AuthService.logout(context),
-                          icon: const Icon(Icons.logout_rounded),
-                          label: const Text('Çıkış Yap'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFEF4444),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
+                        for (final rol in siraliRoller) ...[
+                          _grupBasligi(context, rol),
+                          for (final (i, p)
+                              in groupedProfiles[rol]!.indexed) ...[
+                            _profilSatiri(context, p),
+                            if (i < groupedProfiles[rol]!.length - 1)
+                              const ListeAyraci(),
+                          ],
+                        ],
                       ],
                     ),
-                  ),
-                )
-              else
-                Expanded(
-                  child: ListView(
-                    physics: const BouncingScrollPhysics(),
-                    children: siraliRoller
-                        .map((rol) =>
-                            _buildRoleSection(rol, groupedProfiles[rol]!))
-                        .toList(),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            if (Navigator.of(context).canPop())
-              IconButton(
-                tooltip: 'Geri',
-                onPressed: () => Navigator.pop(context),
-                icon: Icon(Icons.arrow_back_ios_new_rounded,
-                    size: 20, color: Theme.of(context).colorScheme.onSurface),
-              ),
-            if (!Navigator.of(context).canPop()) const SizedBox(width: 16),
-            Expanded(
-              child: Text('Profil Seç',
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurface,
-                      letterSpacing: -0.3)),
             ),
           ],
         ),
-        Padding(
-          padding: const EdgeInsets.only(left: 16, top: 4),
-          child: Text('Devam etmek için bir profil seçin',
-              style: TextStyle(
-                  fontSize: 14,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildRoleSection(String rol, List<KullaniciProfilModel> profiles) {
-    final theme = _getRolTheme(rol);
+  Widget _baslik(BuildContext context) {
+    final cs = context.cs;
+    final geriVar = Navigator.of(context).canPop();
     return Padding(
-      padding: const EdgeInsets.only(top: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: EdgeInsets.fromLTRB(
+          geriVar ? Bosluk.xs : Bosluk.l, Bosluk.m, Bosluk.l, Bosluk.xs),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                    color: theme.color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10)),
-                child: Icon(theme.icon, size: 18, color: theme.color),
-              ),
-              const SizedBox(width: 10),
-              Text(theme.label,
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
-              const SizedBox(width: 12),
-              Expanded(
-                  child: Container(
-                      height: 1,
-                      color: Theme.of(context).colorScheme.outlineVariant)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ...profiles.map((p) => _buildProfileCard(p, theme)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAltBilgi(KullaniciProfilModel p, _RolTheme theme) {
-    final isletme = p.isletmeAdi;
-    // İşletme adı varsa onu göster (asıl ayırt edici bilgi). Rol zaten üstteki
-    // bölüm başlığında. İşletme boşsa role geri düş.
-    if (isletme == null || isletme.isEmpty) {
-      return Text(theme.label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-              fontSize: 13,
-              color: Theme.of(context).colorScheme.onSurfaceVariant));
-    }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.storefront_outlined, size: 13, color: theme.color),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(isletme,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: theme.color)),
-        ),
-      ],
-    );
-  }
-
-  String _profilAdi(KullaniciProfilModel p) {
-    final ad = p.uye?.adi ?? p.antrenor?.adi ?? p.user.firstName;
-    final soy = p.uye?.soyadi ?? p.antrenor?.soyadi ?? p.user.lastName;
-    final tamAd = '$ad $soy'.trim();
-    return tamAd.isEmpty ? p.user.username : tamAd;
-  }
-
-  Widget _buildProfileCard(KullaniciProfilModel p, _RolTheme theme) {
-    final displayName = _profilAdi(p);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-            colors: [Colors.white, Colors.grey.withValues(alpha: 0.10)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2))
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _profilSecildi(p),
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
+          if (geriVar)
+            IconButton(
+              tooltip: 'Geri',
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.arrow_back_ios_new_rounded,
+                  size: 20, color: cs.onSurface),
+            ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: theme.gradient,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                          color: theme.color.withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2))
-                    ],
-                  ),
-                  child: Icon(theme.icon, color: Colors.white, size: 24),
+                Text(
+                  'Profil seç',
+                  style: context.metin.headlineSmall
+                      ?.copyWith(letterSpacing: -0.3),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(displayName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
-                              letterSpacing: -0.2)),
-                      const SizedBox(height: 3),
-                      // Alt satır: işletme adı (birden çok işletmede aynı
-                      // isim/rol ayırt edilebilsin). İşletme yoksa role düşer.
-                      _buildAltBilgi(p, theme),
-                    ],
-                  ),
+                const SizedBox(height: 2),
+                Text(
+                  'Devam etmek için bir profil seçin',
+                  style: context.metin.bodySmall,
                 ),
-                Icon(Icons.arrow_forward_ios_rounded,
-                    size: 16,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _grupBasligi(BuildContext context, String rol) {
+    final (etiket, ikon) = _rolBilgisi(rol);
+    final renk = context.cs.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+          Bosluk.l, Bosluk.xl - Bosluk.xs, Bosluk.l, Bosluk.xs),
+      child: Row(
+        children: [
+          Icon(ikon, size: 16, color: renk),
+          const SizedBox(width: Bosluk.s),
+          Text(
+            etiket,
+            style: context.metin.labelMedium?.copyWith(
+              fontSize: 13,
+              letterSpacing: 0.4,
+              color: renk,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _profilSatiri(BuildContext context, KullaniciProfilModel p) {
+    final ad = _profilAdi(p);
+    final isletme = p.isletmeAdi;
+    final aktif = p.id == _aktifProfilId;
+    final cs = context.cs;
+
+    // Alt satır: işletme adı (birden çok işletmede aynı isim/rol ayırt
+    // edilebilsin). İşletme yoksa role düşer.
+    final altSatir = isletme == null || isletme.isEmpty
+        ? Text(
+            _rolBilgisi(p.rol).$1,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.metin.bodySmall,
+          )
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.storefront_outlined,
+                  size: 13, color: cs.onSurfaceVariant),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  isletme,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.metin.bodySmall,
+                ),
+              ),
+            ],
+          );
+
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: () => _profilSecildi(p),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: Bosluk.l, vertical: Bosluk.m),
+          child: Row(
+            children: [
+              // Açık profil ana renk halkasıyla gösterilir.
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: aktif ? cs.primary : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: ListeAvatari(
+                  basHarfler: ListeAvatari.harfler(ad),
+                  ton: ListeTonu.vurgu,
+                  cap: 42,
+                ),
+              ),
+              const SizedBox(width: Bosluk.m),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ad,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.metin.titleMedium,
+                    ),
+                    const SizedBox(height: 2),
+                    altSatir,
+                  ],
+                ),
+              ),
+              if (aktif)
+                Padding(
+                  padding: const EdgeInsets.only(right: Bosluk.xs),
+                  child: Text('Açık', style: context.metin.labelMedium),
+                ),
+              Icon(Icons.chevron_right_rounded,
+                  size: 22, color: cs.onSurfaceVariant),
+            ],
+          ),
         ),
       ),
     );
   }
-}
-
-class _RolTheme {
-  final IconData icon;
-  final Color color;
-  final List<Color> gradient;
-  final String label;
-  _RolTheme(
-      {required this.icon,
-      required this.color,
-      required this.gradient,
-      required this.label});
 }

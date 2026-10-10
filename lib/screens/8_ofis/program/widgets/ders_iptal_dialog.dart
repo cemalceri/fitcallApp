@@ -5,6 +5,7 @@
 // sebep listesi ve aynı 4 mod kullanılır (backend'de ortak servis işler).
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:flutter/material.dart';
 
 class DersIptalSonucu {
@@ -185,11 +186,8 @@ class _DersIptalDialogState extends State<DersIptalDialog> {
                       const SizedBox(width: 12),
                       Expanded(
                         flex: 2,
-                        child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: renk.error,
-                            foregroundColor: renk.onError,
-                          ),
+                        child: YikiciButon(
+                          etiket: 'Dersi iptal et',
                           onPressed: _sebep == null
                               ? null
                               : () => Navigator.pop(
@@ -200,7 +198,6 @@ class _DersIptalDialogState extends State<DersIptalDialog> {
                                       mod: _mod,
                                     ),
                                   ),
-                          child: const Text('Dersi iptal et'),
                         ),
                       ),
                     ],

@@ -8,6 +8,7 @@ import 'package:fitcall/services/muhasebe/muhasebe_service.dart';
 import 'package:fitcall/services/muhasebe/para_hareket_service.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
@@ -178,32 +179,21 @@ class _MuhasebePageState extends State<MuhasebePage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.05),
-              colorScheme.surface,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildAppBar(colorScheme),
-              if (!_ilkYukleme) _buildBakiyeKarti(colorScheme),
-              Expanded(
-                child: _ilkYukleme
-                    ? _buildLoadingState()
-                    : _hareketler.isEmpty && _tumHareketlerYuklendi
-                        ? _buildEmptyState(colorScheme)
-                        : _buildHareketListesi(colorScheme),
-              ),
-            ],
-          ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildAppBar(colorScheme),
+            if (!_ilkYukleme) _buildBakiyeKarti(colorScheme),
+            Expanded(
+              child: _ilkYukleme
+                  ? _buildLoadingState()
+                  : _hareketler.isEmpty && _tumHareketlerYuklendi
+                      ? _buildEmptyState(colorScheme)
+                      : _buildHareketListesi(colorScheme),
+            ),
+          ],
         ),
       ),
     );
@@ -284,98 +274,114 @@ class _MuhasebePageState extends State<MuhasebePage> {
     );
   }
 
-  /// Tek özet kart: kalan borç / fazla ödeme / borç yok
+  /// Tek özet kart: kalan borç / fazla ödeme / borç yok. Ekranın kimlik
+  /// yüzeyi: tutar beyaz, borç durumu zemin renkli kapsülde kelime + ikonla
+  /// (durum rengi kendi zemininde okunur; takım kırmızısının üstüne yazılmaz).
   Widget _buildBakiyeKarti(ColorScheme colorScheme) {
     final borcVar = _kalanBakiye < 0;
     final fazlaVar = _kalanBakiye > 0;
-    final renk = borcVar
+    final durumRengi = borcVar
         ? context.renkler.hata
         : fazlaVar
             ? context.renkler.basari
             : colorScheme.onSurfaceVariant;
+    final yazi = context.gecis.onKimlik;
 
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            renk.withValues(alpha: 0.15),
-            renk.withValues(alpha: 0.05),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: renk.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: renk.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              borcVar
-                  ? Icons.warning_amber_rounded
-                  : fazlaVar
-                      ? Icons.account_balance_wallet_outlined
-                      : Icons.check_circle_outline_rounded,
-              color: renk,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: KimlikYuzeyi(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 21),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  borcVar
-                      ? 'Kalan Borç'
-                      : fazlaVar
-                          ? 'Fazla Ödeme'
-                          : 'Borç Yok',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: renk.withValues(alpha: 0.8),
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    borcVar
+                        ? 'Kalan borç'
+                        : fazlaVar
+                            ? 'Fazla ödeme'
+                            : 'Borç yok',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: yazi,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    _currencyFormat.format(_kalanBakiye.abs()),
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: renk,
-                      letterSpacing: -0.5,
-                    ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        borcVar
+                            ? Icons.error_outline_rounded
+                            : Icons.check_circle_outline_rounded,
+                        size: 14,
+                        color: durumRengi,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        borcVar
+                            ? 'Ödeme bekliyor'
+                            : fazlaVar
+                                ? 'Alacaklısınız'
+                                : 'Hesap kapalı',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: durumRengi,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-          if (borcVar)
-            FilledButton.icon(
-              onPressed: _odemeSayfasiniAc,
-              icon: const Icon(Icons.payment_rounded, size: 18),
-              label: const Text('Öde'),
-              style: FilledButton.styleFrom(
-                backgroundColor: renk,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            const SizedBox(height: 6),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _currencyFormat.format(_kalanBakiye.abs()),
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  color: yazi,
+                  letterSpacing: -0.5,
                 ),
               ),
             ),
-        ],
+            if (borcVar) ...[
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _odemeSayfasiniAc,
+                  icon: const Icon(Icons.payment_rounded, size: 18),
+                  label: const Text('Öde'),
+                  // Kimlik yüzeyinin üstünde buton zemin renginde: ana renk
+                  // yüzeyle aynı aileden olduğu için orada kaybolurdu.
+                  style: FilledButton.styleFrom(
+                    backgroundColor: colorScheme.surface,
+                    foregroundColor: colorScheme.onSurface,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -617,7 +623,7 @@ class _HareketDetaySheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final odemeMi = hareket.odemeYonlu;
-    final renk = odemeMi ? Colors.green.shade600 : Colors.red.shade600;
+    final renk = odemeMi ? context.renkler.basari : context.renkler.hata;
 
     return Container(
       decoration: BoxDecoration(
@@ -845,13 +851,13 @@ class _OdemeBilgiSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.1),
+                    color: colorScheme.primaryContainer,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.info_outline_rounded,
                     size: 48,
-                    color: Colors.blue,
+                    color: colorScheme.onPrimaryContainer,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -896,17 +902,15 @@ class _OdemeBilgiSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.1),
+                    color: context.renkler.uyariZemin,
                     borderRadius: BorderRadius.circular(16),
-                    border:
-                        Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
                         Icons.lightbulb_outline_rounded,
-                        color: Colors.amber.shade700,
+                        color: context.renkler.uyari,
                         size: 24,
                       ),
                       const SizedBox(width: 12),
@@ -919,7 +923,7 @@ class _OdemeBilgiSheet extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.amber.shade800,
+                                color: context.renkler.uyari,
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -927,7 +931,7 @@ class _OdemeBilgiSheet extends StatelessWidget {
                               'Online ödeme özelliği üzerinde çalışıyoruz. Şu an için ödeme yapmak istiyorsanız lütfen kulüp yönetimiyle iletişime geçin.',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.amber.shade700,
+                                color: context.renkler.uyari,
                                 height: 1.4,
                               ),
                             ),
@@ -965,7 +969,6 @@ class _OdemeBilgiSheet extends StatelessWidget {
                         icon: const Icon(Icons.phone_outlined, size: 18),
                         label: const Text('İletişim'),
                         style: FilledButton.styleFrom(
-                          backgroundColor: Colors.green,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),

@@ -1,5 +1,6 @@
 // lib/screens/7_yonetici/dashboard/widgets/stat_card.dart
 
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 
 class StatCard extends StatelessWidget {
@@ -58,29 +59,52 @@ class StatCard extends StatelessWidget {
                 ),
                 child: Icon(ikon, size: 20, color: ikonRenk),
               ),
+              // Dar kartta (iki sütun, 320 dp) rozet ikonla yan yana sığmazsa
+              // taşmaz, küçülür.
               if (degisimYuzdesi != null) ...[
-                const Spacer(),
-                _buildDegisimBadge(),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: _buildDegisimBadge(context),
+                    ),
+                  ),
+                ),
               ],
               if (trailing != null) ...[
-                const Spacer(),
-                trailing!,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: FittedBox(fit: BoxFit.scaleDown, child: trailing!),
+                  ),
+                ),
               ],
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            deger,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-              letterSpacing: -0.5,
+          // Uzun tutar satıra sığmazsa kırılmaz, küçülür.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              deger,
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+                letterSpacing: -0.5,
+              ),
             ),
           ),
           const SizedBox(height: 2),
           Text(
             baslik,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 12,
               color: colorScheme.onSurfaceVariant,
@@ -90,6 +114,8 @@ class StatCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               altBaslik!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 11,
                 color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
@@ -101,14 +127,17 @@ class StatCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDegisimBadge() {
+  /// Artış/azalış rozeti: her temada aynı yeşil/kırmızı. Kap renkleriyle
+  /// küçük yazı da 4.5:1'i geçer.
+  Widget _buildDegisimBadge(BuildContext context) {
+    final cs = context.cs;
     final isPositive = degisimYuzdesi! >= 0;
-    final color = isPositive ? Colors.green : Colors.red;
+    final color = isPositive ? cs.onTertiaryContainer : cs.onErrorContainer;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: isPositive ? cs.tertiaryContainer : cs.errorContainer,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
@@ -192,31 +221,38 @@ class StatCardDouble extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: deger1,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: deger1,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
-                ),
-                TextSpan(
-                  text: '/$deger2',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: colorScheme.onSurfaceVariant,
+                  TextSpan(
+                    text: '/$deger2',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+              maxLines: 1,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             baslik,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 12,
               color: colorScheme.onSurfaceVariant,
@@ -226,6 +262,8 @@ class StatCardDouble extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               altBaslik!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 11,
                 color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),

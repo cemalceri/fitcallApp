@@ -183,74 +183,59 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       key: _scaffoldKey,
       drawer: AntrenorDrawer(antrenorAdi: _antrenorAdi),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.06),
-              colorScheme.surface,
-              colorScheme.surface,
+      // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: CustomScrollView(
+            slivers: [
+              // Header
+              SliverToBoxAdapter(
+                child: HomeHeader(
+                  antrenorAdi: _antrenorAdi,
+                  hasMultipleProfiles: _hasMultipleProfiles,
+                  onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                ),
+              ),
+
+              // Günlük Kokpit
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                sliver: SliverToBoxAdapter(
+                  child: GunlukKokpitCard(
+                    ozet: _gunlukOzet,
+                    isLoading: _isLoading,
+                  ),
+                ),
+              ),
+
+              // Bilgi Kartları Carousel
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 0, 0),
+                sliver: SliverToBoxAdapter(
+                  child: InfoCardsCarousel(
+                    cards: _infoCards,
+                    isLoading: _isLoading,
+                    onCardTap: _onCardTap,
+                    onCardDismiss: _onCardDismiss,
+                  ),
+                ),
+              ),
+
+              // Sonraki Ders
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+                sliver: SliverToBoxAdapter(
+                  child: NextLessonCard(
+                    nextLesson: _nextLesson,
+                    isLoading: _isLoading,
+                  ),
+                ),
+              ),
             ],
-            stops: const [0.0, 0.3, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: _onRefresh,
-            child: CustomScrollView(
-              slivers: [
-                // Header
-                SliverToBoxAdapter(
-                  child: HomeHeader(
-                    antrenorAdi: _antrenorAdi,
-                    hasMultipleProfiles: _hasMultipleProfiles,
-                    onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
-                  ),
-                ),
-
-                // Günlük Kokpit
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: GunlukKokpitCard(
-                      ozet: _gunlukOzet,
-                      isLoading: _isLoading,
-                    ),
-                  ),
-                ),
-
-                // Bilgi Kartları Carousel
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 0, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: InfoCardsCarousel(
-                      cards: _infoCards,
-                      isLoading: _isLoading,
-                      onCardTap: _onCardTap,
-                      onCardDismiss: _onCardDismiss,
-                    ),
-                  ),
-                ),
-
-                // Sonraki Ders
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-                  sliver: SliverToBoxAdapter(
-                    child: NextLessonCard(
-                      nextLesson: _nextLesson,
-                      isLoading: _isLoading,
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),

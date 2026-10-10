@@ -1,10 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:fitcall/common/tarih_util.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/telafi_ders/telafi_ders_model.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -91,65 +93,53 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.deepPurple.withValues(alpha: 0.1),
-              colorScheme.surface,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // AppBar
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      tooltip: 'Geri',
-                      onPressed: () => Navigator.pop(context),
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          size: 20,
-                          color: colorScheme.onSurface,
-                        ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // AppBar
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  IconButton(
+                    tooltip: 'Geri',
+                    onPressed: () => Navigator.pop(context),
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Telafi Haklarım',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 20,
                         color: colorScheme.onSurface,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Telafi Haklarım',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ],
               ),
+            ),
 
-              // İçerik
-              Expanded(
-                child: _isLoading
-                    ? const IskeletListe()
-                    : _errorMessage != null
-                        ? _buildErrorWidget()
-                        : _buildContent(),
-              ),
-            ],
-          ),
+            // İçerik
+            Expanded(
+              child: _isLoading
+                  ? const IskeletListe()
+                  : _errorMessage != null
+                      ? _buildErrorWidget()
+                      : _buildContent(),
+            ),
+          ],
         ),
       ),
     );
@@ -227,13 +217,15 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
           ),
           child: TabBar(
             controller: _tabController,
+            // Seçili sekme düz ana renk (seçili göstergeler gradyan almaz).
             indicator: BoxDecoration(
-              color: Colors.deepPurple,
+              color: Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(10),
             ),
             indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: Colors.white,
-            unselectedLabelColor: const Color(0xFF8C8C8C),
+            labelColor: Theme.of(context).colorScheme.onPrimary,
+            unselectedLabelColor:
+                Theme.of(context).colorScheme.onSurfaceVariant,
             labelStyle: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -253,7 +245,7 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: TemaGecisleri.kapsulZemini,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -281,7 +273,7 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: TemaGecisleri.kapsulZemini,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -309,7 +301,7 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: TemaGecisleri.kapsulZemini,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -343,27 +335,12 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
     );
   }
 
+  /// Sayfanın kimlik yüzeyi: toplam hak ve dağılım. Sayılar beyaz; durum
+  /// rengi kullanılmaz (renkli yüzeyin üstünde anlamını yitirir).
   Widget _buildStatisticsCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF7B2CBF),
-            Color(0xFF9D4EDD),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.deepPurple.withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+    final yazi = context.gecis.onKimlik;
+    return KimlikYuzeyi(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 21),
       child: Column(
         children: [
           Row(
@@ -371,14 +348,10 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: TemaGecisleri.kapsulZemini,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.event_repeat_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
+                child: Icon(Icons.event_repeat_rounded, color: yazi, size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -387,18 +360,15 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
                   children: [
                     Text(
                       'Toplam Telafi Hakkı',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
+                      style: TextStyle(fontSize: 13, color: yazi),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '$_toplamSayisi Ders',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: yazi,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -410,29 +380,11 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
           const SizedBox(height: 20),
           Row(
             children: [
-              Expanded(
-                child: _buildStatItem(
-                  'Kullanılabilir',
-                  _aktifSayisi,
-                  Colors.green,
-                ),
-              ),
+              Expanded(child: _buildStatItem('Kullanılabilir', _aktifSayisi)),
               const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatItem(
-                  'Kullanılan',
-                  _yapilanSayisi,
-                  Colors.blue,
-                ),
-              ),
+              Expanded(child: _buildStatItem('Kullanılan', _yapilanSayisi)),
               const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatItem(
-                  'Geçersiz',
-                  _suresiGecenSayisi,
-                  Colors.red,
-                ),
-              ),
+              Expanded(child: _buildStatItem('Geçersiz', _suresiGecenSayisi)),
             ],
           ),
         ],
@@ -440,15 +392,13 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
     );
   }
 
-  Widget _buildStatItem(String label, int value, Color color) {
+  Widget _buildStatItem(String label, int value) {
+    final yazi = context.gecis.onKimlik;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: TemaGecisleri.kapsulZemini,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
       ),
       child: Column(
         children: [
@@ -457,16 +407,15 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFFFFFFFF),
+              color: yazi,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 11, color: yazi),
             textAlign: TextAlign.center,
           ),
         ],
@@ -566,16 +515,16 @@ class _TelafiCard extends StatelessWidget {
     required this.durum,
   });
 
-  Color _getDurumColor() {
+  Color _getDurumColor(BuildContext context) {
     switch (durum) {
       case 'aktif':
-        return Colors.green;
+        return context.renkler.basari;
       case 'yapildi':
-        return Colors.blue;
+        return context.renkler.bilgi;
       case 'suresi_doldu':
-        return Colors.red;
+        return context.renkler.hata;
       default:
-        return const Color(0xFF8C8C8C);
+        return context.renkler.notr;
     }
   }
 
@@ -610,7 +559,7 @@ class _TelafiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final durumColor = _getDurumColor();
+    final durumColor = _getDurumColor(context);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -677,7 +626,7 @@ class _TelafiCard extends StatelessWidget {
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: telafi.kalanGun <= 7
-                            ? Colors.orange.withValues(alpha: 0.15)
+                            ? context.renkler.uyari.withValues(alpha: 0.15)
                             : colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -688,7 +637,7 @@ class _TelafiCard extends StatelessWidget {
                             Icons.access_time_rounded,
                             size: 12,
                             color: telafi.kalanGun <= 7
-                                ? Colors.orange
+                                ? context.renkler.uyari
                                 : colorScheme.onSurfaceVariant,
                           ),
                           const SizedBox(width: 4),
@@ -698,7 +647,7 @@ class _TelafiCard extends StatelessWidget {
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: telafi.kalanGun <= 7
-                                  ? Colors.orange
+                                  ? context.renkler.uyari
                                   : colorScheme.onSurfaceVariant,
                             ),
                           ),
@@ -712,24 +661,24 @@ class _TelafiCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.1),
+                        color: context.renkler.hata.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.event_busy_rounded,
                             size: 12,
-                            color: Colors.red,
+                            color: context.renkler.hata,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             _formatTarih(telafi.sonGecerlilikTarihi),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: Colors.red,
+                              color: context.renkler.hata,
                             ),
                           ),
                         ],
@@ -745,7 +694,7 @@ class _TelafiCard extends StatelessWidget {
                 context,
                 title: 'İptal Edilen Ders',
                 icon: Icons.cancel_outlined,
-                iconColor: Colors.red,
+                iconColor: context.renkler.hata,
                 ders: telafi.iptalEdilenDers,
               ),
 
@@ -761,7 +710,7 @@ class _TelafiCard extends StatelessWidget {
                   context,
                   title: 'Telafi Dersi',
                   icon: Icons.check_circle_outlined,
-                  iconColor: Colors.green,
+                  iconColor: context.renkler.basari,
                   ders: telafi.yapilanDers,
                 ),
               ],
@@ -933,23 +882,23 @@ class _TelafiDetailSheet extends StatelessWidget {
     required this.durum,
   });
 
-  Color _getDurumColor() {
+  Color _getDurumColor(BuildContext context) {
     switch (durum) {
       case 'aktif':
-        return Colors.green;
+        return context.renkler.basari;
       case 'yapildi':
-        return Colors.blue;
+        return context.renkler.bilgi;
       case 'suresi_doldu':
-        return Colors.red;
+        return context.renkler.hata;
       default:
-        return const Color(0xFF8C8C8C);
+        return context.renkler.notr;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final durumColor = _getDurumColor();
+    final durumColor = _getDurumColor(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -1017,7 +966,7 @@ class _TelafiDetailSheet extends StatelessWidget {
                   context,
                   title: 'İptal Edilen Ders',
                   icon: Icons.cancel_outlined,
-                  color: Colors.red,
+                  color: context.renkler.hata,
                   items: [
                     if (telafi.iptalEdilenDers != null) ...[
                       _DetailRow('Tarih', telafi.iptalEdilenDers!.tarih),
@@ -1037,7 +986,7 @@ class _TelafiDetailSheet extends StatelessWidget {
                     context,
                     title: 'Telafi Dersi',
                     icon: Icons.check_circle_outlined,
-                    color: Colors.green,
+                    color: context.renkler.basari,
                     items: [
                       _DetailRow('Tarih', telafi.yapilanDers!.tarih),
                       _DetailRow('Saat', telafi.yapilanDers!.saat),
@@ -1055,18 +1004,18 @@ class _TelafiDetailSheet extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: durum == 'aktif'
                           ? (telafi.kalanGun <= 7
-                              ? Colors.orange.withValues(alpha: 0.1)
+                              ? context.renkler.uyari.withValues(alpha: 0.1)
                               : colorScheme.surfaceContainerHighest
                                   .withValues(alpha: 0.5))
-                          : Colors.red.withValues(alpha: 0.1),
+                          : context.renkler.hata.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: durum == 'aktif'
                             ? (telafi.kalanGun <= 7
-                                ? Colors.orange.withValues(alpha: 0.3)
+                                ? context.renkler.uyari.withValues(alpha: 0.3)
                                 : colorScheme.outlineVariant
                                     .withValues(alpha: 0.3))
-                            : Colors.red.withValues(alpha: 0.3),
+                            : context.renkler.hata.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -1077,9 +1026,9 @@ class _TelafiDetailSheet extends StatelessWidget {
                               : Icons.event_busy_rounded,
                           color: durum == 'aktif'
                               ? (telafi.kalanGun <= 7
-                                  ? Colors.orange
+                                  ? context.renkler.uyari
                                   : colorScheme.primary)
-                              : Colors.red,
+                              : context.renkler.hata,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -1114,7 +1063,7 @@ class _TelafiDetailSheet extends StatelessWidget {
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     color: telafi.kalanGun <= 7
-                                        ? Colors.orange
+                                        ? context.renkler.uyari
                                         : colorScheme.primary,
                                   ),
                                 ),

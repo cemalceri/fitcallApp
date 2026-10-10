@@ -5,7 +5,9 @@ import 'package:fitcall/models/3_antrenor/ogrenci_detay_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -211,97 +213,26 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
     );
   }
 
+  /// Sayfanın kimlik yüzeyi. Seviye (top) rengi yüzeyin kendisi değil,
+  /// kapsüldeki etiket: renkli yüzeyin üstüne ikinci bir renk konmaz.
   Widget _profilKarti(ColorScheme colorScheme) {
     final p = _detay!.profil;
     final yasFmt = p.dogumTarihi != null
         ? '${(simdiKulup().difference(p.dogumTarihi!).inDays / 365.25).floor()} yaş'
         : null;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            widget.seviyeRenk.withValues(alpha: 0.15),
-            widget.seviyeRenk.withValues(alpha: 0.05),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: widget.seviyeRenk.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: colorScheme.surface,
-              border: Border.all(color: widget.seviyeRenk, width: 2),
-            ),
-            child: Center(
-              child: Text(
-                p.adSoyad.isNotEmpty
-                    ? p.adSoyad.split(' ').map((k) => k[0]).take(2).join()
-                    : '?',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: widget.seviyeRenk,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  p.adSoyad,
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  [
-                    'Üye No: ${p.uyeNo}',
-                    if (yasFmt != null) yasFmt,
-                    p.seviyeRengi,
-                    if (p.programTercihi != null) p.programTercihi!,
-                  ].join(' · '),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                if (p.sorumluHocasiMiyim) ...[
-                  const SizedBox(height: 6),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: widget.seviyeRenk.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Sorumlu Hocasısınız',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: widget.seviyeRenk,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
+    return KimlikBaslik(
+      baslik: p.adSoyad.isNotEmpty ? p.adSoyad : '—',
+      basHarfler: basHarfleri(p.adSoyad),
+      altBaslik: [
+        'Üye No: ${p.uyeNo}',
+        if (yasFmt != null) yasFmt,
+      ].join(' · '),
+      kapsuller: [
+        if (p.seviyeRengi.isNotEmpty) p.seviyeRengi,
+        if (p.programTercihi != null) p.programTercihi!,
+        if (p.sorumluHocasiMiyim) 'Sorumlu hocasısınız',
+      ],
     );
   }
 
@@ -320,19 +251,19 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
               colorScheme,
               i.katilimYuzdesi != null ? '%${i.katilimYuzdesi}' : '—',
               'Katılım',
-              const Color(0xFF10B981),
+              colorScheme.onSurface,
             ),
             _istatistikDeger(
               colorScheme,
               '${i.katildigiDers}/${i.yoklamaGirilen}',
               'Katıldı/Yoklama',
-              const Color(0xFF6366F1),
+              colorScheme.onSurface,
             ),
             _istatistikDeger(
               colorScheme,
               '${i.plananlanDers}',
               'Planlanan',
-              const Color(0xFFF59E0B),
+              colorScheme.onSurface,
             ),
           ],
         ),
@@ -458,8 +389,8 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
             onPressed: () => _ara(tel),
             icon: const Icon(Icons.call_rounded),
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.1),
-              foregroundColor: const Color(0xFF10B981),
+              backgroundColor: colorScheme.primaryContainer,
+              foregroundColor: colorScheme.onPrimaryContainer,
             ),
             tooltip: 'Ara',
           ),
@@ -468,8 +399,8 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
             onPressed: () => _whatsapp(tel),
             icon: const Icon(Icons.chat_rounded),
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF25D366).withValues(alpha: 0.1),
-              foregroundColor: const Color(0xFF25D366),
+              backgroundColor: colorScheme.primaryContainer,
+              foregroundColor: colorScheme.onPrimaryContainer,
             ),
             tooltip: 'WhatsApp',
           ),
@@ -518,10 +449,9 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: (paket.kalanHak! <= 2
-                              ? const Color(0xFFEF4444)
-                              : const Color(0xFF10B981))
-                          .withValues(alpha: 0.1),
+                      color: paket.kalanHak! <= 2
+                          ? colorScheme.errorContainer
+                          : colorScheme.tertiaryContainer,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -530,8 +460,8 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: paket.kalanHak! <= 2
-                            ? const Color(0xFFEF4444)
-                            : const Color(0xFF10B981),
+                            ? colorScheme.onErrorContainer
+                            : colorScheme.onTertiaryContainer,
                       ),
                     ),
                   ),
@@ -544,15 +474,15 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
             padding: const EdgeInsets.only(top: 6),
             child: Row(
               children: [
-                const Icon(Icons.event_repeat_rounded,
-                    size: 16, color: Color(0xFF6366F1)),
+                Icon(Icons.event_repeat_rounded,
+                    size: 16, color: colorScheme.primary),
                 const SizedBox(width: 6),
                 Text(
                   '${_detay!.aktifTelafi} aktif telafi hakkı',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF6366F1),
+                    color: colorScheme.primary,
                   ),
                 ),
               ],
@@ -570,7 +500,7 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
       ikon: Icons.fact_check_outlined,
       children: _detay!.sonKatilimlar.map((katilim) {
         final renk =
-            katilim.katildi ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+            katilim.katildi ? context.renkler.basari : context.renkler.hata;
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 5),
           child: Row(

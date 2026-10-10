@@ -5,6 +5,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:flutter/material.dart';
 
 class HesapSilPage extends StatefulWidget {
@@ -124,31 +125,14 @@ class _HesapSilPageState extends State<HesapSilPage> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: FilledButton(
-                          onPressed: _isLoading
-                              ? null
-                              : () {
-                                  Navigator.pop(ctx);
-                                  _performDelete();
-                                },
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            backgroundColor: colorScheme.error,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color:
-                                        Theme.of(context).colorScheme.surface,
-                                  ),
-                                )
-                              : const Text('Evet, Kalıcı Sil'),
+                        child: YikiciButon(
+                          etiket: 'Evet, Kalıcı Sil',
+                          yukleniyor: _isLoading,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _performDelete();
+                          },
                         ),
                       ),
                     ],

@@ -40,6 +40,7 @@ import 'package:fitcall/screens/3_antrenor/eksik_yoklama/antrenor_eksik_yoklama_
 import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
 import 'package:fitcall/screens/1_common/ayarlar/ayarlar_page.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
+import 'package:fitcall/common/tema.dart';
 
 /// Uygulama genelinde kullanacağımız sayfaların enum değerleri
 enum SayfaAdi {
@@ -153,8 +154,7 @@ final Map<String, WidgetBuilder> routes = {
   // Aynı ekran; kabuklar yalnız üye satırının açtığı detay sayfasında ayrılır.
   routeEnums[SayfaAdi.yoneticiDuyurular]!: (c) => DuyuruYonetimPage(
         uyeDetayAc: (ctx, p) => Navigator.of(ctx).push(MaterialPageRoute(
-          builder: (_) =>
-              UyeDetayPage(uyeId: p.uyeId!, baslangicAdSoyad: p.ad),
+          builder: (_) => UyeDetayPage(uyeId: p.uyeId!, baslangicAdSoyad: p.ad),
         )),
       ),
   routeEnums[SayfaAdi.ofisDuyurular]!: (c) => DuyuruYonetimPage(
@@ -272,84 +272,66 @@ Route<dynamic>? myRouteGenerator(RouteSettings settings) {
                     onPressed: () => Navigator.maybePop(context),
                   ),
                 ),
-                body: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF6366F1),
-                        Color(0xFF8B5CF6)
-                      ], // indigo → mor
-                    ),
-                  ),
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 480),
-                        child: Card(
-                          elevation: 10,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 76,
-                                  height: 76,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Color(0xFF6366F1),
-                                        Color(0xFF8B5CF6)
-                                      ],
+                body: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 480),
+                      child: Card(
+                        elevation: 10,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 76,
+                                height: 76,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: context.gecis.kimlik,
+                                ),
+                                child: Center(
+                                  child: Icon(Icons.verified_user,
+                                      size: 40, color: context.gecis.onKimlik),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Erişim Kısıtlı',
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w700,
                                     ),
-                                  ),
-                                  child: const Center(
-                                    child: Icon(Icons.verified_user,
-                                        size: 40, color: Colors.white),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Erişim Kısıtlı',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                ),
-                                const SizedBox(height: 8),
-                                const Text(
-                                  'Bu sayfayı ana hesap kullanıcısı görmeye yetkilidir.',
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 20),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: OutlinedButton.icon(
-                                    icon: const Icon(Icons.arrow_back),
-                                    label: const Text('Geri'),
-                                    onPressed: () =>
-                                        Navigator.maybePop(context),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Bu sayfayı ana hesap kullanıcısı görmeye yetkilidir.',
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 20),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  icon: const Icon(Icons.arrow_back),
+                                  label: const Text('Geri'),
+                                  onPressed: () => Navigator.maybePop(context),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

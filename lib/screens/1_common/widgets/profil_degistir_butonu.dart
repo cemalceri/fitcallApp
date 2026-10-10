@@ -6,6 +6,7 @@ import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fitcall/common/tema.dart';
 
 /// Header'lardaki profil değiştirme butonu.
 ///
@@ -15,10 +16,10 @@ import 'package:flutter/services.dart';
 /// üye/antrenördeki eski düz IconButton değil. Birden fazla profili olan
 /// kullanıcıya gösterilir, profil seçim ekranına götürür.
 class ProfilDegistirButonu extends StatelessWidget {
-  /// Buton rengi; varsayılan header aksiyonlarındaki mor.
-  final Color renk;
+  /// Buton rengi; verilmezse temanın ana rengi.
+  final Color? renk;
 
-  const ProfilDegistirButonu({super.key, this.renk = const Color(0xFF8B5CF6)});
+  const ProfilDegistirButonu({super.key, this.renk});
 
   /// Hesapta birden fazla profil varsa true — buton yalnız o zaman gösterilir.
   static Future<bool> gosterilmeliMi() async {
@@ -60,10 +61,11 @@ class ProfilDegistirButonu extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: renk.withValues(alpha: 0.1),
+                color: (renk ?? context.cs.primary).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.swap_horiz_rounded, size: 22, color: renk),
+              child: Icon(Icons.swap_horiz_rounded,
+                  size: 22, color: renk ?? context.cs.primary),
             ),
           ),
         ),

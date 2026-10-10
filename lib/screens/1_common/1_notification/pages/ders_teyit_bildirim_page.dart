@@ -13,6 +13,7 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/common/tarih_util.dart';
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 
 class DersTeyitBildirimPage extends StatefulWidget {
   final NotificationModel notification;
@@ -505,10 +506,7 @@ class _KatilimButonlari extends StatelessWidget {
                 ? SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.surface,
-                    ),
+                    child: ButonYukleniyorGostergesi(kalinlik: 2),
                   )
                 : const Icon(Icons.check_circle_rounded, size: 18),
             label: const Text(
@@ -642,8 +640,7 @@ class _KatilmayacagimForm extends StatelessWidget {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                      child: ButonYukleniyorGostergesi(kalinlik: 2),
                     )
                   : const Icon(Icons.send_rounded, size: 18),
               label: Text(

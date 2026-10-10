@@ -74,15 +74,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: TemaKontrol.modu,
-      builder: (context, temaModu, _) => MaterialApp(
+    // Mod ve renk teması ayrı tercihler; ikisinden biri değişince yeniden kurulur.
+    return ListenableBuilder(
+      listenable: Listenable.merge([TemaKontrol.modu, TemaKontrol.takim]),
+      builder: (context, _) => MaterialApp(
         debugShowCheckedModeBanner: false,
         navigatorKey: navigatorKey,
         title: 'Binay Akademi',
-        theme: FitcallTema.acik,
-        darkTheme: FitcallTema.koyu,
-        themeMode: temaModu,
+        theme: FitcallTema.temasi(TemaKontrol.takim.value, Brightness.light),
+        darkTheme: FitcallTema.temasi(TemaKontrol.takim.value, Brightness.dark),
+        themeMode: TemaKontrol.modu.value,
         onGenerateRoute: myRouteGenerator,
         initialRoute: '/',
         locale: const Locale('tr', 'TR'),

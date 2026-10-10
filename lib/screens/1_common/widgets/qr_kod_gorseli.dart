@@ -30,23 +30,23 @@ class QrKodGorseli extends StatelessWidget {
     this.nabiz = 0,
   });
 
-  /// Kart kenarlığının yeşili — QR sayfalarının vurgu rengi.
-  static const Color _vurgu = Color(0xFF2E7D6B);
-
   @override
   Widget build(BuildContext context) {
+    // Kenarlık ve nabız temanın ana renginde; kodun kendisi her temada
+    // siyah-beyaz kalır.
+    final vurgu = Theme.of(context).colorScheme.primary;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: _vurgu.withValues(alpha: 0.2 + (nabiz * 0.15)),
+          color: vurgu.withValues(alpha: 0.2 + (nabiz * 0.15)),
           width: 3,
         ),
         boxShadow: [
           BoxShadow(
-            color: _vurgu.withValues(alpha: 0.1 + (nabiz * 0.1)),
+            color: vurgu.withValues(alpha: 0.1 + (nabiz * 0.1)),
             blurRadius: 20,
             spreadRadius: 2,
           ),

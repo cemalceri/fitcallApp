@@ -40,7 +40,8 @@ class _WeeklyChartCardState extends State<WeeklyChartCard> {
     // Seçili tipe göre veri ve renk
     final isCiro = _seciliTip == GrafikTipi.ciro;
     final data = isCiro ? widget.ciroData : widget.tahsilatData;
-    final barColor = isCiro ? Colors.green : Colors.blue;
+    // Grafik tek renk: temanın ana rengi.
+    final barColor = colorScheme.primary;
     final title = isCiro ? 'Haftalık Ciro' : 'Haftalık Tahsilat';
 
     // Değerleri al
@@ -217,7 +218,7 @@ class _WeeklyChartCardState extends State<WeeklyChartCard> {
               setState(() => _seciliTip = GrafikTipi.ciro);
             },
             colorScheme: colorScheme,
-            color: Colors.green,
+            color: colorScheme.primary,
           ),
           _buildToggleItem(
             label: 'Tahsilat',
@@ -227,7 +228,7 @@ class _WeeklyChartCardState extends State<WeeklyChartCard> {
               setState(() => _seciliTip = GrafikTipi.tahsilat);
             },
             colorScheme: colorScheme,
-            color: Colors.blue,
+            color: colorScheme.primary,
           ),
         ],
       ),

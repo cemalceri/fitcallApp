@@ -13,8 +13,18 @@
 // Turuncunun canlı hâli (`Marka.turuncu`) büyük dolgu yüzeylerde kullanılır;
 // metin ve küçük öğelerde açık zeminde kontrast eşiğini geçen koyu hâli
 // (`ColorScheme.primary`) tercih edilir.
+//
+// Renk temaları (2026-10): kullanıcı Binay Akademi'nin yanında beş takım
+// renginden birini seçebilir (`TakimTemasi`). Binay paleti bugünkü değerleriyle
+// aynen durur. Tasarım dili üç token'a dayanır (`TemaGecisleri`): ekranda en
+// fazla bir kimlik yüzeyi, sayfanın üstünde zemine sönen yıkama, ikinci takım
+// renginin göründüğü ince şerit. Butonlar, listeler, takvim ve durum renkleri
+// her temada düz kalır. Her tema × mod çifti test/tema_kontrast_test.dart'ta
+// kontrast eşiğine karşı ölçülür.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:ui' show lerpDouble;
 
 /* ============================ Marka renkleri ============================ */
 
@@ -36,14 +46,30 @@ class Marka {
 
   /// Koyu zeminde ikincil mavi.
   static const Color maviAcik = Color(0xFFA9B4FF);
+
+  /// Siyah-beyaz logonun zemini: her temada ve modda beyaz.
+  static const Color logoZemini = Color(0xFFFFFFFF);
 }
 
-/// Verilen zemin üzerinde okunan metin/ikon rengi (siyah ya da beyaz).
+/// İki renk arasındaki WCAG kontrast oranı (1–21). Metin için eşik 4.5,
+/// ikon ve grafik öğe için 3.
+double kontrastOrani(Color a, Color b) {
+  final x = a.computeLuminance();
+  final y = b.computeLuminance();
+  return (x > y ? x + 0.05 : y + 0.05) / (x > y ? y + 0.05 : x + 0.05);
+}
+
+/// Verilen zemin üzerinde okunan metin/ikon rengi (koyu ya da beyaz).
 ///
-/// Durum renkleri koyu temada açılıyor (amber, açık turuncu): üzerlerine sabit
-/// beyaz yazmak orada okunmaz hâle geliyordu.
-Color uzerineYazi(Color zemin) =>
-    zemin.computeLuminance() > 0.45 ? const Color(0xFF1B1714) : Colors.white;
+/// İki adayın kontrastı karşılaştırılır, yüksek olan seçilir. Eskiden
+/// parlaklık 0.45'te kesiliyordu; koyu temanın açık turuncusu (#FF9351) gibi
+/// orta tonlarda beyaz seçip 2.2:1'e düşüyordu.
+Color uzerineYazi(Color zemin) {
+  const koyu = Color(0xFF1B1714);
+  return kontrastOrani(koyu, zemin) >= kontrastOrani(Colors.white, zemin)
+      ? koyu
+      : Colors.white;
+}
 
 /* ======================== Boşluk / yarıçap ölçeği ======================== */
 
@@ -255,13 +281,225 @@ class FitcallRenkleri extends ThemeExtension<FitcallRenkleri> {
   }
 }
 
+/// Bir öğenin anlam tonu — avatar/ikon zeminini ve değer rengini belirler.
+///
+/// BuildContext görmeyen yerler (model getter'ları) renk yerine bunu döndürür;
+/// ekran `ton.on(context)` ile temaya çevirir. Böylece model gömülü hex
+/// taşımaz ve renk temayla birlikte değişir.
+enum ListeTonu { notr, vurgu, basari, uyari, hata, bilgi }
+
+extension ListeTonuRenkleri on ListeTonu {
+  /// Ön plan (metin/ikon) rengi.
+  Color on(BuildContext context) {
+    final r = context.renkler;
+    return switch (this) {
+      ListeTonu.notr => context.cs.onSurfaceVariant,
+      ListeTonu.vurgu => context.cs.primary,
+      ListeTonu.basari => r.basari,
+      ListeTonu.uyari => r.uyari,
+      ListeTonu.hata => r.hata,
+      ListeTonu.bilgi => r.bilgi,
+    };
+  }
+
+  /// Zemin rengi.
+  Color zemin(BuildContext context) {
+    final r = context.renkler;
+    return switch (this) {
+      ListeTonu.notr => r.notrZemin,
+      ListeTonu.vurgu => r.vurguZemin,
+      ListeTonu.basari => r.basariZemin,
+      ListeTonu.uyari => r.uyariZemin,
+      ListeTonu.hata => r.hataZemin,
+      ListeTonu.bilgi => r.bilgiZemin,
+    };
+  }
+}
+
 /// Kısayollar: `context.renkler.basari`, `context.cs.primary`, `context.metin`.
 extension TemaKisayollari on BuildContext {
   ColorScheme get cs => Theme.of(this).colorScheme;
   TextTheme get metin => Theme.of(this).textTheme;
   FitcallRenkleri get renkler =>
       Theme.of(this).extension<FitcallRenkleri>() ?? FitcallRenkleri.acik;
+  TemaGecisleri get gecis =>
+      Theme.of(this).extension<TemaGecisleri>() ?? TemaGecisleri.binayAcik;
   bool get koyuTema => Theme.of(this).brightness == Brightness.dark;
+}
+
+/* ===================== Geçiş token'ları (ThemeExtension) ===================== */
+
+/// Renk temasının gradyanlı öğeleri. Ekranlar gradyanı kendisi yazmaz, buradan
+/// okur; böylece takım değişince her ekran birlikte değişir.
+///
+/// Kurallar (üç tasarımcının ortak kararı):
+/// * [kimlik] ekranda en fazla bir yüzeyde kullanılır (sonraki ders, bakiye,
+///   bugünün özeti, detay başlığı). Üstündeki yazı her zaman [onKimlik] ve tam
+///   opaktır; ikincil bilgi şeffaflıkla değil boyut/kalınlıkla ayrılır.
+/// * [sayfaYikama] her sayfanın üstünden [yikamaYuksekligi] boyunca zemine
+///   söner (bkz. [SayfaZemini]). Açık modda iki takım renginin çok açık
+///   tonları arasında geçer, koyu modda tek derin ton.
+/// * [serit] ikinci takım renginin göründüğü tek yer: kimlik yüzeyinin alt
+///   kenarı, QR butonunun halkası, ödül çubuğu. Yazı taşımaz.
+/// * [qr] uygulamadaki tek gradyanlı kontrol (alt bardaki QR butonu).
+@immutable
+class TemaGecisleri extends ThemeExtension<TemaGecisleri> {
+  final LinearGradient kimlik;
+  final Color onKimlik;
+  final LinearGradient sayfaYikama;
+  final double yikamaYuksekligi;
+  final LinearGradient serit;
+  final LinearGradient qr;
+  final Color onQr;
+
+  const TemaGecisleri({
+    required this.kimlik,
+    required this.onKimlik,
+    required this.sayfaYikama,
+    required this.yikamaYuksekligi,
+    required this.serit,
+    required this.qr,
+    required this.onQr,
+  });
+
+  /// Kimlik yüzeyi üstündeki kapsül ve avatar zemini: yüzeyi %22 koyulaştırır,
+  /// beyaz yazının kontrastı her temada artar.
+  static const Color kapsulZemini = Color(0x38000000);
+
+  /// Binay: yalnız bugünkü token'lardan türer, yeni renk yoktur.
+  static const TemaGecisleri binayAcik = TemaGecisleri(
+    kimlik: _Gradyan.kimlik(
+        [Color(0xFF8A3600), Color(0xFFA64306), Marka.turuncuKoyu]),
+    onKimlik: Colors.white,
+    sayfaYikama: _Gradyan.yikama(
+        [Color(0xFFFBF5F0), Color(0xFFFDFAF7), Colors.white], [0, 0.45, 1]),
+    yikamaYuksekligi: 280,
+    serit: _Gradyan.serit(
+        [Color(0xFFFFE3D1), Color(0xFFFFE3D1), Color(0xFFFFE3D1)]),
+    qr: _Gradyan.qr([Marka.turuncu, Marka.turuncuKoyu]),
+    onQr: Colors.white,
+  );
+
+  static const TemaGecisleri binayKoyu = TemaGecisleri(
+    kimlik: _Gradyan.kimlik(
+        [Color(0xFF4A1A00), Color(0xFF6A2800), Color(0xFF8A3600)]),
+    onKimlik: Colors.white,
+    sayfaYikama: _Gradyan.yikama(
+        [Color(0xFF231A13), Color(0xFF1C1611), Color(0xFF15120F)], [0, 0.5, 1]),
+    yikamaYuksekligi: 280,
+    serit: _Gradyan.serit(
+        [Marka.turuncuAcik, Marka.turuncuAcik, Marka.turuncuAcik]),
+    qr: _Gradyan.qr([Marka.turuncuAcik, Marka.turuncu]),
+    onQr: Color(0xFF4A1A00),
+  );
+
+  @override
+  TemaGecisleri copyWith({
+    LinearGradient? kimlik,
+    Color? onKimlik,
+    LinearGradient? sayfaYikama,
+    double? yikamaYuksekligi,
+    LinearGradient? serit,
+    LinearGradient? qr,
+    Color? onQr,
+  }) {
+    return TemaGecisleri(
+      kimlik: kimlik ?? this.kimlik,
+      onKimlik: onKimlik ?? this.onKimlik,
+      sayfaYikama: sayfaYikama ?? this.sayfaYikama,
+      yikamaYuksekligi: yikamaYuksekligi ?? this.yikamaYuksekligi,
+      serit: serit ?? this.serit,
+      qr: qr ?? this.qr,
+      onQr: onQr ?? this.onQr,
+    );
+  }
+
+  @override
+  TemaGecisleri lerp(ThemeExtension<TemaGecisleri>? other, double t) {
+    if (other is! TemaGecisleri) return this;
+    return TemaGecisleri(
+      kimlik: LinearGradient.lerp(kimlik, other.kimlik, t)!,
+      onKimlik: Color.lerp(onKimlik, other.onKimlik, t)!,
+      sayfaYikama: LinearGradient.lerp(sayfaYikama, other.sayfaYikama, t)!,
+      yikamaYuksekligi:
+          lerpDouble(yikamaYuksekligi, other.yikamaYuksekligi, t)!,
+      serit: LinearGradient.lerp(serit, other.serit, t)!,
+      qr: LinearGradient.lerp(qr, other.qr, t)!,
+      onQr: Color.lerp(onQr, other.onQr, t)!,
+    );
+  }
+}
+
+/// Gradyan yönleri tek yerde: kimlik sol üstten (koyu uç, yazının başladığı
+/// yer) sağ alta; yıkama yukarıdan aşağı; şerit soldan sağa.
+class _Gradyan extends LinearGradient {
+  const _Gradyan.kimlik(List<Color> renkler, [List<double> duraklar = _ucDurak])
+      : super(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: renkler,
+          stops: duraklar,
+        );
+  const _Gradyan.yikama(List<Color> renkler, List<double> duraklar)
+      : super(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: renkler,
+          stops: duraklar,
+        );
+  const _Gradyan.serit(List<Color> renkler)
+      : super(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: renkler,
+          stops: _ucDurak,
+        );
+  const _Gradyan.qr(List<Color> renkler)
+      : super(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: renkler,
+        );
+
+  static const List<double> _ucDurak = [0, 0.5, 1];
+}
+
+/* ============================== Renk temaları ============================== */
+
+/// Kullanıcının seçebildiği renk temaları. Kulüp adları yalnız alt etikette
+/// (tescilli marka; arma ve logo hiçbir yerde yok), ana etiket renk adıdır.
+enum TakimTemasi {
+  binay('binay', 'Binay Akademi', 'Kurumsal'),
+  sariKirmizi('sari_kirmizi', 'Sarı-Kırmızı', 'Galatasaray renkleri'),
+  sariLacivert('sari_lacivert', 'Sarı-Lacivert', 'Fenerbahçe renkleri'),
+  bordoMavi('bordo_mavi', 'Bordo-Mavi', 'Trabzonspor renkleri'),
+  siyahBeyaz('siyah_beyaz', 'Siyah-Beyaz', 'Beşiktaş renkleri'),
+  ayYildiz('ay_yildiz', 'Ay-Yıldız', 'Türkiye renkleri');
+
+  const TakimTemasi(this.kod, this.etiket, this.altEtiket);
+
+  /// Cihazda saklanan değer. Değiştirilirse kullanıcıların seçimi kaybolur.
+  final String kod;
+  final String etiket;
+  final String altEtiket;
+
+  static TakimTemasi cozumle(String? kod) => TakimTemasi.values.firstWhere(
+        (t) => t.kod == kod,
+        orElse: () => TakimTemasi.binay,
+      );
+}
+
+/// Bir temanın tek moddaki tüm renkleri.
+class TakimPaleti {
+  final ColorScheme sema;
+  final FitcallRenkleri renkler;
+  final TemaGecisleri gecisler;
+
+  const TakimPaleti({
+    required this.sema,
+    required this.renkler,
+    required this.gecisler,
+  });
 }
 
 /* ================================ Şemalar ================================ */
@@ -338,33 +576,655 @@ const ColorScheme _koyuSema = ColorScheme(
   inversePrimary: Marka.turuncuKoyu,
 );
 
+/* ============================= Takım paletleri ============================= */
+
+/// Bir takım temasının tek moddaki paletini, Binay şemasını temel alarak
+/// üretir. Hata, başarı, uyarı gibi durum renkleri ve takvim ders renkleri
+/// temelden gelir ve değişmez; yalnız marka rolleri ile nötrler takıma göre
+/// ayarlanır.
+TakimPaleti _takimPaleti({
+  required Brightness parlaklik,
+  required Color ana,
+  required Color anaUzeri,
+  required Color anaKap,
+  required Color anaKapUzeri,
+  required Color ikincil,
+  required Color zemin,
+  required Color yazi,
+  required Color ikincilYazi,
+  required Color kap,
+  required Color kapYuksek,
+  required Color cizgi,
+  required Color tersAna,
+  required TemaGecisleri gecisler,
+}) {
+  final koyu = parlaklik == Brightness.dark;
+  final sema = (koyu ? _koyuSema : _acikSema).copyWith(
+    primary: ana,
+    onPrimary: anaUzeri,
+    primaryContainer: anaKap,
+    onPrimaryContainer: anaKapUzeri,
+    secondary: ikincil,
+    onSecondary: uzerineYazi(ikincil),
+    secondaryContainer: Color.lerp(zemin, ikincil, koyu ? 0.30 : 0.14),
+    onSecondaryContainer: yazi,
+    surface: zemin,
+    onSurface: yazi,
+    onSurfaceVariant: ikincilYazi,
+    surfaceContainerLowest:
+        koyu ? Color.lerp(zemin, Colors.black, 0.35) : zemin,
+    surfaceContainerLow: Color.lerp(zemin, kap, 0.5),
+    surfaceContainer: kap,
+    surfaceContainerHigh: kapYuksek,
+    surfaceContainerHighest: Color.lerp(kapYuksek, cizgi, 0.4),
+    outline: Color.lerp(ikincilYazi, zemin, 0.25),
+    outlineVariant: cizgi,
+    surfaceTint: ana,
+    inverseSurface: koyu ? yazi : Color.lerp(yazi, zemin, 0.08),
+    onInverseSurface: koyu ? zemin : Color.lerp(zemin, yazi, 0.04),
+    inversePrimary: tersAna,
+  );
+  final renkler = (koyu ? FitcallRenkleri.koyu : FitcallRenkleri.acik).copyWith(
+    vurgu: ana,
+    vurguZemin: anaKap,
+    // Takım rengi "şimdi" çizgisinde kullanılmaz; nötr çizgi.
+    simdiCizgisi: yazi,
+    takvimZemin: Color.lerp(zemin, kap, 0.5),
+    saatCizgisi: cizgi,
+    yarimSaatCizgisi: Color.lerp(cizgi, zemin, 0.5),
+  );
+  return TakimPaleti(sema: sema, renkler: renkler, gecisler: gecisler);
+}
+
+/// Verilen tema ve moddaki palet. Değerler tasarım maketiyle aynıdır;
+/// her çift test/tema_kontrast_test.dart'ta ölçülür.
+TakimPaleti takimPaleti(TakimTemasi takim, Brightness parlaklik) {
+  final koyu = parlaklik == Brightness.dark;
+  switch (takim) {
+    case TakimTemasi.binay:
+      return koyu
+          ? const TakimPaleti(
+              sema: _koyuSema,
+              renkler: FitcallRenkleri.koyu,
+              gecisler: TemaGecisleri.binayKoyu)
+          : const TakimPaleti(
+              sema: _acikSema,
+              renkler: FitcallRenkleri.acik,
+              gecisler: TemaGecisleri.binayAcik);
+
+    // Sarı-Kırmızı: kırmızıdan yanık turuncuya iner; sarıya şerit ulaşır.
+    // Sarı açık zeminde yazı olamaz (1.7:1), yalnız dolgu ve şeritte.
+    case TakimTemasi.sariKirmizi:
+      return koyu
+          ? _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFFFDB912),
+              anaUzeri: const Color(0xFF3D0012),
+              anaKap: const Color(0xFF5E0820),
+              anaKapUzeri: const Color(0xFFFFE6A6),
+              ikincil: const Color(0xFFFF8A9B),
+              zemin: const Color(0xFF160F10),
+              yazi: const Color(0xFFF2E9EA),
+              ikincilYazi: const Color(0xFFCDBDC0),
+              kap: const Color(0xFF231819),
+              kapYuksek: const Color(0xFF2E2123),
+              cizgi: const Color(0xFF48373A),
+              tersAna: const Color(0xFFA90432),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF5E0820),
+                  Color(0xFF8E0A2C),
+                  Color(0xFF8A4A00),
+                ]),
+                onKimlik: Colors.white,
+                sayfaYikama: _Gradyan.yikama([
+                  Color(0xFF330F16),
+                  Color(0xFF240F13),
+                  Color(0xFF160F10),
+                ], [
+                  0,
+                  0.5,
+                  1
+                ]),
+                yikamaYuksekligi: 280,
+                serit: _Gradyan.serit([
+                  Color(0xFFD0103F),
+                  Color(0xFFF07000),
+                  Color(0xFFFDB912),
+                ]),
+                qr: _Gradyan.qr([Color(0xFFFFC83D), Color(0xFFF4A30E)]),
+                onQr: Color(0xFF3D0012),
+              ),
+            )
+          : _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFFA90432),
+              anaUzeri: Colors.white,
+              anaKap: const Color(0xFFFFEFC7),
+              anaKapUzeri: const Color(0xFF7E0A26),
+              ikincil: const Color(0xFF8A5D00),
+              zemin: Colors.white,
+              yazi: const Color(0xFF1C1416),
+              ikincilYazi: const Color(0xFF5E5254),
+              kap: const Color(0xFFF7F2F3),
+              kapYuksek: const Color(0xFFF0E9EA),
+              cizgi: const Color(0xFFE2D7D9),
+              tersAna: const Color(0xFFFDB912),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF7E0A26),
+                  Color(0xFFA90432),
+                  Color(0xFFAE5800),
+                ], [
+                  0,
+                  0.45,
+                  1
+                ]),
+                onKimlik: Colors.white,
+                sayfaYikama: _Gradyan.yikama([
+                  Color(0xFFF9EDF1),
+                  Color(0xFFFFF4D9),
+                  Colors.white,
+                ], [
+                  0,
+                  0.43,
+                  1
+                ]),
+                yikamaYuksekligi: 280,
+                serit: _Gradyan.serit([
+                  Color(0xFFA90432),
+                  Color(0xFFDE6600),
+                  Color(0xFFFDB912),
+                ]),
+                qr: _Gradyan.qr([Color(0xFFA90432), Color(0xFFDE6600)]),
+                onQr: Colors.white,
+              ),
+            );
+
+    // Sarı-Lacivert: lacivertle sarı karıştırılmaz (ara ton zeytine düşer);
+    // yüzey lacivert ailesinde kalır, sarı keskin kenarlı şeritte.
+    case TakimTemasi.sariLacivert:
+      return koyu
+          ? _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFFFFD100),
+              anaUzeri: const Color(0xFF0F2A5C),
+              anaKap: const Color(0xFF1A3A7A),
+              anaKapUzeri: const Color(0xFFFFE98A),
+              ikincil: const Color(0xFF9DB8F0),
+              zemin: const Color(0xFF0C111B),
+              yazi: const Color(0xFFE8ECF4),
+              ikincilYazi: const Color(0xFFB8C0CF),
+              kap: const Color(0xFF161D2B),
+              kapYuksek: const Color(0xFF1F2738),
+              cizgi: const Color(0xFF343E52),
+              tersAna: const Color(0xFF0F2A5C),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF0D2250),
+                  Color(0xFF163470),
+                  Color(0xFF24489A),
+                ]),
+                onKimlik: Colors.white,
+                sayfaYikama: _Gradyan.yikama([
+                  Color(0xFF17223A),
+                  Color(0xFF11192A),
+                  Color(0xFF0C111B),
+                ], [
+                  0,
+                  0.5,
+                  1
+                ]),
+                yikamaYuksekligi: 280,
+                serit: _Gradyan.serit([
+                  Color(0xFFFFE14D),
+                  Color(0xFFFFD226),
+                  Color(0xFFFFC400),
+                ]),
+                qr: _Gradyan.qr([Color(0xFFFFDA33), Color(0xFFF5C000)]),
+                onQr: Color(0xFF0F2A5C),
+              ),
+            )
+          : _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFF0F2A5C),
+              anaUzeri: Colors.white,
+              anaKap: const Color(0xFFFFF2B3),
+              anaKapUzeri: const Color(0xFF0F2A5C),
+              ikincil: const Color(0xFF2F5597),
+              zemin: Colors.white,
+              yazi: const Color(0xFF121826),
+              ikincilYazi: const Color(0xFF525B6B),
+              kap: const Color(0xFFF2F4F8),
+              kapYuksek: const Color(0xFFEAEEF4),
+              cizgi: const Color(0xFFD9DFE8),
+              tersAna: const Color(0xFFFFD100),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF0F2A5C),
+                  Color(0xFF1A3A7A),
+                  Color(0xFF2A4FA0),
+                ]),
+                onKimlik: Colors.white,
+                sayfaYikama: _Gradyan.yikama([
+                  Color(0xFFEEF0F4),
+                  Color(0xFFFFF9E0),
+                  Colors.white,
+                ], [
+                  0,
+                  0.43,
+                  1
+                ]),
+                yikamaYuksekligi: 280,
+                serit: _Gradyan.serit([
+                  Color(0xFFFFE14D),
+                  Color(0xFFFFD226),
+                  Color(0xFFFFC400),
+                ]),
+                qr: _Gradyan.qr([Color(0xFF1A3A7A), Color(0xFF0F2A5C)]),
+                onQr: Colors.white,
+              ),
+            );
+
+    // Bordo-Mavi: bordo ile mavi karışınca gri-lilaya döner; yüzey bordo
+    // ailesinde, gök mavisi şeritte.
+    case TakimTemasi.bordoMavi:
+      return koyu
+          ? _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFF8FCBF0),
+              anaUzeri: const Color(0xFF2A0612),
+              anaKap: const Color(0xFF5C0F27),
+              anaKapUzeri: const Color(0xFFCDE9FA),
+              ikincil: const Color(0xFFF08AA8),
+              zemin: const Color(0xFF140D11),
+              yazi: const Color(0xFFF1E9EE),
+              ikincilYazi: const Color(0xFFC9BCC4),
+              kap: const Color(0xFF21171D),
+              kapYuksek: const Color(0xFF2B2027),
+              cizgi: const Color(0xFF45363F),
+              tersAna: const Color(0xFF7A1734),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF561025),
+                  Color(0xFF741835),
+                  Color(0xFF8E1F42),
+                ]),
+                onKimlik: Colors.white,
+                sayfaYikama: _Gradyan.yikama([
+                  Color(0xFF2D1519),
+                  Color(0xFF201115),
+                  Color(0xFF140D11),
+                ], [
+                  0,
+                  0.5,
+                  1
+                ]),
+                yikamaYuksekligi: 280,
+                serit: _Gradyan.serit([
+                  Color(0xFF62B5E5),
+                  Color(0xFF85C6ED),
+                  Color(0xFFA9D8F5),
+                ]),
+                qr: _Gradyan.qr([Color(0xFFA3D5F3), Color(0xFF79BDEA)]),
+                onQr: Color(0xFF2A0612),
+              ),
+            )
+          : _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFF7A1734),
+              anaUzeri: Colors.white,
+              anaKap: const Color(0xFFDDF0FB),
+              anaKapUzeri: const Color(0xFF5C0F27),
+              ikincil: const Color(0xFF0B6FB0),
+              zemin: Colors.white,
+              yazi: const Color(0xFF1A1418),
+              ikincilYazi: const Color(0xFF5A5258),
+              kap: const Color(0xFFF6F2F4),
+              kapYuksek: const Color(0xFFEFE9EC),
+              cizgi: const Color(0xFFDED6DA),
+              tersAna: const Color(0xFF8FCBF0),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF5C0F27),
+                  Color(0xFF7A1734),
+                  Color(0xFF8E1F42),
+                ]),
+                onKimlik: Colors.white,
+                sayfaYikama: _Gradyan.yikama([
+                  Color(0xFFF6EFF1),
+                  Color(0xFFECF6FC),
+                  Colors.white,
+                ], [
+                  0,
+                  0.43,
+                  1
+                ]),
+                yikamaYuksekligi: 280,
+                serit: _Gradyan.serit([
+                  Color(0xFF62B5E5),
+                  Color(0xFF85C6ED),
+                  Color(0xFFA9D8F5),
+                ]),
+                qr: _Gradyan.qr([Color(0xFF8E1F42), Color(0xFF7A1734)]),
+                onQr: Colors.white,
+              ),
+            );
+
+    // Siyah-Beyaz: sahte bir renk eklenmez; vurgu tersine çevirmeden gelir.
+    case TakimTemasi.siyahBeyaz:
+      return koyu
+          ? _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFFF2F2F2),
+              anaUzeri: const Color(0xFF111111),
+              anaKap: const Color(0xFF3A3A3A),
+              anaKapUzeri: const Color(0xFFF2F2F2),
+              ikincil: const Color(0xFFA8ADB3),
+              zemin: const Color(0xFF0F0F0F),
+              yazi: const Color(0xFFEDEDED),
+              ikincilYazi: const Color(0xFFBDBDBD),
+              kap: const Color(0xFF1C1C1C),
+              kapYuksek: const Color(0xFF262626),
+              cizgi: const Color(0xFF3D3D3D),
+              tersAna: const Color(0xFF111111),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF181818),
+                  Color(0xFF262626),
+                  Color(0xFF383838),
+                ]),
+                onKimlik: Colors.white,
+                sayfaYikama: _Gradyan.yikama([
+                  Color(0xFF222222),
+                  Color(0xFF181818),
+                  Color(0xFF0F0F0F),
+                ], [
+                  0,
+                  0.5,
+                  1
+                ]),
+                yikamaYuksekligi: 280,
+                serit: _Gradyan.serit([
+                  Color(0xFFF2F2F2),
+                  Color(0xFFC6C6C6),
+                  Color(0xFF9A9A9A),
+                ]),
+                qr: _Gradyan.qr([Colors.white, Color(0xFFE2E2E2)]),
+                onQr: Color(0xFF111111),
+              ),
+            )
+          : _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFF111111),
+              anaUzeri: Colors.white,
+              anaKap: const Color(0xFFEBEBEB),
+              anaKapUzeri: const Color(0xFF111111),
+              ikincil: const Color(0xFF5F6368),
+              zemin: Colors.white,
+              yazi: const Color(0xFF141414),
+              ikincilYazi: const Color(0xFF575757),
+              kap: const Color(0xFFF3F3F3),
+              kapYuksek: const Color(0xFFEBEBEB),
+              cizgi: const Color(0xFFDADADA),
+              tersAna: const Color(0xFFF2F2F2),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF111111),
+                  Color(0xFF232323),
+                  Color(0xFF3A3A3A),
+                ]),
+                onKimlik: Colors.white,
+                sayfaYikama: _Gradyan.yikama([
+                  Color(0xFFEEEEEE),
+                  Color(0xFFF6F6F6),
+                  Colors.white,
+                ], [
+                  0,
+                  0.43,
+                  1
+                ]),
+                yikamaYuksekligi: 280,
+                serit: _Gradyan.serit([
+                  Colors.white,
+                  Color(0xFFCECECE),
+                  Color(0xFF9E9E9E),
+                ]),
+                qr: _Gradyan.qr([Color(0xFF3A3A3A), Color(0xFF111111)]),
+                onQr: Colors.white,
+              ),
+            );
+
+    // Ay-Yıldız: bayrak kırmızısı hata kırmızısından ayırt edilemiyor; bu
+    // yüzden butonlar ve seçili öğeler antrasit, kırmızı yalnız kimlik yüzeyinde.
+    case TakimTemasi.ayYildiz:
+      return koyu
+          ? _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFFE6E8EB),
+              anaUzeri: const Color(0xFF141414),
+              anaKap: const Color(0xFF3A3F48),
+              anaKapUzeri: const Color(0xFFF0F1F3),
+              ikincil: const Color(0xFFC9CDD3),
+              zemin: const Color(0xFF140E0E),
+              yazi: const Color(0xFFF2EAEA),
+              ikincilYazi: const Color(0xFFCDBEBE),
+              kap: const Color(0xFF221818),
+              kapYuksek: const Color(0xFF2D2121),
+              cizgi: const Color(0xFF473838),
+              tersAna: const Color(0xFF2B2F36),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF6E0818),
+                  Color(0xFF9E0B24),
+                  Color(0xFFC8102E),
+                ]),
+                onKimlik: Colors.white,
+                sayfaYikama: _Gradyan.yikama([
+                  Color(0xFF2E1213),
+                  Color(0xFF211010),
+                  Color(0xFF140E0E),
+                ], [
+                  0,
+                  0.5,
+                  1
+                ]),
+                yikamaYuksekligi: 280,
+                serit: _Gradyan.serit([
+                  Colors.white,
+                  Color(0xFFF8F8F8),
+                  Color(0xFFF2F2F2),
+                ]),
+                qr: _Gradyan.qr([Color(0xFFF0F1F3), Color(0xFFD5D9DF)]),
+                onQr: Color(0xFF2B2F36),
+              ),
+            )
+          : _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFF2B2F36),
+              anaUzeri: Colors.white,
+              anaKap: const Color(0xFFECEDEF),
+              anaKapUzeri: const Color(0xFF2B2F36),
+              ikincil: const Color(0xFF4A4F57),
+              zemin: Colors.white,
+              yazi: const Color(0xFF1A1515),
+              ikincilYazi: const Color(0xFF5C5454),
+              kap: const Color(0xFFF6F2F2),
+              kapYuksek: const Color(0xFFEFE9E9),
+              cizgi: const Color(0xFFDFD7D7),
+              tersAna: const Color(0xFFE6E8EB),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF9E0B22),
+                  Color(0xFFC8102E),
+                  Color(0xFFE30A17),
+                ]),
+                onKimlik: Colors.white,
+                sayfaYikama: _Gradyan.yikama([
+                  Color(0xFFFDEEEF),
+                  Color(0xFFFEF9F9),
+                  Colors.white,
+                ], [
+                  0,
+                  0.43,
+                  1
+                ]),
+                yikamaYuksekligi: 280,
+                serit: _Gradyan.serit([
+                  Colors.white,
+                  Color(0xFFFAE7E9),
+                  Color(0xFFF6D0D3),
+                ]),
+                qr: _Gradyan.qr([Color(0xFF3A3F48), Color(0xFF2B2F36)]),
+                onQr: Colors.white,
+              ),
+            );
+  }
+}
+
+/* ============================== Sayfa zemini ============================== */
+
+/// Her sayfanın arkasındaki zemin: düz `surface` üstünde, üstten
+/// [TemaGecisleri.yikamaYuksekligi] boyunca sönen yıkama.
+///
+/// Sayfalar bunu kendileri koymaz: tema, sayfa geçişini sararak her rotanın
+/// altına yerleştirir (bkz. [_ZeminliGecis]); Scaffold ve AppBar şeffaftır.
+/// Böylece 50'yi aşkın ekran tek noktadan temaya uyar. Yıkama istemeyen bir
+/// ekran (form, kamera) Scaffold'a kendi düz rengini verir.
+class SayfaZemini extends StatelessWidget {
+  final Widget child;
+
+  const SayfaZemini({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final gecis = context.gecis;
+    return ColoredBox(
+      color: context.cs.surface,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: gecis.yikamaYuksekligi,
+            child: DecoratedBox(
+              decoration: BoxDecoration(gradient: gecis.sayfaYikama),
+            ),
+          ),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+/// Platformun varsayılan sayfa geçişini aynen kullanır, yalnız sayfanın
+/// altına [SayfaZemini] koyar. Geçiş süresi ve geri hareketi değişmez.
+class _ZeminliGecis extends PageTransitionsBuilder {
+  final PageTransitionsBuilder temel;
+
+  const _ZeminliGecis(this.temel);
+
+  @override
+  DelegatedTransitionBuilder? get delegatedTransition =>
+      temel.delegatedTransition;
+
+  @override
+  Duration get transitionDuration => temel.transitionDuration;
+
+  @override
+  Duration get reverseTransitionDuration => temel.reverseTransitionDuration;
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return temel.buildTransitions(
+      route,
+      context,
+      animation,
+      secondaryAnimation,
+      SayfaZemini(child: child),
+    );
+  }
+}
+
+const PageTransitionsTheme _zeminliGecisler = PageTransitionsTheme(
+  builders: <TargetPlatform, PageTransitionsBuilder>{
+    TargetPlatform.android:
+        _ZeminliGecis(PredictiveBackPageTransitionsBuilder()),
+    TargetPlatform.iOS: _ZeminliGecis(CupertinoPageTransitionsBuilder()),
+    TargetPlatform.macOS: _ZeminliGecis(CupertinoPageTransitionsBuilder()),
+    TargetPlatform.windows: _ZeminliGecis(ZoomPageTransitionsBuilder()),
+    TargetPlatform.linux: _ZeminliGecis(ZoomPageTransitionsBuilder()),
+    TargetPlatform.fuchsia: _ZeminliGecis(ZoomPageTransitionsBuilder()),
+  },
+);
+
 /* ============================== ThemeData =============================== */
 
 class FitcallTema {
   FitcallTema._();
 
-  static ThemeData get acik => _tema(_acikSema, FitcallRenkleri.acik);
-  static ThemeData get koyu => _tema(_koyuSema, FitcallRenkleri.koyu);
+  /// Binay Akademi teması (varsayılan).
+  static ThemeData get acik => temasi(TakimTemasi.binay, Brightness.light);
+  static ThemeData get koyu => temasi(TakimTemasi.binay, Brightness.dark);
 
-  static ThemeData _tema(ColorScheme cs, FitcallRenkleri renkler) {
+  static final Map<(TakimTemasi, Brightness), ThemeData> _onbellek = {};
+
+  /// Seçilen renk teması ve moddaki tema.
+  static ThemeData temasi(TakimTemasi takim, Brightness parlaklik) =>
+      _onbellek.putIfAbsent((takim, parlaklik), () {
+        final p = takimPaleti(takim, parlaklik);
+        return _tema(p.sema, p.renkler, p.gecisler);
+      });
+
+  static ThemeData _tema(
+      ColorScheme cs, FitcallRenkleri renkler, TemaGecisleri gecisler) {
     final metin = _metinTemasi(cs);
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: cs,
       brightness: cs.brightness,
-      scaffoldBackgroundColor: cs.surface,
+      // Scaffold şeffaf: zemini ve yıkamayı her rotanın altındaki
+      // SayfaZemini çizer (bkz. _ZeminliGecis).
+      scaffoldBackgroundColor: Colors.transparent,
       canvasColor: cs.surface,
       textTheme: metin,
-      extensions: <ThemeExtension<dynamic>>[renkler],
+      extensions: <ThemeExtension<dynamic>>[renkler, gecisler],
       splashFactory: InkSparkle.splashFactory,
+      pageTransitionsTheme: _zeminliGecisler,
       appBarTheme: AppBarTheme(
-        backgroundColor: cs.surface,
+        // Üstte şeffaf (yıkama görünsün); içerik altına kayınca düz zemin.
+        backgroundColor: WidgetStateColor.resolveWith(
+          (s) => s.contains(WidgetState.scrolledUnder)
+              ? cs.surface
+              : cs.surface.withValues(alpha: 0),
+        ),
         foregroundColor: cs.onSurface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         centerTitle: false,
+        // Şeffaf AppBar durum çubuğu ikon rengini zeminden tahmin edemez;
+        // moda göre açıkça verilir. Durum çubuğu şeffaf kalır (verilmezse
+        // Android 14 ve altı yıkamanın üstüne gri örtü koyar); gezinme
+        // çubuğu alanlarına bilerek dokunulmaz.
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: cs.brightness == Brightness.dark
+              ? Brightness.light
+              : Brightness.dark,
+          // iOS: durum çubuğunun zemini (ikonlar bunun tersi).
+          statusBarBrightness: cs.brightness,
+        ),
         titleTextStyle: metin.titleLarge?.copyWith(fontWeight: FontWeight.w700),
       ),
       cardTheme: CardThemeData(

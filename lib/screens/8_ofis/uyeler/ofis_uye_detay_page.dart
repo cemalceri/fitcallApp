@@ -12,6 +12,7 @@ import 'package:fitcall/models/9_yonetici/uye_detay_models.dart'
     show UyeDersItem, UyePaketItem;
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/ofis/ofis_api_service.dart';
 import 'package:flutter/material.dart';
@@ -344,6 +345,8 @@ class _OfisUyeDetayPageState extends State<OfisUyeDetayPage> {
 
 // ==================== BAŞLIK ====================
 
+/// Sayfanın kimlik yüzeyi (yönetici üye detayıyla aynı bileşen; ofis para
+/// bilgisi görmediği için başlıkta da bakiye yok).
 class _OfisUyeBasligi extends StatelessWidget {
   final OfisUyeProfili profil;
 
@@ -351,65 +354,12 @@ class _OfisUyeBasligi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.cs;
-
-    return Container(
-      padding: const EdgeInsets.all(Bosluk.l),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(Yaricap.l),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: profil.seviyeRenkColor.withValues(alpha: 0.18),
-            child: Text(
-              _harfler(profil.adSoyad),
-              style: context.metin.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
-              ),
-            ),
-          ),
-          const SizedBox(width: Bosluk.l),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  profil.adSoyad,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.metin.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '#${profil.uyeNo} · ${profil.uyeTuru}'
-                  '${profil.aktifMi ? '' : ' · Pasif'}',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.metin.bodySmall
-                      ?.copyWith(color: cs.onSurfaceVariant),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return KimlikBaslik(
+      baslik: profil.adSoyad,
+      basHarfler: basHarfleri(profil.adSoyad),
+      altBaslik: '#${profil.uyeNo} · ${profil.uyeTuru}',
+      kapsuller: [if (!profil.aktifMi) 'Pasif'],
     );
-  }
-
-  static String _harfler(String adSoyad) {
-    final parcalar = adSoyad
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((p) => p.isNotEmpty)
-        .toList();
-    if (parcalar.isEmpty) return '?';
-    if (parcalar.length == 1) return parcalar.first[0].toUpperCase();
-    return (parcalar.first[0] + parcalar.last[0]).toUpperCase();
   }
 }
 

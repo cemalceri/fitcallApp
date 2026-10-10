@@ -1,6 +1,7 @@
 // lib/screens/2_uye/home/widgets/uye_ozet_serit.dart
 
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,11 +22,12 @@ class UyeOzetSerit extends StatelessWidget {
     }
 
     final bakiye = ozet?.bakiye ?? 0.0;
+    // Borç/alacak her temada aynı durum renginde; diğer kutular ana renkte.
     final bakiyeRenk = bakiye < 0
-        ? const Color(0xFFEF4444) // borç: kırmızı
+        ? context.renkler.hata
         : bakiye > 0
-            ? const Color(0xFF10B981) // alacak: yeşil
-            : Theme.of(context).colorScheme.onSurfaceVariant; // sıfır: gri
+            ? context.renkler.basari
+            : context.cs.onSurfaceVariant;
     final tutarFmt = NumberFormat('#,##0', 'tr_TR');
 
     return Row(
@@ -45,7 +47,7 @@ class UyeOzetSerit extends StatelessWidget {
           child: _OzetKart(
             isLoading: isLoading,
             icon: Icons.confirmation_number_outlined,
-            color: const Color(0xFF8B5CF6),
+            color: context.cs.primary,
             etiket: 'Kalan Haklarım',
             deger: ozet?.kalanPaketHak != null
                 ? tutarFmt.format(ozet!.kalanPaketHak)
@@ -58,7 +60,7 @@ class UyeOzetSerit extends StatelessWidget {
           child: _OzetKart(
             isLoading: isLoading,
             icon: Icons.event_repeat_rounded,
-            color: const Color(0xFF6366F1),
+            color: context.cs.primary,
             etiket: 'Telafi Derslerim',
             deger: '${ozet?.aktifTelafi ?? 0}',
             route: routeEnums[SayfaAdi.telafiHaklari]!,

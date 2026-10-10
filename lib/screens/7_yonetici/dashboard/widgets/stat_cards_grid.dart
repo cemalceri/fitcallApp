@@ -1,5 +1,6 @@
 // lib/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart
 
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
@@ -26,13 +27,22 @@ class StatCardsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
+    // İkonlar ana renkte; yalnız durum bildirenler (iptal, alacak) her temada
+    // aynı durum rengini alır. Eskiden altı kart altı ayrı renkteydi.
+    final ana = context.cs.primary;
+    // Kart yüksekliği genişlikten değil içerikten: sabit en-boy oranı (1.1)
+    // 360 dp'de kartları gerçek fontla 5–13 px taşırıyordu. Sabit kısım
+    // (dolgu + ikon + boşluklar) + yazı ölçeğiyle büyüyen üç satır yazı.
+    final olcek = MediaQuery.textScalerOf(context).scale(1);
+    return GridView(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.1,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        mainAxisExtent: 88 + 80 * olcek,
+      ),
       children: [
         // Ciro (ders bazlı getiri)
         StatCard(
@@ -40,7 +50,7 @@ class StatCardsGrid extends StatelessWidget {
           deger: _formatCurrency(data.ciro.toplamCiro),
           altBaslik: '${data.ciro.dersSayisi} ders',
           ikon: Icons.trending_up,
-          ikonRenk: Colors.green,
+          ikonRenk: ana,
           degisimYuzdesi: data.ciro.degisimYuzdesi,
         ),
 
@@ -50,7 +60,7 @@ class StatCardsGrid extends StatelessWidget {
           deger: _formatCurrency(data.tahsilat.toplamTahsilat),
           altBaslik: '${data.tahsilat.islemSayisi} işlem',
           ikon: Icons.attach_money,
-          ikonRenk: Colors.blue,
+          ikonRenk: ana,
           degisimYuzdesi: data.tahsilat.degisimYuzdesi,
         ),
 
@@ -61,7 +71,7 @@ class StatCardsGrid extends StatelessWidget {
           deger2: data.ders.toplamDers.toString(),
           altBaslik: '%${data.ders.dolulukYuzdesi.toStringAsFixed(0)} doluluk',
           ikon: Icons.event_available,
-          ikonRenk: Colors.indigo,
+          ikonRenk: ana,
         ),
 
         // İptal Edilen
@@ -70,7 +80,7 @@ class StatCardsGrid extends StatelessWidget {
           deger: data.ders.iptalEdilenDers.toString(),
           altBaslik: 'Seçilen döneme göre',
           ikon: Icons.cancel_outlined,
-          ikonRenk: Colors.red,
+          ikonRenk: context.renkler.hata,
           degisimYuzdesi: data.ders.iptalDegisimYuzdesi != null
               ? -data.ders.iptalDegisimYuzdesi!
               : null,
@@ -81,7 +91,7 @@ class StatCardsGrid extends StatelessWidget {
           baslik: 'Aktif Üye',
           deger: data.uye.aktifUyeSayisi.toString(),
           ikon: Icons.people_outline,
-          ikonRenk: Colors.teal,
+          ikonRenk: ana,
           degisimYuzdesi: data.uye.degisimYuzdesi,
         ),
 
@@ -93,7 +103,7 @@ class StatCardsGrid extends StatelessWidget {
             deger: _formatCurrency(data.toplamAlacak.toplamBorc),
             altBaslik: '${data.toplamAlacak.borcluUyeSayisi} üye',
             ikon: Icons.account_balance_wallet_outlined,
-            ikonRenk: Colors.orange,
+            ikonRenk: context.renkler.uyari,
             trailing: onToplamAlacakTap != null
                 ? Icon(
                     Icons.chevron_right,

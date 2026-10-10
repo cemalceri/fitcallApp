@@ -5,9 +5,11 @@
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 
 class DersTeyitPage extends StatefulWidget {
   const DersTeyitPage({super.key});
@@ -194,13 +196,13 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                color: context.renkler.hata.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.error_outline_rounded,
                 size: 40,
-                color: Color(0xFFEF4444),
+                color: context.renkler.hata,
               ),
             ),
             const SizedBox(height: 24),
@@ -266,12 +268,15 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.sports_tennis_rounded,
-                  color: Color(0xFF3B82F6),
+                  color: Theme.of(context).colorScheme.primary,
                   size: 24,
                 ),
               ),
@@ -323,7 +328,7 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
                 Container(
                   width: 1,
                   height: 40,
-                  color: const Color(0xFFE2E8F0),
+                  color: Theme.of(context).colorScheme.outlineVariant,
                 ),
                 Expanded(
                   child: _buildInfoItem(
@@ -365,13 +370,13 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
   Widget _buildInfoItem(IconData icon, String label, String value) {
     return Column(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF3B82F6)),
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
         const SizedBox(height: 6),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: Color(0xFF94A3B8),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 2),
@@ -410,15 +415,14 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
             height: 72,
             decoration: BoxDecoration(
               color: katilacak
-                  ? const Color(0xFF10B981).withValues(alpha: 0.1)
-                  : const Color(0xFFEF4444).withValues(alpha: 0.1),
+                  ? context.renkler.basari.withValues(alpha: 0.1)
+                  : context.renkler.hata.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               katilacak ? Icons.check_circle_rounded : Icons.cancel_rounded,
               size: 40,
-              color:
-                  katilacak ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+              color: katilacak ? context.renkler.basari : context.renkler.hata,
             ),
           ),
           const SizedBox(height: 16),
@@ -464,34 +468,34 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
       return Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFFFEF3C7),
+          color: context.renkler.uyariZemin,
           borderRadius: BorderRadius.circular(16),
           border:
-              Border.all(color: const Color(0xFFFBBF24).withValues(alpha: 0.3)),
+              Border.all(color: context.renkler.uyari.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
-            const Icon(
+            Icon(
               Icons.schedule_rounded,
               size: 48,
-              color: Color(0xFFD97706),
+              color: context.renkler.uyari,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Süre Doldu',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFFD97706),
+                color: context.renkler.uyari,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Bu ders için teyit süresi geçmiştir.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF92400E),
+                color: context.renkler.uyari,
               ),
             ),
             const SizedBox(height: 20),
@@ -500,8 +504,8 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
               child: OutlinedButton(
                 onPressed: () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFD97706),
-                  side: const BorderSide(color: Color(0xFFD97706)),
+                  foregroundColor: context.renkler.uyari,
+                  side: BorderSide(color: context.renkler.uyari),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -538,7 +542,7 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
                 durum: true,
                 icon: Icons.check_rounded,
                 label: 'Evet',
-                color: const Color(0xFF10B981),
+                color: context.renkler.basari,
               ),
             ),
             const SizedBox(width: 12),
@@ -547,7 +551,7 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
                 durum: false,
                 icon: Icons.close_rounded,
                 label: 'Hayır',
-                color: const Color(0xFFEF4444),
+                color: context.renkler.hata,
               ),
             ),
           ],
@@ -577,23 +581,29 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
                       maxLength: 200,
                       decoration: InputDecoration(
                         hintText: 'Katılamama nedeninizi yazabilirsiniz...',
-                        hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                        hintStyle: TextStyle(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor:
+                            Theme.of(context).colorScheme.surfaceContainerLow,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: Color(0xFFE2E8F0)),
+                          borderSide: BorderSide(
+                              color:
+                                  Theme.of(context).colorScheme.outlineVariant),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              const BorderSide(color: Color(0xFFE2E8F0)),
+                          borderSide: BorderSide(
+                              color:
+                                  Theme.of(context).colorScheme.outlineVariant),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                              color: Color(0xFF3B82F6), width: 2),
+                          borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 2),
                         ),
                         contentPadding: const EdgeInsets.all(16),
                       ),
@@ -612,8 +622,6 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
           child: ElevatedButton(
             onPressed: _secilenDurum != null && !_posting ? _submit : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
-              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -624,10 +632,7 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
+                    child: ButonYukleniyorGostergesi(kalinlik: 2.5),
                   )
                 : const Text(
                     'Gönder',
@@ -666,10 +671,14 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.1) : Colors.white,
+          color: isSelected
+              ? color.withValues(alpha: 0.1)
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? color : const Color(0xFFE2E8F0),
+            color: isSelected
+                ? color
+                : Theme.of(context).colorScheme.outlineVariant,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
@@ -697,7 +706,7 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
               child: Icon(
                 icon,
                 color: isSelected
-                    ? Colors.white
+                    ? uzerineYazi(color)
                     : Theme.of(context).colorScheme.outline,
                 size: 28,
               ),

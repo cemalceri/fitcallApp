@@ -63,6 +63,7 @@ import 'package:fitcall/screens/3_antrenor/takvim/widgets/misafir_ekle_sheet.dar
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/yoklama_hizli_secim.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/daily_summary_card.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
+import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_liste_item.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/ders_iptal_dialog.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/ders_islem_sheet.dart';
@@ -99,6 +100,16 @@ import 'package:fitcall/screens/1_common/takvim/takvim_ajanda.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_zaman_cizelgesi.dart';
 import 'package:fitcall/screens/2_uye/takvim/widgets/lesson_block.dart'
     as uye_blok;
+import 'package:fitcall/screens/4_auth/profil_sec.dart';
+import 'package:fitcall/screens/3_antrenor/home/widgets/next_lesson_card.dart';
+import 'package:fitcall/screens/3_antrenor/home/widgets/info_card_item.dart';
+import 'package:fitcall/screens/3_antrenor/home/widgets/gunluk_kokpit_card.dart';
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
+import 'package:fitcall/screens/1_common/takvim/iptal_taramasi.dart';
+import 'package:fitcall/screens/1_common/ayarlar/widgets/renk_temasi_secici.dart';
+import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
+import 'package:fitcall/models/3_antrenor/gunluk_ozet_model.dart';
 
 /* ============================== ÖRNEK VERİ ============================== */
 
@@ -431,6 +442,103 @@ DersListeItem _dersListeItem(
     });
 
 void main() {
+  // Renk temaları: kimlik yüzeyleri ve yeni ortak bileşenler. tasmaTesti her
+  // bileşeni ayrıca uç takım temalarında da çizer (bkz. kUcTemalar).
+  group('Renk temaları ve kimlik yüzeyleri', () {
+    tasmaTesti(
+      'KimlikBaslik (uzun ad + üç kapsül)',
+      () => const KimlikBaslik(
+        baslik: 'Deniz Ayşegül Arslanoğulları Kandemir',
+        basHarfler: 'DK',
+        altBaslik: 'Üye No: 104286 · Kartal · Sorumlu hocasısınız',
+        kapsuller: ['Sarı top', 'Salı · Perşembe 17:00', 'Telafi hakkı var'],
+      ),
+    );
+    tasmaTesti(
+      'KimlikYuzeyi + KimlikKapsulu',
+      () => const KimlikYuzeyi(
+        child: Row(
+          children: [
+            Expanded(child: Text('Bugünün Özeti · çok uzun bir başlık')),
+            Flexible(child: KimlikKapsulu('Salı 14 Ekim', ikon: Icons.event)),
+          ],
+        ),
+      ),
+    );
+    tasmaTesti(
+      'RenkTemasiSecici',
+      () => RenkTemasiSecici(secili: TakimTemasi.sariKirmizi, onSec: (_) {}),
+      sar: (w) => SingleChildScrollView(
+          child: Padding(padding: const EdgeInsets.all(16), child: w)),
+    );
+    tasmaTesti(
+      'NextLessonCard (antrenör, kalabalık grup)',
+      () => NextLessonCard(nextLesson: _etkinlik(katilimci: 6)),
+      sar: (w) => SingleChildScrollView(child: w),
+    );
+    tasmaTesti('NextLessonCard (antrenör, ders yok)',
+        () => const NextLessonCard(nextLesson: null));
+    tasmaTesti(
+      'GunlukKokpitCard (iptal + eksik yoklama)',
+      () => GunlukKokpitCard(
+        ozet: GunlukOzetModel(
+          tarih: '2026-07-23',
+          dersSayisi: 12,
+          iptal: 2,
+          tamamlanan: 5,
+          kalan: 5,
+          ogrenciSayisi: 34,
+          ilkDers: '09:00',
+          sonDers: '21:30',
+          eksikYoklama: 2,
+          eksikYoklamaDersler: const [],
+          eksikYoklamaGecmis: 3,
+        ),
+      ),
+    );
+    for (final kart in _yapilacakKartlar()) {
+      tasmaTesti('InfoCardItem (${kart.type.name})',
+          () => InfoCardItem(card: kart, onTap: () {}));
+    }
+    tasmaTesti(
+      'YikiciButon (uzun etiket, yükleniyor)',
+      () => Row(
+        children: [
+          Expanded(
+            child: YikiciButon(
+                etiket: 'İptal talebini gönder ve öğrencilere bildir',
+                onPressed: () {}),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child:
+                YikiciButon(etiket: 'Sil', onPressed: () {}, yukleniyor: true),
+          ),
+        ],
+      ),
+    );
+    tasmaTesti(
+      'IptalTaramasi (dar blok)',
+      () => const SizedBox(
+        width: 120,
+        height: 48,
+        child: IptalTaramasi(
+          yaricap: BorderRadius.all(Radius.circular(8)),
+          child: Text('İptal edilen ders başlığı', maxLines: 1),
+        ),
+      ),
+    );
+    tasmaTesti(
+      'ProfilSecPage (dört profil, uzun adlar)',
+      () => ProfilSecPage([
+        _profil(1, 'yonetici', 'Selin', 'Arslanoğulları Kandemir',
+            'Binay Tenis Akademisi Kartal Şubesi'),
+        _profil(2, 'antrenor', 'Ahmet', 'Kaya', 'Binay Akademi'),
+        _profil(3, 'uye', 'Deniz Ayşegül', 'Yılmaz', null),
+        _profil(4, 'uye', 'Ece', 'Yılmaz', 'Binay Akademi Ataşehir'),
+      ]),
+    );
+  });
   setUpAll(() async {
     await initializeDateFormatting('tr', null);
   });
@@ -859,6 +967,37 @@ void main() {
         degisimYuzdesi: 12.5,
       );
     });
+
+    // Sabit en-boy oranıyla (1.1) 360 dp'de gerçek fontla taşıyordu; yükseklik
+    // artık içerikten.
+    tasmaTesti(
+      'StatCardsGrid (büyük tutarlar, uzun başlıklar)',
+      () => StatCardsGrid(
+        data: DashboardData.fromJson({
+          'ciro': {
+            'toplam_ciro': '12345678',
+            'ders_sayisi': 1842,
+            'degisim_yuzdesi': -12.5,
+          },
+          'tahsilat': {
+            'toplam_tahsilat': '9876543',
+            'islem_sayisi': 1204,
+            'degisim_yuzdesi': 34.2,
+          },
+          'ders': {
+            'toplam_ders': 1880,
+            'tamamlanan_ders': 1842,
+            'iptal_edilen_ders': 118,
+            'doluluk_yuzdesi': 87.4,
+          },
+          'uye': {'aktif_uye_sayisi': 1234, 'degisim_yuzdesi': 4.1},
+          'toplam_alacak': {'toplam_borc': '4567890', 'borclu_uye_sayisi': 321},
+        }),
+        onToplamAlacakTap: () {},
+      ),
+      sar: (w) => SingleChildScrollView(
+          child: Padding(padding: const EdgeInsets.all(16), child: w)),
+    );
 
     // Alt bar 6 sekmelik NavigationBar iken "Antrenörler" etiketi alt satıra
     // taşıyordu; üye barıyla aynı 4 sekme + merkez QR düzenine geçildi.
@@ -2097,4 +2236,30 @@ OdulDurumModel _odul({int sayac = 14, bool kod = false}) =>
               'son_kullanma_metin': '05.08.2026',
             }
           : null,
+    });
+
+KullaniciProfilModel _profil(
+        int id, String rol, String ad, String soyad, String? isletme) =>
+    KullaniciProfilModel.fromJson({
+      'id': id,
+      'user': {
+        'id': id,
+        'password': '',
+        'is_superuser': false,
+        'username': 'kullanici$id',
+        'first_name': ad,
+        'last_name': soyad,
+        'email': 'k$id@ornek.com',
+        'is_staff': false,
+        'is_active': true,
+        'date_joined': '2026-01-01T00:00:00+03:00',
+        'groups': <int>[],
+        'user_permissions': <dynamic>[],
+      },
+      'rol': rol,
+      'uye': null,
+      'antrenor': null,
+      'ana_hesap_mi': true,
+      'isletme_id': isletme == null ? null : 1,
+      'isletme_adi': isletme,
     });

@@ -88,54 +88,42 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.06),
-              colorScheme.surface,
-            ],
-            stops: const [0.0, 0.3],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Antrenörler',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
+      // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Antrenörler',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Antrenör listesi ve performans bilgileri',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Antrenör listesi ve performans bilgileri',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                    const SizedBox(height: 16),
-                    _buildFiltreler(colorScheme),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildFiltreler(colorScheme),
+                ],
               ),
+            ),
 
-              // Content
-              Expanded(child: _buildContent()),
-            ],
-          ),
+            // Content
+            Expanded(child: _buildContent()),
+          ],
         ),
       ),
     );
@@ -213,8 +201,8 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
         itemBuilder: (context, index) {
           if (index == 0) {
             return Padding(
-              padding: const EdgeInsets.fromLTRB(
-                  Bosluk.l, 0, Bosluk.l, Bosluk.l),
+              padding:
+                  const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.l),
               child: AntrenorIstatistikKartlar(data: _data!.istatistikler),
             );
           }

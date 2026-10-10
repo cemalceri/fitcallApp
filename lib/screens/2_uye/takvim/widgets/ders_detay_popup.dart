@@ -1,6 +1,7 @@
 // lib/screens/5_etkinlik/takvim/widgets/ders_detay_popup.dart
 
 import 'package:fitcall/common/cihaz_takvimi.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
 import 'package:fitcall/common/tarih_util.dart';
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 
 class DersDetayPopup extends StatefulWidget {
   final EtkinlikModel ders;
@@ -244,14 +246,14 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: iptalEdildi
-                      ? Colors.red.withValues(alpha: 0.10)
+                      ? context.renkler.hataZemin
                       : context.takvim.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.sports_tennis_rounded,
                   color: iptalEdildi
-                      ? Colors.red.shade400
+                      ? context.renkler.hata
                       : context.takvim.primary,
                   size: 22,
                 ),
@@ -271,22 +273,15 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.red.shade500,
+                    color: context.renkler.hata,
                     borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.red.shade500.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
                   ),
-                  child: const Text(
+                  child: Text(
                     'İPTAL EDİLDİ',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: uzerineYazi(context.renkler.hata),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -313,7 +308,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.outlineVariant,
+        color: Theme.of(context).colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
@@ -339,20 +334,21 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.10),
+        color: context.renkler.hataZemin,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red.shade200, width: 1.5),
+        border: Border.all(
+            color: context.renkler.hata.withValues(alpha: 0.35), width: 1.5),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.16),
+              color: context.renkler.hata.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(Icons.cancel_rounded,
-                color: Colors.red.shade600, size: 24),
+                color: context.renkler.hata, size: 24),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -372,7 +368,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Colors.red.shade700,
+                    color: context.renkler.hata,
                   ),
                 ),
                 // Ad soyad `iptal_eden_adi`'nda geliyor; `iptal_eden` id
@@ -504,10 +500,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                 ? SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.surface,
-                    ),
+                    child: ButonYukleniyorGostergesi(kalinlik: 2),
                   )
                 : const Icon(Icons.check_circle_rounded, size: 18),
             label: const Text(
@@ -626,7 +619,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                 ),
               ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
               contentPadding: const EdgeInsets.all(14),
             ),
           ),
@@ -639,10 +632,7 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                   ? SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Theme.of(context).colorScheme.surface,
-                      ),
+                      child: ButonYukleniyorGostergesi(kalinlik: 2),
                     )
                   : const Icon(Icons.send_rounded, size: 18),
               label: Text(

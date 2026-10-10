@@ -33,24 +33,7 @@ class ProfilePage extends StatelessWidget {
       future: StorageService.uyeBilgileriniGetir(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
-            body: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.1),
-                    Theme.of(context).colorScheme.surface,
-                  ],
-                ),
-              ),
-              child: const IskeletKart(),
-            ),
-          );
+          return const Scaffold(body: IskeletKart());
         } else if (snapshot.hasError) {
           return Scaffold(
             body: Center(
@@ -101,7 +84,6 @@ class _ProfileContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final seviyeRenk = getSeviyeColor(uye.seviyeRengi);
 
     // Kabuk sekmesi olarak açıldığında geri okunun gideceği yer yok.
@@ -113,11 +95,11 @@ class _ProfileContent extends StatelessWidget {
           // Kaydırınca isim başlığa oturur (X/Twitter profil kalıbı):
           // eski 340 px'lik başlık ekranın yarısını yiyordu.
           SliverAppBar(
-            expandedHeight: 190,
+            // Açıkken şeffaf (yıkama ve kimlik kartı görünür), kapanınca
+            // tema zemin rengine döner (AppBar teması, scrolledUnder).
+            expandedHeight: 224,
             pinned: true,
             automaticallyImplyLeading: geriVar,
-            backgroundColor: colorScheme.surface,
-            surfaceTintColor: Colors.transparent,
             title: Text('${uye.adi} ${uye.soyadi}'),
             actions: [
               IconButton(

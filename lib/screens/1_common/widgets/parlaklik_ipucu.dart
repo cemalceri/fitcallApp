@@ -4,6 +4,7 @@
 // ipucu şeridi. Parlaklık otomatik artırılabildiyse bilgilendirme, cihaz veya
 // kullanıcı buna izin vermiyorsa eski manuel yönerge gösterilir.
 
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +22,7 @@ class ParlaklikIpucu extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.amber.withValues(alpha: 0.1),
+            color: context.renkler.uyariZemin,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -31,7 +32,7 @@ class ParlaklikIpucu extends StatelessWidget {
                     ? Icons.brightness_high_rounded
                     : Icons.lightbulb_outline_rounded,
                 size: 20,
-                color: Colors.amber.shade700,
+                color: context.renkler.uyari,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -43,7 +44,7 @@ class ParlaklikIpucu extends StatelessWidget {
                           'okunmasını sağlayın.',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.amber.shade800,
+                    color: context.renkler.uyari,
                     height: 1.3,
                   ),
                 ),

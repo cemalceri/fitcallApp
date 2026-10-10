@@ -239,125 +239,112 @@ class _UyeHomePageState extends State<UyeHomePage> {
         userId: _userId,
         onEventReturn: _checkAktifEvent,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.06),
-              colorScheme.surface,
-              colorScheme.surface,
-            ],
-            stops: const [0.0, 0.3, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: _onRefresh,
-            child: CustomScrollView(
-              slivers: [
-                // ========== HEADER ==========
-                SliverToBoxAdapter(
-                  child: UyeHeader(
-                    uyeAdi: _uyeAdi,
-                    hasMultipleProfiles: _hasMultipleProfiles,
-                    onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+      // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: CustomScrollView(
+            slivers: [
+              // ========== HEADER ==========
+              SliverToBoxAdapter(
+                child: UyeHeader(
+                  uyeAdi: _uyeAdi,
+                  hasMultipleProfiles: _hasMultipleProfiles,
+                  onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                ),
+              ),
+
+              // ========== ÖZET ŞERİDİ ==========
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                sliver: SliverToBoxAdapter(
+                  child: UyeOzetSerit(
+                    ozet: _homeOzet?.ozet,
+                    isLoading: _loadingOzet,
                   ),
                 ),
+              ),
 
-                // ========== ÖZET ŞERİDİ ==========
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: UyeOzetSerit(
-                      ozet: _homeOzet?.ozet,
-                      isLoading: _loadingOzet,
-                    ),
+              // ========== TURNİKE SAYACI (KAHVE ÖDÜLÜ) ==========
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                sliver: SliverToBoxAdapter(
+                  child: UyeOdulSayaci(
+                    durum: _odulDurum,
+                    isLoading: _loadingOdul,
+                    onOdulAl: _odulAl,
                   ),
                 ),
+              ),
 
-                // ========== TURNİKE SAYACI (KAHVE ÖDÜLÜ) ==========
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: UyeOdulSayaci(
-                      durum: _odulDurum,
-                      isLoading: _loadingOdul,
-                      onOdulAl: _odulAl,
-                    ),
+              // ========== BEKLEYEN İŞLEMLER ==========
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 0, 0),
+                sliver: SliverToBoxAdapter(
+                  child: InfoCardsCarousel(
+                    cards: _homeOzet?.kartlar ?? const [],
+                    isLoading: _loadingOzet,
+                    title: 'Bekleyen İşlemler',
+                    hideWhenEmpty: true,
+                    onCardTap: _onYapilacakKartTap,
                   ),
                 ),
+              ),
 
-                // ========== BEKLEYEN İŞLEMLER ==========
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 0, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: InfoCardsCarousel(
-                      cards: _homeOzet?.kartlar ?? const [],
-                      isLoading: _loadingOzet,
-                      title: 'Bekleyen İşlemler',
-                      hideWhenEmpty: true,
-                      onCardTap: _onYapilacakKartTap,
-                    ),
+              // ========== SONRAKİ DERS ==========
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                sliver: SliverToBoxAdapter(
+                  child: UyeNextLessonCard(
+                    nextLesson: _nextLesson,
+                    isLoading: _loadingWeek,
                   ),
                 ),
+              ),
 
-                // ========== SONRAKİ DERS ==========
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: UyeNextLessonCard(
-                      nextLesson: _nextLesson,
-                      isLoading: _loadingWeek,
-                    ),
-                  ),
-                ),
-
-                // ========== DUYURULAR (Haftalık Program yerine) ==========
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Başlık
-                        Padding(
-                          padding: const EdgeInsets.only(left: 4, bottom: 12),
-                          child: Text(
-                            'Duyurular',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurface,
-                            ),
+              // ========== DUYURULAR (Haftalık Program yerine) ==========
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Başlık
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, bottom: 12),
+                        child: Text(
+                          'Duyurular',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                         ),
-                        // İçerik
-                        if (_loadingDuyurular)
-                          _buildDuyuruLoading(colorScheme)
-                        else if (_duyurular.isEmpty)
-                          _buildDuyuruEmpty(colorScheme)
-                        else
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 0),
-                            child: DuyuruCarousel(
-                              duyurular: _duyurular,
-                              height: 210,
-                            ),
+                      ),
+                      // İçerik
+                      if (_loadingDuyurular)
+                        _buildDuyuruLoading(colorScheme)
+                      else if (_duyurular.isEmpty)
+                        _buildDuyuruEmpty(colorScheme)
+                      else
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 0),
+                          child: DuyuruCarousel(
+                            duyurular: _duyurular,
+                            height: 210,
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
                 ),
+              ),
 
-                // Alt boşluk
-                const SliverPadding(
-                  padding: EdgeInsets.only(bottom: 24),
-                  sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
-                ),
-              ],
-            ),
+              // Alt boşluk
+              const SliverPadding(
+                padding: EdgeInsets.only(bottom: 24),
+                sliver: SliverToBoxAdapter(child: SizedBox.shrink()),
+              ),
+            ],
           ),
         ),
       ),
@@ -391,18 +378,9 @@ class _UyeHomePageState extends State<UyeHomePage> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF6366F1).withValues(alpha: 0.08),
-            const Color(0xFF8B5CF6).withValues(alpha: 0.05),
-          ],
-        ),
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
@@ -410,13 +388,13 @@ class _UyeHomePageState extends State<UyeHomePage> {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+              color: colorScheme.primaryContainer,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.campaign_outlined,
               size: 32,
-              color: Color(0xFF6366F1),
+              color: colorScheme.onPrimaryContainer,
             ),
           ),
           const SizedBox(width: 16),

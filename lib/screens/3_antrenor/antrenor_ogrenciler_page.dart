@@ -119,41 +119,27 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.05),
-              colorScheme.surface,
-              colorScheme.secondary.withValues(alpha: 0.03),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Modern AppBar
-              _buildAppBar(colorScheme),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Modern AppBar
+            _buildAppBar(colorScheme),
 
-              // Arama ve Filtre
-              _buildSearchAndFilter(colorScheme),
+            // Arama ve Filtre
+            _buildSearchAndFilter(colorScheme),
 
-              // İstatistik Kartları
-              if (!isLoading && students.isNotEmpty)
-                _buildStatsRow(colorScheme),
+            // İstatistik Kartları
+            if (!isLoading && students.isNotEmpty) _buildStatsRow(colorScheme),
 
-              // Öğrenci Listesi
-              Expanded(
-                child: isLoading
-                    ? const IskeletListe()
-                    : filteredStudents.isEmpty
-                        ? _buildEmptyState()
-                        : _buildOgrenciListesi(),
-              ),
-            ],
-          ),
+            // Öğrenci Listesi
+            Expanded(
+              child: isLoading
+                  ? const IskeletListe()
+                  : filteredStudents.isEmpty
+                      ? _buildEmptyState()
+                      : _buildOgrenciListesi(),
+            ),
+          ],
         ),
       ),
     );
@@ -332,7 +318,12 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
             child: Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : color,
+                // Seviye (top) renkleri sarıya kadar açılıyor: seçili çipin
+                // yazısı zeminden türetilir, seçili olmayanda renk yalnız
+                // zemin ve kenarda kalır (sarı yazı açık zeminde okunmuyor).
+                color: isSelected
+                    ? uzerineYazi(color)
+                    : Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
@@ -402,8 +393,8 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
             child: Center(
               child: Text(
                 '$count',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: uzerineYazi(color),
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
@@ -414,7 +405,7 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
           Text(
             label,
             style: TextStyle(
-              color: color.withValues(alpha: 0.8),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -426,14 +417,11 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
     );
   }
 
-
   Widget _buildEmptyState() {
     final filtreVar = searchQuery.isNotEmpty || selectedSeviye != null;
 
     return BosDurum(
-      ikon: filtreVar
-          ? Icons.search_off_rounded
-          : Icons.people_outline_rounded,
+      ikon: filtreVar ? Icons.search_off_rounded : Icons.people_outline_rounded,
       baslik: filtreVar ? 'Sonuç yok' : 'Henüz öğrenci yok',
       aciklama: filtreVar
           ? 'Aramanıza ve seçili seviyeye uyan öğrenci bulunamadı.'

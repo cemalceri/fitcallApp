@@ -32,10 +32,8 @@ class ProgramOlculeri {
 class ProgramRenkleri {
   ProgramRenkleri._();
 
-  static const Color saatCizgisi = Color(0xFFE2E8F0);
-  static Color yarimSaatCizgisi = const Color(0x22808080);
-  static const Color kortAyraci = Color(0xFFE2E8F0);
-  static const Color simdiCizgisi = Color(0xFFEF4444);
+  // Izgara çizgileri ve "şimdi" çizgisi temadan gelir
+  // (context.renkler.saatCizgisi / yarimSaatCizgisi / simdiCizgisi).
 
   static const Color iptal = Color(0xFFEF4444);
   static const Color tamamlandi = Color(0xFF10B981);

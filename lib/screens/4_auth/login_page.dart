@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -214,7 +215,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            _logo(cs),
+                            _kimlikBandi(),
                             const SizedBox(height: Bosluk.xl),
                             Text('Hoş geldiniz',
                                 style: context.metin.headlineMedium),
@@ -270,19 +271,60 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _logo(ColorScheme cs) {
+  /// Ekranın kimlik yüzeyi: uygulamanın en çok marka taşıyan yeri. Seçili
+  /// renk teması burada ilk bakışta görünür (tema cihazda saklandığı için
+  /// çıkış yapınca da korunur).
+  Widget _kimlikBandi() {
+    final yazi = context.gecis.onKimlik;
+    return SizedBox(
+      width: double.infinity,
+      child: KimlikYuzeyi(
+        yaricap: Yaricap.xl + 4,
+        padding: const EdgeInsets.fromLTRB(
+            Bosluk.l, Bosluk.xl, Bosluk.l, Bosluk.xl + 3),
+        // KimlikYuzeyi içeriği sol üste yerleştirir; tam genişlik verilmezse
+        // Column içeriği kadar daralır ve logo sola yaslanır.
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            children: [
+              _logo(context.cs, boyut: 72),
+              const SizedBox(height: Bosluk.m),
+              Text(
+                'Binay Akademi',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: yazi,
+                ),
+              ),
+              Text(
+                'Tenis ve spor akademisi',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: yazi),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _logo(ColorScheme cs, {double boyut = 92}) {
     return Container(
-      padding: const EdgeInsets.all(Bosluk.l),
+      padding: const EdgeInsets.all(Bosluk.m),
       decoration: BoxDecoration(
-        // Logo siyah çizgili: koyu temada okunması için zemin hep beyaz.
-        color: Theme.of(context).colorScheme.surface,
+        // Logo siyah çizgili: her temada ve modda zemini beyaz kalır.
+        // (Eskiden `surface` idi; koyu modda siyah logo koyu zemine düşüyordu.)
+        color: Marka.logoZemini,
         borderRadius: BorderRadius.circular(Yaricap.xl),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Image.asset(
         'assets/images/logo.png',
-        width: 92,
-        height: 92,
+        width: boyut,
+        height: boyut,
         semanticLabel: 'Binay Tenis Akademi',
       ),
     );

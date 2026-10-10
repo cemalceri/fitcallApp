@@ -6,13 +6,16 @@
 // Sayfa API çağrısı yapmadan da pump edilebilsin diye veri dışarıdan verilir
 // (taşma testi bu widget'ı doğrudan render eder).
 
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/uye_odul_model.dart';
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-const Color _kKahveKoyu = Color(0xFF78350F);
+/// Fincandaki kahvenin rengi. Gerçek bir nesnenin resmi olduğu için temaya
+/// göre değişmez; fincanın çizgisi ve kartın geri kalanı temadan gelir.
 const Color _kKahve = Color(0xFFB45309);
-const Color _kKahveAcik = Color(0xFFF59E0B);
 
 /// Ödül tanımındaki `ikon` anahtarının Material karşılığı. Tanımsız anahtarlar
 /// genel hediye ikonuna düşer; ödül her zaman kahve olmayabilir.
@@ -98,21 +101,15 @@ class _UyeOdulSayaciState extends State<UyeOdulSayaci> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color:
-              hazir ? _kKahveAcik.withValues(alpha: 0.10) : colorScheme.surface,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
+          // Ödül hazırken kenarlık ana renkte; kartın kendisi nötr kalır.
           border: Border.all(
             color: hazir
-                ? _kKahveAcik.withValues(alpha: 0.35)
+                ? colorScheme.primary
                 : colorScheme.outlineVariant.withValues(alpha: 0.3),
+            width: hazir ? 1.5 : 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: _kKahve.withValues(alpha: 0.06),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,21 +142,16 @@ class _UyeOdulSayaciState extends State<UyeOdulSayaci> {
                 child: FilledButton.icon(
                   onPressed: _talepEdiliyor ? null : _odulAl,
                   style: FilledButton.styleFrom(
-                    backgroundColor: _kKahve,
-                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                   icon: _talepEdiliyor
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Theme.of(context).colorScheme.surface,
-                          ),
+                          child: ButonYukleniyorGostergesi(),
                         )
                       : const Icon(Icons.card_giftcard_rounded, size: 18),
                   label: Text(_talepEdiliyor ? 'Alınıyor...' : 'Ödülü al'),
@@ -173,8 +165,6 @@ class _UyeOdulSayaciState extends State<UyeOdulSayaci> {
                   onPressed: () =>
                       _kodGoster(context, durum.bekleyenOdul!, durum),
                   style: FilledButton.styleFrom(
-                    backgroundColor: _kKahve,
-                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -248,15 +238,8 @@ class _Metinler extends StatelessWidget {
           tween: Tween(begin: 0, end: durum.doluluk),
           duration: const Duration(milliseconds: 900),
           curve: Curves.easeOutCubic,
-          builder: (context, deger, _) => ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              value: deger,
-              minHeight: 6,
-              backgroundColor: _kKahveAcik.withValues(alpha: 0.20),
-              valueColor: const AlwaysStoppedAnimation<Color>(_kKahve),
-            ),
-          ),
+          // Motivasyon çubuğu: ikinci takım renginin geçiş şeridiyle dolar.
+          builder: (context, deger, _) => GecisCubugu(deger: deger),
         ),
       ],
     );
@@ -277,7 +260,11 @@ class _Fincan extends StatelessWidget {
       curve: Curves.easeOutCubic,
       builder: (context, deger, _) => CustomPaint(
         size: const Size(58, 64),
-        painter: _FincanPainter(doluluk: deger),
+        painter: _FincanPainter(
+          doluluk: deger,
+          cizgi: context.cs.onSurfaceVariant,
+          bos: context.cs.surfaceContainerHighest,
+        ),
       ),
     );
   }
@@ -285,8 +272,14 @@ class _Fincan extends StatelessWidget {
 
 class _FincanPainter extends CustomPainter {
   final double doluluk;
+  final Color cizgi;
+  final Color bos;
 
-  _FincanPainter({required this.doluluk});
+  _FincanPainter({
+    required this.doluluk,
+    required this.cizgi,
+    required this.bos,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -315,7 +308,7 @@ class _FincanPainter extends CustomPainter {
     final dolgu = Paint()..style = PaintingStyle.fill;
 
     // Boş kısım
-    dolgu.color = _kKahveAcik.withValues(alpha: 0.15);
+    dolgu.color = bos;
     canvas.drawPath(govde, dolgu);
 
     // Kahve seviyesi
@@ -329,13 +322,13 @@ class _FincanPainter extends CustomPainter {
       canvas.restore();
     }
 
-    final cizgi = Paint()
+    final kalem = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = w * 0.045
       ..strokeCap = StrokeCap.round
-      ..color = _kKahveKoyu;
+      ..color = cizgi;
 
-    canvas.drawPath(govde, cizgi);
+    canvas.drawPath(govde, kalem);
 
     // Kulp
     final kulp = Path()
@@ -348,7 +341,7 @@ class _FincanPainter extends CustomPainter {
         sagUst - daralma * 0.4,
         ust + (alt - ust) * 0.62,
       );
-    canvas.drawPath(kulp, cizgi);
+    canvas.drawPath(kulp, kalem);
 
     // Tabak
     final tabak = RRect.fromLTRBR(
@@ -358,12 +351,14 @@ class _FincanPainter extends CustomPainter {
       h * 0.94,
       Radius.circular(h * 0.04),
     );
-    canvas.drawRRect(tabak, Paint()..color = _kKahveKoyu);
+    canvas.drawRRect(tabak, Paint()..color = cizgi);
   }
 
   @override
   bool shouldRepaint(covariant _FincanPainter oldDelegate) =>
-      oldDelegate.doluluk != doluluk;
+      oldDelegate.doluluk != doluluk ||
+      oldDelegate.cizgi != cizgi ||
+      oldDelegate.bos != bos;
 }
 
 /// Ödül kodunun kafede gösterildiği alt sayfa.
@@ -402,7 +397,7 @@ class _OdulKodSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            Icon(odulIkonu(ikon), size: 34, color: _kKahve),
+            Icon(odulIkonu(ikon), size: 34, color: colorScheme.primary),
             const SizedBox(height: 10),
             Text(
               '$odulAdi ikramın hazır',
@@ -427,9 +422,8 @@ class _OdulKodSheet extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
               decoration: BoxDecoration(
-                color: _kKahveAcik.withValues(alpha: 0.12),
+                color: colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: _kKahveAcik.withValues(alpha: 0.35)),
               ),
               child: Column(
                 children: [
@@ -437,11 +431,11 @@ class _OdulKodSheet extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     child: Text(
                       kod.kod,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 6,
-                        color: _kKahveKoyu,
+                        color: colorScheme.onPrimaryContainer,
                       ),
                     ),
                   ),
@@ -450,7 +444,7 @@ class _OdulKodSheet extends StatelessWidget {
                     'Son kullanma: ${kod.sonKullanmaMetin}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: colorScheme.onSurfaceVariant,
+                      color: colorScheme.onPrimaryContainer,
                     ),
                   ),
                 ],
@@ -476,7 +470,6 @@ class _OdulKodSheet extends StatelessWidget {
                 Expanded(
                   child: FilledButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    style: FilledButton.styleFrom(backgroundColor: _kKahve),
                     child: const Text('Tamam'),
                   ),
                 ),
@@ -557,11 +550,11 @@ class OdulBilgiSheet extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: _kKahveAcik.withValues(alpha: 0.15),
+                      color: colorScheme.primaryContainer,
                       shape: BoxShape.circle,
                     ),
-                    child:
-                        Icon(odulIkonu(durum.ikon), size: 22, color: _kKahve),
+                    child: Icon(odulIkonu(durum.ikon),
+                        size: 22, color: colorScheme.onPrimaryContainer),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -601,15 +594,15 @@ class OdulBilgiSheet extends StatelessWidget {
                         height: 22,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: _kKahveAcik.withValues(alpha: 0.18),
+                          color: colorScheme.primaryContainer,
                           shape: BoxShape.circle,
                         ),
                         child: Text(
                           '${i + 1}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: _kKahveKoyu,
+                            color: colorScheme.onPrimaryContainer,
                           ),
                         ),
                       ),
@@ -633,16 +626,16 @@ class OdulBilgiSheet extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                 decoration: BoxDecoration(
-                  color: _kKahveAcik.withValues(alpha: 0.12),
+                  color: colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Text(
                   durumMetni,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: _kKahveKoyu,
+                    color: colorScheme.onPrimaryContainer,
                   ),
                 ),
               ),
@@ -651,7 +644,6 @@ class OdulBilgiSheet extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  style: FilledButton.styleFrom(backgroundColor: _kKahve),
                   child: const Text('Tamam'),
                 ),
               ),

@@ -10,6 +10,7 @@ import 'package:fitcall/screens/8_ofis/program/widgets/uye_secim_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 
 EtkinlikFormVerileri _formVerileri({
   bool duzenleme = false,
@@ -259,8 +260,10 @@ void main() {
         ),
       );
 
-      final buton = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Dersi iptal et'),
+      // Yıkıcı aksiyon kenarlıklı (YikiciButon → OutlinedButton), dolgulu değil.
+      expect(find.widgetWithText(YikiciButon, 'Dersi iptal et'), findsOneWidget);
+      final buton = tester.widget<OutlinedButton>(
+        find.widgetWithText(OutlinedButton, 'Dersi iptal et'),
       );
       expect(buton.onPressed, isNull);
       expect(tester.takeException(), isNull);

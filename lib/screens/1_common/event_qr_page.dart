@@ -6,7 +6,10 @@ import 'dart:math' as math;
 import 'package:fitcall/models/1_common/event/event_model.dart';
 import 'package:fitcall/models/1_common/event/gecis_model.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
+import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/qr_kod_gorseli.dart';
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/api_result.dart';
@@ -278,50 +281,26 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
 
     if (_yukleniyor) {
       return Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF2E7D6B).withValues(alpha: 0.1),
-                colorScheme.surface,
-              ],
-            ),
-          ),
-          child: const IskeletKart(anaKartYuksekligi: 240, seritKutusu: 0),
-        ),
+        body: const IskeletKart(anaKartYuksekligi: 240, seritKutusu: 0),
       );
     }
 
     if (_hata != null) {
       return Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                colorScheme.error.withValues(alpha: 0.1),
-                colorScheme.surface,
-              ],
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: colorScheme.error),
-                const SizedBox(height: 16),
-                Text(_hata!, textAlign: TextAlign.center),
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: _yukle,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Tekrar Dene'),
-                ),
-              ],
-            ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: colorScheme.error),
+              const SizedBox(height: 16),
+              Text(_hata!, textAlign: TextAlign.center),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: _yukle,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Tekrar Dene'),
+              ),
+            ],
           ),
         ),
       );
@@ -329,45 +308,33 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
 
     if (_event == null) {
       return Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF2E7D6B).withValues(alpha: 0.1),
-                colorScheme.surface,
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                _buildAppBar(colorScheme),
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.event_busy_outlined,
-                          size: 64,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildAppBar(colorScheme),
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.event_busy_outlined,
+                        size: 64,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Şu anda aktif bir etkinlik yok',
+                        style: TextStyle(
+                          fontSize: 16,
                           color: colorScheme.onSurfaceVariant,
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Şu anda aktif bir etkinlik yok',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );
@@ -381,41 +348,28 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
         kotaVar && (davetSayisi >= (ev.maxMisafirKisiBasi ?? 0));
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF2E7D6B).withValues(alpha: 0.08),
-              colorScheme.surface,
-              colorScheme.secondary.withValues(alpha: 0.03),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildAppBar(colorScheme),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: _yukle,
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                    children: [
-                      _buildHeaderCard(ev),
-                      const SizedBox(height: 20),
-                      if (sp != null) ...[
-                        _buildSelfPassSection(colorScheme, sp),
-                        const SizedBox(height: 24),
-                      ],
-                      _buildGuestSection(colorScheme, kotaDoldu),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildAppBar(colorScheme),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _yukle,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                  children: [
+                    _buildHeaderCard(ev),
+                    const SizedBox(height: 20),
+                    if (sp != null) ...[
+                      _buildSelfPassSection(colorScheme, sp),
+                      const SizedBox(height: 24),
                     ],
-                  ),
+                    _buildGuestSection(colorScheme, kotaDoldu),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: _buildFAB(kotaDoldu),
@@ -474,12 +428,15 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
             icon: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFF2E7D6B).withValues(alpha: 0.1),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.refresh_rounded,
-                color: Color(0xFF2E7D6B),
+                color: Theme.of(context).colorScheme.primary,
                 size: 22,
               ),
             ),
@@ -489,31 +446,17 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
     );
   }
 
+  /// Etkinlik başlığı: ekranın kimlik yüzeyi.
   Widget _buildHeaderCard(EventModel ev) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF2E7D6B), Color(0xFF4FAE97)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2E7D6B).withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
+    final yazi = context.gecis.onKimlik;
+    return KimlikYuzeyi(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 21),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.celebration_rounded,
-                  color: Colors.white, size: 28),
+              Icon(Icons.celebration_rounded, color: yazi, size: 28),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -521,7 +464,7 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.surface,
+                    color: yazi,
                   ),
                 ),
               ),
@@ -536,29 +479,7 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
           ],
           if (ev.maxMisafirKisiBasi != null) ...[
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.group_outlined,
-                      size: 16, color: Colors.white),
-                  const SizedBox(width: 6),
-                  Text(
-                    _kotaMetni(),
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.surface,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            KimlikKapsulu(_kotaMetni(), ikon: Icons.group_outlined),
           ],
         ],
       ),
@@ -566,18 +487,13 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
   }
 
   Widget _buildInfoRow(IconData icon, String text) {
+    final yazi = context.gecis.onKimlik;
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.white.withValues(alpha: 0.9)),
+        Icon(icon, size: 16, color: yazi),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
-          ),
+          child: Text(text, style: TextStyle(fontSize: 14, color: yazi)),
         ),
       ],
     );
@@ -609,10 +525,13 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
             children: [
               AnimatedBuilder(
                 animation: _pulseController,
-                builder: (context, child) => QrKodGorseli(
-                  kod: sp.code,
-                  boyut: 220,
-                  nabiz: _pulseController.value,
+                builder: (context, child) => LayoutBuilder(
+                  // QR boyutu kartın genişliğine uyar: dar ekranda taşmaz.
+                  builder: (context, kisit) => QrKodGorseli(
+                    kod: sp.code,
+                    boyut: (kisit.maxWidth - 46).clamp(150.0, 220.0),
+                    nabiz: _pulseController.value,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -620,22 +539,28 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2E7D6B).withValues(alpha: 0.1),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: const Color(0xFF2E7D6B).withValues(alpha: 0.3)),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.3)),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.check_circle_outline,
-                        size: 18, color: Color(0xFF2E7D6B)),
+                        size: 18, color: Theme.of(context).colorScheme.primary),
                     SizedBox(width: 8),
                     Text(
                       'Etkinlik boyunca geçerlidir.',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2E7D6B),
+                        color: Theme.of(context).colorScheme.primary,
                         fontSize: 14,
                       ),
                     ),
@@ -665,15 +590,18 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2E7D6B).withValues(alpha: 0.1),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${_davetliler.length} kişi',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E7D6B),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
@@ -786,10 +714,11 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF2E7D6B).withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, size: 18, color: const Color(0xFF2E7D6B)),
+          child: Icon(icon,
+              size: 18, color: Theme.of(context).colorScheme.primary),
         ),
         const SizedBox(width: 10),
         Text(
@@ -810,7 +739,7 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2E7D6B).withValues(alpha: 0.4),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -819,9 +748,11 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
       child: FloatingActionButton.extended(
         onPressed: kotaDoldu ? null : _davetEt,
         backgroundColor: kotaDoldu
+            ? Theme.of(context).colorScheme.surfaceContainerHighest
+            : Theme.of(context).colorScheme.primary,
+        foregroundColor: kotaDoldu
             ? Theme.of(context).colorScheme.onSurfaceVariant
-            : const Color(0xFF2E7D6B),
-        foregroundColor: Colors.white,
+            : Theme.of(context).colorScheme.onPrimary,
         elevation: 0,
         icon: Icon(kotaDoldu ? Icons.block : Icons.person_add_alt_1_rounded),
         label: Text(
@@ -871,16 +802,17 @@ class _GuestCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF2E7D6B).withValues(alpha: 0.1),
+              color:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(
               child: Text(
                 label[0].toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E7D6B),
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
@@ -921,8 +853,8 @@ class _GuestCard extends StatelessWidget {
                     Container(
                       width: 8,
                       height: 8,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF2E7D6B),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -944,7 +876,7 @@ class _GuestCard extends StatelessWidget {
             children: [
               _ActionButton(
                 icon: Icons.share_rounded,
-                color: const Color(0xFF2E7D6B),
+                color: Theme.of(context).colorScheme.primary,
                 onTap: onShare,
                 tooltip: 'Paylaş',
               ),
@@ -1056,12 +988,15 @@ class _DavetBottomSheetState extends State<_DavetBottomSheet> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2E7D6B).withValues(alpha: 0.1),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.person_add_alt_1_rounded,
-                        color: Color(0xFF2E7D6B),
+                        color: Theme.of(context).colorScheme.primary,
                         size: 24,
                       ),
                     ),
@@ -1116,8 +1051,9 @@ class _DavetBottomSheetState extends State<_DavetBottomSheet> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2E7D6B), width: 2),
+                      borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 2),
                     ),
                   ),
                   onChanged: (_) => setState(() {}),
@@ -1147,8 +1083,9 @@ class _DavetBottomSheetState extends State<_DavetBottomSheet> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2E7D6B), width: 2),
+                      borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 2),
                     ),
                   ),
                 ),
@@ -1181,9 +1118,12 @@ class _DavetBottomSheetState extends State<_DavetBottomSheet> {
                                   ),
                                 ),
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF2E7D6B),
-                          disabledBackgroundColor:
-                              const Color(0xFF2E7D6B).withValues(alpha: 0.5),
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          disabledBackgroundColor: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.5),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -1295,16 +1235,11 @@ class _SilOnaySheet extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: FilledButton(
+                      // Yıkıcı aksiyon kenarlıklı (bkz. YikiciButon).
+                      child: YikiciButon(
+                        etiket: 'Sil',
                         onPressed: () => Navigator.pop(context, true),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: colorScheme.error,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text('Sil'),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                     ),
                   ],

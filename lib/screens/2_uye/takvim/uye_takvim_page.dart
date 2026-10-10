@@ -15,6 +15,7 @@ import 'package:fitcall/screens/2_uye/takvim/widgets/takvim_constants.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
@@ -350,10 +351,12 @@ class _DersListesiPageState extends State<DersListesiPage>
                           color: context.takvim.primary,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text(
+                        // Rozet yazısı zeminden türetilir: koyu temada açık
+                        // ana renk üstünde beyaz okunmuyordu.
+                        child: Text(
                           'Bugün',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: uzerineYazi(context.takvim.primary),
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),

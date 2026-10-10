@@ -4,6 +4,7 @@
 // içerik kademeli gösterilir (taşma yerine bilgi azaltılır).
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/takvim/iptal_taramasi.dart';
 import 'package:flutter/material.dart';
 
 import 'program_constants.dart';
@@ -37,65 +38,68 @@ class ProgramDersBlok extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(ProgramOlculeri.blokKoseYaricapi),
-        child: Container(
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            color: zemin,
-            borderRadius:
-                BorderRadius.circular(ProgramOlculeri.blokKoseYaricapi),
-            border: Border(
-              left: BorderSide(
-                color: serit,
-                width: ProgramOlculeri.blokSolSeritGenisligi,
-              ),
-            ),
-          ),
-          padding: const EdgeInsets.fromLTRB(6, 3, 4, 3),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '${ders.saat} · ${ders.katilimciSayisi} kişi',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  height: 1.15,
-                  color: iptal
-                      ? ProgramRenkleri.iptal
-                      : Theme.of(context).colorScheme.onSurface,
-                  decoration: iptal ? TextDecoration.lineThrough : null,
-                ),
-              ),
-              if (detayGoster)
-                Text(
-                  ders.antrenorAdi.isEmpty ? '—' : ders.antrenorAdi,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    height: 1.2,
-                    color: Color(0xFF475569),
+        child: IptalTaramasi(
+            aktif: iptal,
+            yaricap: BorderRadius.circular(ProgramOlculeri.blokKoseYaricapi),
+            child: Container(
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                color: zemin,
+                borderRadius:
+                    BorderRadius.circular(ProgramOlculeri.blokKoseYaricapi),
+                border: Border(
+                  left: BorderSide(
+                    color: serit,
+                    width: ProgramOlculeri.blokSolSeritGenisligi,
                   ),
                 ),
-              if (katilimciGoster && ders.katilimcilar.isNotEmpty)
-                Flexible(
-                  child: Text(
-                    ders.katilimcilar.map((k) => k.adSoyad).join(', '),
-                    maxLines: 2,
+              ),
+              padding: const EdgeInsets.fromLTRB(6, 3, 4, 3),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${ders.saat} · ${ders.katilimciSayisi} kişi',
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 9.5,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
                       height: 1.15,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: iptal
+                          ? ProgramRenkleri.iptal
+                          : Theme.of(context).colorScheme.onSurface,
+                      decoration: iptal ? TextDecoration.lineThrough : null,
                     ),
                   ),
-                ),
-            ],
-          ),
-        ),
+                  if (detayGoster)
+                    Text(
+                      ders.antrenorAdi.isEmpty ? '—' : ders.antrenorAdi,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10,
+                        height: 1.2,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  if (katilimciGoster && ders.katilimcilar.isNotEmpty)
+                    Flexible(
+                      child: Text(
+                        ders.katilimcilar.map((k) => k.adSoyad).join(', '),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          height: 1.15,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            )),
       ),
     );
   }

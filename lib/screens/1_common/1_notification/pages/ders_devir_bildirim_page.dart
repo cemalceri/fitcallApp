@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/3_antrenor/ders_devir_talebi_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/takvim_constants.dart';
@@ -8,12 +9,8 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-const Color _bgGray = Color(0xFFF9FAFB);
-const Color _textPrimary = Color(0xFF1A1A1A);
-const Color _textSecondary = Color(0xFF6B7280);
-const Color _successGreen = Color(0xFF10B981);
-const Color _errorRed = Color(0xFFEF4444);
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
+import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
 
 class DersDevirBildirimPage extends StatefulWidget {
   /// Login'li bildirim listesinden açılınca dolu (auth'lu çağrı yapılır)
@@ -158,7 +155,7 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bgGray,
+      backgroundColor: context.bildirimRenk.arkaplanGri,
       body: SafeArea(
         child: _loading
             ? const IskeletKart(seritKutusu: 0)
@@ -175,11 +172,13 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline_rounded, size: 56, color: _errorRed),
+          Icon(Icons.error_outline_rounded,
+              size: 56, color: context.bildirimRenk.hataKirmizi),
           const SizedBox(height: 16),
           Text(mesaj,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 15, color: _textSecondary)),
+              style: TextStyle(
+                  fontSize: 15, color: context.bildirimRenk.yaziIkincil)),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -252,7 +251,8 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
         children: [
           IconButton(
             tooltip: 'Kapat',
-            icon: const Icon(Icons.close_rounded, color: _textPrimary),
+            icon:
+                Icon(Icons.close_rounded, color: context.bildirimRenk.yaziAna),
             onPressed: _close,
           ),
           const Spacer(),
@@ -277,13 +277,13 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
                   color: context.takvim.primary, size: 22),
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Text(
                 'Ders Devir Teklifi',
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: _textPrimary),
+                    color: context.bildirimRenk.yaziAna),
               ),
             ),
           ],
@@ -291,8 +291,10 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
         const SizedBox(height: 8),
         Text(
           '${t.talepEdenAntrenorAdi}, bu dersi size ${t.rolLabel} rolünde devretmek istiyor.',
-          style:
-              const TextStyle(fontSize: 14, color: _textSecondary, height: 1.4),
+          style: TextStyle(
+              fontSize: 14,
+              color: context.bildirimRenk.yaziIkincil,
+              height: 1.4),
         ),
       ],
     );
@@ -333,7 +335,8 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
         SizedBox(
           width: 70,
           child: Text(k,
-              style: const TextStyle(fontSize: 13, color: _textSecondary)),
+              style: TextStyle(
+                  fontSize: 13, color: context.bildirimRenk.yaziIkincil)),
         ),
         Expanded(
           child: Text(v,
@@ -370,8 +373,9 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
           ),
           const SizedBox(height: 12),
           if (liste.isEmpty)
-            const Text('Katılımcı yok',
-                style: TextStyle(fontSize: 13, color: _textSecondary))
+            Text('Katılımcı yok',
+                style: TextStyle(
+                    fontSize: 13, color: context.bildirimRenk.yaziIkincil))
           else
             ...liste.map((k) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -409,21 +413,22 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.amber.withValues(alpha: 0.10),
+        color: context.renkler.uyariZemin,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.amber.shade200),
+        border:
+            Border.all(color: context.renkler.uyari.withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
           Icon(Icons.info_outline_rounded,
-              color: Colors.amber.shade800, size: 20),
+              color: context.renkler.uyari, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Bu derste ${a.rolLabel}: ${a.adSoyad}',
               style: TextStyle(
                   fontSize: 13,
-                  color: Colors.amber.shade900,
+                  color: context.cs.onSurface,
                   fontWeight: FontWeight.w500),
             ),
           ),
@@ -445,9 +450,9 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(baslik,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12,
-                  color: _textSecondary,
+                  color: context.bildirimRenk.yaziIkincil,
                   fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           Text(icerik, style: const TextStyle(fontSize: 14, height: 1.4)),
@@ -464,31 +469,31 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
     if (t.suresiGecti) {
       mesaj = 'Bu talebin süresi geçti (ders başladı).';
       ikon = Icons.schedule_rounded;
-      renk = _textSecondary;
+      renk = context.bildirimRenk.yaziIkincil;
     } else if (t.durum == 'KABUL_EDILDI') {
       mesaj = 'Bu talep kabul edildi.';
       ikon = Icons.check_circle_rounded;
-      renk = _successGreen;
+      renk = context.bildirimRenk.basariYesil;
     } else if (t.durum == 'REDDEDILDI') {
       mesaj = 'Bu talep reddedildi.';
       ikon = Icons.cancel_rounded;
-      renk = _errorRed;
+      renk = context.bildirimRenk.hataKirmizi;
     } else if (t.durum == 'GERI_CEKILDI') {
       mesaj = 'Talep eden, talebi geri çekti.';
       ikon = Icons.undo_rounded;
-      renk = _textSecondary;
+      renk = context.bildirimRenk.yaziIkincil;
     } else if (!t.benHedefim) {
       mesaj = 'Bu talep size yönelik değil.';
       ikon = Icons.info_outline_rounded;
-      renk = _textSecondary;
+      renk = context.bildirimRenk.yaziIkincil;
     } else if (!t.devralabilirMi) {
       mesaj = t.engelNedeni ?? 'Bu talebi kabul edemezsiniz.';
       ikon = Icons.block_rounded;
-      renk = _errorRed;
+      renk = context.bildirimRenk.hataKirmizi;
     } else {
       mesaj = 'Bu talep artık aktif değil.';
       ikon = Icons.info_outline_rounded;
-      renk = _textSecondary;
+      renk = context.bildirimRenk.yaziIkincil;
     }
 
     return Column(
@@ -547,7 +552,7 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
             label: const Text('Reddet',
                 style: TextStyle(fontWeight: FontWeight.w600)),
             style: FilledButton.styleFrom(
-              backgroundColor: _errorRed,
+              backgroundColor: context.bildirimRenk.hataKirmizi,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -563,13 +568,12 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
                 ? const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white))
+                    child: ButonYukleniyorGostergesi(kalinlik: 2))
                 : const Icon(Icons.check_circle_rounded, size: 18),
             label: const Text('Kabul Et',
                 style: TextStyle(fontWeight: FontWeight.w600)),
             style: FilledButton.styleFrom(
-              backgroundColor: _successGreen,
+              backgroundColor: context.bildirimRenk.basariYesil,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
@@ -584,16 +588,18 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _errorRed.withValues(alpha: 0.06),
+        color: context.bildirimRenk.hataKirmizi.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _errorRed.withValues(alpha: 0.25)),
+        border: Border.all(
+            color: context.bildirimRenk.hataKirmizi.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.cancel_rounded, color: _errorRed, size: 20),
+              Icon(Icons.cancel_rounded,
+                  color: context.bildirimRenk.hataKirmizi, size: 20),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text('Talebi Reddet',
@@ -633,13 +639,12 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
+                      child: ButonYukleniyorGostergesi(kalinlik: 2))
                   : const Icon(Icons.send_rounded, size: 18),
               label: const Text('Reddi Gönder',
                   style: TextStyle(fontWeight: FontWeight.w600)),
               style: FilledButton.styleFrom(
-                backgroundColor: _errorRed,
+                backgroundColor: context.bildirimRenk.hataKirmizi,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),

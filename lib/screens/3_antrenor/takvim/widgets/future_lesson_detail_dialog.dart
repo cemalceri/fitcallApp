@@ -4,11 +4,13 @@
 
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'lesson_cancel_dialog.dart';
 import 'lesson_devir_dialog.dart';
 import 'takvim_constants.dart';
+import 'package:fitcall/common/tema.dart';
 
 class FutureLessonDetailDialog extends StatelessWidget {
   final EtkinlikModel ders;
@@ -334,10 +336,10 @@ class FutureLessonDetailDialog extends StatelessWidget {
       BuildContext context, UyeLiteModel uye, UyeTeyit? teyit) {
     final katilacakMi = teyit?.katilacakMi;
     final color = katilacakMi == null
-        ? const Color(0xFFF59E0B)
+        ? context.renkler.uyari
         : katilacakMi
-            ? const Color(0xFF10B981)
-            : const Color(0xFFEF4444);
+            ? context.renkler.basari
+            : context.renkler.hata;
     final icon = katilacakMi == null
         ? Icons.help_outline_rounded
         : katilacakMi
@@ -491,20 +493,12 @@ class FutureLessonDetailDialog extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: FilledButton.icon(
+            // Yıkıcı aksiyon kenarlıklı: sayfanın baskın aksiyonu gibi durmasın.
+            child: YikiciButon(
+              etiket: 'Dersi İptal Et',
+              ikon: Icons.event_busy_rounded,
               onPressed: () => _iptalAc(context),
-              icon: const Icon(Icons.event_busy_rounded, size: 18),
-              label: const Text(
-                'Dersi İptal Et',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-              ),
-              style: FilledButton.styleFrom(
-                backgroundColor: context.takvim.cancelled,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
         ],

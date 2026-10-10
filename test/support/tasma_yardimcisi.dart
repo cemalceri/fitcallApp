@@ -20,6 +20,15 @@ const List<Size> kEkranBoyutlari = [
   Size(412, 915), // Pixel sınıfı
 ];
 
+/// Takım temalarından uç örnekler: koyu lacivert/sarı (açık), tersine çevrilmiş
+/// siyah-beyaz (koyu) ve antrasit butonlu Ay-Yıldız (açık). Bileşen bunlarda da
+/// hatasız çizilmeli (tema token'ı eksikliği, renk varsayımı).
+const List<(TakimTemasi, Brightness)> kUcTemalar = [
+  (TakimTemasi.sariLacivert, Brightness.light),
+  (TakimTemasi.siyahBeyaz, Brightness.dark),
+  (TakimTemasi.ayYildiz, Brightness.light),
+];
+
 /// Yazı ölçekleri. Üst sınır uygulamanın gerçek clamp'iyle (kMaksYaziOlcegi)
 /// aynıdır — kullanıcı sistem fontunu 2.0x yapsa bile uygulama bunu
 /// kMaksYaziOlcegi'ne çeker (bkz. lib/common/ui_scale.dart). Bu yüzden test de
@@ -39,6 +48,7 @@ void tasmaTesti(
   List<double> yaziOlcekleri = kYaziOlcekleri,
   Widget Function(Widget)? sar,
   bool koyuTemaDa = true,
+  bool takimTemalarinda = true,
 }) {
   for (final boyut in boyutlar) {
     for (final olcek in yaziOlcekleri) {
@@ -71,6 +81,25 @@ void tasmaTesti(
       );
     });
   }
+
+  // Uç takım temalarında tek kombinasyon: amaç koyu tema koşusuyla aynı —
+  // taşmayı değil, temaya göre değişen renk/gradyan token'larından doğan
+  // çalışma zamanı hatalarını yakalamak.
+  if (takimTemalarinda) {
+    for (final (takim, mod) in kUcTemalar) {
+      final modAdi = mod == Brightness.dark ? 'koyu' : 'açık';
+      testWidgets('$ad — ${takim.etiket} ($modAdi) temasında hatasız',
+          (tester) async {
+        await tasmaKontrol(
+          tester,
+          yapici(),
+          boyut: const Size(360, 640),
+          sar: sar,
+          tema: FitcallTema.temasi(takim, mod),
+        );
+      });
+    }
+  }
 }
 
 /// Tek bir boyut/ölçek kombinasyonunda taşma kontrolü.
@@ -81,6 +110,7 @@ Future<void> tasmaKontrol(
   double yaziOlcegi = 1.0,
   Widget Function(Widget)? sar,
   bool koyu = false,
+  ThemeData? tema,
 }) async {
   tester.view.physicalSize = boyut;
   tester.view.devicePixelRatio = 1.0;
@@ -91,7 +121,7 @@ Future<void> tasmaKontrol(
   await tester.pumpWidget(
     MaterialApp(
       locale: const Locale('tr', 'TR'),
-      theme: koyu ? FitcallTema.koyu : FitcallTema.acik,
+      theme: tema ?? (koyu ? FitcallTema.koyu : FitcallTema.acik),
       home: MediaQuery(
         data: MediaQueryData(
           size: boyut,

@@ -8,6 +8,7 @@
 // Dış Column'un yüksekliği sınırlı olduğundan gövde Expanded içinde; taşma yok.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 
 import 'program_constants.dart';
@@ -247,12 +248,12 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
                         width: ProgramOlculeri.kortKolonGenisligi,
                         alignment: Alignment.center,
                         padding: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           border: Border(
                             left: BorderSide(
-                                color: ProgramRenkleri.kortAyraci, width: 1),
+                                color: context.renkler.saatCizgisi, width: 1),
                             bottom: BorderSide(
-                                color: ProgramRenkleri.kortAyraci, width: 1),
+                                color: context.renkler.saatCizgisi, width: 1),
                           ),
                         ),
                         child: Text(
@@ -292,9 +293,9 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
               child: Text(
                 '${s.toString().padLeft(2, '0')}:00',
                 textAlign: TextAlign.right,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10.5,
-                  color: Color(0xFF94A3B8),
+                  color: context.cs.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -312,7 +313,7 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
         top: ust,
         left: 0,
         width: genislik,
-        child: Container(height: 1, color: ProgramRenkleri.saatCizgisi),
+        child: Container(height: 1, color: context.renkler.saatCizgisi),
       ));
       if (s < bitSaat) {
         cizgiler.add(Positioned(
@@ -320,7 +321,7 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
           left: 0,
           width: genislik,
           child:
-              Container(height: 0.5, color: ProgramRenkleri.yarimSaatCizgisi),
+              Container(height: 0.5, color: context.renkler.yarimSaatCizgisi),
         ));
       }
     }
@@ -334,7 +335,7 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
           left: i * ProgramOlculeri.kortKolonGenisligi,
           top: 0,
           height: yukseklik,
-          child: Container(width: 1, color: ProgramRenkleri.kortAyraci),
+          child: Container(width: 1, color: context.renkler.saatCizgisi),
         ),
     ];
   }
@@ -410,7 +411,7 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
       top: ust,
       left: 0,
       width: genislik,
-      child: Container(height: 2, color: ProgramRenkleri.simdiCizgisi),
+      child: Container(height: 2, color: context.renkler.simdiCizgisi),
     );
   }
 }

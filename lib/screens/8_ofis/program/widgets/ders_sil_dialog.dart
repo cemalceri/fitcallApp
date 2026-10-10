@@ -8,6 +8,7 @@
 // şey yok olur; bu derse verilmiş telafi hakları da (CASCADE) kaybolur.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:flutter/material.dart';
 
 class DersSilDialog extends StatelessWidget {
@@ -117,13 +118,9 @@ class DersSilDialog extends StatelessWidget {
           onPressed: () => Navigator.pop(context, false),
           child: const Text('Vazgeç'),
         ),
-        FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: renk.error,
-            foregroundColor: renk.onError,
-          ),
+        YikiciButon(
+          etiket: 'Kalıcı olarak sil',
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Kalıcı olarak sil'),
         ),
       ],
     );

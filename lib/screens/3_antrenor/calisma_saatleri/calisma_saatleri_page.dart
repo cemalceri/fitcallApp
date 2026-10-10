@@ -8,6 +8,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 
 /// Bir günün düzenlenebilir çalışma saati durumu
 class _GunSatiri {
@@ -388,10 +389,7 @@ class _CalismaSaatleriPageState extends State<CalismaSaatleriPage> {
                 ? SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.surface,
-                    ),
+                    child: ButonYukleniyorGostergesi(kalinlik: 2),
                   )
                 : const Icon(Icons.save_rounded, size: 18),
             label: Text(_isSaving ? 'Kaydediliyor...' : 'Kaydet'),

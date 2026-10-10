@@ -1,5 +1,6 @@
 // lib/screens/5_etkinlik/takvim/widgets/ders_degerlendirme_popup.dart
 
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -7,6 +8,7 @@ import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 
 class DersDegerlendirmePopup extends StatefulWidget {
   final EtkinlikModel ders;
@@ -157,7 +159,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: widget.ders.iptalMi
-                        ? Colors.red.withValues(alpha: 0.12)
+                        ? context.renkler.hataZemin
                         : context.takvim.completed.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -166,7 +168,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                         ? Icons.cancel_rounded
                         : Icons.star_rounded,
                     color: widget.ders.iptalMi
-                        ? Colors.red
+                        ? context.renkler.hata
                         : context.takvim.completed,
                     size: 24,
                   ),
@@ -214,21 +216,22 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.10),
+                      color: context.renkler.hataZemin,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.red.shade200),
+                      border: Border.all(
+                          color: context.renkler.hata.withValues(alpha: 0.35)),
                     ),
                     child: Column(
                       children: [
                         Icon(Icons.info_outline_rounded,
-                            color: Colors.red.shade700, size: 40),
+                            color: context.renkler.hata, size: 40),
                         const SizedBox(height: 12),
                         Text(
                           'Bu ders iptal edildiği için değerlendirme yapılamaz.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.red.shade900,
+                            color: context.renkler.hata,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -241,7 +244,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.red.shade800,
+                              color: context.renkler.hata,
                             ),
                           ),
                         ],
@@ -351,8 +354,8 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                                   ? const SizedBox(
                                       width: 20,
                                       height: 20,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2, color: Colors.white),
+                                      child: ButonYukleniyorGostergesi(
+                                          kalinlik: 2),
                                     )
                                   : const Text('Kaydet',
                                       style: TextStyle(
@@ -391,7 +394,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: widget.ders.iptalMi
-                  ? Colors.red.withValues(alpha: 0.15)
+                  ? context.renkler.hataZemin
                   : context.takvim.completed.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
@@ -399,8 +402,9 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
               widget.ders.iptalMi
                   ? Icons.cancel_rounded
                   : Icons.check_circle_rounded,
-              color:
-                  widget.ders.iptalMi ? Colors.red : context.takvim.completed,
+              color: widget.ders.iptalMi
+                  ? context.renkler.hata
+                  : context.takvim.completed,
               size: 24,
             ),
           ),
@@ -415,7 +419,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: widget.ders.iptalMi
-                        ? Colors.red
+                        ? context.renkler.hata
                         : context.takvim.completed,
                   ),
                 ),
@@ -485,7 +489,8 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                  color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                  color: Theme.of(context).colorScheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(10)),
               child: Text(_yorumController.text,
                   style: TextStyle(
                       fontSize: 14,
@@ -507,7 +512,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.grey.withValues(alpha: 0.10),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(14),
             border:
                 Border.all(color: Theme.of(context).colorScheme.outlineVariant),
@@ -570,7 +575,7 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                   BorderSide(color: context.takvim.completed, width: 1.5),
             ),
             filled: true,
-            fillColor: Colors.grey.withValues(alpha: 0.10),
+            fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
             contentPadding: const EdgeInsets.all(16),
           ),
         ),
@@ -582,13 +587,14 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.blue.withValues(alpha: 0.10),
+        color: context.renkler.bilgiZemin,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade200),
+        border:
+            Border.all(color: context.renkler.bilgi.withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline_rounded, color: Colors.blue.shade700),
+          Icon(Icons.info_outline_rounded, color: context.renkler.bilgi),
           const SizedBox(width: 12),
           const Expanded(
             child: Text(

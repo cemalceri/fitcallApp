@@ -109,103 +109,91 @@ class _DerslerPageState extends State<DerslerPage> {
     final dateFormat = DateFormat('d MMMM yyyy, EEEE', 'tr_TR');
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.06),
-              colorScheme.surface,
-            ],
-            stops: const [0.0, 0.3],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Dersler',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
+      // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Dersler',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
                     ),
-                    const SizedBox(height: 16),
-                    // Tarih seçici
-                    Row(
-                      children: [
-                        IconButton(
-                          tooltip: 'Geri',
-                          onPressed: _previousDay,
-                          icon: const Icon(Icons.chevron_left),
-                          style: IconButton.styleFrom(
-                            backgroundColor: colorScheme.surfaceContainerHighest
-                                .withValues(alpha: 0.5),
-                          ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Tarih seçici
+                  Row(
+                    children: [
+                      IconButton(
+                        tooltip: 'Geri',
+                        onPressed: _previousDay,
+                        icon: const Icon(Icons.chevron_left),
+                        style: IconButton.styleFrom(
+                          backgroundColor: colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.5),
                         ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _selectDate,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              decoration: BoxDecoration(
-                                color: colorScheme.surfaceContainerHighest
-                                    .withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.calendar_today, size: 16),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    dateFormat.format(_secilenTarih),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: colorScheme.onSurface,
-                                    ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: _selectDate,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: colorScheme.surfaceContainerHighest
+                                  .withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.calendar_today, size: 16),
+                                const SizedBox(width: 8),
+                                Text(
+                                  dateFormat.format(_secilenTarih),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: colorScheme.onSurface,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        IconButton(
-                          onPressed: _nextDay,
-                          icon: const Icon(Icons.chevron_right),
-                          style: IconButton.styleFrom(
-                            backgroundColor: colorScheme.surfaceContainerHighest
-                                .withValues(alpha: 0.5),
-                          ),
+                      ),
+                      IconButton(
+                        onPressed: _nextDay,
+                        icon: const Icon(Icons.chevron_right),
+                        style: IconButton.styleFrom(
+                          backgroundColor: colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.5),
                         ),
-                        const SizedBox(width: 8),
-                        TextButton(
-                          onPressed: _goToToday,
-                          child: const Text('Bugün'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Filtre
-                    _buildFiltreler(colorScheme),
-                  ],
-                ),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton(
+                        onPressed: _goToToday,
+                        child: const Text('Bugün'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Filtre
+                  _buildFiltreler(colorScheme),
+                ],
               ),
+            ),
 
-              // Content
-              Expanded(child: _buildContent()),
-            ],
-          ),
+            // Content
+            Expanded(child: _buildContent()),
+          ],
         ),
       ),
     );
@@ -290,8 +278,8 @@ class _DerslerPageState extends State<DerslerPage> {
         itemBuilder: (context, index) {
           if (index == 0) {
             return Padding(
-              padding: const EdgeInsets.fromLTRB(
-                  Bosluk.l, 0, Bosluk.l, Bosluk.l),
+              padding:
+                  const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.l),
               child: DersIstatistikKartlar(data: _data!.istatistikler),
             );
           }

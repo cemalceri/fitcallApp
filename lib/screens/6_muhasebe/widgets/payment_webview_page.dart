@@ -1,5 +1,6 @@
 // lib/screens/6_muhasebe/widgets/payment_webview_page.dart
 
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -91,13 +92,12 @@ class _PaymentWebViewPageState extends State<PaymentWebViewPage> {
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Devam Et'),
           ),
-          FilledButton(
+          YikiciButon(
+            etiket: 'İptal Et',
             onPressed: () {
               Navigator.pop(ctx); // dialog kapat
               Navigator.pop(context, false); // webview kapat, başarısız döndür
             },
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('İptal Et'),
           ),
         ],
       ),

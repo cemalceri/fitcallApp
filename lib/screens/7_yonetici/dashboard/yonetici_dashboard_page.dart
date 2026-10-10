@@ -81,25 +81,10 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.06),
-              colorScheme.surface,
-              colorScheme.surface,
-            ],
-            stops: const [0.0, 0.3, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          child: _buildContent(),
-        ),
+      // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
+      body: SafeArea(
+        child: _buildContent(),
       ),
     );
   }

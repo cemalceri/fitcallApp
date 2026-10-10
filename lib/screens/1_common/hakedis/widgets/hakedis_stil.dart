@@ -13,6 +13,7 @@
 import 'package:fitcall/models/1_common/hakedis_models.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
+import 'package:fitcall/common/tema.dart';
 
 /* -------------------------------------------------------------------------- */
 /*                              RENK PALETİ                                   */
@@ -27,8 +28,9 @@ const Color hakedisTuruncu = Color(0xFFF59E0B);
 /// Hakediş dışı / nötr — slate
 Color hakedisGri = const Color(0xFF8C8C8C);
 
-/// Plan dışı katılımcı — mavi
-const Color hakedisMavi = Color(0xFF3B82F6);
+/// Plan dışı katılımcı — bilgi mavisi (formanın kobaltı; açık/koyu tonu
+/// [hakedisRenkSeti] üretir).
+const Color hakedisMavi = Marka.mavi;
 
 /// Katılmadı / iptal — kırmızı
 const Color hakedisKirmizi = Color(0xFFEF4444);
@@ -65,7 +67,13 @@ HakedisRenk hakedisRenkSeti(BuildContext context, Color taban) {
       ana: hsl.withLightness((hsl.lightness + 0.08).clamp(0.0, 1.0)).toColor(),
       dolgu: taban.withValues(alpha: 0.20),
       kenar: taban.withValues(alpha: 0.42),
-      metin: hsl.withLightness(0.80).withSaturation(0.55).toColor(),
+      // Doygunluk yalnız sınırlanır, artırılmaz: gri bir tabanın (hakediş
+      // dışı, Siyah-Beyaz'ın birincil rengi) tonu 0 = kırmızı olduğu için
+      // doygunluk eklemek onu pembeye çeviriyordu.
+      metin: hsl
+          .withLightness(0.80)
+          .withSaturation(hsl.saturation.clamp(0.0, 0.55))
+          .toColor(),
     );
   }
 

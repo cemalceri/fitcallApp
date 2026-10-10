@@ -10,6 +10,8 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
+import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 
 class LessonDevirDialog extends StatefulWidget {
   final EtkinlikModel ders;
@@ -370,19 +372,22 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.10),
+              color: context.renkler.bilgiZemin,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue.shade200),
+              border: Border.all(
+                  color: context.renkler.bilgi.withValues(alpha: 0.35)),
             ),
             child: Row(
               children: [
                 Icon(Icons.info_outline_rounded,
-                    color: Colors.blue.shade700, size: 20),
+                    color: context.renkler.bilgi, size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Bu derste $rolLabel olarak görev yapıyorsunuz. Seçtiğiniz antrenöre devir teklifi gönderilecek.',
-                    style: TextStyle(fontSize: 12, color: Colors.blue.shade900),
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurface),
                   ),
                 ),
               ],
@@ -543,8 +548,7 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
+                          child: ButonYukleniyorGostergesi(kalinlik: 2))
                       : const Icon(Icons.undo_rounded, size: 18),
                   label: const Text('Talebi Geri Çek',
                       style:
@@ -599,8 +603,7 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
                   ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white))
+                      child: ButonYukleniyorGostergesi(kalinlik: 2))
                   : const Text('Devir Talebi Gönder',
                       style: TextStyle(fontWeight: FontWeight.w600)),
             ),

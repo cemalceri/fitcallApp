@@ -5,8 +5,11 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:flutter/material.dart';
 import 'takvim_constants.dart';
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
+import 'package:fitcall/common/tema.dart';
 
 class LessonCancelDialog extends StatefulWidget {
   final EtkinlikModel ders;
@@ -354,6 +357,9 @@ class _LessonCancelDialogContentState
         const SizedBox(height: 10),
         TextField(
           controller: _aciklamaCtrl,
+          // "İptal Talebi Gönder" butonu metne göre etkinleşiyor; yazı
+          // değişince yeniden çizilmezse buton pasif kalıyordu.
+          onChanged: (_) => setState(() {}),
           maxLines: 4,
           maxLength: 500,
           decoration: InputDecoration(
@@ -539,10 +545,10 @@ class _LessonCancelDialogContentState
 // katilacakMi: false → Katılmayacağını bildirdi (kırmızı)
     final katilacakMi = teyit?.katilacakMi;
     final color = katilacakMi == null
-        ? const Color(0xFFF59E0B)
+        ? context.renkler.uyari
         : katilacakMi
-            ? const Color(0xFF10B981)
-            : const Color(0xFFEF4444);
+            ? context.renkler.basari
+            : context.renkler.hata;
     final icon = katilacakMi == null
         ? Icons.help_outline_rounded
         : katilacakMi
@@ -627,8 +633,7 @@ class _LessonCancelDialogContentState
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                      child: ButonYukleniyorGostergesi(kalinlik: 2),
                     )
                   : const Icon(Icons.undo_rounded, size: 18),
               label: const Text(
@@ -675,26 +680,12 @@ class _LessonCancelDialogContentState
           const SizedBox(width: 12),
           Expanded(
             flex: 2,
-            child: FilledButton(
-              onPressed: !hasText || _isSaving ? null : _talepGonder,
-              style: FilledButton.styleFrom(
-                backgroundColor: context.takvim.cancelled,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: _isSaving
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text(
-                      'İptal Talebi Gönder',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
+            // Yıkıcı aksiyon kenarlıklı (bkz. YikiciButon).
+            child: YikiciButon(
+              etiket: 'İptal Talebi Gönder',
+              onPressed: hasText ? _talepGonder : null,
+              yukleniyor: _isSaving,
+              padding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:fitcall/common/tema.dart';
 
 /// Üyelik/Paket bilgilerinin gruplu, açılır-kapanır görünümü.
 ///
@@ -43,7 +44,7 @@ class _UyeUrunListViewState extends State<UyeUrunListView> {
           key: 'PAKET',
           baslik: 'Paketler',
           icon: Icons.card_membership_rounded,
-          renk: const Color(0xFF6366F1),
+          renk: Theme.of(context).colorScheme.primary,
           items: paketler,
         ),
         _buildGrup(
@@ -51,7 +52,7 @@ class _UyeUrunListViewState extends State<UyeUrunListView> {
           key: 'ABONELIK',
           baslik: 'Aidatlar',
           icon: Icons.event_repeat_rounded,
-          renk: const Color(0xFF0EA5E9),
+          renk: Theme.of(context).colorScheme.primary,
           items: aidatlar,
         ),
         _buildGrup(
@@ -59,7 +60,7 @@ class _UyeUrunListViewState extends State<UyeUrunListView> {
           key: 'TEK_SEFERLIK',
           baslik: 'Tek Dersler',
           icon: Icons.sports_tennis_rounded,
-          renk: const Color(0xFFF59E0B),
+          renk: Theme.of(context).colorScheme.primary,
           items: tekDersler,
         ),
         if (digerler.isNotEmpty)
@@ -393,7 +394,7 @@ class _DurumRozet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final renk =
-        aktif ? const Color(0xFF10B981) : Theme.of(context).colorScheme.outline;
+        aktif ? context.renkler.basari : Theme.of(context).colorScheme.outline;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(

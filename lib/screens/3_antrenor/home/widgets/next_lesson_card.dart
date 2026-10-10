@@ -4,6 +4,7 @@ import 'package:fitcall/common/cihaz_takvimi.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,27 +39,22 @@ class NextLessonCard extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+        // Ders varsa ekranın kimlik yüzeyi; yüklenirken ve boşken nötr kart.
+        if (!isLoading && nextLesson != null)
+          _buildLessonInfo(context)
+        else
+          Container(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
               ),
-            ],
+            ),
+            child: isLoading
+                ? _buildLoadingState(colorScheme)
+                : _buildNoLessonState(colorScheme),
           ),
-          child: isLoading
-              ? _buildLoadingState(colorScheme)
-              : nextLesson == null
-                  ? _buildNoLessonState(colorScheme)
-                  : _buildLessonInfo(context, colorScheme),
-        ),
       ],
     );
   }
@@ -127,145 +123,118 @@ class NextLessonCard extends StatelessWidget {
     );
   }
 
-  Widget _buildLessonInfo(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildLessonInfo(BuildContext context) {
     final lesson = nextLesson!;
     final tf = DateFormat('HH:mm');
     final df = DateFormat('d MMMM EEEE', 'tr_TR');
+    final yazi = context.gecis.onKimlik;
+    final countdown =
+        _geriSayim(lesson.baslangicTarihSaat.difference(simdiKulup()));
 
-    final now = simdiKulup();
-    final diff = lesson.baslangicTarihSaat.difference(now);
-    final countdown = _getCountdown(diff);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          Navigator.pushNamed(context, routeEnums[SayfaAdi.antrenorDersler]!);
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
+    return KimlikYuzeyi(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        Navigator.pushNamed(context, routeEnums[SayfaAdi.antrenorDersler]!);
+      },
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  // Tarih Kutusu
-                  _DateBox(date: lesson.baslangicTarihSaat),
-                  const SizedBox(width: 16),
-
-                  // Ders Bilgileri
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              _DateBox(date: lesson.baslangicTarihSaat),
+              const SizedBox(width: Bosluk.m),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                df.format(lesson.baslangicTarihSaat),
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
+                        Expanded(
+                          child: Text(
+                            df.format(lesson.baslangicTarihSaat),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: yazi,
                             ),
-                            _CountdownBadge(
-                              text: countdown.text,
-                              color: countdown.color,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        _InfoPill(
-                          icon: Icons.access_time_rounded,
-                          text:
-                              '${tf.format(lesson.baslangicTarihSaat)} - ${tf.format(lesson.bitisTarihSaat)}',
-                        ),
-                        const SizedBox(height: 6),
-                        _InfoPill(
-                          icon: Icons.location_on_outlined,
-                          text: lesson.kortAdi,
-                        ),
-                        if (lesson.uyeList.isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          _InfoPill(
-                            icon: Icons.person_outline_rounded,
-                            text:
-                                lesson.uyeList.map((u) => u.adSoyad).join(', '),
                           ),
-                        ],
+                        ),
+                        const SizedBox(width: Bosluk.s),
+                        Flexible(child: KimlikKapsulu(countdown)),
                       ],
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              // Dersi telefonun takvimine ekler; karta dokunmak zaten
-              // uygulamanın takvimini açtığı için şerit "takvime git" demek
-              // yerine gerçek bir iş yapıyor.
-              Material(
-                color: colorScheme.surfaceContainerHighest
-                    .withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(10),
-                child: InkWell(
-                  onTap: () => dersiCihazTakvimineEkle(lesson),
-                  borderRadius: BorderRadius.circular(10),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.event_available_outlined,
-                            size: 16,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Takvime ekle',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
+                    const SizedBox(height: Bosluk.s),
+                    _InfoPill(
+                      icon: Icons.access_time_rounded,
+                      text:
+                          '${tf.format(lesson.baslangicTarihSaat)} - ${tf.format(lesson.bitisTarihSaat)}',
                     ),
-                  ),
+                    const SizedBox(height: 6),
+                    _InfoPill(
+                      icon: Icons.location_on_outlined,
+                      text: lesson.kortAdi,
+                    ),
+                    if (lesson.uyeList.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      _InfoPill(
+                        icon: Icons.person_outline_rounded,
+                        text: lesson.uyeList.map((u) => u.adSoyad).join(', '),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: Bosluk.m),
+          // Dersi telefonun takvimine ekler; karta dokunmak zaten
+          // uygulamanın takvimini açtığı için şerit "takvime git" demek
+          // yerine gerçek bir iş yapıyor.
+          Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              onTap: () => dersiCihazTakvimineEkle(lesson),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 9),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: yazi.withValues(alpha: 0.45)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.event_available_outlined, size: 16, color: yazi),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Takvime ekle',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: yazi,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  _CountdownInfo _getCountdown(Duration diff) {
-    if (diff.inDays > 0) {
-      return _CountdownInfo('${diff.inDays} gün sonra', Colors.blue);
-    } else if (diff.inHours > 0) {
-      return _CountdownInfo('${diff.inHours} saat sonra', Colors.orange);
-    } else if (diff.inMinutes > 0) {
-      return _CountdownInfo('${diff.inMinutes} dk sonra', Colors.green);
-    } else {
-      return _CountdownInfo('Şimdi!', Colors.red);
-    }
+  /// Geri sayım metni; kapsül her temada aynı biçimde okunur.
+  String _geriSayim(Duration diff) {
+    if (diff.inDays > 0) return '${diff.inDays} gün sonra';
+    if (diff.inHours > 0) return '${diff.inHours} saat sonra';
+    if (diff.inMinutes > 0) return '${diff.inMinutes} dk sonra';
+    return 'Şimdi';
   }
 }
 
-class _CountdownInfo {
-  final String text;
-  final Color color;
-  _CountdownInfo(this.text, this.color);
-}
-
+/// Tarih kutusu (kimlik yüzeyinin üstünde, koyulaştırılmış kapsül zemininde).
 class _DateBox extends StatelessWidget {
   final DateTime date;
 
@@ -273,64 +242,34 @@ class _DateBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final yazi = context.gecis.onKimlik;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      width: 50,
+      padding: const EdgeInsets.symmetric(vertical: Bosluk.s),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF6366F1),
-            const Color(0xFF6366F1).withValues(alpha: 0.8),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(14),
+        color: TemaGecisleri.kapsulZemini,
+        borderRadius: BorderRadius.circular(Yaricap.m),
       ),
       child: Column(
         children: [
           Text(
             date.day.toString(),
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.surface,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              height: 1.1,
+              color: yazi,
             ),
           ),
           Text(
             DateFormat('MMM', 'tr_TR').format(date).toUpperCase(),
             style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: 0.9),
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: yazi,
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CountdownBadge extends StatelessWidget {
-  final String text;
-  final Color color;
-
-  const _CountdownBadge({required this.text, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
       ),
     );
   }
@@ -344,20 +283,17 @@ class _InfoPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
+    final yazi = context.gecis.onKimlik;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: colorScheme.onSurfaceVariant),
+        Icon(icon, size: 14, color: yazi),
         const SizedBox(width: 4),
         Flexible(
           child: Text(
             text,
-            style: TextStyle(
-              fontSize: 12,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            maxLines: 1,
+            style: TextStyle(fontSize: 12, color: yazi),
             overflow: TextOverflow.ellipsis,
           ),
         ),

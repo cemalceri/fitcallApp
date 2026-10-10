@@ -9,6 +9,7 @@ import 'package:fitcall/screens/3_antrenor/calisma_saatleri/calisma_saatleri_pag
 import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -21,24 +22,7 @@ class AntrenorProfilPage extends StatelessWidget {
       future: StorageService.antrenorBilgileriniGetir(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
-            body: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.1),
-                    Theme.of(context).colorScheme.surface,
-                  ],
-                ),
-              ),
-              child: const IskeletKart(),
-            ),
-          );
+          return const Scaffold(body: IskeletKart());
         } else if (snapshot.hasError) {
           return Scaffold(
             body: Center(
@@ -109,11 +93,11 @@ class _AntrenorProfilContent extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 190,
+            // Açıkken şeffaf (yıkama ve kimlik kartı görünür), kapanınca
+            // tema zemin rengine döner (AppBar teması, scrolledUnder).
+            expandedHeight: 224,
             pinned: true,
             automaticallyImplyLeading: geriVar,
-            backgroundColor: colorScheme.surface,
-            surfaceTintColor: Colors.transparent,
             title: Text('${antrenor.adi} ${antrenor.soyadi}'),
             actions: [
               IconButton(
@@ -125,10 +109,7 @@ class _AntrenorProfilContent extends StatelessWidget {
             ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: EdgeInsets.zero,
-              background: _ProfileHeader(
-                antrenor: antrenor,
-                antrenorRenk: antrenorRenk,
-              ),
+              background: _ProfileHeader(antrenor: antrenor),
             ),
           ),
           SliverToBoxAdapter(
@@ -183,102 +164,47 @@ class _AntrenorProfilContent extends StatelessWidget {
 /*                              Profile Header                                */
 /* -------------------------------------------------------------------------- */
 
+/// Profil başlığı: sayfanın kimlik yüzeyi. Antrenörün kendi rengi başlıkta
+/// değil rozette; renkli yüzeyin üstünde ikinci bir renk gürültü olurdu.
 class _ProfileHeader extends StatelessWidget {
   final AntrenorModel antrenor;
-  final Color antrenorRenk;
 
-  const _ProfileHeader({
-    required this.antrenor,
-    required this.antrenorRenk,
-  });
+  const _ProfileHeader({required this.antrenor});
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final ad = '${antrenor.adi} ${antrenor.soyadi}';
+    final foto = antrenor.profileImageUrl?.trim();
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            antrenorRenk.withValues(alpha: 0.22),
-            colorScheme.surface,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: antrenorRenk.withValues(alpha: 0.35),
-                ),
-                child: Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: colorScheme.surface,
-                  ),
-                  child: ClipOval(
-                    child: antrenor.profileImageUrl != null &&
-                            antrenor.profileImageUrl!.trim().isNotEmpty
-                        ? Image(
-                            image: CachedNetworkImageProvider(
-                                antrenor.profileImageUrl!.trim()),
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _buildAvatarPlaceholder(colorScheme),
-                          )
-                        : _buildAvatarPlaceholder(colorScheme),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${antrenor.adi} ${antrenor.soyadi}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    if (antrenor.ePosta != null || antrenor.telefon != null)
-                      Text(
-                        antrenor.ePosta ?? antrenor.telefon ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            Bosluk.l, kToolbarHeight + Bosluk.xs, Bosluk.l, Bosluk.m),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: KimlikBaslik(
+            baslik: ad,
+            basHarfler: basHarfleri(ad),
+            altBaslik: antrenor.ePosta ?? antrenor.telefon,
+            avatar: foto != null && foto.isNotEmpty
+                ? Image(
+                    image: CachedNetworkImageProvider(foto),
+                    width: 52,
+                    height: 52,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, _, __) => Center(
+                      child: Text(
+                        basHarfleri(ad),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: c.gecis.onKimlik,
+                        ),
                       ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAvatarPlaceholder(ColorScheme colorScheme) {
-    return Container(
-      color: colorScheme.surfaceContainerHighest,
-      child: Center(
-        child: Text(
-          '${antrenor.adi[0]}${antrenor.soyadi[0]}',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: antrenorRenk,
+                    ),
+                  )
+                : null,
           ),
         ),
       ),

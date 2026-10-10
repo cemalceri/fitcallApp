@@ -5,6 +5,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 
 class SifreDegistirPage extends StatefulWidget {
   const SifreDegistirPage({super.key});
@@ -225,11 +226,8 @@ class _SifreDegistirPageState extends State<SifreDegistirPage> {
                                 ? SizedBox(
                                     height: 20,
                                     width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color:
-                                          Theme.of(context).colorScheme.surface,
-                                    ),
+                                    child:
+                                        ButonYukleniyorGostergesi(kalinlik: 2),
                                   )
                                 : const Text(
                                     'Şifreyi Değiştir',

@@ -176,47 +176,78 @@ class _MerkezButon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = context.cs;
+    final gecis = context.gecis;
     return Expanded(
       child: Semantics(
         button: true,
         label: etiket,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Material(
-                color: context.renkler.vurgu,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  onTap: onTap,
-                  customBorder: const CircleBorder(),
-                  child: SizedBox(
-                    width: 42,
-                    height: 42,
-                    // Koyu temada turuncu açıldığı için beyaz ikon okunmaz
-                    // hâle geliyor; orada koyu ikon kullanılır.
-                    child: Icon(
-                      ikon,
-                      color: context.koyuTema ? cs.onPrimary : Colors.white,
-                      size: 22,
+        // Dokunma alanı yalnız 38 dp'lik iç daire değil, tüm sütun (halka ve
+        // etiket dahil); iç daire dokununca dalgalanmayı çizer.
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          excludeFromSemantics: true,
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Uygulamadaki tek gradyanlı kontrol: halka ikinci takım
+                // renginin şeridi, içi QR gradyanı. İkon rengi temadan gelir
+                // (her temada en az 3:1 — kontrast testi).
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: gecis.serit,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    // Halka ile gradyan arasındaki zemin rengi boşluk. Kenarlık
+                    // (border) çocuğu içeri itmediği için dolgu + boşluk kullanılır;
+                    // yoksa Ink gradyanı boşluğun üstüne boyanıyordu.
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: cs.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2),
+                        child: Material(
+                          type: MaterialType.transparency,
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              gradient: gecis.qr,
+                              shape: BoxShape.circle,
+                            ),
+                            child: InkWell(
+                              onTap: onTap,
+                              customBorder: const CircleBorder(),
+                              child: SizedBox(
+                                width: 38,
+                                height: 38,
+                                child: Icon(ikon, color: gecis.onQr, size: 21),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                etiket,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: cs.onSurfaceVariant,
+                const SizedBox(height: 2),
+                Text(
+                  etiket,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurfaceVariant,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

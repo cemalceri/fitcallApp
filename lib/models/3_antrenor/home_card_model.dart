@@ -1,6 +1,7 @@
 // lib/screens/3_antrenor/home/models/home_card_model.dart
 
 import 'package:fitcall/common/tarih_util.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 
 /// Bilgi kartı türleri
@@ -97,37 +98,31 @@ class HomeCardModel {
     }
   }
 
-  /// Kart türüne göre renk
-  Color get color {
+  /// Kart türünün anlamı. Renk değil: ekran bunu temaya çevirir
+  /// (`ton.on(context)`). Eskiden her tür ayrı bir gömülü renkti (turuncu,
+  /// mor, indigo, mavi…) ve kartlar rengarenk görünüyordu; artık yalnız durum
+  /// bildiren türler durum rengi alır, gerisi temanın ana rengi.
+  ListeTonu get ton {
     switch (type) {
       case HomeCardType.pendingApproval:
-        return const Color(0xFFF59E0B); // Turuncu
-      case HomeCardType.weeklySummary:
-        return const Color(0xFF10B981); // Yeşil
-      case HomeCardType.cancelled:
-        return const Color(0xFFEF4444); // Kırmızı
-      case HomeCardType.earnings:
-        return const Color(0xFF8B5CF6); // Mor
-      case HomeCardType.studentCount:
-        return const Color(0xFF3B82F6); // Mavi
-      case HomeCardType.upcomingLessons:
-        return const Color(0xFF6366F1); // İndigo
       case HomeCardType.warning:
-        return const Color(0xFFF59E0B); // Turuncu
-      case HomeCardType.success:
-        return const Color(0xFF10B981); // Yeşil
-      case HomeCardType.info:
-        return const Color(0xFF8C8C8C); // Gri
       case HomeCardType.teyitBekleyen:
-        return const Color(0xFFF59E0B); // Turuncu
-      case HomeCardType.borc:
-        return const Color(0xFFEF4444); // Kırmızı
       case HomeCardType.paketBitiyor:
-        return const Color(0xFF8B5CF6); // Mor
       case HomeCardType.telafiSureYaklasan:
-        return const Color(0xFF6366F1); // İndigo
+        return ListeTonu.uyari;
+      case HomeCardType.weeklySummary:
+      case HomeCardType.success:
+        return ListeTonu.basari;
+      case HomeCardType.cancelled:
+      case HomeCardType.borc:
+        return ListeTonu.hata;
+      case HomeCardType.info:
+        return ListeTonu.notr;
+      case HomeCardType.earnings:
+      case HomeCardType.studentCount:
+      case HomeCardType.upcomingLessons:
       case HomeCardType.degerlendirmeBekleyen:
-        return const Color(0xFF10B981); // Yeşil
+        return ListeTonu.vurgu;
     }
   }
 
@@ -165,11 +160,4 @@ class HomeCardModel {
     }
   }
 
-  /// Kart türüne göre gradient renkleri
-  List<Color> get gradientColors {
-    return [
-      color,
-      color.withValues(alpha: 0.8),
-    ];
-  }
 }

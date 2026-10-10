@@ -195,16 +195,19 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.qr_code_scanner,
-              size: 112, color: Color(0xFF2F6B5F)),
+          Icon(Icons.qr_code_scanner,
+              size: 112, color: Theme.of(context).colorScheme.primary),
           const SizedBox(height: 18),
           const Text('QR Kod Doğrulama',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'Başlamak için aşağıdaki “Tara” butonuna dokunun.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 15.5, color: Colors.black54),
+            style: TextStyle(
+              fontSize: 15.5,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 26),
           FilledButton.icon(
@@ -240,6 +243,7 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
       ],
     );
   }
+
   /// Sonuç paneli. Görsel gövde [QrSonucGorunumu]'nda: kapıda uzaktan
   /// okunabilsin diye tüm ekranı kaplayan renkli panel, hata sebebine göre
   /// ayrı ikon/renk ve "şimdi ne yapmalı" satırı.
@@ -257,7 +261,6 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
       onBitir: () => Navigator.of(context).maybePop(),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -309,8 +312,10 @@ class _ScannerBorderPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final corner = 30.0;
     final stroke = 5.0;
+    // Kamera görüntüsünün üstünde, diğer tarayıcı öğeleri gibi beyaz: tema
+    // rengi (örn. koyu bordo) karartılmış görüntüde kayboluyordu.
     final p = Paint()
-      ..color = const Color(0xFF4DB6AC)
+      ..color = Colors.white
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke;
 

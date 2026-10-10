@@ -27,7 +27,10 @@ class NotificationsBell extends StatelessWidget {
                 height: 42,
                 decoration: BoxDecoration(
                   color: count > 0
-                      ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                      ? Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.1)
                       : Theme.of(context).colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -40,7 +43,7 @@ class NotificationsBell extends StatelessWidget {
                             : Icons.notifications_outlined,
                         size: 22,
                         color: count > 0
-                            ? const Color(0xFF3B82F6)
+                            ? Theme.of(context).colorScheme.primary
                             : Theme.of(context).colorScheme.onSurfaceVariant),
                     if (count > 0)
                       Positioned(right: 8, top: 8, child: _Badge(count: count)),
@@ -67,19 +70,15 @@ class _Badge extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: isWide ? 4 : 0, vertical: 0),
       constraints: BoxConstraints(minWidth: isWide ? 18 : 16, minHeight: 16),
       decoration: BoxDecoration(
-          color: const Color(0xFFEF4444),
+          // Rozet hata renginde (her temada aynı), çerçevesi zemin renginde.
+          color: Theme.of(context).colorScheme.error,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white, width: 1.5),
-          boxShadow: [
-            BoxShadow(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.3),
-                blurRadius: 4,
-                offset: const Offset(0, 2))
-          ]),
+          border: Border.all(
+              color: Theme.of(context).colorScheme.surface, width: 1.5)),
       child: Center(
           child: Text(displayText,
-              style: const TextStyle(
-                  color: Colors.white,
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onError,
                   fontSize: 9,
                   fontWeight: FontWeight.w700,
                   height: 1.2))),

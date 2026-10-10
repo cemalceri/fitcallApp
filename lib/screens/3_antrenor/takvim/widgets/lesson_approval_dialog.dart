@@ -16,6 +16,8 @@ import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
+import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 
 /// Kilitli derste antrenörün gördüğü yoklama durumu.
 ///
@@ -333,14 +335,15 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.10),
+                    color: context.renkler.bilgiZemin,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.blue.shade200),
+                    border: Border.all(
+                        color: context.renkler.bilgi.withValues(alpha: 0.35)),
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.lock_rounded,
-                          color: Colors.blue.shade700, size: 20),
+                          color: context.renkler.bilgi, size: 20),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -349,7 +352,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                               : 'Yönetici onayı verildiği için bu ders kilitlenmiştir. Değişiklik için yöneticinizle iletişime geçin.',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.blue.shade700,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -600,15 +603,15 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withValues(alpha: 0.18),
+                        color: context.renkler.uyariZemin,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Misafir',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: Colors.orange,
+                          color: context.renkler.uyari,
                         ),
                       ),
                     ),
@@ -1133,8 +1136,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                   ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                      child: ButonYukleniyorGostergesi(kalinlik: 2),
                     )
                   : const Text('Kaydet',
                       style: TextStyle(fontWeight: FontWeight.w600)),

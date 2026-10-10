@@ -1,13 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:flutter/material.dart';
 
-/// Profil başlığı — avatar, ad ve üye numarası tek satırda.
+/// Profil başlığı — avatar, ad ve üye numarası; sayfanın kimlik yüzeyi.
 ///
 /// Eski başlık ekranın yarısını (340 px) kaplıyordu: bilgiye ulaşmak için
-/// kaydırmak gerekiyordu. Artık yatay bir düzen; durum rozetleri gövdeye indi
-/// (bkz. `ProfilDurumRozetleri`).
+/// kaydırmak gerekiyordu. Artık yatay bir kart; durum rozetleri gövdeye indi
+/// (bkz. `ProfilDurumRozetleri`). Seviye (top) rengi başlıkta değil rozette:
+/// renkli kimlik yüzeyinin üstünde ikinci bir renk halkası gürültü olurdu.
 class ProfileHeader extends StatelessWidget {
   final UyeModel uye;
   final Color seviyeRenk;
@@ -20,109 +22,38 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.cs;
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            seviyeRenk.withValues(alpha: 0.22),
-            cs.surface,
-          ],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-              Bosluk.l, Bosluk.xxl + Bosluk.s, Bosluk.l, Bosluk.l),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _Avatar(uye: uye, seviyeRenk: seviyeRenk, boyut: 64),
-              const SizedBox(width: Bosluk.l),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${uye.adi} ${uye.soyadi}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.metin.headlineSmall,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Üye No: ${uye.uyeNo} · ${uye.uyeTuru}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.metin.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Avatar extends StatelessWidget {
-  final UyeModel uye;
-  final Color seviyeRenk;
-  final double boyut;
-
-  const _Avatar({
-    required this.uye,
-    required this.seviyeRenk,
-    required this.boyut,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = context.cs;
     final foto = uye.profilFotografi;
+    final ad = '${uye.adi} ${uye.soyadi}';
 
-    return Container(
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: seviyeRenk.withValues(alpha: 0.35),
-      ),
-      child: Container(
-        width: boyut,
-        height: boyut,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: cs.surface),
-        child: ClipOval(
-          child: foto != null && foto.isNotEmpty
-              ? Image(
-                  image: CachedNetworkImageProvider(foto),
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _bosAvatar(context),
-                )
-              : _bosAvatar(context),
-        ),
-      ),
-    );
-  }
-
-  Widget _bosAvatar(BuildContext context) {
-    final basHarfler =
-        '${uye.adi.isNotEmpty ? uye.adi[0] : ''}${uye.soyadi.isNotEmpty ? uye.soyadi[0] : ''}';
-    return Container(
-      color: context.cs.surfaceContainerHighest,
-      child: Center(
-        child: Text(
-          basHarfler,
-          style: TextStyle(
-            fontSize: boyut * 0.36,
-            fontWeight: FontWeight.bold,
-            color: seviyeRenk,
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            Bosluk.l, kToolbarHeight + Bosluk.xs, Bosluk.l, Bosluk.m),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: KimlikBaslik(
+            baslik: ad,
+            basHarfler: basHarfleri(ad),
+            altBaslik: 'Üye No: ${uye.uyeNo} · ${uye.uyeTuru}',
+            avatar: foto != null && foto.isNotEmpty
+                ? Image(
+                    image: CachedNetworkImageProvider(foto),
+                    width: 52,
+                    height: 52,
+                    fit: BoxFit.cover,
+                    errorBuilder: (c, _, __) => Center(
+                      child: Text(
+                        basHarfleri(ad),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: c.gecis.onKimlik,
+                        ),
+                      ),
+                    ),
+                  )
+                : null,
           ),
         ),
       ),

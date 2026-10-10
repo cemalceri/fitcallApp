@@ -41,7 +41,7 @@ class QuickAccessSection extends StatelessWidget {
           title: 'Detaylı Raporlar',
           subtitle: 'Ciro, doluluk, performans',
           icon: Icons.bar_chart_rounded,
-          iconColor: Colors.indigo,
+          iconColor: colorScheme.primary,
           onTap: onRaporlarTap,
         ),
         const SizedBox(height: 10),
@@ -50,7 +50,7 @@ class QuickAccessSection extends StatelessWidget {
           subtitle:
               'Günlük: ${data.hizliErisimAntrenor.gunlukTamamlananDers} ders tamamlandı',
           icon: Icons.sports_tennis,
-          iconColor: Colors.teal,
+          iconColor: colorScheme.primary,
           onTap: onAntrenorTap,
         ),
         const SizedBox(height: 10),
@@ -59,7 +59,7 @@ class QuickAccessSection extends StatelessWidget {
           subtitle:
               '${data.hizliErisimDersler.toplamDers} ders • ${data.hizliErisimDersler.onayBekleyen} onay bekliyor',
           icon: Icons.event_note,
-          iconColor: Colors.orange,
+          iconColor: colorScheme.primary,
           onTap: onDerslerTap,
           badge: data.hizliErisimDersler.onayBekleyen > 0
               ? data.hizliErisimDersler.onayBekleyen

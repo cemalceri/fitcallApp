@@ -12,39 +12,12 @@
 // Kart yalnız gerçek bir "nesne" için kalır (istatistik başlığı, özet kartı).
 
 import 'package:fitcall/common/tema.dart';
+
+// ListeTonu tema dosyasında (modeller de kullanıyor); bu dosyayı içe alan
+// ekranlar eskisi gibi erişebilsin diye yeniden dışa aktarılır.
+export 'package:fitcall/common/tema.dart' show ListeTonu, ListeTonuRenkleri;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-/// Satır öğesinin anlam tonu — avatar zeminini ve değer rengini belirler.
-enum ListeTonu { notr, vurgu, basari, uyari, hata, bilgi }
-
-extension ListeTonuRenkleri on ListeTonu {
-  /// Ön plan (metin/ikon) rengi.
-  Color on(BuildContext context) {
-    final r = context.renkler;
-    return switch (this) {
-      ListeTonu.notr => context.cs.onSurfaceVariant,
-      ListeTonu.vurgu => context.cs.primary,
-      ListeTonu.basari => r.basari,
-      ListeTonu.uyari => r.uyari,
-      ListeTonu.hata => r.hata,
-      ListeTonu.bilgi => r.bilgi,
-    };
-  }
-
-  /// Zemin rengi.
-  Color zemin(BuildContext context) {
-    final r = context.renkler;
-    return switch (this) {
-      ListeTonu.notr => r.notrZemin,
-      ListeTonu.vurgu => r.vurguZemin,
-      ListeTonu.basari => r.basariZemin,
-      ListeTonu.uyari => r.uyariZemin,
-      ListeTonu.hata => r.hataZemin,
-      ListeTonu.bilgi => r.bilgiZemin,
-    };
-  }
-}
 
 /// Liste satırının dairesel baş harf avatarı.
 ///
@@ -190,8 +163,10 @@ class ListeSatiri extends StatelessWidget {
 
     return Semantics(
       button: onTap != null,
+      // Satır şeffaf: sayfa yıkaması altından görünür (her rotanın altındaki
+      // SayfaZemini). Dokunma dalgası saydam Material'de çizilir.
       child: Material(
-        color: cs.surface,
+        type: MaterialType.transparency,
         child: InkWell(
           onTap: onTap == null
               ? null
@@ -481,33 +456,48 @@ class _KaydirilabilirSatirState extends State<_KaydirilabilirSatir>
     return GestureDetector(
       onHorizontalDragUpdate: _surukle,
       onHorizontalDragEnd: _birak,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                for (final e in widget.eylemler)
-                  _EylemDugmesi(
-                    eylem: e,
-                    genislik: _eylemGenisligi,
-                    onSec: () {
-                      _kapat();
-                      e.onSec();
-                    },
+      child: AnimatedBuilder(
+        animation: _kontrol,
+        child: widget.child,
+        builder: (context, child) {
+          final acik = _kontrol.value * _acikGenislik;
+          return Stack(
+            children: [
+              // Satır şeffaf olduğu için eylemler yalnız açılan genişlik
+              // kadar çizilir; kapalıyken ya da yarı açıkken metnin altına
+              // taşmaz.
+              if (acik > 0)
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  right: 0,
+                  width: acik,
+                  child: ClipRect(
+                    child: OverflowBox(
+                      alignment: Alignment.centerRight,
+                      minWidth: _acikGenislik,
+                      maxWidth: _acikGenislik,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          for (final e in widget.eylemler)
+                            _EylemDugmesi(
+                              eylem: e,
+                              genislik: _eylemGenisligi,
+                              onSec: () {
+                                _kapat();
+                                e.onSec();
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
-              ],
-            ),
-          ),
-          AnimatedBuilder(
-            animation: _kontrol,
-            child: widget.child,
-            builder: (context, child) => Transform.translate(
-              offset: Offset(-_kontrol.value * _acikGenislik, 0),
-              child: child,
-            ),
-          ),
-        ],
+                ),
+              Transform.translate(offset: Offset(-acik, 0), child: child),
+            ],
+          );
+        },
       ),
     );
   }

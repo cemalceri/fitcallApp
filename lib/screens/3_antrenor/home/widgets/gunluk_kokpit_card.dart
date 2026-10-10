@@ -1,6 +1,7 @@
 // lib/screens/3_antrenor/home/widgets/gunluk_kokpit_card.dart
 
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/3_antrenor/gunluk_ozet_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -81,32 +82,41 @@ class GunlukKokpitCard extends StatelessWidget {
                 color: colorScheme.onSurface,
               ),
             ),
-            const Spacer(),
-            if (o.ilkDers != null && o.sonDers != null)
-              Text(
-                '${o.ilkDers} - ${o.sonDers}',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
+            const SizedBox(width: 8),
+            // Saat aralığı esnek: dar ekranda büyük yazıda başlık satırını
+            // taşırıyordu (taşma testi yakaladı); sığmazsa kısalır.
+            Expanded(
+              child: o.ilkDers != null && o.sonDers != null
+                  ? Text(
+                      '${o.ilkDers} - ${o.sonDers}',
+                      textAlign: TextAlign.end,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
           ],
         ),
         const SizedBox(height: 14),
         Row(
           children: [
-            _stat(colorScheme, '${o.dersSayisi}', 'Ders',
-                const Color(0xFF6366F1)),
+            // Sayılar nötr; yalnız durum bildirenler (kalan, iptal) her
+            // temada aynı durum rengini alır.
+            _stat(
+                colorScheme, '${o.dersSayisi}', 'Ders', colorScheme.onSurface),
             _ayrac(colorScheme),
             _stat(colorScheme, '${o.ogrenciSayisi}', 'Öğrenci',
-                const Color(0xFF10B981)),
+                colorScheme.onSurface),
             _ayrac(colorScheme),
-            _stat(colorScheme, '${o.kalan}', 'Kalan', const Color(0xFFF59E0B)),
+            _stat(colorScheme, '${o.kalan}', 'Kalan', context.renkler.uyari),
             if (o.iptal > 0) ...[
               _ayrac(colorScheme),
-              _stat(
-                  colorScheme, '${o.iptal}', 'İptal', const Color(0xFFEF4444)),
+              _stat(colorScheme, '${o.iptal}', 'İptal', context.renkler.hata),
             ],
           ],
         ),
@@ -163,7 +173,10 @@ class GunlukKokpitCard extends StatelessWidget {
   }
 
   Widget _eksikYoklamaUyarisi(BuildContext context, GunlukOzetModel o) {
-    const renk = Color(0xFFEF4444);
+    // Eksik yoklama bir uyarı (yapılacak iş), hata değil. Uyarı rengi kendi
+    // zemininde 4.5:1'i geçiyor; eski açık kırmızı 3.3:1'de kalıyordu.
+    final renk = context.renkler.uyari;
+    final zemin = context.renkler.uyariZemin;
     final String metin;
     if (o.eksikYoklama > 0 && o.eksikYoklamaGecmis > 0) {
       metin =
@@ -186,25 +199,25 @@ class GunlukKokpitCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: renk.withValues(alpha: 0.08),
+            color: zemin,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: renk.withValues(alpha: 0.25)),
           ),
           child: Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, size: 18, color: renk),
+              Icon(Icons.warning_amber_rounded, size: 18, color: renk),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   metin,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: renk,
                   ),
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, size: 18, color: renk),
+              Icon(Icons.chevron_right_rounded, size: 18, color: renk),
             ],
           ),
         ),

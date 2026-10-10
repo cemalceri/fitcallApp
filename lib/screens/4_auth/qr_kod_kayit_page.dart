@@ -7,6 +7,9 @@ import 'dart:math' as math;
 import 'package:fitcall/models/1_common/event/gecis_model.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
 import 'package:fitcall/screens/1_common/widgets/qr_kod_gorseli.dart';
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
+import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/api_result.dart';
@@ -147,10 +150,10 @@ class _QRKodKayitPageState extends State<QRKodKayitPage>
 
   Color _kalanSureRenk(DateTime expiresAt) {
     final kalan = _kalanSure(expiresAt);
-    if (kalan.isNegative) return Colors.red;
-    if (kalan.inHours < 1) return Colors.orange;
-    if (kalan.inHours < 24) return Colors.amber.shade700;
-    return Colors.green;
+    final r = context.renkler;
+    if (kalan.isNegative) return r.hata;
+    if (kalan.inHours < 24) return r.uyari;
+    return r.basari;
   }
 
   Future<void> _paylasQrKodu(String code, {String? mesaj}) async {
@@ -357,26 +360,14 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
 
     if (_isLoadingGroup || _yukleniyor) {
       return Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF2E7D6B).withValues(alpha: 0.1),
-                colorScheme.surface,
-              ],
-            ),
-          ),
-          child: const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('QR kodlar yükleniyor...'),
-              ],
-            ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('QR kodlar yükleniyor...'),
+            ],
           ),
         ),
       );
@@ -384,73 +375,49 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
 
     if (_hata != null) {
       return Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                colorScheme.error.withValues(alpha: 0.1),
-                colorScheme.surface,
-              ],
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline, size: 64, color: colorScheme.error),
-                const SizedBox(height: 16),
-                Text(_hata!, textAlign: TextAlign.center),
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: _yukle,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Tekrar Dene'),
-                ),
-              ],
-            ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: colorScheme.error),
+              const SizedBox(height: 16),
+              Text(_hata!, textAlign: TextAlign.center),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: _yukle,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Tekrar Dene'),
+              ),
+            ],
           ),
         ),
       );
     }
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF2E7D6B).withValues(alpha: 0.08),
-              colorScheme.surface,
-              colorScheme.secondary.withValues(alpha: 0.03),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildAppBar(colorScheme),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: _yukle,
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                    children: [
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildAppBar(colorScheme),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _yukle,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                  children: [
+                    // Ekranın tek kimlik yüzeyi: kişisel QR varsa onun
+                    // kartı, yoksa tesis girişi bilgi kartı.
+                    if (_selfPass != null)
+                      _buildSelfPassSection(colorScheme)
+                    else
                       _buildHeaderCard(),
-                      const SizedBox(height: 20),
-                      if (_selfPass != null) ...[
-                        _buildSelfPassSection(colorScheme),
-                        const SizedBox(height: 24),
-                      ],
-                      _buildGuestSection(colorScheme),
-                    ],
-                  ),
+                    const SizedBox(height: 24),
+                    _buildGuestSection(colorScheme),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: _buildFAB(),
@@ -509,12 +476,15 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
             icon: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFF2E7D6B).withValues(alpha: 0.1),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.refresh_rounded,
-                color: Color(0xFF2E7D6B),
+                color: Theme.of(context).colorScheme.primary,
                 size: 22,
               ),
             ),
@@ -524,144 +494,103 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
     );
   }
 
+  /// Kişisel QR yokken ekranın kimlik yüzeyi.
   Widget _buildHeaderCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF2E7D6B), Color(0xFF4CAF93)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2E7D6B).withValues(alpha: 0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
+    final yazi = context.gecis.onKimlik;
+    return KimlikYuzeyi(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 21),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.qr_code_scanner_rounded,
-                        color: Colors.white, size: 28),
-                    SizedBox(width: 10),
-                    Text(
-                      'Tesis Girişi',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.surface,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'QR kodunuzu kapıdaki okuyucuya göstererek tesise giriş yapabilirsiniz.',
+          Row(
+            children: [
+              Icon(Icons.qr_code_scanner_rounded, color: yazi, size: 28),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Tesis Girişi',
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.9),
-                    height: 1.4,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: yazi,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'QR kodunuzu kapıdaki okuyucuya göstererek tesise giriş yapabilirsiniz.',
+            style: TextStyle(fontSize: 14, color: yazi, height: 1.4),
           ),
         ],
       ),
     );
   }
 
+  /// Kişisel QR: ekranın kimlik yüzeyi. Kod her temada saf beyaz alanda
+  /// (QrKodGorseli); kalan süre kapsülde, metinle.
   Widget _buildSelfPassSection(ColorScheme colorScheme) {
     final sp = _selfPass!;
-    final kalanRenk = _kalanSureRenk(sp.expiresAt);
+    final yazi = context.gecis.onKimlik;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildSectionTitle('Kişisel QR Kodunuz', Icons.person_outline),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
+        KimlikYuzeyi(
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
           child: Column(
             children: [
-              // QR Container with animation
-              AnimatedBuilder(
-                animation: _pulseController,
-                builder: (context, child) => QrKodGorseli(
-                  kod: sp.code,
-                  boyut: 260,
-                  nabiz: _pulseController.value,
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Durum Bilgisi
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: kalanRenk.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: kalanRenk.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.schedule_rounded, size: 18, color: kalanRenk),
-                    const SizedBox(width: 8),
-                    Text(
-                      _kalanSureText(sp.expiresAt),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: kalanRenk,
-                        fontSize: 14,
-                      ),
+              Row(
+                children: [
+                  Icon(Icons.qr_code_scanner_rounded, color: yazi, size: 24),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Kişisel QR kodunuz',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: yazi,
+                          ),
+                        ),
+                        Text(
+                          'Kapıdaki okuyucuya göstererek tesise girin.',
+                          style: TextStyle(fontSize: 13, color: yazi),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // QR boyutu kartın genişliğine uyar: dar ekranda taşmaz.
+              LayoutBuilder(
+                builder: (context, kisit) => AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) => QrKodGorseli(
+                    kod: sp.code,
+                    boyut: (kisit.maxWidth - 46).clamp(150.0, 260.0),
+                    nabiz: _pulseController.value,
+                  ),
                 ),
               ),
-
-              const SizedBox(height: 12),
-
+              const SizedBox(height: 14),
+              KimlikKapsulu(_kalanSureText(sp.expiresAt),
+                  ikon: Icons.schedule_rounded),
+              const SizedBox(height: 8),
               Text(
                 'Bitiş: ${_formatDateTime(sp.expiresAt)}',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style: TextStyle(fontSize: 13, color: yazi),
               ),
-
-              const SizedBox(height: 16),
-
-              // İpucu
-              ParlaklikIpucu(maksimumda: _parlaklik.maksimumda),
             ],
           ),
         ),
+        const SizedBox(height: 12),
+        ParlaklikIpucu(maksimumda: _parlaklik.maksimumda),
       ],
     );
   }
@@ -681,15 +610,18 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2E7D6B).withValues(alpha: 0.1),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${_davetliler.length} kişi',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E7D6B),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
@@ -804,10 +736,11 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF2E7D6B).withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, size: 18, color: const Color(0xFF2E7D6B)),
+          child: Icon(icon,
+              size: 18, color: Theme.of(context).colorScheme.primary),
         ),
         const SizedBox(width: 10),
         Text(
@@ -828,7 +761,7 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2E7D6B).withValues(alpha: 0.4),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -836,8 +769,6 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
       ),
       child: FloatingActionButton.extended(
         onPressed: _davetEt,
-        backgroundColor: const Color(0xFF2E7D6B),
-        foregroundColor: Colors.white,
         elevation: 0,
         icon: const Icon(Icons.person_add_alt_1_rounded),
         label: const Text(
@@ -892,16 +823,17 @@ class _GuestCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF2E7D6B).withValues(alpha: 0.1),
+              color:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(
               child: Text(
                 label[0].toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E7D6B),
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ),
@@ -964,7 +896,7 @@ class _GuestCard extends StatelessWidget {
             children: [
               _ActionButton(
                 icon: Icons.share_rounded,
-                color: const Color(0xFF2E7D6B),
+                color: Theme.of(context).colorScheme.primary,
                 onTap: onShare,
                 tooltip: 'Paylaş',
               ),
@@ -1094,12 +1026,15 @@ class _DavetBottomSheetState extends State<_DavetBottomSheet> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2E7D6B).withValues(alpha: 0.1),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.person_add_alt_1_rounded,
-                          color: Color(0xFF2E7D6B),
+                          color: Theme.of(context).colorScheme.primary,
                           size: 24,
                         ),
                       ),
@@ -1156,8 +1091,9 @@ class _DavetBottomSheetState extends State<_DavetBottomSheet> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(
-                            color: Color(0xFF2E7D6B), width: 2),
+                        borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 2),
                       ),
                     ),
                   ),
@@ -1192,14 +1128,18 @@ class _DavetBottomSheetState extends State<_DavetBottomSheet> {
                             ),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? const Color(0xFF2E7D6B)
-                                  : const Color(0xFF2E7D6B)
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .primary
                                       .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF2E7D6B)
-                                    : const Color(0xFF2E7D6B)
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .primary
                                         .withValues(alpha: 0.3),
                               ),
                             ),
@@ -1209,8 +1149,8 @@ class _DavetBottomSheetState extends State<_DavetBottomSheet> {
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: isSelected
-                                    ? Colors.white
-                                    : const Color(0xFF2E7D6B),
+                                    ? Theme.of(context).colorScheme.onPrimary
+                                    : Theme.of(context).colorScheme.primary,
                               ),
                             ),
                           ),
@@ -1250,9 +1190,12 @@ class _DavetBottomSheetState extends State<_DavetBottomSheet> {
                                     ),
                                   ),
                           style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF2E7D6B),
-                            disabledBackgroundColor:
-                                const Color(0xFF2E7D6B).withValues(alpha: 0.5),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            disabledBackgroundColor: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.5),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -1367,16 +1310,11 @@ class _SilOnaySheet extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: FilledButton(
+                      // Yıkıcı aksiyon kenarlıklı (bkz. YikiciButon).
+                      child: YikiciButon(
+                        etiket: 'Sil',
                         onPressed: () => Navigator.pop(context, true),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: colorScheme.error,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text('Sil'),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                     ),
                   ],

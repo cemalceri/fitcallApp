@@ -1,6 +1,8 @@
 // lib/screens/7_yonetici/uyeler/uye_detay_page.dart
 
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/models/9_yonetici/uye_detay_models.dart';
@@ -111,27 +113,13 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
             _data?.profil.adSoyad ?? widget.baslangicAdSoyad ?? 'Üye Detayı'),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.primary.withValues(alpha: 0.06),
-              colorScheme.surface,
-            ],
-            stops: const [0.0, 0.25],
-          ),
-        ),
-        child: _buildContent(),
-      ),
+      // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
+      body: _buildContent(),
     );
   }
 
@@ -187,7 +175,7 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
           _derslerBolumu(
             baslik: 'Yaklaşan Dersler',
             ikon: Icons.event_available,
-            renk: Colors.indigo,
+            renk: context.cs.primary,
             dersler: data.yaklasanDersler,
             bosMesaj: 'Yaklaşan ders yok',
           ),
@@ -195,7 +183,7 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
           _derslerBolumu(
             baslik: 'Geçmiş Dersler',
             ikon: Icons.history,
-            renk: Colors.blueGrey,
+            renk: context.cs.onSurfaceVariant,
             dersler: data.gecmisDersler,
             bosMesaj: 'Geçmiş ders kaydı yok',
           ),
@@ -212,7 +200,7 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
           child: _AksiyonButonu(
             ikon: Icons.phone,
             etiket: 'Ara',
-            renk: Colors.green,
+            renk: context.cs.primary,
             aktif: telVar,
             onTap: () => _ara(profil.telefon),
           ),
@@ -222,7 +210,7 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
           child: _AksiyonButonu(
             ikon: Icons.chat,
             etiket: 'WhatsApp',
-            renk: const Color(0xFF25D366),
+            renk: context.cs.primary,
             aktif: telVar,
             onTap: () => _whatsapp(profil.telefon),
           ),
@@ -232,7 +220,7 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
           child: _AksiyonButonu(
             ikon: Icons.link,
             etiket: 'Ödeme Linki',
-            renk: Colors.orange,
+            renk: context.cs.primary,
             aktif: true,
             onTap: _odemeLinki,
           ),
@@ -244,7 +232,7 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
   Widget _bakiyeKarti(double bakiye) {
     final colorScheme = Theme.of(context).colorScheme;
     final borclu = bakiye < 0;
-    final renk = borclu ? Colors.red : Colors.green;
+    final renk = borclu ? context.renkler.hata : context.renkler.basari;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -335,7 +323,7 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
     return _SectionCard(
       baslik: 'İletişim & Bilgiler',
       ikon: Icons.contact_page_outlined,
-      renk: Colors.blue,
+      renk: context.cs.primary,
       child: Column(children: rows),
     );
   }
@@ -346,7 +334,7 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
     return _SectionCard(
       baslik: 'Paketler & Haklar',
       ikon: Icons.card_membership,
-      renk: Colors.purple,
+      renk: context.cs.primary,
       child: paketler.isEmpty
           ? Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -364,7 +352,7 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
                         p.aktifMi ? Icons.check_circle : Icons.remove_circle,
                         size: 16,
                         color: p.aktifMi
-                            ? Colors.green
+                            ? context.renkler.basari
                             : Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       const SizedBox(width: 10),
@@ -478,8 +466,9 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
                         ),
                       ),
                       if (d.iptalMi)
-                        const Text('İptal',
-                            style: TextStyle(fontSize: 11, color: Colors.red)),
+                        Text('İptal',
+                            style: TextStyle(
+                                fontSize: 11, color: context.renkler.hata)),
                     ],
                   ),
                 );
@@ -491,6 +480,8 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
 
 // ==================== HEADER ====================
 
+/// Sayfanın kimlik yüzeyi. Seviye ve aktiflik kapsüllerde etiket olarak;
+/// renkli yüzeyin üstüne ayrıca durum rengi konmaz.
 class _UyeDetayHeader extends StatelessWidget {
   final UyeProfilBilgi profil;
 
@@ -498,105 +489,14 @@ class _UyeDetayHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final basHarfler =
-        '${profil.adi.isNotEmpty ? profil.adi[0] : ''}${profil.soyadi.isNotEmpty ? profil.soyadi[0] : ''}'
-            .toUpperCase();
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: profil.seviyeRenkColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: profil.seviyeRenkColor.withValues(alpha: 0.35),
-                  width: 2),
-            ),
-            child: Center(
-              child: Text(
-                basHarfler,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: profil.seviyeRenkColor,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  profil.adSoyad,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text(
-                      '#${profil.uyeNo}',
-                      style: TextStyle(
-                          fontSize: 13, color: colorScheme.onSurfaceVariant),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: profil.seviyeRenkColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        profil.seviyeRengi,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: profil.seviyeRenkColor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: (profil.aktifMi ? Colors.green : Colors.orange)
-                            .withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        profil.aktifMi ? 'Aktif' : 'Pasif',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: profil.aktifMi ? Colors.green : Colors.orange,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return KimlikBaslik(
+      baslik: profil.adSoyad,
+      basHarfler: basHarfleri(profil.adSoyad),
+      altBaslik: '#${profil.uyeNo}',
+      kapsuller: [
+        if (profil.seviyeRengi.isNotEmpty) profil.seviyeRengi,
+        profil.aktifMi ? 'Aktif' : 'Pasif',
+      ],
     );
   }
 }

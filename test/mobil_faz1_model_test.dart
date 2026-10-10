@@ -74,11 +74,11 @@ void main() {
       expect(kart('bilinmeyen_yeni_tip').type, HomeCardType.info);
     });
 
-    test('her tipin renk ve ikonu tanımlı', () {
+    test('her tipin tonu ve ikonu tanımlı', () {
       for (final tip in HomeCardType.values) {
         final model =
             HomeCardModel(id: 1, type: tip, title: 't', subtitle: 's');
-        expect(model.color, isNotNull);
+        expect(model.ton, isNotNull);
         expect(model.icon, isNotNull);
       }
     });

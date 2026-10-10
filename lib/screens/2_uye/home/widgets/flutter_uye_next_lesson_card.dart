@@ -3,6 +3,7 @@
 import 'package:fitcall/common/cihaz_takvimi.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -40,28 +41,22 @@ class UyeNextLessonCard extends StatelessWidget {
           ),
         ),
 
-        // Kart
-        Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+        // Kart: ders varsa ekranın kimlik yüzeyi; yüklenirken ve boşken nötr.
+        if (!isLoading && nextLesson != null)
+          _LessonContent(lesson: nextLesson!)
+        else
+          Container(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
               ),
-            ],
+            ),
+            child: isLoading
+                ? _buildLoadingState(colorScheme)
+                : _buildEmptyState(colorScheme),
           ),
-          child: isLoading
-              ? _buildLoadingState(colorScheme)
-              : nextLesson == null
-                  ? _buildEmptyState(colorScheme)
-                  : _LessonContent(lesson: nextLesson!),
-        ),
       ],
     );
   }
@@ -131,7 +126,8 @@ class UyeNextLessonCard extends StatelessWidget {
   }
 }
 
-/// Ders içerik widget'ı
+/// Ders içeriği: ekranın tek kimlik yüzeyi. Yazılar temanın kimlik yazı
+/// rengini alır; geri sayım ve tarih kapsülde, bilgiler çerçeveli hapta.
 class _LessonContent extends StatelessWidget {
   final EtkinlikModel lesson;
 
@@ -139,164 +135,106 @@ class _LessonContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final tf = DateFormat('HH:mm');
     final df = DateFormat('d MMMM EEEE', 'tr_TR');
+    final yazi = context.gecis.onKimlik;
+    final countdown =
+        _geriSayim(lesson.baslangicTarihSaat.difference(simdiKulup()));
 
-    // Geri sayım hesapla
-    final now = simdiKulup();
-    final diff = lesson.baslangicTarihSaat.difference(now);
-    final (countdown, countdownColor) = _getCountdown(diff);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _showLessonDetails(context),
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
+    return KimlikYuzeyi(
+      onTap: () => _showLessonDetails(context),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  // Tarih kutusu
-                  _DateBox(date: lesson.baslangicTarihSaat),
-                  const SizedBox(width: 16),
-
-                  // Ders bilgileri
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              _DateBox(date: lesson.baslangicTarihSaat),
+              const SizedBox(width: Bosluk.m),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        // Tarih ve geri sayım
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                df.format(lesson.baslangicTarihSaat),
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
+                        Expanded(
+                          child: Text(
+                            df.format(lesson.baslangicTarihSaat),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: yazi,
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: countdownColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                countdown,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: countdownColor,
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                        const SizedBox(height: 8),
-
-                        // Saat
-                        Row(
-                          children: [
-                            Flexible(
-                              child: _InfoPill(
-                                icon: Icons.access_time_rounded,
-                                text:
-                                    '${tf.format(lesson.baslangicTarihSaat)} - ${tf.format(lesson.bitisTarihSaat)}',
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-
-                        // Kort ve Antrenör — her pill esnek (bounded) genişlikte:
-                        // uzun antrenör adı + büyük yazıda taşma yerine ellipsis.
-                        Row(
-                          children: [
-                            Flexible(
-                              child: _InfoPill(
-                                icon: Icons.location_on_outlined,
-                                text: 'Kort ${lesson.kortAdi}',
-                              ),
-                            ),
-                            if (lesson.antrenorAdi != null) ...[
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: _InfoPill(
-                                  icon: Icons.person_outline_rounded,
-                                  text: lesson.antrenorAdi!,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
+                        const SizedBox(width: Bosluk.s),
+                        Flexible(child: KimlikKapsulu(countdown)),
                       ],
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              // Detay butonu
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest
-                      .withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.touch_app_outlined,
-                      size: 16,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 6),
-                    // Büyük yazıda taşmasın diye esnek + tek satır
-                    Flexible(
-                      child: Text(
-                        'Detayları görmek için dokunun',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colorScheme.onSurfaceVariant,
+                    const SizedBox(height: Bosluk.s),
+                    // Haplar sarılır: uzun antrenör adı + büyük yazıda taşma
+                    // yerine alt satıra iner.
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _InfoPill(
+                          icon: Icons.access_time_rounded,
+                          text:
+                              '${tf.format(lesson.baslangicTarihSaat)} - ${tf.format(lesson.bitisTarihSaat)}',
                         ),
-                      ),
+                        _InfoPill(
+                          icon: Icons.location_on_outlined,
+                          text: 'Kort ${lesson.kortAdi}',
+                        ),
+                        if (lesson.antrenorAdi != null)
+                          _InfoPill(
+                            icon: Icons.person_outline_rounded,
+                            text: lesson.antrenorAdi!,
+                          ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: Bosluk.m),
+          Container(
+            padding: const EdgeInsets.only(top: Bosluk.s),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(color: yazi.withValues(alpha: 0.22)),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Ders detayı',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: yazi,
+                    ),
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, size: 20, color: yazi),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  (String, Color) _getCountdown(Duration diff) {
-    if (diff.inDays > 0) {
-      return ('${diff.inDays} gün sonra', Colors.blue);
-    } else if (diff.inHours > 0) {
-      return ('${diff.inHours} saat sonra', Colors.orange);
-    } else if (diff.inMinutes > 0) {
-      return ('${diff.inMinutes} dk sonra', Colors.green);
-    } else {
-      return ('Şimdi!', Colors.red);
-    }
+  /// Geri sayım metni. Renk yok: kapsül her temada aynı biçimde okunur.
+  String _geriSayim(Duration diff) {
+    if (diff.inDays > 0) return '${diff.inDays} gün sonra';
+    if (diff.inHours > 0) return '${diff.inHours} saat sonra';
+    if (diff.inMinutes > 0) return '${diff.inMinutes} dk sonra';
+    return 'Şimdi';
   }
 
   void _showLessonDetails(BuildContext context) {
@@ -310,7 +248,7 @@ class _LessonContent extends StatelessWidget {
   }
 }
 
-/// Tarih kutusu
+/// Tarih kutusu (kimlik yüzeyinin üstünde, koyulaştırılmış kapsül zemininde).
 class _DateBox extends StatelessWidget {
   final DateTime date;
 
@@ -318,35 +256,31 @@ class _DateBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final yazi = context.gecis.onKimlik;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      width: 50,
+      padding: const EdgeInsets.symmetric(vertical: Bosluk.s),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF6366F1),
-            const Color(0xFF6366F1).withValues(alpha: 0.8),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(14),
+        color: TemaGecisleri.kapsulZemini,
+        borderRadius: BorderRadius.circular(Yaricap.m),
       ),
       child: Column(
         children: [
           Text(
             date.day.toString(),
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.surface,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              height: 1.1,
+              color: yazi,
             ),
           ),
           Text(
             DateFormat('MMM', 'tr_TR').format(date).toUpperCase(),
             style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: 0.9),
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: yazi,
             ),
           ),
         ],
@@ -355,7 +289,7 @@ class _DateBox extends StatelessWidget {
   }
 }
 
-/// Bilgi pill'i
+/// Bilgi hapı: kimlik yüzeyinin üstünde ince çerçeveli.
 class _InfoPill extends StatelessWidget {
   final IconData icon;
   final String text;
@@ -364,24 +298,28 @@ class _InfoPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 12,
-              color: colorScheme.onSurfaceVariant,
+    final yazi = context.gecis.onKimlik;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(Yaricap.s),
+        border: Border.all(color: yazi.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: yazi),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12, color: yazi),
             ),
-            overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -425,13 +363,13 @@ class _LessonDetailSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                    color: Theme.of(context).colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.sports_tennis_rounded,
                     size: 40,
-                    color: Color(0xFF6366F1),
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
                 ),
                 const SizedBox(height: 16),

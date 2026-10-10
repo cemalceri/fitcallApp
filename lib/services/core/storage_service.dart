@@ -28,6 +28,7 @@ class StorageService {
     final korunacak = <String, String>{};
     for (final anahtar in [
       'tema_modu',
+      'tema_takim',
       ...IzinAnahtari.tumu,
       ...AcilisPopupKayitlari.tumu,
     ]) {

@@ -328,7 +328,7 @@ class _RolKarti extends StatelessWidget {
     final gruplar = rol.doluGruplar;
     final vurgu = hakedisRenkSeti(
       context,
-      rol.rol == HakedisRolu.yardimci ? hakedisMavi : const Color(0xFF6366F1),
+      rol.rol == HakedisRolu.yardimci ? hakedisMavi : renk.primary,
     );
 
     return HakedisKart(
