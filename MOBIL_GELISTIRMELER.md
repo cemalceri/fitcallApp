@@ -12,7 +12,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 | | |
 |---|---|
-| Mobil | `pubspec` sürümü **3.10.0+43** — renk temaları (takım renkleri + geçişli tasarım dili), açılış popup'ları, yönetici/ofis Duyurular ekranı, ödül "nasıl kazanılır?", yönetici ekranı etiketleri ve 09-29 temizliği içeride. `v3.10.0` tag'iyle Codemagic'e gönderildi (2026-10-10) |
+| Mobil | `pubspec` sürümü **3.10.0+43** — renk temaları (takım renkleri + geçişli tasarım dili), açılış popup'ları, yönetici/ofis Duyurular ekranı, ödül "nasıl kazanılır?", yönetici ekranı etiketleri ve 09-29 temizliği içeride. `v3.10.0` tag'iyle Codemagic'e gönderildi (2026-10-10; Codemagic 26.6 havuzu yoğun olduğu için Xcode 26.5'e sabitlendi, tag `3b6effa`'da) |
 | Testler | `flutter test` **2132 geçiyor** (renk temaları turuyla 1432'den), `flutter analyze` temiz; backend süiti **944 geçiyor**, 0 kırık (2026-10-10) |
 | Backend | Canlı: `1d527c5` (Heroku **v305**, 2026-10-10) — 09-29 turu, açılış popup'ları ve yönetici/ofis duyuru uçları dahil; bekleyen migration yok |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08); **3.10.0** `v3.10.0` tag'iyle gönderildi (2026-10-10) |

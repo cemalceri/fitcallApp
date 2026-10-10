@@ -67,6 +67,11 @@ Mağaza metninde kulüp adı geçmiyor (yalnız renk adları); mağaza ekran gö
 ucunu kullanıyor; backend canlıda olmadan çıkarsa ekran 404 alır. Uyuldu: backend `1d527c5` Heroku
 **v305** (2026-10-10, migration yok), uçlar 401 dönüyor (404 değil); ardından `v3.10.0` tag'i.
 
+**Codemagic kuyruğu:** build `xcode: latest` ve ardından `26.6` ile saatlerce kuyrukta kaldı (durum
+sayfasında kesinti yoktu). Codemagic 26.6 havuzundaki aşırı yükü GitHub tartışmasında doğruladı
+(`codemagic-ci-cd/discussions/3570`); `codemagic.yaml`'da Xcode **26.5**'e sabitlendi ve `v3.10.0` tag'i
+`3b6effa`'ya taşındı, build hemen başladı. Kuyruk normale dönünce sürüm yükseltilebilir.
+
 ## 3.9.0 — 2026-09-08
 
 ### Mağaza metni (tr-TR)
