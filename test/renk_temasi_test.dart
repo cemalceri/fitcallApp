@@ -154,6 +154,26 @@ void main() {
       expect(find.byType(SayfaZemini, skipOffstage: false), findsNWidgets(2));
       expect(tester.takeException(), isNull);
     });
+
+    // iOS/macOS geçişi varsayılan haritadan geliyor (Flutter 3.44'te
+    // CupertinoPageTransitionsBuilder kütüphane değiştirdi); sarmalayıcı yine
+    // zemini koymalı.
+    testWidgets('iOS ve macOS geçişinde de zemin çizilir', (tester) async {
+      final anahtar = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(MaterialApp(
+        navigatorKey: anahtar,
+        theme: FitcallTema.temasi(TakimTemasi.bordoMavi, Brightness.light),
+        home: const Scaffold(body: Text('bir')),
+      ));
+      anahtar.currentState!.push(
+          MaterialPageRoute(builder: (_) => const Scaffold(body: Text('iki'))));
+      await tester.pumpAndSettle();
+      expect(find.text('iki'), findsOneWidget);
+      expect(find.byType(SayfaZemini, skipOffstage: false), findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+    },
+        variant: const TargetPlatformVariant(
+            {TargetPlatform.iOS, TargetPlatform.macOS}));
   });
 
   group('TemaKontrol', () {

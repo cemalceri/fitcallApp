@@ -1155,15 +1155,23 @@ class _ZeminliGecis extends PageTransitionsBuilder {
   }
 }
 
-const PageTransitionsTheme _zeminliGecisler = PageTransitionsTheme(
+// iOS/macOS geçişi Flutter'ın varsayılan haritasından alınır, sınıf adı
+// yazılmaz: Flutter 3.44'te `CupertinoPageTransitionsBuilder` material'dan
+// cupertino kütüphanesine taşındı (yalnız material import eden dosya yeni
+// sürümde derlenmiyor, eski sürümde cupertino importu kullanılmıyor uyarısı
+// veriyor). Varsayılan harita iki sürümde de iOS için Cupertino geçişi.
+final PageTransitionsBuilder _cupertinoGecisi =
+    const PageTransitionsTheme().builders[TargetPlatform.iOS]!;
+
+final PageTransitionsTheme _zeminliGecisler = PageTransitionsTheme(
   builders: <TargetPlatform, PageTransitionsBuilder>{
     TargetPlatform.android:
-        _ZeminliGecis(PredictiveBackPageTransitionsBuilder()),
-    TargetPlatform.iOS: _ZeminliGecis(CupertinoPageTransitionsBuilder()),
-    TargetPlatform.macOS: _ZeminliGecis(CupertinoPageTransitionsBuilder()),
-    TargetPlatform.windows: _ZeminliGecis(ZoomPageTransitionsBuilder()),
-    TargetPlatform.linux: _ZeminliGecis(ZoomPageTransitionsBuilder()),
-    TargetPlatform.fuchsia: _ZeminliGecis(ZoomPageTransitionsBuilder()),
+        const _ZeminliGecis(PredictiveBackPageTransitionsBuilder()),
+    TargetPlatform.iOS: _ZeminliGecis(_cupertinoGecisi),
+    TargetPlatform.macOS: _ZeminliGecis(_cupertinoGecisi),
+    TargetPlatform.windows: const _ZeminliGecis(ZoomPageTransitionsBuilder()),
+    TargetPlatform.linux: const _ZeminliGecis(ZoomPageTransitionsBuilder()),
+    TargetPlatform.fuchsia: const _ZeminliGecis(ZoomPageTransitionsBuilder()),
   },
 );
 

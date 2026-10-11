@@ -44,6 +44,8 @@ class BildirimGorselYardimci {
         return Icons.event_busy_rounded;
       case NotificationType.gecikenOdeme:
         return Icons.payment_rounded;
+      case NotificationType.odemeAlindi:
+        return Icons.receipt_long_rounded;
       case NotificationType.paketBitiyor:
       case NotificationType.paketSuresiDoluyor:
         return Icons.hourglass_bottom_rounded;
@@ -78,6 +80,7 @@ class BildirimGorselYardimci {
       case NotificationType.dersTeyidi:
       case NotificationType.telafiIade:
       case NotificationType.paketSatinAlma:
+      case NotificationType.odemeAlindi:
       case NotificationType.antrenorDevirKabul:
         return context.bildirimRenk.basariYesil;
       case NotificationType.dersIptal:

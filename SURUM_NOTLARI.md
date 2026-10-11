@@ -12,14 +12,15 @@
 
 ### Mağaza metni (tr-TR)
 
-`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 480).
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 487).
 Mağaza metninde kulüp adı geçmiyor (yalnız renk adları); mağaza ekran görüntüleri Binay temasıyla.
+Metin yalnız son kullanıcıyı (üye) ilgilendiren maddeleri taşır; yönetici/ön büro yenilikleri teknik bölümde.
 
 - Renk temaları: Binay Akademi'nin yanında Sarı-Kırmızı, Sarı-Lacivert, Bordo-Mavi, Siyah-Beyaz ve Ay-Yıldız. Ayarlar'daki Görünüm bölümünden seçin.
 - Ekranlar renk geçişli, sade bir tasarımla yenilendi; koyu temada okunmayan yazılar düzeltildi.
 - Doğum gününüzde kutlama, önemli duyurular açılışta.
-- Yönetici ve ön büro için Duyurular: kimlerin gördüğü listelenir.
 - Ödül sayacına "Nasıl kazanılır?" bilgisi eklendi.
+- Ödemeniz alınınca, paketiniz tanımlanınca ya da bitince bildirim gelir.
 - Profil seçme ekranı sadeleşti.
 - Çeşitli hata düzeltmeleri.
 
@@ -66,6 +67,15 @@ Mağaza metninde kulüp adı geçmiyor (yalnız renk adları); mağaza ekran gö
 **Deploy sırası: önce backend, sonra Codemagic.** Yönetici/ofis Duyurular ekranı `yoneticiDuyurular`
 ucunu kullanıyor; backend canlıda olmadan çıkarsa ekran 404 alır. Uyuldu: backend `1d527c5` Heroku
 **v305** (2026-10-10, migration yok), uçlar 401 dönüyor (404 değil); ardından `v3.10.0` tag'i.
+
+**Üye bildirimleri (ayrı oturumun işi, bu sürüme eklendi):** yeni `ODEME_ALINDI` bildirim tipi için ikon
+ve renk. Bildirimleri üreten backend `6c269f5` (ödeme alındı, paket tanımlandı/bitti, antrenör değişikliği;
+migration `0091`) Heroku **v306**'da canlı (2026-10-11); eski sürümler yeni tipi varsayılan ikonla gösterir.
+
+**İlk build Testler adımında derlenmedi:** Flutter 3.44'te `CupertinoPageTransitionsBuilder` material'dan
+cupertino kütüphanesine taşınmış; yerel Flutter 3.41.8'de görünmedi, Codemagic `flutter: stable` (3.47.7)
+kullanıyor. iOS/macOS geçişi artık Flutter'ın varsayılan haritasından alınıyor (iki sürümde de derlenir).
+Analiz ve testlerin tamamı Flutter 3.47.7 ile de çalıştırıldı: 2134 test geçti.
 
 **Codemagic kuyruğu:** build `xcode: latest` ve ardından `26.6` ile saatlerce kuyrukta kaldı (durum
 sayfasında kesinti yoktu). Codemagic 26.6 havuzundaki aşırı yükü GitHub tartışmasında doğruladı

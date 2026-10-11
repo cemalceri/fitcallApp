@@ -6,6 +6,7 @@ class NotificationType {
   static const dersHatirlatma = 'DERS_HATIRLATMA';
   static const yoklamaHatirlatma = 'YOKLAMA_HATIRLATMA';
   static const gecikenOdeme = 'GECIKEN_ODEME';
+  static const odemeAlindi = 'ODEME_ALINDI';
   static const paketBitiyor = 'PAKET_BITIYOR';
   static const paketSuresiDoluyor = 'PAKET_SURESI_DOLUYOR';
   static const paketBitti = 'PAKET_BITTI';
