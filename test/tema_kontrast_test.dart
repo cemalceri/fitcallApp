@@ -212,6 +212,27 @@ void main() {
               cs.tertiaryContainer);
         });
 
+        // Rozet, avatar, saat bloğu ve seçim düğmeleri bu çiftle çiziliyor
+        // (ListeAvatari, _SaatBloku, _Rozet, _SecimDugmesi). Eşleme tek tek
+        // token olarak değil, extension'ın kendisi üzerinden sınanıyor:
+        // ListeTonu bir tona yanlış token bağlarsa test kırılsın.
+        testWidgets('ListeTonu ön plan/zemin çiftleri okunur', (tester) async {
+          final cikti = <(ListeTonu, Color, Color)>[];
+          await tester.pumpWidget(MaterialApp(
+            theme: FitcallTema.temasi(takim, mod),
+            home: Builder(builder: (context) {
+              for (final ton in ListeTonu.values) {
+                cikti.add((ton, ton.on(context), ton.zemin(context)));
+              }
+              return const SizedBox.shrink();
+            }),
+          ));
+          for (final (ton, on, zemin) in cikti) {
+            metin('${ton.name} / ${ton.name} zemini', on, zemin);
+            metin('${ton.name} / yüzey', on, cs.surface);
+          }
+        });
+
         test('ders bloğu metni her durum zemininde okunur', () {
           for (final (ad, zemin) in [
             ('gelecek', r.bilgiZemin),

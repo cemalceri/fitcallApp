@@ -29,8 +29,11 @@ class _UyelerPageState extends State<UyelerPage> {
   late final SayfaliListe<UyeListeItem> _liste =
       SayfaliListe<UyeListeItem>(_getirici(), anahtar: (u) => u.id);
 
-  /// İstatistik kartları; her sayfayla birlikte gelir, sonuncusu tutulur.
-  UyeIstatistik? _istatistik;
+  /// İstatistik kartları yalnız ilk sayfayla gelir ve [SayfaliListe.ek]
+  /// üzerinden okunur: getiricinin içinde `setState` ile yazılırsa nesil
+  /// korumasının dışında kalıyor, yavaş bağlantıda eski aramanın sayıları
+  /// yeni listenin üstünde kalıyordu.
+  UyeIstatistik? get _istatistik => _liste.ek as UyeIstatistik?;
 
   String _filtre = 'tumu'; // 'tumu' | 'aktif' | 'pasif' | 'borclu'
 
@@ -72,14 +75,13 @@ class _UyelerPageState extends State<UyelerPage> {
         sadeceBorclu: borclu,
       );
       final veri = sonuc.data;
-      // İstatistik yalnız ilk sayfada gelir (sonrakilerde sunucu hesaplamaz).
-      if (veri != null && sayfa == 1 && mounted) {
-        setState(() => _istatistik = veri.istatistikler);
-      }
       return SayfaSonucu(
         ogeler: veri?.uyeler ?? const [],
         toplamSayfa: veri?.toplamSayfa ?? 1,
         toplam: veri?.toplamUye ?? 0,
+        // İstatistik yalnız ilk sayfada gelir (sonrakilerde sunucu
+        // hesaplamaz); nesil koruması SayfaliListe'de.
+        ek: sayfa == 1 ? veri?.istatistikler : null,
       );
     };
   }

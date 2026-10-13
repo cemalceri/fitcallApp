@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 
 class DersDegerlendirmePopup extends StatefulWidget {
   final EtkinlikModel ders;
@@ -277,8 +278,8 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
           // Normal değerlendirme içeriği
           else if (_isInitialLoading)
             const Padding(
-              padding: EdgeInsets.all(40),
-              child: CircularProgressIndicator(),
+              padding: EdgeInsets.fromLTRB(20, 8, 20, 24),
+              child: IskeletListe(satirSayisi: 3, kaydirilabilir: false),
             )
           else
             Flexible(

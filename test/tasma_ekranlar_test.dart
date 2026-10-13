@@ -31,6 +31,7 @@ import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_she
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_approval_dialog.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/models/4_auth/kayit_secenekleri_model.dart';
 import 'package:fitcall/models/4_auth/sifre_sifirlama_model.dart';
@@ -116,6 +117,10 @@ import 'package:fitcall/screens/3_antrenor/home/widgets/info_card_item.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/gunluk_kokpit_card.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
+import 'package:fitcall/models/2_uye/uye_model.dart';
+import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_istatistik_kartlar.dart';
+import 'package:fitcall/screens/1_common/widgets/erisim_kisitli.dart';
+import 'package:fitcall/screens/2_uye/profil/widgets/profile_header.dart';
 import 'package:fitcall/screens/1_common/takvim/iptal_taramasi.dart';
 import 'package:fitcall/screens/1_common/ayarlar/widgets/renk_temasi_secici.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
@@ -493,6 +498,117 @@ void main() {
     tasmaTesti(
       'ProfilFotoSecenekleri (fotoğraf var)',
       () => ProfilFotoSecenekleri(fotoVar: true, onSec: (_) {}),
+    );
+    // Profil sayfasının fotoğraflı başlığı: KimlikBaslik'in yüzeysiz
+    // varyantı, kendi yüzeyini çizmiyor.
+    tasmaTesti(
+      'KimlikBaslik (yüzeysiz)',
+      () => const KimlikBaslik(
+        baslik: 'Deniz Ayşegül Arslanoğulları Kandemir',
+        basHarfler: 'DK',
+        altBaslik: 'Üye No: 104286 · Kartal Şubesi · Sarı top',
+        kapsuller: ['Telafi hakkı var'],
+        yuzeysiz: true,
+      ),
+      sar: (w) => KimlikYuzeyi(child: w),
+    );
+    tasmaTesti(
+      'ProfileHeader (uzun ad)',
+      () => ProfileHeader(
+        uye: _uyeModeli('Deniz Ayşegül', 'Arslanoğulları Kandemir'),
+        seviyeRenk: const Color(0xFFE53935),
+      ),
+    );
+    tasmaTesti(
+      'ProfileHeader (düzenlenemez)',
+      () => ProfileHeader(
+        uye: _uyeModeli('Ali', 'Yıldız'),
+        seviyeRenk: const Color(0xFF43A047),
+        duzenlenebilir: false,
+      ),
+    );
+    tasmaTesti(
+      'GecisCubugu',
+      () => const Column(
+        children: [
+          GecisCubugu(deger: 0),
+          SizedBox(height: 8),
+          GecisCubugu(deger: 0.42),
+          SizedBox(height: 8),
+          GecisCubugu(deger: 1),
+        ],
+      ),
+    );
+    tasmaTesti(
+      'DersIstatistikKartlar',
+      () => DersIstatistikKartlar(
+        data: DersIstatistik(
+          bugunDers: 128,
+          tamamlanan: 96,
+          devamEden: 12,
+          bekleyen: 14,
+          iptal: 6,
+        ),
+      ),
+    );
+    tasmaTesti('ErisimKisitli (kabuk içinde)',
+        () => const ErisimKisitli(geriButonu: false));
+    tasmaTesti('ErisimKisitli (geri butonlu)', () => const ErisimKisitli());
+  });
+
+  /* ======================= BAŞLIK BANDI PARÇALARI ======================= */
+
+  group('Başlık bandı parçaları', () {
+    tasmaTesti(
+      'BaslikBandi + ikon butonları',
+      () => BaslikBandi(
+        child: Row(
+          children: [
+            BaslikIkonButonu(
+                ikon: Icons.menu_rounded, ipucu: 'Menü', onTap: () {}),
+            const Expanded(child: Text('Haftalık Program')),
+            BaslikIkonButonu(
+                ikon: Icons.refresh_rounded, ipucu: 'Yenile', onTap: () {}),
+            BaslikIkonButonu(
+                ikon: Icons.notifications_outlined,
+                ipucu: 'Bildirimler',
+                onTap: () {}),
+          ],
+        ),
+      ),
+    );
+    // Çip şeridi her kullanımda yatay kaydırılabilir (dersler_page,
+    // antrenorler_page): test de onu yansıtıyor.
+    tasmaTesti(
+      'BaslikCipi şeridi',
+      () => BaslikBandi(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              BaslikCipi(etiket: 'Tümü', secili: true, onSec: () {}),
+              const SizedBox(width: 8),
+              BaslikCipi(etiket: 'Tamamlandı', secili: false, onSec: () {}),
+              const SizedBox(width: 8),
+              BaslikCipi(etiket: 'Bekliyor', secili: false, onSec: () {}),
+              const SizedBox(width: 8),
+              BaslikCipi(etiket: 'İptal', secili: false, onSec: () {}),
+            ],
+          ),
+        ),
+      ),
+    );
+    tasmaTesti(
+      'RenkliDurumCubugu',
+      () => const RenkliDurumCubugu(
+        child: Center(child: Text('İçerikle kayan başlık')),
+      ),
+    );
+    tasmaTesti(
+      'KapaninciBaslik',
+      () => const KapaninciBaslik(
+        child: Text('Kapanınca küçülen başlık'),
+      ),
     );
     tasmaTesti(
       'KimlikYuzeyi + KimlikKapsulu',
@@ -1127,6 +1243,13 @@ void main() {
 
   group('İskelet bileşenleri', () {
     tasmaTesti('IskeletListe', () => const IskeletListe());
+    // `kaydirilabilir: false` varyantı kendi yüksekliğini dayatıyor: sabit
+    // yükseklikli bir kutuya konunca taşıyordu (ders onay dialoğu, 6 px).
+    for (final n in [1, 2, 3, 5]) {
+      tasmaTesti('IskeletListe (sarmalayıcısız, $n satır)',
+          () => IskeletListe(satirSayisi: n, kaydirilabilir: false));
+    }
+    tasmaTesti('DersOnayYukleniyor', () => const DersOnayYukleniyor());
     tasmaTesti('IskeletKart', () => const IskeletKart());
     tasmaTesti('IskeletTakvim', () => const IskeletTakvim());
     tasmaTesti('IskeletDashboard', () => const IskeletDashboard());
@@ -2466,4 +2589,24 @@ KullaniciProfilModel _profil(
       'ana_hesap_mi': true,
       'isletme_id': isletme == null ? null : 1,
       'isletme_adi': isletme,
+    });
+
+/// Taşma testleri için sade bir üye: fotoğraf YOK (ağ görseli widget
+/// testinde yüklenemez, baş harfler çizilir).
+UyeModel _uyeModeli(String adi, String soyadi) => UyeModel.fromJson({
+      'id': 1,
+      'adi': adi,
+      'soyadi': soyadi,
+      'uye_no': 104286,
+      'seviye_rengi': 'Sari',
+      'uye_turu': 'Öğrenci',
+      'aktif_mi': true,
+      'onaylandi_mi': true,
+      'uye_tipi': 1,
+      'cinsiyet': 'Kadın',
+      'telefon': '5551234567',
+      'email': 'ornek@ornek.com',
+      'adres': 'İstanbul',
+      'referansi': 'Belirtilmedi',
+      'dogum_tarihi': '1998-04-12',
     });

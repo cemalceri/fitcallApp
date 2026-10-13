@@ -20,10 +20,18 @@ class SayfaSonucu<T> {
   /// Filtre + aramaya uyan toplam kayıt (yalnız bu sayfa değil).
   final int toplam;
 
+  /// Sayfayla birlikte gelen, listeye ait olmayan veri (ör. üye listesinin
+  /// istatistik kartları). Getiricinin içinde `setState` ile yazılırsa nesil
+  /// korumasının dışında kalıyor: yavaş bağlantıda eski aramanın sayıları
+  /// yeni listenin üstünde görünüyordu. Buradan geçince yalnız güncel
+  /// nesilden gelen değer yayımlanır.
+  final Object? ek;
+
   const SayfaSonucu({
     required this.ogeler,
     required this.toplamSayfa,
     required this.toplam,
+    this.ek,
   });
 }
 
@@ -48,6 +56,7 @@ class SayfaliListe<T> extends ChangeNotifier {
   int _sayfa = 0;
   int _toplamSayfa = 0;
   int? _toplam;
+  Object? _ek;
   bool _ilkYukleniyor = true;
   bool _dahaYukleniyor = false;
   String? _hata;
@@ -63,6 +72,10 @@ class SayfaliListe<T> extends ChangeNotifier {
 
   /// Filtre + aramaya uyan toplam kayıt; ilk sayfa gelene kadar null.
   int? get toplam => _toplam;
+
+  /// Son kabul edilen sayfanın [SayfaSonucu.ek] verisi. Yalnız güncel
+  /// nesilden gelen değer burada görünür; eski bir isteğin cevabı atılır.
+  Object? get ek => _ek;
 
   /// İlk sayfa yükleniyor (iskelet gösterilir).
   bool get ilkYukleniyor => _ilkYukleniyor;
@@ -101,6 +114,7 @@ class SayfaliListe<T> extends ChangeNotifier {
       _sayfa = 1;
       _toplamSayfa = sonuc.toplamSayfa;
       _toplam = sonuc.toplam;
+      _ek = sonuc.ek;
     } catch (e) {
       if (nesil != _nesil || _kapandi) return;
       // Aşağı çekip yenilemede hata: eldeki liste silinmez, mesaj liste
@@ -155,6 +169,8 @@ class SayfaliListe<T> extends ChangeNotifier {
       _sayfa = istenen;
       _toplamSayfa = sonuc.toplamSayfa;
       _toplam = sonuc.toplam;
+      // Sonraki sayfalarda sunucu `ek`i hesaplamıyor; eldeki değer korunur.
+      if (sonuc.ek != null) _ek = sonuc.ek;
     } catch (e) {
       if (nesil != _nesil || _kapandi) return;
       _dahaHatasi = hataMesaji(e);

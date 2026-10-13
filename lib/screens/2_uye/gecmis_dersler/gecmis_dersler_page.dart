@@ -177,11 +177,8 @@ class _GecmisDerslerPageState extends State<GecmisDerslerPage> {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Center(
         child: _isLoadingMore
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
+            // Sonraki sayfa: iskelet satırı (bölüm yüklemesinde halka yok).
+            ? const IskeletListe(satirSayisi: 1, kaydirilabilir: false)
             : OutlinedButton.icon(
                 onPressed: _dahaEskiYukle,
                 icon: const Icon(Icons.expand_more_rounded),

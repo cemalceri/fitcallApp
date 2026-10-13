@@ -58,6 +58,38 @@ void main() {
       expect(liste.ogeler.length, 40);
     });
 
+    test('ek veri de nesil korumasından geçer', () async {
+      // İstatistik kartları getiricinin içinde setState ile yazılıyordu:
+      // nesil korumasının dışında kaldığı için yavaş bağlantıda eski
+      // aramanın sayıları yeni listenin üstünde kalıyordu.
+      final eski = Completer<SayfaSonucu<int>>();
+      final liste = SayfaliListe<int>((_) => eski.future);
+      final ilk = liste.yenile();
+
+      await liste.yenile(
+        getir: (_) async => const SayfaSonucu(
+            ogeler: [7], toplamSayfa: 1, toplam: 1, ek: 'yeni'),
+      );
+      eski.complete(const SayfaSonucu(
+          ogeler: [1, 2, 3], toplamSayfa: 1, toplam: 3, ek: 'eski'));
+      await ilk;
+
+      expect(liste.ek, 'yeni');
+    });
+
+    test('sonraki sayfa ek vermezse eldeki korunur', () async {
+      final liste = SayfaliListe<int>((sayfa) async => SayfaSonucu(
+            ogeler: [sayfa],
+            toplamSayfa: 3,
+            toplam: 3,
+            ek: sayfa == 1 ? 'istatistik' : null,
+          ));
+      await liste.yenile();
+      expect(liste.ek, 'istatistik');
+      await liste.dahaFazla();
+      expect(liste.ek, 'istatistik');
+    });
+
     test('arama değişince eski aramanın geç dönen cevabı atılır', () async {
       final eski = Completer<SayfaSonucu<int>>();
       final liste = SayfaliListe<int>((_) => eski.future);

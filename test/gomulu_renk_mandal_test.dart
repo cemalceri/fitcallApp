@@ -15,9 +15,11 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// Taban sayılar (2026-10). Düşürdükçe güncelleyin; artırmayın.
+/// Taban sayılar (2026-10-13 turu). Düşürdükçe güncelleyin; artırmayın.
+/// `Colors.x` tabanı 176'dan 144'e indirildi: tema turunda kazanılan 32
+/// birim boşlukta yeni sabit renkler testi kırmadan geri sızabiliyordu.
 const int _hexTabani = 42;
-const int _adliRenkTabani = 176;
+const int _adliRenkTabani = 144;
 
 /// Temaya ait olmayan, temizlenmiş eski palet.
 const List<String> _yasakHexler = [

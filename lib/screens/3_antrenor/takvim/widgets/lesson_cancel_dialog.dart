@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'takvim_constants.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 
 class LessonCancelDialog extends StatefulWidget {
   final EtkinlikModel ders;
@@ -33,7 +34,10 @@ class LessonCancelDialog extends StatefulWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
+      // Engelleyici bekleme: çıplak halka yerine projenin ortak
+      // yükleniyor diyaloğu.
+      builder: (_) => const LoadingSpinnerWidget(
+          message: 'İptal durumu kontrol ediliyor...'),
     );
 
     // Mevcut iptal talebini sorgula
@@ -328,14 +332,15 @@ class _LessonCancelDialogContentState
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.blue.withValues(alpha: 0.10),
+            color: ListeTonu.bilgi.zemin(context),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue.shade200),
+            border: Border.all(
+                color: context.renkler.bilgi.withValues(alpha: 0.35)),
           ),
           child: Row(
             children: [
               Icon(Icons.info_outline_rounded,
-                  color: Colors.blue.shade700, size: 20),
+                  color: ListeTonu.bilgi.on(context), size: 20),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(

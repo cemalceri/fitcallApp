@@ -219,15 +219,32 @@ class YonetimDersi {
   bool get gecmisMi => baglam == DersBaglami.gecmis;
   bool get gelecekMi => baglam == DersBaglami.gelecek;
 
+  /// Ders bitti mi — istemci saatiyle. `baglam` sunucunun İSTEK ANINDAKİ
+  /// değerlendirmesi, sayfa açık kaldıkça bayatlıyor. Satır etiketi/sayaçları
+  /// istemci saatini, onay arayüzü `baglam`ı kullandığı için ders sayfa
+  /// açıkken bitince satır "Onay bekliyor" derken sheet'te Yapıldı/Yapılmadı
+  /// düğmeleri hiç çizilmiyordu. Onay ve hakediş artık buradan geçiyor.
+  bool get bittiMi => !bitis.isAfter(simdiKulup());
+
+  /// Ders henüz başlamadı. Katılım teyidi ("Katılacak") ve hatırlatma yalnız
+  /// bu durumda anlamlı — sunucu da `baslangic > now` istiyor
+  /// (api/ofis/ders_yonetimi.py). `gelecekMi` yerine bu kullanılıyor: ders
+  /// sayfa açıkken başlayınca bayat `baglam` hâlâ "Hatırlat" gösteriyor,
+  /// dokununca sunucu 400 veriyordu.
+  bool get baslamadiMi => baslangic.isAfter(simdiKulup());
+
+  /// Yönetici onayı / hakediş kararı verilebilir: iptal değil ve bitmiş.
+  /// (Sunucu da aynı kapıyı uyguluyor: api/ofis/ders_yonetimi.py)
+  bool get kararVerilebilir => !iptalMi && bittiMi;
+
   /// Ders bitmiş ama yönetici kararı yok.
-  bool get onayBekliyor =>
-      !iptalMi && yoneticiKarari == null && bitis.isBefore(simdiKulup());
+  bool get onayBekliyor => kararVerilebilir && yoneticiKarari == null;
 
   /// Toplu onaya uygun: antrenör "yapıldı" demiş, yönetici karar vermemiş.
   bool get topluOnaylanabilir => onayBekliyor && antrenorKarari == true;
 
-  /// Katılım bildirimine cevap vermemiş katılımcılar (gelecek ders).
-  int get cevapsiz => gelecekMi
+  /// Katılım bildirimine cevap vermemiş katılımcılar (henüz başlamamış ders).
+  int get cevapsiz => baslamadiMi
       ? katilimcilar
           .where((k) =>
               !k.planDisiMi &&

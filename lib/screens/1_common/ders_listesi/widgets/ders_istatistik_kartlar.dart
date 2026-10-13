@@ -1,6 +1,12 @@
 // lib/screens/1_common/ders_listesi/widgets/ders_istatistik_kartlar.dart
+//
+// Günün ders sayıları (üye Takvim sekmesi ve yönetici Dersler sayfası).
+// Renkler `ListeTonu` üzerinden: önceden `Colors.blue/green/orange/purple/red`
+// sabitleriyle çiziliyordu ve `surface` zeminde kontrast eşiğin altına
+// düşüyordu (turuncu 2,16 · yeşil 2,81 · mavi 3,12; koyu modda mor 2,99).
 
 import 'package:flutter/material.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 
 class DersIstatistikKartlar extends StatelessWidget {
@@ -10,47 +16,22 @@ class DersIstatistikKartlar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final kartlar = <(String, String, ListeTonu)>[
+      ('Toplam', data.bugunDers.toString(), ListeTonu.bilgi),
+      ('Tamamlandı', data.tamamlanan.toString(), ListeTonu.basari),
+      ('Devam', data.devamEden.toString(), ListeTonu.uyari),
+      ('Bekliyor', data.bekleyen.toString(), ListeTonu.vurgu),
+      ('İptal', data.iptal.toString(), ListeTonu.hata),
+    ];
+
     return Row(
       children: [
-        Expanded(
-          child: _MiniStatCard(
-            label: 'Toplam',
-            value: data.bugunDers.toString(),
-            color: Colors.blue,
+        for (final (etiket, deger, ton) in kartlar) ...[
+          if (etiket != kartlar.first.$1) const SizedBox(width: 6),
+          Expanded(
+            child: _MiniStatCard(label: etiket, value: deger, ton: ton),
           ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _MiniStatCard(
-            label: 'Tamamlandı',
-            value: data.tamamlanan.toString(),
-            color: Colors.green,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _MiniStatCard(
-            label: 'Devam',
-            value: data.devamEden.toString(),
-            color: Colors.orange,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _MiniStatCard(
-            label: 'Bekliyor',
-            value: data.bekleyen.toString(),
-            color: Colors.purple,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: _MiniStatCard(
-            label: 'İptal',
-            value: data.iptal.toString(),
-            color: Colors.red,
-          ),
-        ),
+        ],
       ],
     );
   }
@@ -59,17 +40,17 @@ class DersIstatistikKartlar extends StatelessWidget {
 class _MiniStatCard extends StatelessWidget {
   final String label;
   final String value;
-  final Color color;
+  final ListeTonu ton;
 
   const _MiniStatCard({
     required this.label,
     required this.value,
-    required this.color,
+    required this.ton,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = context.cs;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
@@ -86,7 +67,7 @@ class _MiniStatCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: color,
+              color: ton.on(context),
             ),
           ),
           const SizedBox(height: 2),

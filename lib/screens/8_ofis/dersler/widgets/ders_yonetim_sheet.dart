@@ -8,7 +8,6 @@
 // Kurallar sunucuda (ders_yonetimi_service); burada yalnız çağrı ve görünüm.
 // Görünüm [DersYonetimGovdesi]'nde, veriyle beslenir (taşma testi).
 
-import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
 import 'package:fitcall/screens/1_common/takvim/iptal_taramasi.dart';
@@ -272,9 +271,6 @@ class DersYonetimGovdesi extends StatelessWidget {
   static final _saat = DateFormat('HH:mm');
   static final _gun = DateFormat('d MMMM EEEE', 'tr_TR');
 
-  /// Onay ve hakediş ancak ders bitince verilir (sunucu da reddeder).
-  bool get _bitti => !ders.bitis.isAfter(simdiKulup());
-
   @override
   Widget build(BuildContext context) {
     final cs = context.cs;
@@ -307,7 +303,7 @@ class DersYonetimGovdesi extends StatelessWidget {
         const SizedBox(height: 16),
         if (ders.iptalMi)
           _IptalBilgisi(ders: ders)
-        else if (ders.gecmisMi && _bitti) ...[
+        else if (ders.kararVerilebilir) ...[
           _Bolum(baslik: 'Ders durumu'),
           _AntrenorBildirimi(ders: ders),
           const SizedBox(height: 10),
@@ -661,7 +657,9 @@ class _KatilimciSatiri extends StatelessWidget {
 
   (String, ListeTonu) _durum() {
     final k = katilimci;
-    if (ders.gelecekMi && !k.planDisiMi) {
+    // Ölçüt `baglam` değil istemci saati: ders sayfa açıkken başlayınca
+    // bayat bağlam hâlâ "Cevap bekleniyor" diyordu.
+    if (ders.baslamadiMi && !k.planDisiMi) {
       return switch (k.teyit) {
         TeyitDurumu.katilacak => ('Katılacak', ListeTonu.basari),
         TeyitDurumu.katilmayacak => (
@@ -685,17 +683,17 @@ class _KatilimciSatiri extends StatelessWidget {
     final k = katilimci;
     final (durum, ton) = _durum();
     final eylemler = <Widget>[
-      if (ders.gelecekMi && !k.planDisiMi && k.teyit != TeyitDurumu.katilacak)
+      if (ders.baslamadiMi && !k.planDisiMi && k.teyit != TeyitDurumu.katilacak)
         _KucukEylem(etiket: 'Katılacak', onTap: mesgul ? null : onKatilacak),
-      if (ders.gelecekMi &&
+      if (ders.baslamadiMi &&
           !k.planDisiMi &&
           (k.teyit == TeyitDurumu.bekliyor ||
               k.teyit == TeyitDurumu.bildirimYok))
         _KucukEylem(etiket: 'Hatırlat', onTap: mesgul ? null : onHatirlat),
-      if (!ders.gelecekMi && k.paketDusumu == PaketDusumu.dus)
+      if (!ders.baslamadiMi && k.paketDusumu == PaketDusumu.dus)
         _KucukEylem(
             etiket: 'Paketten düş', onTap: mesgul ? null : onPaketDusum),
-      if (!ders.gelecekMi && k.paketDusumu == PaketDusumu.geriAl)
+      if (!ders.baslamadiMi && k.paketDusumu == PaketDusumu.geriAl)
         _KucukEylem(
             etiket: 'Düşümü geri al', onTap: mesgul ? null : onPaketDusum),
     ];

@@ -63,22 +63,38 @@ class OfisAnaSayfaPageState extends State<OfisAnaSayfaPage> {
     try {
       final veri = await OfisDersYonetimiService.bekleyenIsler();
       if (!mounted) return;
+      if (veri == null) {
+        // Yanıt beklenen gövdeyi taşımıyor. Null'u sessizce kabul edince
+        // (veri yok + yükleniyor yok + hata yok) görünüm sonsuza kadar
+        // iskelet çiziyor, "Tekrar dene" bile çıkmıyordu.
+        _hataYaz('Bekleyen işler alınamadı. Lütfen tekrar deneyin.', iskelet);
+        return;
+      }
       setState(() {
         _veri = veri;
         _yukleniyor = false;
       });
     } on ApiException catch (e) {
       if (!mounted) return;
-      // Sessiz tazelemede hata: eldeki sayılar kalır.
-      if (!iskelet && _veri != null) {
-        setState(() => _yukleniyor = false);
-        return;
-      }
-      setState(() {
-        _hata = e.message;
-        _yukleniyor = false;
-      });
+      _hataYaz(e.message, iskelet);
+    } catch (_) {
+      // ApiClient her şeyi ApiException'a sarıyor ama bir gün sarmazsa
+      // sonsuz iskelet geri gelmesin.
+      if (!mounted) return;
+      _hataYaz('Bekleyen işler alınamadı. Lütfen tekrar deneyin.', iskelet);
     }
+  }
+
+  /// Sessiz tazelemede hata: eldeki sayılar kalır, hata gösterilmez.
+  void _hataYaz(String mesaj, bool iskelet) {
+    if (!iskelet && _veri != null) {
+      setState(() => _yukleniyor = false);
+      return;
+    }
+    setState(() {
+      _hata = mesaj;
+      _yukleniyor = false;
+    });
   }
 
   /// Sekmeye dönünce / uygulama öne gelince: sayılar iskeletsiz tazelenir.

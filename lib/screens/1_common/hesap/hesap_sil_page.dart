@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
@@ -308,15 +309,13 @@ class _HesapSilPageState extends State<HesapSilPage> {
                                       ),
                                     ),
                                     child: _isLoading
-                                        ? SizedBox(
+                                        // `cs.surface` koyu modda neredeyse
+                                        // siyah: kırmızı butonun üstünde
+                                        // halka görünmüyordu.
+                                        ? const SizedBox(
                                             height: 20,
                                             width: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .surface,
-                                            ),
+                                            child: ButonYukleniyorGostergesi(),
                                           )
                                         : const Text('Hesabı Sil'),
                                   ),

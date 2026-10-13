@@ -3,6 +3,7 @@
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
 import 'package:fitcall/screens/1_common/widgets/erisim_kisitli.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
 import 'package:fitcall/screens/2_uye/home/uye_home_page.dart';
 import 'package:fitcall/screens/2_uye/profil/profil_page.dart';
@@ -32,7 +33,12 @@ class UyeKabuk extends StatefulWidget {
 
 class _UyeKabukState extends State<UyeKabuk> {
   late int _aktif = widget.baslangicSekmesi;
-  bool _anaHesap = true;
+
+  /// Ana hesap mı — cihazdaki profilden asenkron okunuyor, bilinene kadar
+  /// null. Varsayılan `true` olduğunda alt profil ilk karelerde Hareketler /
+  /// Hesabım sayfasını kurup `initState`'teki API çağrılarını atıyordu;
+  /// varsayılan kapalı tarafta olmalı.
+  bool? _anaHesap;
 
   /// Ağır sekmeler ilk açılışta kurulur; hiç girilmemiş sekme API çağırmasın
   /// diye `IndexedStack` çocukları tembel oluşturulur.
@@ -50,17 +56,29 @@ class _UyeKabukState extends State<UyeKabuk> {
   }
 
   Future<void> _anaHesapKontrol() async {
-    final profil = await StorageService.uyeProfilBilgileriniGetir();
+    bool anaHesap;
+    try {
+      final profil = await StorageService.uyeProfilBilgileriniGetir();
+      anaHesap = profil?.anaHesap ?? false;
+    } catch (_) {
+      // Güvenli depo okunamazsa (Android'de BAD_DECRYPT) ya da kayıt bozuksa
+      // kapalı tarafta kal: aksi halde `_anaHesap` sonsuza kadar null kalır
+      // ve sekme kalıcı iskelette donardı. Rota guard'ı da böyle davranıyor.
+      anaHesap = false;
+    }
     if (!mounted) return;
-    setState(() => _anaHesap = profil?.anaHesap ?? false);
+    setState(() => _anaHesap = anaHesap);
   }
 
   static const _anaHesapGerektiren = {2, 3}; // Hareketler, Hesabım
 
   Widget _sayfa(int indeks) {
     if (!_acilanlar.contains(indeks)) return const SizedBox.shrink();
-    if (_anaHesapGerektiren.contains(indeks) && !_anaHesap) {
-      return const ErisimKisitli(geriButonu: false);
+    if (_anaHesapGerektiren.contains(indeks)) {
+      // Bilinene kadar sayfa KURULMAZ: alt profilin görmemesi gereken
+      // ekranın API çağrıları bir kare için de olsa gitmesin.
+      if (_anaHesap == null) return const IskeletListe();
+      if (!_anaHesap!) return const ErisimKisitli(geriButonu: false);
     }
     return switch (indeks) {
       0 => const UyeHomePage(),

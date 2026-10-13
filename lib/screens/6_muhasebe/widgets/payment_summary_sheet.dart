@@ -1,5 +1,6 @@
 // lib/screens/6_muhasebe/widgets/payment_summary_sheet.dart
 
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/6_muhasebe/payment_hesaplama_model.dart';
 import 'package:fitcall/screens/6_muhasebe/widgets/payment_webview_page.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -191,11 +192,11 @@ class _PaymentSummarySheetState extends State<PaymentSummarySheet> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
+                color: ListeTonu.basari.zemin(context),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.payment_rounded,
-                  color: Colors.green, size: 28),
+              child: Icon(Icons.payment_rounded,
+                  color: ListeTonu.basari.on(context), size: 28),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -240,7 +241,7 @@ class _PaymentSummarySheetState extends State<PaymentSummarySheet> {
               ...h.borcKalemleri.map((k) => _KalemRow(
                     aciklama: k.aciklama,
                     tutar: _currencyFormat.format(k.tutar),
-                    color: Colors.red,
+                    color: context.renkler.hata,
                     icon: Icons.receipt_outlined,
                   )),
 
@@ -265,7 +266,7 @@ class _PaymentSummarySheetState extends State<PaymentSummarySheet> {
               ...h.feeKalemleri.map((k) => _KalemRow(
                     aciklama: k.aciklama,
                     tutar: _currencyFormat.format(k.tutar),
-                    color: Colors.orange,
+                    color: context.renkler.uyari,
                     icon: Icons.add_circle_outline,
                   )),
             ],
@@ -278,9 +279,10 @@ class _PaymentSummarySheetState extends State<PaymentSummarySheet> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.green.withValues(alpha: 0.1),
+            color: ListeTonu.basari.zemin(context),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+            border: Border.all(
+                color: context.renkler.basari.withValues(alpha: 0.3)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -295,10 +297,10 @@ class _PaymentSummarySheetState extends State<PaymentSummarySheet> {
               ),
               Text(
                 _currencyFormat.format(h.toplamTutar),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.green,
+                  color: context.renkler.basari,
                 ),
               ),
             ],
@@ -335,8 +337,9 @@ class _PaymentSummarySheetState extends State<PaymentSummarySheet> {
                       )
                     : const Icon(Icons.lock_rounded, size: 18),
                 label: Text(_isStarting ? 'İşleniyor...' : 'Güvenli Ödeme'),
+                // Zemin/yazı temadan: sabit yeşilin üstündeki yazı rengi
+                // hiçbir temada doğrulanmıyordu.
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.green,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

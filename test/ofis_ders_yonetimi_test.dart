@@ -220,6 +220,49 @@ void main() {
       expect(find.text('Yapıldı'), findsNothing);
       expect(find.textContaining('Hava koşulları'), findsOneWidget);
     });
+
+    // Sayfa açıkken ders bitince sunucunun `baglam`ı bayatlıyor. Satır
+    // etiketi istemci saatini kullandığı için "Onay bekliyor" diyor ve
+    // "Hepsini onayla" sayacına giriyordu; sheet ise `baglam`a baktığından
+    // Yapıldı/Yapılmadı düğmelerini hiç çizmiyordu.
+    testWidgets('bayat "gelecek" bağlamında onay düğmeleri çizilir',
+        (tester) async {
+      final ders = YonetimDersi.fromJson({
+        ...dersJson(saatSonra: -3),
+        'baglam': 'gelecek',
+      });
+      expect(ders.bittiMi, isTrue);
+      expect(ders.onayBekliyor, isTrue);
+
+      await tester.pumpWidget(_uygulama(_govde(ders)));
+      expect(find.text('Yapıldı'), findsOneWidget);
+      expect(find.text('Yapılmadı'), findsOneWidget);
+    });
+  });
+
+  group('Ders bitti ölçütü', () {
+    test('satır ve sheet aynı ölçütten geçer', () {
+      final bitmis = YonetimDersi.fromJson(dersJson(saatSonra: -3));
+      expect(bitmis.bittiMi, isTrue);
+      expect(bitmis.kararVerilebilir, isTrue);
+      expect(bitmis.onayBekliyor, isTrue);
+
+      final gelecek = YonetimDersi.fromJson(dersJson(saatSonra: 5));
+      expect(gelecek.bittiMi, isFalse);
+      expect(gelecek.kararVerilebilir, isFalse);
+      expect(gelecek.onayBekliyor, isFalse);
+    });
+
+    test('iptal ve kararlı derste karar verilemez / beklemez', () {
+      final iptal = YonetimDersi.fromJson(dersJson(saatSonra: -3, iptal: true));
+      expect(iptal.kararVerilebilir, isFalse);
+      expect(iptal.onayBekliyor, isFalse);
+
+      final kararli =
+          YonetimDersi.fromJson(dersJson(saatSonra: -3, yonetici: true));
+      expect(kararli.kararVerilebilir, isTrue, reason: 'karar değiştirilebilir');
+      expect(kararli.onayBekliyor, isFalse);
+    });
   });
 
   group('Plan dışı karar formu', () {

@@ -2,11 +2,12 @@
 //
 // Üyenin kendi profil fotoğrafını eklemesi / değiştirmesi / kaldırması.
 //
-// Fotoğraf telefonda yalnız küçültülür (en uzun kenar 1600 px, JPEG %85);
+// Fotoğraf telefonda yalnız küçültülür (en uzun kenar 1200 px, JPEG %85);
 // kareye kırpma sunucuda yapılır (ortadan), böylece her istemci aynı sonucu
-// verir. Kırpma ekranı bilerek yok: avatar her yerde daire ve küçük, yüz
-// çoğunlukla ortada — ayrı bir yerel kırpma paketi ve platform kurulumu bu
-// kazanca değmedi.
+// verir. 1200 px, sunucunun ürettiği 512 px kareye yeterli pay bırakıyor ve
+// mobil veriden tasarruf ettiriyor. Kırpma ekranı bilerek yok: avatar her
+// yerde daire ve küçük, yüz çoğunlukla ortada — ayrı bir yerel kırpma paketi
+// ve platform kurulumu bu kazanca değmedi.
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
@@ -124,8 +125,8 @@ Future<ProfilFotoSonucu> profilFotografiIslemi(
       source: secim == ProfilFotoSecimi.kamera
           ? ImageSource.camera
           : ImageSource.gallery,
-      maxWidth: 1600,
-      maxHeight: 1600,
+      maxWidth: 1200,
+      maxHeight: 1200,
       imageQuality: 85,
       preferredCameraDevice: CameraDevice.front,
     );
@@ -137,6 +138,13 @@ Future<ProfilFotoSonucu> profilFotografiIslemi(
       baytlar: baytlar,
       dosyaAdi: dosya.name,
     );
+    if (url == null || url.isEmpty) {
+      // Sunucu başarı dönüp adresi vermezse (beklenmeyen yanıt) cihazdaki
+      // fotoğrafı SİLMEYELİM: yoksa "güncellendi" denip avatar baş harflere
+      // düşüyordu. Eski hâl korunur, kullanıcı yeniden dener.
+      mesaj('Fotoğraf yüklenemedi. Lütfen tekrar deneyin.');
+      return ProfilFotoSonucu.degismedi;
+    }
     await _cihazdakiniGuncelle(url);
     mesaj('Profil fotoğrafı güncellendi.');
     return ProfilFotoSonucu.yeni(url);

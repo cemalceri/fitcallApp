@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `pubspec` sürümü **3.10.0+43** — renk temaları (takım renkleri + geçişli tasarım dili), açılış popup'ları, yönetici/ofis Duyurular ekranı, ödül "nasıl kazanılır?", yönetici ekranı etiketleri ve 09-29 temizliği içeride. `v3.10.0` tag'iyle Codemagic'e gönderildi (2026-10-10; Codemagic 26.6 havuzu yoğun olduğu için Xcode 26.5'e sabitlendi, tag `3b6effa`'da) |
-| Testler | `flutter test` **2505 geçiyor** (2026-10-13), `flutter analyze` temiz; backend süiti **1050 geçiyor**, 0 kırık (2026-10-13) |
+| Testler | `flutter test` **2730 geçiyor** (2026-10-13), `flutter analyze` temiz; backend süiti **1090 geçiyor**, 0 kırık (2026-10-13) |
 | Backend | Canlı: `1d527c5` (Heroku **v305**, 2026-10-10). Sonrası **deploy bekliyor**: `6c269f5` (0091 ödeme alındı bildirimi), `4ddb8be`, `6329486` ve 2026-10-12 turu (0092 profil fotoğrafı adresi + ofis uçları) — bkz. açık iş 9 |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08); **3.10.0** `v3.10.0` tag'iyle gönderildi (2026-10-10) |
 
@@ -36,7 +36,7 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 
 ## 🔴 Açık işler
 
-### 9. 2026-10-12 notlar turu — kodlandı, deploy bekliyor
+### 9. 2026-10-12 notlar turu + 10-13 denetim düzeltmeleri — kodlandı, deploy bekliyor
 Ayrıntı aşağıda "Tamamlanan turlar"da. Yayın sırası kuralı geçerli: **önce backend, sonra mobil**.
 - **Backend:** `python manage.py migrate` (0091 + 0092; 0091 önceki turdan bekliyor). `requirements.txt`'te
   **Pillow 10.4.0** (fotoğraf kırpma; Heroku build kurar). Yeni uçlar: `uyeProfilFotografi`,
@@ -45,11 +45,41 @@ Ayrıntı aşağıda "Tamamlanan turlar"da. Yayın sırası kuralı geçerli: **
   kartının adresi (`/uyelikPaket`) yalnız backend değişikliği — deploy edilince eski uygulamalarda da düzelir.
 - **Mobil:** yeni yerel paket `image_picker` → yeni sürüm gerekir (`version:` bump + `release_notes.json` henüz
   yapılmadı). iOS `Info.plist`'e fotoğraf galerisi izni metni eklendi, kamera metni profil fotoğrafını da anıyor.
-- **Bilinen sınır:** web'deki üye formu fotoğrafı hâlâ `ImageField` ile Heroku diskine yazıyor (yeniden başlatmada
-  kayboluyor); mobil ve API'ler yalnız Firebase adresini (`profil_fotografi_url`) gösteriyor. Web formu da Firebase'e
-  taşınmalı.
+- **Fotoğraf hattı tek (2026-10-13):** web üye formu da `profil_fotografi_yukle` ile Firebase'e yazıyor, web profil
+  sayfası ve admin `profil_fotografi_url`'i gösteriyor. `UyeModel.profil_fotografi` (ImageField) terk edildi — alan
+  duruyor ama kimse yazmıyor; ileride ayrı bir migration'la düşürülebilir (**kullanıcı kararı bekliyor**, geri
+  dönüşü olmayan veri kaybı).
+- **Çıktı boyutu:** sunucu 512 px JPEG üretiyor, üst sınır 200 KB (kalite kademeli iner). Ölçüm: gürültülü en kötü
+  durumda 109 KB, normal fotoğrafta 5–70 KB. İstemci 1200 px gönderiyor.
 - **Cihazda denenecek:** fotoğraf çek/galeri izni (Android 13+ fotoğraf seçici, iOS izin penceresi), ofis "Hepsini
   onayla", takım renklerinde başlık/alt menü (6 tema × açık/koyu).
+
+**2026-10-13 — iki bağımsız ajan denetimi ve düzeltmeleri.** Süitler yeşildi; bulgular testlerin bakmadığı
+yerlerdeydi. Kapatılanlar:
+- `baseUrl` yanlışlıkla `baseUrlLocal` commit edilmişti (`e5be4c3`) — bu hâlde çıkan sürüm hiçbir API'ye
+  ulaşamazdı. Prod'a alındı. **Tag atmadan önce bu satır her turda kontrol edilmeli.**
+- Backend: hakediş düğmesi onay satırı olmayan derste `tamamlandi=False` yazıp dersi sessizce "yapılmadı"
+  yapıyordu; hakediş ucunda iptal/bitmemiş ders denetimi yoktu. İkisi de düzeltildi.
+- Bekleyen plan dışı sayısı kuyruk / ders sayacı / sol menü rozetinde üç ayrı süzgeçle hesaplanıyordu
+  ("yapılmadı" dersin rozeti hiç sıfırlanmıyordu) — tek süzgeç (`bekleyen_suz`).
+- Bucket temizliği: `delete_from_firebase` klasörü atıyordu (duyuru görselleri hiç silinmiyordu), üye silinince
+  fotoğraf kalıyordu, web "fotoğrafı sil" Firebase'e dokunmuyordu, hesap silme çok işletmeli hesapta profil
+  atlıyordu. Hepsi kapatıldı.
+- Mobil: üye listesi istatistiklerinde yarış durumu (`SayfaliListe.ek` nesil korumasına girdi); ofis Ana Sayfa boş
+  yanıtta sonsuz iskelette kalıyordu; üye kabuğunda `anaHesap` varsayılanı fail-open'dı; profil seçiminde fazladan
+  `pop()`; "ders bitti" ölçütü satır ile sheet arasında ayrışıyordu (artık modelde `bittiMi` / `kararVerilebilir`).
+- Tema: ders istatistik kartları eşik altı sabit renklerle çiziliyordu (turuncu 2,16:1) — `ListeTonu`'ya çevrildi;
+  şifre değiştir / ödeme özeti / ders onay-iptal dialoglarındaki kalan sabit renkler de token'a alındı. Taşma
+  matrisine `ProfileHeader`, `ErisimKisitli`, `GecisCubugu`, başlık bandı parçaları ve `KimlikBaslik(yuzeysiz)`;
+  kontrast testine `ListeTonu` ön plan/zemin çiftleri eklendi.
+
+**Düzeltmelerin doğrulanması (aynı gün, iki yeni ajan).** İki regresyon yakalandı: ders onay dialoğundaki
+iskelet 200 px'lik kutuda 6 px taşıyordu (yükseklik kaldırıldı; görünüm `DersOnayYukleniyor` olarak ayrılıp
+taşma matrisine eklendi — kaçmasının sebebi testte olmamasıydı) ve backend'de hakediş güncellemesi satır
+kilidini kaybetmişti. Ek olarak: `_anaHesapKontrol` try/catch'siz olduğu için güvenli depo hata verirse sekme
+kalıcı iskelette donuyordu; ofis Ana Sayfa `ApiException` dışını yakalamıyordu; katılımcı bölümü hâlâ bayat
+`baglam`a bakıyordu (`baslamadiMi` eklendi); `ToggleButtons` seçili yazısı koyu modda okunmuyordu; `Colors.x`
+mandal tabanı 176 → 144 indirilerek kazanım kilitlendi.
 
 ### 2. Heroku Scheduler — kurulu (kullanıcı teyidi 2026-09-29)
 Bu maddede "Scheduler addon'u yok, periyodik komutlar koşmuyor olmalı" deniyordu (dayanak:

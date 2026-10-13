@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
@@ -99,13 +100,13 @@ class _SifreDegistirPageState extends State<SifreDegistirPage> {
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withValues(alpha: 0.1),
+                            color: context.cs.primary.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.lock_reset_rounded,
                             size: 48,
-                            color: Colors.orange,
+                            color: context.cs.primary,
                           ),
                         ),
 
@@ -175,7 +176,7 @@ class _SifreDegistirPageState extends State<SifreDegistirPage> {
                             onPressed: _isSubmitting ? null : _submit,
                             style: FilledButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              backgroundColor: Colors.orange,
+                              backgroundColor: context.cs.primary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -252,7 +253,7 @@ class _ModernTextField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: Colors.orange, width: 2),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),

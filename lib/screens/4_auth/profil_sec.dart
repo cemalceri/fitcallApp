@@ -67,15 +67,24 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
   }
 
   Future<void> _profilSecildi(KullaniciProfilModel p) async {
+    LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
     try {
-      LoadingSpinner.show(context, message: 'Giriş yapılıyor...');
       final rol = await AuthService.loginUser(p);
       if (!mounted) return;
+      // Spinner diyaloğunu `redirectAfterLogin` içindeki popUntil zaten
+      // kaldırıyor; push bir sonraki kareye erteleniyor. Burada ayrıca
+      // hide() çağrılırsa diyalog değil SAYFANIN KENDİSİ pop ediliyor (altta
+      // rota yoksa bir kare boş navigator). Bu yüzden hide yalnız hata
+      // dalında — başarı yolunda gezinme temizliyor.
       await NavigationHelper.redirectAfterLogin(context, rol);
     } on ApiException catch (e) {
-      if (mounted) ShowMessage.error(context, e.message);
-    } finally {
+      if (!mounted) return;
       LoadingSpinner.hide(context);
+      ShowMessage.error(context, e.message);
+    } catch (_) {
+      if (!mounted) return;
+      LoadingSpinner.hide(context);
+      ShowMessage.error(context, 'Giriş yapılamadı. Lütfen tekrar deneyin.');
     }
   }
 

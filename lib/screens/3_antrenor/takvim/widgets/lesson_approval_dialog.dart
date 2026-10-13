@@ -18,6 +18,7 @@ import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
+import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 
 /// Kilitli derste antrenörün gördüğü yoklama durumu.
 ///
@@ -190,22 +191,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
   /*                              LOADING                                       */
   /* -------------------------------------------------------------------------- */
 
-  Widget _buildLoadingView() {
-    return SizedBox(
-      height: 200,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: 16),
-          Text(
-            'Katılım bilgisi yükleniyor...',
-            style: TextStyle(color: context.takvim.textSecondary, fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildLoadingView() => const DersOnayYukleniyor();
 
   /* -------------------------------------------------------------------------- */
   /*                              KİLİTLİ VIEW                                  */
@@ -578,9 +564,10 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
       decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.06),
+        color: ListeTonu.uyari.zemin(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.withValues(alpha: 0.45)),
+        border: Border.all(
+            color: context.renkler.uyari.withValues(alpha: 0.45)),
       ),
       child: Row(
         children: [
@@ -657,7 +644,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
             ),
             IconButton(
               icon: Icon(Icons.delete_outline_rounded,
-                  size: 20, color: Colors.red.shade400),
+                  size: 20, color: context.renkler.hata),
               onPressed: () {
                 HapticFeedback.lightImpact();
                 setState(() => _misafirler.remove(m));
@@ -736,15 +723,15 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withValues(alpha: 0.15),
+                          color: ListeTonu.uyari.zemin(context),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Plan Dışı',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: Colors.orange,
+                            color: ListeTonu.uyari.on(context),
                           ),
                         ),
                       ),
@@ -793,12 +780,10 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
             isSelected: [katildi == true, katildi == false],
             borderRadius: BorderRadius.circular(8),
             constraints: const BoxConstraints(minWidth: 44, minHeight: 32),
-            selectedColor: Colors.white,
-            fillColor: katildi == true
-                ? context.takvim.completed
-                : (katildi == false
-                    ? context.takvim.cancelled
-                    : Theme.of(context).colorScheme.onSurfaceVariant),
+            // Dolgu duruma göre değişiyor; seçili yazı rengi sabit beyazdı
+            // ve koyu modda açık gri dolgunun üstünde okunmuyordu.
+            selectedColor: uzerineYazi(_yoklamaDolgusu(context, katildi)),
+            fillColor: _yoklamaDolgusu(context, katildi),
             color: Theme.of(context).colorScheme.onSurfaceVariant,
             onPressed: (i) {
               HapticFeedback.selectionClick();
@@ -830,7 +815,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                 : IconButton(
                     tooltip: 'Sil',
                     icon: Icon(Icons.delete_outline_rounded,
-                        size: 20, color: Colors.red.shade400),
+                        size: 20, color: context.renkler.hata),
                     onPressed: () {
                       HapticFeedback.lightImpact();
                       setState(() => _katilimMap.remove(k.uyeId));
@@ -899,15 +884,15 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.15),
+                      color: ListeTonu.uyari.zemin(context),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Plan Dışı',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: Colors.orange,
+                        color: ListeTonu.uyari.on(context),
                       ),
                     ),
                   ),
@@ -920,7 +905,7 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
               child: Row(
                 children: [
                   Icon(Icons.person_outline_rounded,
-                      color: Colors.orange, size: 18),
+                      color: context.renkler.uyari, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child:
@@ -930,15 +915,15 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.15),
+                      color: ListeTonu.uyari.zemin(context),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Misafir',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: Colors.orange,
+                        color: ListeTonu.uyari.on(context),
                       ),
                     ),
                   ),
@@ -1351,4 +1336,26 @@ class _DurumSecenegi extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Katıldı/Katılmadı düğmesinin dolgu rengi; seçili yazı rengi bundan
+/// türetiliyor (`uzerineYazi`).
+Color _yoklamaDolgusu(BuildContext context, bool? katildi) => switch (katildi) {
+      true => context.takvim.completed,
+      false => context.takvim.cancelled,
+      null => Theme.of(context).colorScheme.onSurfaceVariant,
+    };
+
+/// Katılım bilgisi yüklenirken çizilen iskelet. Ayrı widget: sayfanın kendisi
+/// initState'te API çağırdığı için taşma matrisinde yalnız bu pompalanabiliyor
+/// (eskiden sabit 200 px'lik kutudaki üç iskelet satırı 206 px ediyor ve her
+/// ekranda 6 px taşıyordu — test olmadığı için kaçmıştı).
+class DersOnayYukleniyor extends StatelessWidget {
+  const DersOnayYukleniyor({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        child: IskeletListe(satirSayisi: 3, kaydirilabilir: false),
+      );
 }
