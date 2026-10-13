@@ -15,19 +15,12 @@ import 'package:fitcall/services/notification/notification_router.dart';
 import 'package:fitcall/main.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
 class NotificationPage extends StatefulWidget {
-  /// Sayfa bir sekmenin içinde mi duruyor?
-  ///
-  /// Ofis kabuğunda bildirimler alt bardaki bir sekme; orada geri oku hem
-  /// anlamsız hem tehlikeli olurdu (kabuğun tamamını pop ederdi). Ayrı bir
-  /// rota olarak açıldığında (drawer, bildirim zili, push tıklaması) ok yerinde
-  /// kalır.
-  final bool gomulu;
-
-  const NotificationPage({super.key, this.gomulu = false});
+  const NotificationPage({super.key});
 
   @override
   State<NotificationPage> createState() => _NotificationPageState();
@@ -177,8 +170,7 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Sil',
-                style: TextStyle(color: ctx.renkler.hata)),
+            child: Text('Sil', style: TextStyle(color: ctx.renkler.hata)),
           ),
         ],
       ),
@@ -241,8 +233,8 @@ class _NotificationPageState extends State<NotificationPage> {
   Widget build(BuildContext context) {
     final groups = _groupByDate();
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             _buildHeader(),
@@ -274,25 +266,20 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 
   Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(4, 8, 16, 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-            bottom: BorderSide(
-                color:
-                    context.bildirimRenk.ayiriciCizgi.withValues(alpha: 0.5))),
-      ),
+    final on = context.gecis.onBaslik;
+    return BaslikBandi(
+      padding: const EdgeInsets.fromLTRB(4, 8, 8, 12),
       child: Row(
         children: [
-          if (widget.gomulu)
+          // Geri oku yalnız dönülecek sayfa varsa (bildirimden soğuk açılışta
+          // sayfa yığının tek elemanı olabilir).
+          if (!Navigator.of(context).canPop())
             const SizedBox(width: 12)
           else
             IconButton(
               tooltip: 'Geri',
               onPressed: () => Navigator.pop(context),
-              icon: Icon(Icons.arrow_back_ios_new_rounded,
-                  size: 22, color: context.bildirimRenk.yaziAna),
+              icon: Icon(Icons.arrow_back_ios_new_rounded, size: 22, color: on),
             ),
           Expanded(
             child: Text(
@@ -300,15 +287,14 @@ class _NotificationPageState extends State<NotificationPage> {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
-                color: context.bildirimRenk.yaziAna,
+                color: on,
                 letterSpacing: -0.5,
               ),
             ),
           ),
           if (_notifications.isNotEmpty)
             PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert_rounded,
-                  size: 22, color: context.bildirimRenk.yaziAna),
+              icon: Icon(Icons.more_vert_rounded, size: 22, color: on),
               tooltip: 'Bildirim işlemleri',
               onSelected: (secim) {
                 if (secim == 'okundu') {
@@ -461,9 +447,8 @@ class _BildirimSatiri extends StatelessWidget {
       // Okunmamış satır hafif renklenir (Instagram/X kalıbı). Eski %35'lik
       // dolgu satırı kart gibi gösteriyordu; burada amaç vurgulamak, ayırmak
       // değil — ayrımı zaten altındaki hairline yapıyor.
-      color: okunmadi
-          ? cs.primaryContainer.withValues(alpha: 0.18)
-          : cs.surface,
+      color:
+          okunmadi ? cs.primaryContainer.withValues(alpha: 0.18) : cs.surface,
       child: InkWell(
         onTap: onTap,
         child: Padding(

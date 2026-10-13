@@ -1,8 +1,9 @@
 // lib/screens/7_yonetici/dashboard/widgets/dashboard_header.dart
 
 import 'dart:convert';
+import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
@@ -60,31 +61,20 @@ class _DashboardHeaderState extends State<DashboardHeader> {
     return 'İyi akşamlar';
   }
 
+  /// Takım renginde başlık bandının içinde durur (bkz.
+  /// YoneticiDashboardPage); yazı ve ikon renkleri banttan gelir.
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Row(
       children: [
         // Sol üst: Menü (hamburger)
         if (widget.onMenuTap != null)
-          IconButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              widget.onMenuTap!.call();
-            },
-            tooltip: 'Menü',
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.menu_rounded,
-                size: 22,
-                color: colorScheme.primary,
-              ),
+          Padding(
+            padding: const EdgeInsets.only(right: Bosluk.s),
+            child: BaslikIkonButonu(
+              ikon: Icons.menu_rounded,
+              ipucu: 'Menü',
+              onTap: widget.onMenuTap!,
             ),
           ),
 
@@ -95,10 +85,7 @@ class _DashboardHeaderState extends State<DashboardHeader> {
             children: [
               Text(
                 _getGreeting(),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style: const TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 4),
               Row(
@@ -108,10 +95,9 @@ class _DashboardHeaderState extends State<DashboardHeader> {
                       _yoneticiAdi.isNotEmpty ? _yoneticiAdi : 'Hoş geldiniz',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -129,60 +115,19 @@ class _DashboardHeaderState extends State<DashboardHeader> {
           children: [
             const NotificationsBell(),
             if (_hasMultipleProfiles) const ProfilDegistirButonu(),
-            _HeaderActionButton(
-              icon: Icons.logout_rounded,
-              tooltip: 'Çıkış yap',
-              color: colorScheme.error,
-              onTap: () {
-                HapticFeedback.lightImpact();
-                AuthService.logout(context);
+            // Çıkış — renkli başlıkta kırmızı değil; diğer butonlarla aynı.
+            BaslikIkonButonu(
+              ikon: Icons.logout_rounded,
+              ipucu: 'Çıkış yap',
+              onTap: () async {
+                if (await cikisOnayla(context) && context.mounted) {
+                  AuthService.logout(context);
+                }
               },
             ),
           ],
         ),
       ],
-    );
-  }
-}
-
-/// Header'daki yuvarlak köşeli aksiyon butonu — bildirim ziliyle aynı 42×42
-/// kutu ve 22px ikon ölçüsünde durur.
-class _HeaderActionButton extends StatelessWidget {
-  final IconData icon;
-  final String tooltip;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _HeaderActionButton({
-    required this.icon,
-    required this.tooltip,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(right: 4),
-      child: Material(
-        color: Colors.transparent,
-        child: Tooltip(
-          message: tooltip,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: onTap,
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, size: 22, color: color),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

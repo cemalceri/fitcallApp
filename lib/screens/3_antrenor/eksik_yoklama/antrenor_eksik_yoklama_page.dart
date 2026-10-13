@@ -72,7 +72,6 @@ class _AntrenorEksikYoklamaPageState extends State<AntrenorEksikYoklamaPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         elevation: 0,
         surfaceTintColor: Colors.transparent,

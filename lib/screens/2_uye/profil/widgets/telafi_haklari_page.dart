@@ -90,47 +90,14 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
+    // Elle çizilmiş başlık yerine tema başlık çubuğu: takım renginde, diğer
+    // sayfalarla aynı.
     return Scaffold(
+      appBar: AppBar(title: const Text('Telafi Haklarım')),
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
-            // AppBar
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                children: [
-                  IconButton(
-                    tooltip: 'Geri',
-                    onPressed: () => Navigator.pop(context),
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHighest
-                            .withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        size: 20,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Telafi Haklarım',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
             // İçerik
             Expanded(
               child: _isLoading

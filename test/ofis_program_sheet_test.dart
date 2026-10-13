@@ -261,7 +261,8 @@ void main() {
       );
 
       // Yıkıcı aksiyon kenarlıklı (YikiciButon → OutlinedButton), dolgulu değil.
-      expect(find.widgetWithText(YikiciButon, 'Dersi iptal et'), findsOneWidget);
+      expect(
+          find.widgetWithText(YikiciButon, 'Dersi iptal et'), findsOneWidget);
       final buton = tester.widget<OutlinedButton>(
         find.widgetWithText(OutlinedButton, 'Dersi iptal et'),
       );

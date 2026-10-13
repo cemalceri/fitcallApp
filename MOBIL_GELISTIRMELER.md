@@ -8,13 +8,13 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-10-10)
+## 📌 Şu anki durum (2026-10-13)
 
 | | |
 |---|---|
 | Mobil | `pubspec` sürümü **3.10.0+43** — renk temaları (takım renkleri + geçişli tasarım dili), açılış popup'ları, yönetici/ofis Duyurular ekranı, ödül "nasıl kazanılır?", yönetici ekranı etiketleri ve 09-29 temizliği içeride. `v3.10.0` tag'iyle Codemagic'e gönderildi (2026-10-10; Codemagic 26.6 havuzu yoğun olduğu için Xcode 26.5'e sabitlendi, tag `3b6effa`'da) |
-| Testler | `flutter test` **2132 geçiyor** (renk temaları turuyla 1432'den), `flutter analyze` temiz; backend süiti **944 geçiyor**, 0 kırık (2026-10-10) |
-| Backend | Canlı: `1d527c5` (Heroku **v305**, 2026-10-10) — 09-29 turu, açılış popup'ları ve yönetici/ofis duyuru uçları dahil; bekleyen migration yok |
+| Testler | `flutter test` **2505 geçiyor** (2026-10-13), `flutter analyze` temiz; backend süiti **1050 geçiyor**, 0 kırık (2026-10-13) |
+| Backend | Canlı: `1d527c5` (Heroku **v305**, 2026-10-10). Sonrası **deploy bekliyor**: `6c269f5` (0091 ödeme alındı bildirimi), `4ddb8be`, `6329486` ve 2026-10-12 turu (0092 profil fotoğrafı adresi + ofis uçları) — bkz. açık iş 9 |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08); **3.10.0** `v3.10.0` tag'iyle gönderildi (2026-10-10) |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
@@ -35,6 +35,21 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 ---
 
 ## 🔴 Açık işler
+
+### 9. 2026-10-12 notlar turu — kodlandı, deploy bekliyor
+Ayrıntı aşağıda "Tamamlanan turlar"da. Yayın sırası kuralı geçerli: **önce backend, sonra mobil**.
+- **Backend:** `python manage.py migrate` (0091 + 0092; 0091 önceki turdan bekliyor). `requirements.txt`'te
+  **Pillow 10.4.0** (fotoğraf kırpma; Heroku build kurar). Yeni uçlar: `uyeProfilFotografi`,
+  `uyeProfilFotografiSil`, `ofisBekleyenIsler`, `ofisDersYonetimiGun`, `ofisDersOnay`, `ofisGunuOnayla`, `ofisDersHakedis`,
+  `ofisPaketDusum`, `ofisManuelTeyit`, `ofisTeyitHatirlat`, `ofisPlanDisiBekleyenler/Secenekler/Karar`. "Paket bitiyor"
+  kartının adresi (`/uyelikPaket`) yalnız backend değişikliği — deploy edilince eski uygulamalarda da düzelir.
+- **Mobil:** yeni yerel paket `image_picker` → yeni sürüm gerekir (`version:` bump + `release_notes.json` henüz
+  yapılmadı). iOS `Info.plist`'e fotoğraf galerisi izni metni eklendi, kamera metni profil fotoğrafını da anıyor.
+- **Bilinen sınır:** web'deki üye formu fotoğrafı hâlâ `ImageField` ile Heroku diskine yazıyor (yeniden başlatmada
+  kayboluyor); mobil ve API'ler yalnız Firebase adresini (`profil_fotografi_url`) gösteriyor. Web formu da Firebase'e
+  taşınmalı.
+- **Cihazda denenecek:** fotoğraf çek/galeri izni (Android 13+ fotoğraf seçici, iOS izin penceresi), ofis "Hepsini
+  onayla", takım renklerinde başlık/alt menü (6 tema × açık/koyu).
 
 ### 2. Heroku Scheduler — kurulu (kullanıcı teyidi 2026-09-29)
 Bu maddede "Scheduler addon'u yok, periyodik komutlar koşmuyor olmalı" deniyordu (dayanak:
@@ -94,6 +109,54 @@ anahtar yenileme ileride yapılacak.
 ---
 
 ## ✅ Tamamlanan turlar
+
+### Kullanıcı notları turu: tema yayılımı, profil fotoğrafı, ofis bekleyen işler (2026-10-12)
+
+Yedi not netleştirildi (kararlar: tema **A + B**, ofise web Ders Yönetimi'nin hepsi, "Sizden Gelenler" ertelendi).
+- **Takım rengi bütün sayfalarda (A + B, HTML maket onaylı):** sayfa zemini baştan sona takımın açık tonu
+  (`TemaGecisleri.sayfaRengi`, koyuda derin ton; eski 280 px yıkama kalktı), başlık çubuğu ve alt menü dolu takım
+  renginde (`baslik` / `altBar`, yazı `onBaslik` / `onAltBar` tam opak). AppBar'lar tema ile; elle çizilen başlıklar
+  (ana sayfalar, dersler, bildirimler, hesap özeti, profil seç, ofis programı, çekmeceler, bildirim diyalogları) ortak
+  `BaslikBandi` ile; içerik kayan sayfalarda durum çubuğu `RenkliDurumCubugu` ile başlık renginde sabit. Bant içi zil,
+  profil değiştir ve ikon butonları (`BaslikIkonButonu`) başlık rengine uyar; çipler `BaslikCipi`. Kontrast için
+  Binay açık birincil C2500B → B54A0A, açık mod `renkler.hata` DC2626 → C62828 (renkli zeminde 4.2:1'e düşüyordu),
+  Siyah-Beyaz zemin F1F1F1. Testler: zemin üstü metin/link/durum, başlık/alt menü/seçili çip/QR halkası kontrastı.
+- **Profil seç:** gruplar kutulu (rol ikonu + sayı başlıkta, profiller tek yüzeyde) — eski "sade düz liste" kararı
+  kullanıcı isteğiyle değişti. Üye profilinde fotoğraf varsa avatar fotoğraf.
+- **Profil fotoğrafı:** üye profil başlığındaki avatara dokunup çeker / seçer / kaldırır; fotoğraf telefonda küçültülür,
+  sunucuda kareye kırpılıp (512 px JPEG) Firebase Storage'a yüklenir, eskisi silinir. Yeni alan
+  `UyeModel.profil_fotografi_url` (0092); API'lerdeki `profil_fotografi` anahtarı artık bu adres. Antrenör öğrenci
+  listesi, ofis/yönetici üye listeleri ve detayları, profil seç fotoğrafı gösterir. Cihazdaki profil kopyaları
+  (`uye`, `uye_profil`, `kullanici_profiller`) yükleme sonrası güncellenir.
+- **"Paketiniz bitmek üzere" kartı** Hesap Dökümü yerine Üyelik & Paketler'e gider (backend `action_route`).
+- **Ofis ve yönetici üye listeleri sayfalı:** aşağı kaydırdıkça 20'şer (`SayfaliListe`), arama ve filtre sunucuda (çok
+  kelimeli, Türkçe İ/ı duyarlı), ada göre sıralıyken baş harf grupları; sayfa sınırında tekrar/kayıp olmasın diye
+  sıralamaya `id`. Borçlu/Güncel ve Aktif/Pasif grupları sayfalı listede tutarsız olduğu için kalktı (borç satırdaki
+  kırmızı tutardan, pasif rozetten okunuyor; "Borçlular" çipi en borçlu önce).
+- **Ofis Ana Sayfa + Dersler (web Ders Yönetimi'nin mobili):** sekmeler Ana Sayfa · Program · Dersler · Üyeler
+  (Bildirimler zilde ve menüde). Ana Sayfa: bugünün özeti + bekleyen işler (son 60 günün onay bekleyen dersleri, plan
+  dışı/misafir kararları, bugün-yarın katılım cevabı bekleyenler). Dersler: gün gezinmesi, süzgeçler (onay bekleyen /
+  cevap bekleyen / iptal), derse dokununca Yapıldı/Yapılmadı (neden + not), kararı kaldır, hakediş Alır/Almaz (yardımcı
+  dahil), katılımcı paket düşümü, "Katılacak" ve "Hatırlat"; antrenörün yapıldı dediği dersler için **"Hepsini onayla"**
+  (web'de yok, kullanıcı "kullanışlı olsun" dedi; antrenörün yapılmadı dediği ya da bildirmediği derslere dokunmaz).
+  Plan dışı kararlar ekranı: borç yaz (tutar) / paketten / ücretsiz, açıklama zorunlu. **Ofisin gördüğü tek para alanı
+  plan dışı borç tutarı** (kullanıcı kararı). Kurallar web ile ortak servislerde: web görünümlerindeki mantık
+  `ders_yonetimi_service` ve `plan_disi_karar_service`'e taşındı, web görünümleri onları çağırıyor.
+- Ofis yardımına 5 soru (bekleyen işler, ders onayı, hakediş, plan dışı karar, katılım cevabı).
+- **Uzman denetimi (3 ajan: backend/güvenlik, arayüz/tema, mobil akış) ve düzeltmeleri:** `getMyMembers` profil
+  fotoğrafını döndürmüyordu; görüntü işleme Pillow 10.4 + yalnız JPEG/PNG + piksel sınırı + istek boyu sınırı, blob
+  silme yalnız `profil/<üye_id>/` altında; hesap silinince (KVKK) fotoğraf da silinir. Ofis: plan dışı kararda ödeyen
+  yalnız dersin aday üyeleri, iptal/yapılmadı derse karar yok (kuyruktan da düşer), "Hepsini onayla" ders başına atomik,
+  hakediş/paket düşümü girdisi doğrulanıyor (paket düşümü artık istenen durumu gönderiyor, çift dokunuş geri almıyor),
+  manuel teyit/hatırlatma yalnız derse kayıtlı üyeye, hatırlatmada 10 dk bekleme; arama 5 kelime / 64 karakter.
+  Mobil: ofis sekmeye dönünce ve uygulama öne gelince sayılar sessizce tazelenir, geri tuşu önce Ana Sayfa'ya,
+  "Katılım cevabı" bugün herkes cevapladıysa yarını açar; sayfalı listede yenileme sürerken sonraki sayfa istenmez,
+  sayfa sınırında tekrar gelen kayıt atlanır, yenileme hatasında "Tekrar dene" baştan yükler; HTML hata sayfası
+  (Heroku/413) ekrana basılmaz; fotoğraf kaldırma onay ister; bildirim diyaloglarında başlık yüklenirken de görünür;
+  iOS'ta renkli başlıklı ana sayfalarda yukarı esneme boşluğu kalktı; ana hesap korumalı rotalar yalnız üye profilinde.
+- Testler: mobil toplam 2505 (yeni: `sayfali_liste_test`, `profil_fotografi_test`, `ofis_ders_yonetimi_test`, taşma
+  matrisine ofis/liste/fotoğraf görünümleri, tema kontrastına zemin/başlık/alt menü çiftleri, `api_client_test`); backend +75
+  (`test_profil_fotografi`, `test_ofis_ders_yonetimi` — web görünümü dahil —, arama/sayfalama, paket kartı adresi).
 
 ### Renk temaları: takım renkleri + geçişli tasarım dili (2026-10-10)
 
@@ -746,6 +809,9 @@ Detay `SURUM_NOTLARI.md` → 3.6.0.
 ## 📋 Bekleyen öneriler — sonraki fazlar
 
 ### Üye
+- **Sizden Gelenler — üye paylaşımları** (kullanıcı notu 2026-10-12, "şimdilik dursun"): üyelerin ders/turnuva
+  fotoğrafı-videosu gönderip uygulamada yayınlandığı bölüm. Tasarlanırken: onay (moderasyon) akışı, çocuk üyelerin
+  görüntüsü için veli izni / KVKK, depolama (Firebase) ve kimin göreceği netleşmeli.
 - **(6)** Gelişim/istatistik ekranı — aylık ders sayısı, katılım %, seviye ilerlemesi, rozet
 - **(7)** Antrenör karnesi — ders sonrası not/puanın üyeye "karne" akışıyla açılması (`GorusmeNotu` + `EtkinlikDegerlendirme` altyapısı hazır)
 - **(8)** Ders talep sihirbazı — antrenör kartları + uygun saat ısı haritası. Eski yarım akış (`DersTalepPage`,

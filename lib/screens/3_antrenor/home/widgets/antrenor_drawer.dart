@@ -35,13 +35,13 @@ class AntrenorDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       child: SafeArea(
+        top: false,
         child: Column(
           children: [
             YanMenuBasligi(
               ad: antrenorAdi.isNotEmpty ? antrenorAdi : 'Antrenör Menüsü',
               altBaslik: 'Menü',
             ),
-            const Divider(height: 1),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),

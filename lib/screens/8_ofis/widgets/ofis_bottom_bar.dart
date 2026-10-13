@@ -7,9 +7,10 @@ import 'package:flutter/material.dart';
 /// Ofis kabuğunun alt barı — üye/antrenör/yönetici kabuklarıyla aynı bileşen.
 ///
 /// 4 sekme + merkezde QR. Ofisin günlük işi bu dört ekranda bitiyor:
-/// programda ders açıp iptal eder, gün listesinden takip eder, üyeyi arar,
-/// bildirimlerden kendisine düşen kararları görür. Merkezdeki QR hem doğrulama
-/// (kapıdaki iş) hem oluşturma (kendi geçişi/misafiri) için ortak sayfayı açar.
+/// ana sayfada bekleyen işleri görür, programda ders açıp iptal eder, gün
+/// listesinden dersleri onaylar, üyeyi arar. Bildirimler başlıktaki zilde.
+/// Merkezdeki QR hem doğrulama (kapıdaki iş) hem oluşturma (kendi
+/// geçişi/misafiri) için ortak sayfayı açar.
 class OfisBottomBar extends StatelessWidget {
   /// Aktif sekme indeksi (OfisMainPage ile aynı sıralama).
   final int selectedIndex;
@@ -30,6 +31,11 @@ class OfisBottomBar extends StatelessWidget {
       merkezEtiket: 'QR İşlem',
       sekmeler: const [
         KabukSekmesi(
+          ikon: Icons.home_outlined,
+          seciliIkon: Icons.home_rounded,
+          etiket: 'Ana Sayfa',
+        ),
+        KabukSekmesi(
           ikon: Icons.grid_view_outlined,
           seciliIkon: Icons.grid_view_rounded,
           etiket: 'Program',
@@ -43,11 +49,6 @@ class OfisBottomBar extends StatelessWidget {
           ikon: Icons.people_outline_rounded,
           seciliIkon: Icons.people_rounded,
           etiket: 'Üyeler',
-        ),
-        KabukSekmesi(
-          ikon: Icons.notifications_outlined,
-          seciliIkon: Icons.notifications_rounded,
-          etiket: 'Bildirim',
         ),
       ],
     );

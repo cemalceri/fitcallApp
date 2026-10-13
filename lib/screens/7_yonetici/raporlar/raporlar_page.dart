@@ -1,6 +1,7 @@
 // lib/screens/7_yonetici/raporlar/raporlar_page.dart
 
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
@@ -78,17 +79,16 @@ class _RaporlarPageState extends State<RaporlarPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
       body: SafeArea(
+        top: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(16),
+            // Başlık takım renginde bantta.
+            BaslikBandi(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -97,16 +97,12 @@ class _RaporlarPageState extends State<RaporlarPage> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Detaylı performans, ciro ve tahsilat raporları',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                    style: const TextStyle(fontSize: 14),
                   ),
                   const SizedBox(height: 16),
                   PeriodFilterTabs(

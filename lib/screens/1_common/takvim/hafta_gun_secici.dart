@@ -77,8 +77,10 @@ class _HaftaGunSeciciState extends State<HaftaGunSecici> {
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+      // Sayfa zemininde: beyaz şerit renkli başlık ile renkli zemin arasında
+      // kopuk duruyordu.
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: context.gecis.sayfaRengi,
         border: Border(bottom: BorderSide(color: cs.outlineVariant)),
       ),
       child: Column(

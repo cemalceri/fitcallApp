@@ -50,13 +50,13 @@ class UyeDrawer extends StatelessWidget {
 
     return Drawer(
       child: SafeArea(
+        top: false,
         child: Column(
           children: [
             YanMenuBasligi(
               ad: uyeAdi.isNotEmpty ? uyeAdi : 'Üyelik Menüsü',
               altBaslik: 'Menü',
             ),
-            const Divider(height: 1),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),

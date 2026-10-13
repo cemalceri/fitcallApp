@@ -143,6 +143,20 @@ class KimlikBaslik extends StatelessWidget {
   /// Profil fotoğrafı varsa onu gösteren widget; yoksa baş harfler.
   final Widget? avatar;
 
+  /// Verilirse avatar dokunulabilir olur ve köşesinde kamera rozeti çıkar
+  /// (üyenin kendi profil fotoğrafını değiştirmesi).
+  final VoidCallback? onAvatarTap;
+
+  /// Fotoğraf yüklenirken avatarın üstünde ilerleme halkası.
+  final bool avatarYukleniyor;
+
+  /// Avatar dokunuşunun ekran okuyucu etiketi.
+  final String avatarEtiketi;
+
+  /// true ise gradyanlı kart çizilmez, içerik doğrudan altındaki renkli
+  /// zemine (ör. profil sayfasının genişleyen başlığı) yazılır.
+  final bool yuzeysiz;
+
   const KimlikBaslik({
     super.key,
     required this.baslik,
@@ -151,79 +165,170 @@ class KimlikBaslik extends StatelessWidget {
     this.kapsuller = const [],
     this.sag,
     this.avatar,
+    this.onAvatarTap,
+    this.avatarYukleniyor = false,
+    this.avatarEtiketi = 'Profil fotoğrafını değiştir',
+    this.yuzeysiz = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final renk = context.gecis.onKimlik;
-    return KimlikYuzeyi(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                alignment: Alignment.center,
-                clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  color: TemaGecisleri.kapsulZemini,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: renk.withValues(alpha: 0.5)),
-                ),
-                child: avatar ??
-                    Text(
-                      basHarfler,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: renk,
-                      ),
-                    ),
+    final daire = Container(
+      width: 52,
+      height: 52,
+      alignment: Alignment.center,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: TemaGecisleri.kapsulZemini,
+        shape: BoxShape.circle,
+        border: Border.all(color: renk.withValues(alpha: 0.5)),
+      ),
+      child: avatar ??
+          Text(
+            basHarfler,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: renk,
+            ),
+          ),
+    );
+    final icerik = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            if (onAvatarTap == null)
+              daire
+            else
+              _DuzenlenebilirAvatar(
+                onTap: avatarYukleniyor ? null : onAvatarTap!,
+                yukleniyor: avatarYukleniyor,
+                etiket: avatarEtiketi,
+                child: daire,
               ),
-              const SizedBox(width: Bosluk.m),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            const SizedBox(width: Bosluk.m),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    baslik,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: renk,
+                    ),
+                  ),
+                  if (altBaslik != null && altBaslik!.isNotEmpty)
                     Text(
-                      baslik,
+                      altBaslik!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                         color: renk,
                       ),
                     ),
-                    if (altBaslik != null && altBaslik!.isNotEmpty)
-                      Text(
-                        altBaslik!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: renk,
-                        ),
+                ],
+              ),
+            ),
+            if (sag != null) sag!,
+          ],
+        ),
+        if (kapsuller.isNotEmpty) ...[
+          const SizedBox(height: Bosluk.m),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [for (final k in kapsuller) KimlikKapsulu(k)],
+          ),
+        ],
+      ],
+    );
+    if (yuzeysiz) {
+      return DefaultTextStyle.merge(
+        style: TextStyle(color: renk),
+        child: IconTheme.merge(data: IconThemeData(color: renk), child: icerik),
+      );
+    }
+    return KimlikYuzeyi(child: icerik);
+  }
+}
+
+/// Dokunulabilir avatar: sağ altta kamera rozeti, yüklenirken üstte halka.
+class _DuzenlenebilirAvatar extends StatelessWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final bool yukleniyor;
+  final String etiket;
+
+  const _DuzenlenebilirAvatar({
+    required this.child,
+    required this.onTap,
+    required this.yukleniyor,
+    required this.etiket,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final g = context.gecis;
+    return Semantics(
+      button: true,
+      label: etiket,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: SizedBox(
+          width: 56,
+          height: 56,
+          child: Stack(
+            children: [
+              Positioned(left: 0, top: 0, child: child),
+              if (yukleniyor)
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  width: 52,
+                  height: 52,
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(
+                      color: TemaGecisleri.kapsulZemini,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        color: g.onKimlik,
                       ),
-                  ],
+                    ),
+                  ),
+                ),
+              // Rozet: kimlik yazı renginde daire, içinde kimlik renginde
+              // kamera — gradyanın her noktasında ayrışır.
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: g.onKimlik,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.photo_camera_rounded,
+                      size: 13, color: g.kimlik.colors.first),
                 ),
               ),
-              if (sag != null) sag!,
             ],
           ),
-          if (kapsuller.isNotEmpty) ...[
-            const SizedBox(height: Bosluk.m),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [for (final k in kapsuller) KimlikKapsulu(k)],
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }

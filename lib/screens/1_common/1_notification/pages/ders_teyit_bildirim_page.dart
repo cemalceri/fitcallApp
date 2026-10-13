@@ -10,6 +10,7 @@ import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
 import 'package:fitcall/services/notification/notification_action_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/common/tarih_util.dart';
@@ -302,17 +303,26 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Tam ekran diyalog: sayfa geçişinden geçmediği için zemini kendisi
+    // boyar (diğer sayfalarla aynı takım tonu).
     return Scaffold(
-      backgroundColor: context.bildirimRenk.arkaplanGri,
+      backgroundColor: context.gecis.sayfaRengi,
       body: SafeArea(
-        child: _checkingStatus
-            ? const IskeletKart(seritKutusu: 0)
-            : Column(
-                children: [
-                  BildirimUstBarWidget(onClose: _handleClose),
-                  Expanded(child: _buildContent()),
-                ],
-              ),
+        top: false,
+        // Başlık yüklenirken de görünür: kapatma düğmesi hep elde.
+        child: Column(
+          children: [
+            BildirimUstBarWidget(
+              onClose: _handleClose,
+              baslik: 'Ders katılımı',
+            ),
+            Expanded(
+              child: _checkingStatus
+                  ? const IskeletKart(seritKutusu: 0)
+                  : _buildContent(),
+            ),
+          ],
+        ),
       ),
     );
   }

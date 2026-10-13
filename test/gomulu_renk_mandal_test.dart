@@ -37,7 +37,8 @@ Iterable<File> _dartDosyalari() => Directory('lib')
     .whereType<File>()
     .where((f) => f.path.endsWith('.dart'))
     // Tema dosyası renklerin tek kaynağı; sayıma girmez.
-    .where((f) => !f.path.replaceAll(r'\', '/').endsWith('lib/common/tema.dart'));
+    .where(
+        (f) => !f.path.replaceAll(r'\', '/').endsWith('lib/common/tema.dart'));
 
 void main() {
   final hexDeseni = RegExp(r'Color\(0x[0-9A-Fa-f]{8}\)');

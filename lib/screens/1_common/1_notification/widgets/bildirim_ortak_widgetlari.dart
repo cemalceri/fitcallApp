@@ -2,6 +2,7 @@ import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_renkleri.dart';
 import 'package:flutter/material.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 
 /* -------------------------------------------------------------------------- */
 /*                          PAYLAŞILAN RENK SABİTLERİ                          */
@@ -113,24 +114,38 @@ class BildirimGorselYardimci {
 /* -------------------------------------------------------------------------- */
 /*                                  TOPBAR                                     */
 /* -------------------------------------------------------------------------- */
+/// Bildirimden açılan tam ekran sayfaların üst çubuğu: takım renginde bant,
+/// solda kapat, yanında başlık. Durum çubuğunun arkasına uzanır (sayfanın
+/// SafeArea'sı `top: false` olmalı).
 class BildirimUstBarWidget extends StatelessWidget {
   final VoidCallback onClose;
-  const BildirimUstBarWidget({super.key, required this.onClose});
+  final String baslik;
+  const BildirimUstBarWidget({
+    super.key,
+    required this.onClose,
+    this.baslik = '',
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      color: context.bildirimRenk.arkaplanGri,
+    return BaslikBandi(
+      padding: const EdgeInsets.fromLTRB(4, 4, 16, 6),
       child: Row(
         children: [
           IconButton(
             tooltip: 'Kapat',
-            icon:
-                Icon(Icons.close_rounded, color: context.bildirimRenk.yaziAna),
+            icon: const Icon(Icons.close_rounded),
             onPressed: onClose,
           ),
-          const Spacer(),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              baslik,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+          ),
         ],
       ),
     );

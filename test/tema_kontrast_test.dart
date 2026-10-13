@@ -81,8 +81,7 @@ void main() {
         final cs = p.sema;
         final r = p.renkler;
         final g = p.gecisler;
-        final yikamaUstu = g.sayfaYikama.colors.first;
-        final yikamaOrta = g.sayfaYikama.colors[1];
+        final sayfa = g.sayfaRengi;
 
         void metin(String ad, Color yazi, Color zemin, [double esik = 4.5]) {
           final oran = kontrastOrani(yazi, zemin);
@@ -109,14 +108,63 @@ void main() {
               cs.surfaceContainerHighest);
         });
 
-        test('sayfa yıkamasının her tonunda metin okunur', () {
-          metin('gövde / yıkama üstü', cs.onSurface, yikamaUstu);
-          metin('ikincil / yıkama üstü', cs.onSurfaceVariant, yikamaUstu);
-          metin('ikincil / yıkama ortası', cs.onSurfaceVariant, yikamaOrta);
-          // Yıkamanın tepesinde ana renk yalnız ikon olarak (menü düğmesi).
-          metin('ana renk ikon / yıkama üstü', cs.primary, yikamaUstu, 3);
-          // Yıkama zemine söner: son durak sayfa zeminiyle aynı.
-          expect(g.sayfaYikama.colors.last, cs.surface);
+        test('takım tonundaki sayfa zemininde metin okunur', () {
+          // Liste satırları şeffaf: yazıları doğrudan sayfa zemininde.
+          metin('gövde / sayfa', cs.onSurface, sayfa);
+          metin('ikincil / sayfa', cs.onSurfaceVariant, sayfa);
+          metin('link / sayfa', cs.primary, sayfa);
+          metin('hata / sayfa (borç tutarı)', r.hata, sayfa);
+          // Yıkıcı buton ve "Fotoğrafı kaldır" şemanın hata rengiyle.
+          metin('şema hatası / sayfa', cs.error, sayfa);
+          metin('şema hatası / zemin', cs.error, cs.surface);
+          metin('başarı / sayfa', r.basari, sayfa);
+          metin('bilgi / sayfa', r.bilgi, sayfa);
+          // Uyarı rengi metinde kendi zemininde kullanılır; sayfada ikon.
+          metin('uyarı ikon / sayfa', r.uyari, sayfa, 3);
+          metin('düz buton / sayfa', cs.primary, sayfa, 3);
+        });
+
+        test('sayfa zemini temanın rengini taşır, kartlar ondan ayrışır', () {
+          // Beyaz/zemin rengiyle aynı değil: temalar birbirine benzemesin.
+          expect(sayfa, isNot(cs.surface));
+          expect(kontrastOrani(sayfa, cs.surface), greaterThan(1.03));
+        });
+
+        test('durum çubuğu ikonları başlık yazısıyla aynı kutupta', () {
+          // baslikDurumCubugu ikon rengini uzerineYazi ile seçiyor; başlık
+          // yazısı açıkken ikonlar koyu kalırsa saat/pil başlıkta kaybolur.
+          expect(uzerineYazi(g.baslik).computeLuminance() > 0.5,
+              g.onBaslik.computeLuminance() > 0.5);
+        });
+
+        test('başlık çubuğu ve alt menüde yazı okunur', () {
+          metin('başlık', g.onBaslik, g.baslik);
+          metin('alt menü', g.onAltBar, g.altBar);
+          // Seçili başlık çipi / dönem sekmesi: yazı başlık renginde.
+          metin('seçili başlık çipi', g.baslik, g.onBaslik);
+          // İkon kutuları ve seçili sekme kapsülü yarı saydam açık ton.
+          metin(
+              'başlık ikon kutusu',
+              g.onBaslik,
+              Color.alphaBlend(g.onBaslik.withValues(alpha: 0.16), g.baslik),
+              3);
+          metin('alt menü seçili kapsül', g.onAltBar,
+              Color.alphaBlend(g.onAltBar.withValues(alpha: 0.18), g.altBar));
+          // Devre dışı başlık butonu yine seçilebilir (ikon eşiği).
+          metin(
+              'başlıkta devre dışı',
+              Color.alphaBlend(g.onBaslik.withValues(alpha: 0.45), g.baslik),
+              g.baslik,
+              1.5);
+        });
+
+        test('alt menüde QR butonu ayrışır (halka ya da dolgu)', () {
+          final enIyi = [...g.serit.colors, ...g.qr.colors]
+              .map((c) => kontrastOrani(c, g.altBar))
+              .reduce((a, b) => a > b ? a : b);
+          expect(enIyi, greaterThanOrEqualTo(3),
+              reason: '${_ad(takim, mod)} · QR / alt menü '
+                  '${enIyi.toStringAsFixed(2)}:1');
         });
 
         test('ana renk rolleri', () {
@@ -234,10 +282,13 @@ void main() {
       }
     });
 
-    test('Binay paleti bugünkü değerleriyle aynen duruyor', () {
+    test('Binay paleti duruyor; yalnız birincil bir tık koyu', () {
       final acik = takimPaleti(TakimTemasi.binay, Brightness.light).sema;
       final koyu = takimPaleti(TakimTemasi.binay, Brightness.dark).sema;
-      expect(acik.primary, const Color(0xFFC2500B));
+      // C2500B renkli sayfa zemininde 4.2:1'e düşüyordu (bkz. tema.dart).
+      expect(acik.primary, const Color(0xFFB54A0A));
+      expect(takimPaleti(TakimTemasi.binay, Brightness.light).gecisler.baslik,
+          Marka.turuncuKoyu);
       expect(acik.secondary, Marka.mavi);
       expect(acik.surface, Colors.white);
       expect(acik.onSurface, const Color(0xFF1B1714));
@@ -253,7 +304,6 @@ void main() {
         for (final mod in _modlar) {
           final g = takimPaleti(t, mod).gecisler;
           expect(g.kimlik.colors.length, ref.kimlik.colors.length);
-          expect(g.sayfaYikama.colors.length, ref.sayfaYikama.colors.length);
           expect(g.serit.colors.length, ref.serit.colors.length);
           expect(g.qr.colors.length, ref.qr.colors.length);
         }

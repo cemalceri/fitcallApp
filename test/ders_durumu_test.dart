@@ -44,8 +44,7 @@ void main() {
     });
 
     test('iptal ve tamamlanan dersin durumu değişmez', () {
-      expect(
-          DersListeItem.fromJson(_dersJson('iptal', 'reddedildi')).durumText,
+      expect(DersListeItem.fromJson(_dersJson('iptal', 'reddedildi')).durumText,
           'İptal');
       expect(
           DersListeItem.fromJson(_dersJson('tamamlandi', 'onaylandi'))
@@ -62,8 +61,8 @@ void main() {
       expect(ders.onayDurumu, 'reddedildi');
       expect(ders.gorunenDurum, 'yapilmadi');
       expect(ProgramRenkleri.durumMetni(ders.gorunenDurum), 'Yapılmadı');
-      expect(ProgramRenkleri.durumRengi(ders.gorunenDurum),
-          ProgramRenkleri.iptal);
+      expect(
+          ProgramRenkleri.durumRengi(ders.gorunenDurum), ProgramRenkleri.iptal);
     });
 
     test('onay_durumu göndermeyen eski backend: "Onay bekliyor" kalır', () {

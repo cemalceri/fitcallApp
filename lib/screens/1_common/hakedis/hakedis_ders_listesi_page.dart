@@ -11,6 +11,7 @@ import 'package:fitcall/screens/1_common/hakedis/hakedis_veri_kaynagi.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ders_karti.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_stil.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 
 class HakedisDersListesiPage extends StatefulWidget {
@@ -85,7 +86,6 @@ class _HakedisDersListesiPageState extends State<HakedisDersListesiPage> {
 
   @override
   Widget build(BuildContext context) {
-    final renk = Theme.of(context).colorScheme;
     final veri = _veri;
     final vurgu = hakedisRengi(context, widget.durum);
 
@@ -105,13 +105,9 @@ class _HakedisDersListesiPageState extends State<HakedisDersListesiPage> {
               widget.altBaslik,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 12, color: renk.onSurfaceVariant),
+              style: TextStyle(fontSize: 12, color: context.gecis.onBaslik),
             ),
           ],
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: renk.outlineVariant),
         ),
       ),
       body: SafeArea(

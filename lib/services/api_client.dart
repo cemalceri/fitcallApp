@@ -2,7 +2,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:fitcall/services/core/storage_service.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'api_exception.dart';
 import 'api_result.dart';
 
@@ -160,7 +162,14 @@ class ApiClient {
       return ApiResult<T>(mesaj: 'Boş yanıt döndü', data: null);
     }
 
-    final decoded = jsonDecode(text);
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(text);
+    } on FormatException {
+      // 200 ama JSON değil (ör. ağın giriş sayfası araya girdi).
+      throw ApiException(
+          'PARSE_ERROR', 'Sunucudan beklenmeyen bir yanıt geldi.');
+    }
     final (mesaj, dataJson) = _extractMsgAndData(decoded);
     final safeData = _normalizeJson(dataJson);
 
@@ -177,22 +186,28 @@ class ApiClient {
   }
 
   static Never _throwWithBody(int status, String text) {
-    // DİKKAT: throw eskiden try bloğunun İÇİNDEYDİ; fırlatılan ApiException
-    // kendi catch'ine düşüyor ve backend'in 'code' alanı daima 'HTTP_ERROR'
-    // ile eziliyordu (ör. ders_teyit_page'deki TEYIT_DEGISTIRME_YASAK kontrolü
-    // hiç eşleşemiyordu). Artık ayrıştırma try içinde, throw dışında.
-    // Mesaj sırası eskisiyle aynı: message → detail → gövde metni → varsayılan.
+    final (code, msg) = hataGovdesiniCoz(status, text);
+    throw ApiException(code, msg, statusCode: status);
+  }
+
+  /// Hata yanıtının gövdesinden (kod, mesaj) çıkarır.
+  ///
+  /// DİKKAT: throw eskiden ayrıştırmanın try bloğunun İÇİNDEYDİ; backend'in
+  /// 'code' alanı daima 'HTTP_ERROR' ile eziliyordu (ör. ders_teyit_page'deki
+  /// TEYIT_DEGISTIRME_YASAK kontrolü hiç eşleşemiyordu).
+  /// Mesaj sırası: message → detail → kısa düz metin gövde → duruma göre
+  /// genel mesaj. HTML ya da uzun gövde (Heroku/nginx hata sayfası, 413
+  /// "Request Entity Too Large") kullanıcıya gösterilmez.
+  @visibleForTesting
+  static (String, String) hataGovdesiniCoz(int status, String text) {
     String code = 'HTTP_ERROR';
     String? msg;
-
-    if (text.trim().isNotEmpty) {
-      msg = text.trim();
+    final duz = text.trim();
+    if (duz.isNotEmpty) {
       try {
-        final j = jsonDecode(text);
+        final j = jsonDecode(duz);
         if (j is Map) {
-          if (j['code'] is String) {
-            code = j['code'] as String;
-          }
+          if (j['code'] is String) code = j['code'] as String;
           if (j['message'] is String &&
               (j['message'] as String).trim().isNotEmpty) {
             msg = j['message'] as String;
@@ -201,12 +216,23 @@ class ApiClient {
             msg = j['detail'] as String;
           }
         }
-      } catch (_) {
-        // Gövde JSON değilse düz metin olarak kullanılır (eski davranış).
+      } on FormatException {
+        if (!duz.startsWith('<') && duz.length <= 200) msg = duz;
       }
     }
+    return (code, msg ?? _genelHataMesaji(status));
+  }
 
-    throw ApiException(code, msg ?? 'İşlem başarısız.', statusCode: status);
+  static String _genelHataMesaji(int status) {
+    if (status == 413) return 'Dosya çok büyük.';
+    if (status == 401 || status == 403) {
+      return 'Bu işlem için yetkiniz yok ya da oturumun süresi doldu.';
+    }
+    if (status == 404) return 'İstenen kayıt bulunamadı.';
+    if (status >= 500) {
+      return 'Sunucuda bir sorun oluştu. Biraz sonra tekrar deneyin.';
+    }
+    return 'İşlem başarısız.';
   }
 
   static Future<ApiResult<T>> postParsed<T>(
@@ -227,6 +253,57 @@ class ApiClient {
           )
           .timeout(timeout ?? _defaultTimeout);
 
+      final status = res.statusCode;
+      final text = utf8.decode(res.bodyBytes);
+      if (status == 200) {
+        return _okResult<T>(text, parser);
+      }
+      _throwWithBody(status, text);
+    } on TimeoutException {
+      throw ApiException('TIMEOUT', 'Sunucuya şu an ulaşılamıyor.');
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('UNKNOWN', 'Beklenmeyen bir hata: $e');
+    }
+  }
+
+  /// Dosya yükleme (multipart/form-data). [dosyaAlani] sunucudaki alan adı;
+  /// [alanlar] ek düz metin alanları. Yanıt [postParsed] ile aynı biçimde
+  /// çözülür. Fotoğraf yüklemesi yavaş bağlantıda 20 sn'yi aşabildiği için
+  /// varsayılan süre daha uzun; süre gönderme + yanıtı okumanın toplamıdır.
+  static Future<ApiResult<T>> postDosyaParsed<T>(
+    String url, {
+    required String dosyaAlani,
+    required List<int> baytlar,
+    required String dosyaAdi,
+    String dosyaTuru = 'application/octet-stream',
+    Map<String, String> alanlar = const {},
+    required FromJsonAny<T> parser,
+    Duration timeout = const Duration(seconds: 60),
+    bool auth = true,
+  }) async {
+    Future<http.Response> gonder() async {
+      final istek = http.MultipartRequest('POST', Uri.parse(url));
+      // Content-Type'ı MultipartRequest sınır (boundary) ile kendisi koyar;
+      // _buildHeaders'ın JSON başlığı burada kullanılmaz.
+      if (auth) {
+        final token = await StorageService.getToken();
+        if (token != null) istek.headers['Authorization'] = 'Bearer $token';
+      }
+      istek.fields.addAll(alanlar);
+      istek.files.add(http.MultipartFile.fromBytes(
+        dosyaAlani,
+        baytlar,
+        filename: dosyaAdi,
+        contentType: MediaType.parse(dosyaTuru),
+      ));
+
+      return http.Response.fromStream(await _client.send(istek));
+    }
+
+    try {
+      final res = await gonder().timeout(timeout);
       final status = res.statusCode;
       final text = utf8.decode(res.bodyBytes);
       if (status == 200) {

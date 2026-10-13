@@ -1,6 +1,7 @@
 // lib/screens/7_yonetici/dashboard/yonetici_dashboard_page.dart
 
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
@@ -81,10 +82,30 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Başlık (karşılama + dönem seçimi) takım renginde bantta ve sabit;
+    // yüklenirken de görünür.
     return Scaffold(
-      // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
-      body: SafeArea(
-        child: _buildContent(),
+      body: Column(
+        children: [
+          BaslikBandi(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DashboardHeader(onMenuTap: widget.onMenuTap),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: PeriodFilterTabs(
+                    seciliDonem: _seciliDonem,
+                    onDonemChanged: _onDonemChanged,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(child: _buildContent()),
+        ],
       ),
     );
   }
@@ -138,17 +159,6 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            DashboardHeader(onMenuTap: widget.onMenuTap),
-            const SizedBox(height: 20),
-
-            // Dönem filtresi
-            PeriodFilterTabs(
-              seciliDonem: _seciliDonem,
-              onDonemChanged: _onDonemChanged,
-            ),
-            const SizedBox(height: 20),
-
             // İstatistik kartları
             StatCardsGrid(
               data: _data!,

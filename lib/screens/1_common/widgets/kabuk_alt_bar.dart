@@ -25,6 +25,10 @@ class KabukSekmesi {
 /// değiştirir; hangi sekmede olunduğu ikon + etiket + üstteki çubukla belli
 /// olur. İkonlar tek renk: yalnız aktif olan vurgulanır — beş ayrı renk
 /// hiyerarşi değil gürültü üretiyordu.
+///
+/// Bar dolu takım renginde (`TemaGecisleri.altBar`). Yazı ve ikonlar tam opak
+/// `onAltBar`; aktif sekme renkle değil biçimle ayrılır: dolu ikon, ikonun
+/// arkasında kapsül, kalın etiket ve üstte çubuk.
 class KabukAltBar extends StatelessWidget {
   /// Kenardaki sekmeler (merkez buton hariç). 4 öğe beklenir: ilk ikisi solda,
   /// son ikisi sağda.
@@ -49,15 +53,12 @@ class KabukAltBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.cs;
+    final g = context.gecis;
     final sol = sekmeler.take(2).toList();
     final sag = sekmeler.skip(2).toList();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.surface,
-        border: Border(top: BorderSide(color: cs.outlineVariant)),
-      ),
+    return Material(
+      color: g.altBar,
       child: SafeArea(
         top: false,
         // Sabit yükseklik yok: 1.3x yazı ölçeğinde etiketler barı taşırıyordu.
@@ -113,8 +114,7 @@ class _Sekme extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.cs;
-    final renk = secili ? cs.primary : cs.onSurfaceVariant;
+    final renk = context.gecis.onAltBar;
 
     return Expanded(
       child: Semantics(
@@ -136,12 +136,23 @@ class _Sekme extends StatelessWidget {
                   width: 24,
                   margin: const EdgeInsets.only(bottom: 4),
                   decoration: BoxDecoration(
-                    color: secili ? cs.primary : Colors.transparent,
+                    color: secili ? renk : Colors.transparent,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                Icon(secili ? sekme.seciliIkon : sekme.ikon,
-                    size: 22, color: renk),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: secili
+                        ? renk.withValues(alpha: 0.18)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(Yaricap.xl),
+                  ),
+                  child: Icon(secili ? sekme.seciliIkon : sekme.ikon,
+                      size: 22, color: renk),
+                ),
                 const SizedBox(height: 2),
                 Text(
                   sekme.etiket,
@@ -175,7 +186,6 @@ class _MerkezButon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.cs;
     final gecis = context.gecis;
     return Expanded(
       child: Semantics(
@@ -203,12 +213,12 @@ class _MerkezButon extends StatelessWidget {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(2),
-                    // Halka ile gradyan arasındaki zemin rengi boşluk. Kenarlık
+                    // Halka ile gradyan arasındaki bar rengi boşluk. Kenarlık
                     // (border) çocuğu içeri itmediği için dolgu + boşluk kullanılır;
                     // yoksa Ink gradyanı boşluğun üstüne boyanıyordu.
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: cs.surface,
+                        color: gecis.altBar,
                         shape: BoxShape.circle,
                       ),
                       child: Padding(
@@ -243,7 +253,7 @@ class _MerkezButon extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: cs.onSurfaceVariant,
+                    color: gecis.onAltBar,
                   ),
                 ),
               ],

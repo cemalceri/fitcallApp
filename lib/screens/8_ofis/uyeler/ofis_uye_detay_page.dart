@@ -15,6 +15,7 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/ofis/ofis_api_service.dart';
+import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -92,9 +93,8 @@ class _OfisUyeDetayPageState extends State<OfisUyeDetayPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_data?.profil.adSoyad ??
-            widget.baslangicAdSoyad ??
-            'Üye Detayı'),
+        title: Text(
+            _data?.profil.adSoyad ?? widget.baslangicAdSoyad ?? 'Üye Detayı'),
       ),
       body: _buildContent(),
     );
@@ -128,8 +128,8 @@ class _OfisUyeDetayPageState extends State<OfisUyeDetayPage> {
       onRefresh: _loadData,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(
-            Bosluk.l, Bosluk.l, Bosluk.l, Bosluk.xxl),
+        padding:
+            const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.l, Bosluk.l, Bosluk.xxl),
         children: [
           _OfisUyeBasligi(profil: data.profil),
           const SizedBox(height: Bosluk.l),
@@ -358,6 +358,14 @@ class _OfisUyeBasligi extends StatelessWidget {
       baslik: profil.adSoyad,
       basHarfler: basHarfleri(profil.adSoyad),
       altBaslik: '#${profil.uyeNo} · ${profil.uyeTuru}',
+      // Üyenin kendi yüklediği fotoğraf; yoksa / açılamazsa baş harfler.
+      avatar: (profil.profilFotografi ?? '').isEmpty
+          ? null
+          : ListeAvatari(
+              basHarfler: basHarfleri(profil.adSoyad),
+              fotoUrl: profil.profilFotografi,
+              cap: 52,
+            ),
       kapsuller: [if (!profil.aktifMi) 'Pasif'],
     );
   }

@@ -112,16 +112,11 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
 
   @override
   Widget build(BuildContext context) {
-    final renk = Theme.of(context).colorScheme;
     final veri = _veri;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Hakediş Saatleri'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: renk.outlineVariant),
-        ),
       ),
       body: SafeArea(
         top: false,

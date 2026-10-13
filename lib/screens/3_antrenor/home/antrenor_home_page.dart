@@ -9,6 +9,7 @@ import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 
 // Widgets
@@ -186,24 +187,33 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: AntrenorDrawer(antrenorAdi: _antrenorAdi),
-      // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
-      body: SafeArea(
+      // Başlık bandı içerikle kayar; durum çubuğunun arkası başlık renginde
+      // sabit kalır (RenkliDurumCubugu).
+      body: RenkliDurumCubugu(
         child: RefreshIndicator(
           onRefresh: _onRefresh,
           child: CustomScrollView(
+            // iOS'ta yukarı esneme renkli başlığın üstünde zemin rengi
+            // bir boşluk açıyordu; başlık içerikle kaydığı için kenetli.
+            physics: const ClampingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics()),
             slivers: [
               // Header
               SliverToBoxAdapter(
-                child: HomeHeader(
-                  antrenorAdi: _antrenorAdi,
-                  hasMultipleProfiles: _hasMultipleProfiles,
-                  onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                child: BaslikBandi(
+                  ustGuvenliAlan: false,
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: HomeHeader(
+                    antrenorAdi: _antrenorAdi,
+                    hasMultipleProfiles: _hasMultipleProfiles,
+                    onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                  ),
                 ),
               ),
 
               // Günlük Kokpit
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 sliver: SliverToBoxAdapter(
                   child: GunlukKokpitCard(
                     ozet: _gunlukOzet,

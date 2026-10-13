@@ -2,9 +2,10 @@
 
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
 class UyeHeader extends StatelessWidget {
@@ -29,41 +30,31 @@ class UyeHeader extends StatelessWidget {
     return 'İyi akşamlar';
   }
 
-  void _logout(BuildContext context) {
-    HapticFeedback.lightImpact();
-    AuthService.logout(context);
+  Future<void> _logout(BuildContext context) async {
+    if (await cikisOnayla(context) && context.mounted) {
+      AuthService.logout(context);
+    }
   }
 
+  /// Takım renginde başlık bandının içinde durur (bkz. UyeHomePage); yazı ve
+  /// ikon renkleri banttan gelir.
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 12, 8, 16),
+      padding: const EdgeInsets.fromLTRB(8, 4, 4, 4),
       child: Row(
         children: [
           // Sol üst: Menü (hamburger)
           if (onMenuTap != null)
-            IconButton(
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                onMenuTap!.call();
-              },
-              tooltip: 'Menü',
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.menu_rounded,
-                  size: 22,
-                  color: colorScheme.primary,
-                ),
+            Padding(
+              padding: const EdgeInsets.only(right: Bosluk.s),
+              child: BaslikIkonButonu(
+                ikon: Icons.menu_rounded,
+                ipucu: 'Menü',
+                onTap: onMenuTap!,
               ),
             ),
-          if (onMenuTap == null) const SizedBox(width: 12),
+          if (onMenuTap == null) const SizedBox(width: 8),
 
           // Sol: Karşılama
           Expanded(
@@ -72,10 +63,7 @@ class UyeHeader extends StatelessWidget {
               children: [
                 Text(
                   _getGreeting(),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: const TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -83,10 +71,9 @@ class UyeHeader extends StatelessWidget {
                     Flexible(
                       child: Text(
                         uyeAdi.isNotEmpty ? uyeAdi : 'Hoş geldin',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface,
                           letterSpacing: -0.5,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -109,22 +96,11 @@ class UyeHeader extends StatelessWidget {
               // Profil değiştir
               if (hasMultipleProfiles) const ProfilDegistirButonu(),
 
-              // Çıkış
-              IconButton(
-                tooltip: 'Çıkış yap',
-                onPressed: () => _logout(context),
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: colorScheme.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.logout_rounded,
-                    size: 22,
-                    color: colorScheme.error,
-                  ),
-                ),
+              // Çıkış — renkli başlıkta kırmızı değil; diğer butonlarla aynı.
+              BaslikIkonButonu(
+                ikon: Icons.logout_rounded,
+                ipucu: 'Çıkış yap',
+                onTap: () => _logout(context),
               ),
             ],
           ),

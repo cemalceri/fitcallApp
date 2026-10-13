@@ -18,6 +18,7 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/yonetici/yonetici_etkinlik_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -273,9 +274,16 @@ class _OfisProgramPageState extends State<OfisProgramPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Üst güvenli alanı takım renginde başlık bandı karşılar.
       body: SafeArea(
+        top: false,
         child: _yukleniyor || _hata != null || _program == null
-            ? _durumGovdesi()
+            ? Column(
+                children: [
+                  _yuklenirkenBaslik(),
+                  Expanded(child: _durumGovdesi()),
+                ],
+              )
             : ProgramGorunumu(
                 program: _program!,
                 secilenGun: _gunBasi,
@@ -298,6 +306,37 @@ class _OfisProgramPageState extends State<OfisProgramPage> {
               icon: const Icon(Icons.add),
               label: const Text('Yeni ders'),
             ),
+    );
+  }
+
+  /// Program gelene kadar başlık bandı: menü ve başlık; hafta gezinmesi
+  /// program gelince çıkar.
+  Widget _yuklenirkenBaslik() {
+    return BaslikBandi(
+      padding: const EdgeInsets.fromLTRB(4, 4, 16, 6),
+      child: SizedBox(
+        height: 44,
+        child: Row(
+          children: [
+            if (widget.onMenuTap != null)
+              IconButton(
+                onPressed: widget.onMenuTap,
+                icon: const Icon(Icons.menu_rounded),
+                tooltip: 'Menü',
+              )
+            else
+              const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Ders Programı',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

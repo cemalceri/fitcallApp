@@ -46,6 +46,47 @@ class StorageService {
     return s == null ? null : UyeModel.fromJson(json.decode(s));
   }
 
+  /// Profil fotoğrafı değişince cihazdaki kopyaları günceller: profil
+  /// sayfası `uye`'den, profil seç ekranı `kullanici_profiller`'den okuyor.
+  /// Yeni giriş yapılana kadar eski fotoğraf görünmesin diye üçü birlikte.
+  static Future<void> profilFotografiniGuncelle(String? url) async {
+    final uyeHam = await SecureStorageService.getValue<String>('uye');
+    int? uyeId;
+    if (uyeHam != null && uyeHam.isNotEmpty) {
+      final m = Map<String, dynamic>.from(json.decode(uyeHam) as Map);
+      uyeId = m['id'] as int?;
+      m['profil_fotografi'] = url;
+      await SecureStorageService.setValue<String>('uye', json.encode(m));
+    }
+
+    final profilHam = await SecureStorageService.getValue<String>('uye_profil');
+    if (profilHam != null && profilHam.isNotEmpty) {
+      final m = Map<String, dynamic>.from(json.decode(profilHam) as Map);
+      if (m['uye'] is Map) {
+        final u = Map<String, dynamic>.from(m['uye'] as Map);
+        u['profil_fotografi'] = url;
+        m['uye'] = u;
+        await SecureStorageService.setValue<String>('uye_profil', json.encode(m));
+      }
+    }
+
+    final listeHam =
+        await SecureStorageService.getValue<String>('kullanici_profiller');
+    if (uyeId != null && listeHam != null && listeHam.isNotEmpty) {
+      final liste = (json.decode(listeHam) as List).map((e) {
+        final m = Map<String, dynamic>.from(e as Map);
+        if (m['uye'] is Map && (m['uye'] as Map)['id'] == uyeId) {
+          final u = Map<String, dynamic>.from(m['uye'] as Map);
+          u['profil_fotografi'] = url;
+          m['uye'] = u;
+        }
+        return m;
+      }).toList();
+      await SecureStorageService.setValue<String>(
+          'kullanici_profiller', json.encode(liste));
+    }
+  }
+
   static Future<KullaniciProfilModel?> uyeProfilBilgileriniGetir() async {
     final s = await SecureStorageService.getValue<String>('uye_profil');
     return s == null ? null : KullaniciProfilModel.fromJson(json.decode(s));

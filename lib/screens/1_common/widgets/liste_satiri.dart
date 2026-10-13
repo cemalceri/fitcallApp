@@ -11,6 +11,7 @@
 //
 // Kart yalnız gerçek bir "nesne" için kalır (istatistik başlığı, özet kartı).
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/common/tema.dart';
 
 // ListeTonu tema dosyasında (modeller de kullanıyor); bu dosyayı içe alan
@@ -33,12 +34,17 @@ class ListeAvatari extends StatelessWidget {
   final IconData? ikon;
   final double cap;
 
+  /// Üyenin profil fotoğrafı. Yüklenene kadar ve yüklenemezse baş harfler
+  /// görünür.
+  final String? fotoUrl;
+
   const ListeAvatari({
     super.key,
     this.basHarfler = '',
     this.ton = ListeTonu.bilgi,
     this.ikon,
     this.cap = 44,
+    this.fotoUrl,
   });
 
   /// Ad soyaddan baş harfleri çıkarır ("Elif Yıldırım" → "EY").
@@ -58,6 +64,26 @@ class ListeAvatari extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final harfli = _harfli(context);
+    final url = fotoUrl;
+    if (url == null || url.isEmpty || ikon != null) return harfli;
+    return ClipOval(
+      child: SizedBox(
+        width: cap,
+        height: cap,
+        child: CachedNetworkImage(
+          imageUrl: url,
+          fit: BoxFit.cover,
+          // Önbellekte küçük kopya: listede onlarca avatar var.
+          memCacheWidth: (cap * 3).round(),
+          placeholder: (_, __) => harfli,
+          errorWidget: (_, __, ___) => harfli,
+        ),
+      ),
+    );
+  }
+
+  Widget _harfli(BuildContext context) {
     return Container(
       width: cap,
       height: cap,

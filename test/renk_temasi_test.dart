@@ -85,32 +85,40 @@ void main() {
           isTrue);
     });
 
-    test('AppBar üstte şeffaf, içerik altına kayınca zemin rengi', () {
-      final tema =
-          FitcallTema.temasi(TakimTemasi.sariLacivert, Brightness.light);
-      final arka = tema.appBarTheme.backgroundColor!;
-      expect(arka, isA<WidgetStateColor>());
-      final durumlu = arka as WidgetStateColor;
-      expect(durumlu.resolve({}).a, 0);
-      expect(durumlu.resolve({WidgetState.scrolledUnder}),
-          tema.colorScheme.surface);
-      expect(tema.appBarTheme.systemOverlayStyle, isNotNull);
+    test('başlık çubuğu dolu takım renginde, yazı ve ikonlar onBaslik', () {
+      for (final t in TakimTemasi.values) {
+        for (final mod in Brightness.values) {
+          final tema = FitcallTema.temasi(t, mod);
+          final g = tema.extension<TemaGecisleri>()!;
+          final ab = tema.appBarTheme;
+          expect(ab.backgroundColor, g.baslik, reason: '${t.kod} $mod');
+          expect(ab.foregroundColor, g.onBaslik);
+          expect(ab.iconTheme?.color, g.onBaslik);
+          // Eylem ikonları da: verilmezse IconButton teması (ikincil yazı
+          // rengi) renkli çubukta koyu kalıyordu.
+          expect(ab.actionsIconTheme?.color, g.onBaslik);
+          expect(ab.titleTextStyle?.color, g.onBaslik);
+        }
+      }
     });
 
-    test('durum çubuğu şeffaf, ikonlar moda göre, gezinme çubuğuna dokunulmaz',
-        () {
-      for (final mod in Brightness.values) {
-        final stil = FitcallTema.temasi(TakimTemasi.bordoMavi, mod)
-            .appBarTheme
-            .systemOverlayStyle!;
-        // Verilmezse Android 14 ve altı yıkamanın üstüne gri örtü koyar.
-        expect(stil.statusBarColor, Colors.transparent);
-        expect(stil.statusBarIconBrightness,
-            mod == Brightness.dark ? Brightness.light : Brightness.dark,
-            reason: '$mod');
-        expect(stil.statusBarBrightness, mod);
-        expect(stil.systemNavigationBarColor, isNull);
-        expect(stil.systemNavigationBarIconBrightness, isNull);
+    test(
+        'durum çubuğu şeffaf, ikonlar başlık rengine göre, gezinme '
+        'çubuğuna dokunulmaz', () {
+      for (final t in TakimTemasi.values) {
+        for (final mod in Brightness.values) {
+          final tema = FitcallTema.temasi(t, mod);
+          final g = tema.extension<TemaGecisleri>()!;
+          final stil = tema.appBarTheme.systemOverlayStyle!;
+          // Verilmezse Android 14 ve altı başlığın üstüne gri örtü koyar.
+          expect(stil.statusBarColor, Colors.transparent);
+          final beyazIkon = uzerineYazi(g.baslik) == Colors.white;
+          expect(stil.statusBarIconBrightness,
+              beyazIkon ? Brightness.light : Brightness.dark,
+              reason: '${t.kod} $mod');
+          expect(stil.systemNavigationBarColor, isNull);
+          expect(stil.systemNavigationBarIconBrightness, isNull);
+        }
       }
     });
 
@@ -120,23 +128,26 @@ void main() {
       // Durak sayıları farklı olabilir; görüntü örnek noktalarda aynı olmalı.
       expect(gradyanlarAyni(a.lerp(b, 0).kimlik, a.kimlik), isTrue);
       expect(gradyanlarAyni(a.lerp(b, 1).kimlik, b.kimlik), isTrue);
-      expect(gradyanlarAyni(a.lerp(b, 1).sayfaYikama, b.sayfaYikama), isTrue);
+      expect(a.lerp(b, 1).sayfaRengi, b.sayfaRengi);
+      expect(a.lerp(b, 0).baslik, a.baslik);
+      expect(a.lerp(b, 1).altBar, b.altBar);
       expect(a.lerp(b, 0.5).onKimlik, isNotNull);
     });
   });
 
   group('SayfaZemini', () {
-    testWidgets('her rotanın altında yıkama ile çizilir', (tester) async {
+    testWidgets('her rotanın altında takım tonuyla çizilir', (tester) async {
       await tester.pumpWidget(_uygulama(const Text('icerik')));
       expect(find.byType(SayfaZemini), findsOneWidget);
       final gecis =
           takimPaleti(TakimTemasi.sariKirmizi, Brightness.light).gecisler;
-      final kutular = tester
-          .widgetList<DecoratedBox>(find.descendant(
-              of: find.byType(SayfaZemini),
-              matching: find.byType(DecoratedBox)))
-          .map((k) => (k.decoration as BoxDecoration?)?.gradient);
-      expect(kutular, contains(gecis.sayfaYikama));
+      final zemin = tester.widget<ColoredBox>(find
+          .descendant(
+              of: find.byType(SayfaZemini), matching: find.byType(ColoredBox))
+          .first);
+      expect(zemin.color, gecis.sayfaRengi);
+      // Beyaz değil: renk sayfanın her yerinde görünsün diye.
+      expect(zemin.color, isNot(Colors.white));
     });
 
     testWidgets('itilen sayfa da kendi zeminini getirir', (tester) async {

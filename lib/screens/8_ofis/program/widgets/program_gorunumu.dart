@@ -10,6 +10,8 @@
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
+import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -132,13 +134,15 @@ class ProgramBaslik extends StatelessWidget {
     this.profilDegistir = false,
   });
 
+  /// Takım renginde başlık bandı: durum çubuğunun arkasına uzanır, yazı ve
+  /// ikonlar banttan renk alır.
   @override
   Widget build(BuildContext context) {
-    final renk = Theme.of(context).colorScheme;
+    final on = context.gecis.onBaslik;
     final bicim = DateFormat('d MMM', 'tr_TR');
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 6, 4, 2),
+    return BaslikBandi(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 6),
       child: Row(
         children: [
           if (onMenu != null)
@@ -166,7 +170,7 @@ class ProgramBaslik extends StatelessWidget {
                     fontSize: 15,
                     height: 1.2,
                     fontWeight: FontWeight.bold,
-                    color: renk.onSurface,
+                    color: on,
                   ),
                 ),
                 Text(
@@ -176,7 +180,7 @@ class ProgramBaslik extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11.5,
                     height: 1.2,
-                    color: renk.onSurfaceVariant,
+                    color: on,
                   ),
                 ),
               ],

@@ -156,11 +156,7 @@ class _DersTeyitPageState extends State<DersTeyitPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           tooltip: 'Geri',
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),

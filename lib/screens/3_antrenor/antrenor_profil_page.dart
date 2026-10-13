@@ -10,6 +10,7 @@ import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -93,12 +94,15 @@ class _AntrenorProfilContent extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            // Açıkken şeffaf (yıkama ve kimlik kartı görünür), kapanınca
-            // tema zemin rengine döner (AppBar teması, scrolledUnder).
+            // Takım renginde; genişleyen alan sayfanın kimlik alanı (kart
+            // yok, başlığın kendisi).
             expandedHeight: 224,
             pinned: true,
             automaticallyImplyLeading: geriVar,
-            title: Text('${antrenor.adi} ${antrenor.soyadi}'),
+            // Ad açıkken genişleyen alanda yazıyor; çubukta yalnız kapanınca.
+            title: KapaninciBaslik(child: Text('${antrenor.adi} ${antrenor.soyadi}')),
+            // iOS'ta aşağı çekince başlık esner, üstünde zemin boşluğu açılmaz.
+            stretch: true,
             actions: [
               IconButton(
                 tooltip: 'Ayarlar',
@@ -184,6 +188,8 @@ class _ProfileHeader extends StatelessWidget {
         child: Align(
           alignment: Alignment.bottomCenter,
           child: KimlikBaslik(
+            // Renkli başlığın içinde: başlığın kendisi kimlik alanı.
+            yuzeysiz: true,
             baslik: ad,
             basHarfler: basHarfleri(ad),
             altBaslik: antrenor.ePosta ?? antrenor.telefon,

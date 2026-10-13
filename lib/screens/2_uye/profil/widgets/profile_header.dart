@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
+import 'package:fitcall/screens/2_uye/profil/widgets/profil_fotografi_secici.dart';
 import 'package:flutter/material.dart';
 
 /// Profil başlığı — avatar, ad ve üye numarası; sayfanın kimlik yüzeyi.
@@ -10,19 +11,60 @@ import 'package:flutter/material.dart';
 /// kaydırmak gerekiyordu. Artık yatay bir kart; durum rozetleri gövdeye indi
 /// (bkz. `ProfilDurumRozetleri`). Seviye (top) rengi başlıkta değil rozette:
 /// renkli kimlik yüzeyinin üstünde ikinci bir renk halkası gürültü olurdu.
-class ProfileHeader extends StatelessWidget {
+///
+/// Avatara dokununca üye kendi fotoğrafını ekler / değiştirir / kaldırır
+/// (bkz. profil_fotografi_secici.dart). Yükleme sürerken avatarın üstünde
+/// halka döner; sonuç burada tutulur, sayfa yeniden açılınca cihazdaki
+/// güncellenmiş profilden okunur.
+class ProfileHeader extends StatefulWidget {
   final UyeModel uye;
   final Color seviyeRenk;
+
+  /// false ise avatar dokunulamaz (başkasının profili gösteriliyorsa).
+  final bool duzenlenebilir;
 
   const ProfileHeader({
     super.key,
     required this.uye,
     required this.seviyeRenk,
+    this.duzenlenebilir = true,
   });
 
   @override
+  State<ProfileHeader> createState() => _ProfileHeaderState();
+}
+
+class _ProfileHeaderState extends State<ProfileHeader> {
+  late String? _foto = widget.uye.profilFotografi;
+  bool _yukleniyor = false;
+
+  @override
+  void didUpdateWidget(covariant ProfileHeader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Sayfa profili yeniden çekince (yenile) sunucudaki adres esas.
+    if (oldWidget.uye.profilFotografi != widget.uye.profilFotografi) {
+      _foto = widget.uye.profilFotografi;
+    }
+  }
+
+  Future<void> _fotografDegistir() async {
+    final fotoVar = _foto != null && _foto!.isNotEmpty;
+    final secim = await profilFotoSecimiSor(context, fotoVar: fotoVar);
+    if (secim == null || !mounted) return;
+    final sonuc = await profilFotografiIslemi(
+      context,
+      secim,
+      yukleniyor: (v) {
+        if (mounted) setState(() => _yukleniyor = v);
+      },
+    );
+    if (sonuc.degisti && mounted) setState(() => _foto = sonuc.url);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final foto = uye.profilFotografi;
+    final uye = widget.uye;
+    final foto = _foto;
     final ad = '${uye.adi} ${uye.soyadi}';
 
     return SafeArea(
@@ -33,9 +75,17 @@ class ProfileHeader extends StatelessWidget {
         child: Align(
           alignment: Alignment.bottomCenter,
           child: KimlikBaslik(
+            // Renkli başlığın içinde: ayrı kart yüzeyi başlıkla aynı tonda
+            // kayboluyordu; başlığın kendisi kimlik alanı.
+            yuzeysiz: true,
             baslik: ad,
             basHarfler: basHarfleri(ad),
             altBaslik: 'Üye No: ${uye.uyeNo} · ${uye.uyeTuru}',
+            onAvatarTap: widget.duzenlenebilir ? _fotografDegistir : null,
+            avatarYukleniyor: _yukleniyor,
+            avatarEtiketi: foto != null && foto.isNotEmpty
+                ? 'Profil fotoğrafını değiştir'
+                : 'Profil fotoğrafı ekle',
             avatar: foto != null && foto.isNotEmpty
                 ? Image(
                     image: CachedNetworkImageProvider(foto),

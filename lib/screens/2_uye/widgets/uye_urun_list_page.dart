@@ -42,10 +42,7 @@ class _UyeUrunListPageState extends State<UyeUrunListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         elevation: 0,
         surfaceTintColor: Colors.transparent,

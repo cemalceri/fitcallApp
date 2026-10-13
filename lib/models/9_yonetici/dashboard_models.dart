@@ -602,21 +602,28 @@ class UyelerData {
   final int toplamSayfa;
   final int mevcutSayfa;
 
+  /// Filtre + aramaya uyan toplam üye (yalnız bu sayfa değil). İstatistikteki
+  /// `toplamUye` ise filtreden bağımsız kulüp toplamıdır.
+  final int toplamUye;
+
   UyelerData({
     required this.istatistikler,
     required this.uyeler,
     required this.toplamSayfa,
     required this.mevcutSayfa,
+    this.toplamUye = 0,
   });
 
   factory UyelerData.fromJson(Map<String, dynamic> json) {
+    final uyeler = (json['uyeler'] as List? ?? [])
+        .map((e) => UyeListeItem.fromJson(e))
+        .toList();
     return UyelerData(
       istatistikler: UyeIstatistik.fromJson(json['istatistikler'] ?? {}),
-      uyeler: (json['uyeler'] as List? ?? [])
-          .map((e) => UyeListeItem.fromJson(e))
-          .toList(),
+      uyeler: uyeler,
       toplamSayfa: json['toplam_sayfa'] ?? 1,
       mevcutSayfa: json['mevcut_sayfa'] ?? 1,
+      toplamUye: (json['toplam_uye'] as num?)?.toInt() ?? uyeler.length,
     );
   }
 }

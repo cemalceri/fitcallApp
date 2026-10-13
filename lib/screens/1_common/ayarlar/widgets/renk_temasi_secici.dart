@@ -100,27 +100,30 @@ class _TemaKarosu extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Önizleme: o temanın zemini, yıkaması, kimlik yüzeyi ve
-                // ana rengi.
+                // Önizleme: o temanın başlık çubuğu, sayfa zemini, kimlik
+                // yüzeyi, ana rengi ve alt menüsü.
                 ClipRRect(
                   borderRadius: BorderRadius.circular(Yaricap.s),
                   child: SizedBox(
                     height: 46,
                     child: Stack(
                       children: [
-                        Positioned.fill(child: ColoredBox(color: p.surface)),
                         Positioned.fill(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(gradient: g.sayfaYikama),
-                          ),
+                            child: ColoredBox(color: g.sayfaRengi)),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                          height: 9,
+                          child: ColoredBox(color: g.baslik),
                         ),
                         Positioned(
                           left: 5,
                           right: 5,
-                          top: 6,
-                          height: 20,
+                          top: 13,
+                          height: 15,
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(5),
+                            borderRadius: BorderRadius.circular(4),
                             child: DecoratedBox(
                               decoration: BoxDecoration(gradient: g.kimlik),
                               child: Align(
@@ -139,20 +142,27 @@ class _TemaKarosu extends StatelessWidget {
                         ),
                         Positioned(
                           left: 6,
-                          bottom: 6,
-                          width: 26,
-                          height: 7,
+                          bottom: 10,
+                          width: 22,
+                          height: 5,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               color: p.primary,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(3),
                             ),
                           ),
+                        ),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          height: 6,
+                          child: ColoredBox(color: g.altBar),
                         ),
                         if (secili)
                           Positioned(
                             right: 4,
-                            bottom: 4,
+                            bottom: 9,
                             child: Container(
                               width: 18,
                               height: 18,

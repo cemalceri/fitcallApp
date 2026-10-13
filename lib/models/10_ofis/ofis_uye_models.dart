@@ -95,15 +95,26 @@ class OfisUyeListeItem {
 /// çubuğunda listenin kendisinden okunuyor.
 class OfisUyelerData {
   final List<OfisUyeListeItem> uyeler;
+  final int toplamSayfa;
 
-  OfisUyelerData({required this.uyeler});
+  /// Filtre + aramaya uyan toplam üye (yalnız bu sayfa değil).
+  final int toplamUye;
+
+  OfisUyelerData({
+    required this.uyeler,
+    this.toplamSayfa = 1,
+    this.toplamUye = 0,
+  });
 
   factory OfisUyelerData.fromJson(Map<String, dynamic> json) {
+    final uyeler = (json['uyeler'] as List? ?? [])
+        .map((e) =>
+            OfisUyeListeItem.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
     return OfisUyelerData(
-      uyeler: (json['uyeler'] as List? ?? [])
-          .map((e) => OfisUyeListeItem.fromJson(
-              Map<String, dynamic>.from(e as Map)))
-          .toList(),
+      uyeler: uyeler,
+      toplamSayfa: (json['toplam_sayfa'] as num?)?.toInt() ?? 1,
+      toplamUye: (json['toplam_uye'] as num?)?.toInt() ?? uyeler.length,
     );
   }
 }

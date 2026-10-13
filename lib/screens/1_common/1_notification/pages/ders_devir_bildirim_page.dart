@@ -154,14 +154,25 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Tam ekran diyalog: sayfa geçişinden geçmediği için zemini kendisi
+    // boyar (diğer sayfalarla aynı takım tonu).
     return Scaffold(
-      backgroundColor: context.bildirimRenk.arkaplanGri,
+      backgroundColor: context.gecis.sayfaRengi,
       body: SafeArea(
-        child: _loading
-            ? const IskeletKart(seritKutusu: 0)
-            : _hata != null
-                ? _buildHataView(_hata!)
-                : _buildContent(),
+        top: false,
+        // Başlık yüklenirken ve hatada da görünür: kapatma düğmesi hep elde.
+        child: _loading || _hata != null
+            ? Column(
+                children: [
+                  _buildTopBar(),
+                  Expanded(
+                    child: _loading
+                        ? const IskeletKart(seritKutusu: 0)
+                        : _buildHataView(_hata!),
+                  ),
+                ],
+              )
+            : _buildContent(),
       ),
     );
   }
@@ -245,20 +256,7 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
   }
 
   Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Row(
-        children: [
-          IconButton(
-            tooltip: 'Kapat',
-            icon:
-                Icon(Icons.close_rounded, color: context.bildirimRenk.yaziAna),
-            onPressed: _close,
-          ),
-          const Spacer(),
-        ],
-      ),
-    );
+    return BildirimUstBarWidget(onClose: _close, baslik: 'Ders devri');
   }
 
   Widget _buildBaslik(DevirTalebiTam t) {

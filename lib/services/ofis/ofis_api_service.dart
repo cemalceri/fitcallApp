@@ -18,19 +18,22 @@ import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
 class OfisApiService {
-  /// Üye listesi. [filtre]: tumu | aktif | pasif — [siralama]: ad | uye_no | son_ders.
+  /// Üye listesi, 20'şerlik sayfalar halinde ([sayfa] 1'den başlar).
+  /// [filtre]: tumu | aktif | pasif — [siralama]: ad | uye_no | son_ders.
   ///
   /// Backend bilinmeyen filtre/sıralama değerlerini varsayılana düşürür;
   /// "borclu" filtresi ve "bakiye" sıralaması ofise kapalıdır.
   static Future<ApiResult<OfisUyelerData>> uyeler({
+    int sayfa = 1,
     String arama = '',
     String filtre = 'tumu',
     String siralama = 'ad',
-    bool hepsi = true,
+    bool hepsi = false,
   }) {
     return ApiClient.postParsed<OfisUyelerData>(
       ofisUyelerUrl,
       {
+        'sayfa': sayfa,
         'arama': arama,
         'filtre': filtre,
         'siralama': siralama,

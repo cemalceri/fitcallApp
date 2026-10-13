@@ -1,6 +1,7 @@
 // lib/screens/1_common/widgets/yan_menu.dart
 
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -15,22 +16,24 @@ class YanMenuBasligi extends StatelessWidget {
     required this.altBaslik,
   });
 
+  /// Takım renginde başlık bandı (sayfaların başlık çubuğuyla aynı);
+  /// durum çubuğunun arkasına uzanır, çekmecenin SafeArea'sı `top: false`.
   @override
   Widget build(BuildContext context) {
-    final cs = context.cs;
-    return Padding(
+    final g = context.gecis;
+    return BaslikBandi(
       padding:
-          const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.l, Bosluk.l, Bosluk.m),
+          const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.l, Bosluk.l, Bosluk.l),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(Bosluk.s),
             decoration: BoxDecoration(
-              color: context.renkler.vurguZemin,
+              color: g.onBaslik.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(Yaricap.m),
             ),
-            child:
-                Icon(Icons.sports_tennis_rounded, color: cs.primary, size: 24),
+            child: Icon(Icons.sports_tennis_rounded,
+                color: g.onBaslik, size: 24),
           ),
           const SizedBox(width: Bosluk.m),
           Expanded(
@@ -41,12 +44,11 @@ class YanMenuBasligi extends StatelessWidget {
                   ad,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: context.metin.titleMedium,
+                  style: baslikYazi(context, context.metin.titleMedium),
                 ),
                 Text(
                   altBaslik,
-                  style: context.metin.bodySmall
-                      ?.copyWith(color: cs.onSurfaceVariant),
+                  style: baslikYazi(context, context.metin.bodySmall),
                 ),
               ],
             ),

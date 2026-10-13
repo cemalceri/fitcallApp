@@ -200,9 +200,7 @@ class _DersSatiri extends StatelessWidget {
         children: [
           for (var i = 0; i < 5; i++)
             Icon(
-              i < puanim.puan
-                  ? Icons.star_rounded
-                  : Icons.star_outline_rounded,
+              i < puanim.puan ? Icons.star_rounded : Icons.star_outline_rounded,
               size: 18,
               color: context.renkler.uyari,
             ),
@@ -306,8 +304,7 @@ class _DurumRozeti extends StatelessWidget {
         durum.metin,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: context.metin.labelSmall
-            ?.copyWith(color: durum.ton.on(context)),
+        style: context.metin.labelSmall?.copyWith(color: durum.ton.on(context)),
       ),
     );
   }

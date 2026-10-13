@@ -51,7 +51,9 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-	<string>Uygulamada QR kod taratmak için kamera erişimine ihtiyaç duyulmaktadır.</string>
+	<string>QR kod taratmak ve profil fotoğrafı çekmek için kamera erişimine ihtiyaç duyulmaktadır.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Profil fotoğrafınızı galeriden seçebilmeniz için fotoğraflarınıza erişim gerekir.</string>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>Ders hatırlatmaları ve önemli bildirimler için izin gerekiyor.</string>
 	<key>NSCalendarsUsageDescription</key>

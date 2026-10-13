@@ -12,7 +12,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 QrSonucu _hata(String kod, [String mesaj = 'mesaj']) =>
-    QrSonucu.hatadan(ApiException(kod, mesaj), zaman: DateTime(2026, 7, 23, 14, 32));
+    QrSonucu.hatadan(ApiException(kod, mesaj),
+        zaman: DateTime(2026, 7, 23, 14, 32));
 
 void main() {
   setUpAll(() async => initializeDateFormatting('tr_TR'));
@@ -35,7 +36,11 @@ void main() {
     });
 
     test('etkinlik durumları tek başlıkta toplanır', () {
-      for (final kod in ['EVENT_PASSIVE', 'EVENT_NOT_STARTED', 'EVENT_FINISHED']) {
+      for (final kod in [
+        'EVENT_PASSIVE',
+        'EVENT_NOT_STARTED',
+        'EVENT_FINISHED'
+      ]) {
         expect(_hata(kod).tip, QrSonucTipi.etkinlikUygunDegil, reason: kod);
       }
     });

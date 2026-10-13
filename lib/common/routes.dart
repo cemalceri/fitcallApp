@@ -18,6 +18,7 @@ import 'package:fitcall/screens/8_ofis/ofis_main_page.dart';
 import 'package:fitcall/screens/8_ofis/uyeler/ofis_uye_detay_page.dart';
 import 'package:fitcall/screens/8_ofis/uyeler/ofis_uyeler_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/screens/1_common/widgets/erisim_kisitli.dart';
 import 'package:flutter/material.dart';
 
 /* ------------------ Ekranlar ------------------ */
@@ -40,7 +41,6 @@ import 'package:fitcall/screens/3_antrenor/eksik_yoklama/antrenor_eksik_yoklama_
 import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
 import 'package:fitcall/screens/1_common/ayarlar/ayarlar_page.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
-import 'package:fitcall/common/tema.dart';
 
 /// Uygulama genelinde kullanacağımız sayfaların enum değerleri
 enum SayfaAdi {
@@ -255,90 +255,18 @@ Route<dynamic>? myRouteGenerator(RouteSettings settings) {
                   body: Center(child: CircularProgressIndicator()),
                 );
               }
-              final isAna = (profSnap.data?.anaHesap ?? false);
-              if (isAna) {
+              // Ana hesap kuralı yalnız üye profilleri için: velinin alt
+              // profilleri (çocuklar) bu sayfaları göremez. Ofis, yönetici ve
+              // antrenör profillerinde ana_hesap_mi sunucuda hep false;
+              // kural onlara uygulanınca ofis Bildirimler'e giremiyordu.
+              final profil = profSnap.data;
+              final isAna = profil?.anaHesap ?? false;
+              final uyeDegil = profil != null && profil.rol != 'uye';
+              if (isAna || uyeDegil) {
                 return builder(context);
               }
 
-              // Yetkisiz görünüm (yalın mesaj)
-              return Scaffold(
-                extendBodyBehindAppBar: true,
-                appBar: AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    tooltip: 'Geri',
-                    onPressed: () => Navigator.maybePop(context),
-                  ),
-                ),
-                body: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: Card(
-                        elevation: 10,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 76,
-                                height: 76,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: context.gecis.kimlik,
-                                ),
-                                child: Center(
-                                  child: Icon(Icons.verified_user,
-                                      size: 40, color: context.gecis.onKimlik),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Erişim Kısıtlı',
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Bu sayfayı ana hesap kullanıcısı görmeye yetkilidir.',
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 20),
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton.icon(
-                                  icon: const Icon(Icons.arrow_back),
-                                  label: const Text('Geri'),
-                                  onPressed: () => Navigator.maybePop(context),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
+              return const ErisimKisitli();
             },
           );
         },

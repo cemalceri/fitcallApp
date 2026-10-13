@@ -1,8 +1,8 @@
 // =================== BASE URL ===================
 const String baseUrlProd = "https://www.binay.fit/api";
 const String baseUrlLocal = "http://10.0.2.2:8000/api";
-const String baseUrl = baseUrlProd;
-// const String baseUrl = baseUrlLocal;
+// const String baseUrl = baseUrlProd;
+const String baseUrl = baseUrlLocal;
 
 /// Web panelinin kökü (API kökünden "/api" atılır). Mobilden web sayfası
 /// açmak için, ör. duyurunun "Web panelinde aç" bağlantısı.
@@ -26,6 +26,9 @@ String getTelafiDersBilgileriUrl = "$baseUrl/getTelafiDersBilgileri";
 String getAktifUyeListesiUrl = "$baseUrl/getAktifUyeListesi";
 String getUyeHomeOzetUrl = "$baseUrl/getUyeHomeOzet";
 String getUyeGecmisDerslerUrl = "$baseUrl/getUyeGecmisDersler";
+// Üyenin kendi profil fotoğrafı (multipart, alan `foto`); üye token'dan.
+const String uyeProfilFotografiUrl = "$baseUrl/uyeProfilFotografi";
+const String uyeProfilFotografiSilUrl = "$baseUrl/uyeProfilFotografiSil";
 
 // =================== ANTRENÖR ===================
 String getAntrenorGunlukEtkinlikler = "$baseUrl/getAntrenorGunlukEtkinlikler";
@@ -130,6 +133,19 @@ const String iptalTalebiGeriCekUrl = "$baseUrl/iptalTalebiGeriCek";
 // bakiye, para hareketi, adres, meslek, veli ve acil durum bilgisi döndürmez.
 const String ofisUyelerUrl = "$baseUrl/ofisUyeler";
 const String ofisUyeDetayUrl = "$baseUrl/ofisUyeDetay";
+// Ofis Ana Sayfa + Dersler (web Ders Yönetimi) + plan dışı kararlar.
+// Kurallar backend'de web ile ortak servislerde (api/ofis/ders_yonetimi.py).
+const String ofisBekleyenIslerUrl = "$baseUrl/ofisBekleyenIsler";
+const String ofisDersYonetimiGunUrl = "$baseUrl/ofisDersYonetimiGun";
+const String ofisDersOnayUrl = "$baseUrl/ofisDersOnay";
+const String ofisGunuOnaylaUrl = "$baseUrl/ofisGunuOnayla";
+const String ofisDersHakedisUrl = "$baseUrl/ofisDersHakedis";
+const String ofisPaketDusumUrl = "$baseUrl/ofisPaketDusum";
+const String ofisManuelTeyitUrl = "$baseUrl/ofisManuelTeyit";
+const String ofisTeyitHatirlatUrl = "$baseUrl/ofisTeyitHatirlat";
+const String ofisPlanDisiBekleyenlerUrl = "$baseUrl/ofisPlanDisiBekleyenler";
+const String ofisPlanDisiSeceneklerUrl = "$baseUrl/ofisPlanDisiSecenekler";
+const String ofisPlanDisiKararUrl = "$baseUrl/ofisPlanDisiKarar";
 
 // =================== YÖNETİCİ ===================
 const String yoneticiDashboard = "$baseUrl/yoneticiDashboard";

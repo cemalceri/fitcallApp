@@ -1,6 +1,7 @@
 // lib/screens/6_muhasebe/widgets/payment_webview_page.dart
 
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
+import 'package:fitcall/common/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -69,9 +70,14 @@ class _PaymentWebViewPageState extends State<PaymentWebViewPage> {
           onPressed: () => _showExitDialog(context),
         ),
         bottom: _isLoading
-            ? const PreferredSize(
-                preferredSize: Size.fromHeight(3),
-                child: LinearProgressIndicator(),
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(3),
+                // Ana renk başlık rengiyle aynı olabiliyor; çubuk başlık
+                // yazısının renginde.
+                child: LinearProgressIndicator(
+                  color: context.gecis.onBaslik,
+                  backgroundColor: Colors.transparent,
+                ),
               )
             : null,
       ),

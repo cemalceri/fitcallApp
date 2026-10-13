@@ -265,7 +265,11 @@ class SliverStickyBaslik extends StatelessWidget {
       pinned: true,
       automaticallyImplyLeading: false,
       toolbarHeight: _baslikYuksekligi,
-      backgroundColor: secili ? cs.surfaceContainerHigh : cs.surface,
+      // Seçili değilken sayfa zemininde: yapışkan gün başlığı zeminle
+      // birleşir. Bu bir sayfa başlığı değil, renkli başlık temasını almaz.
+      backgroundColor:
+          secili ? cs.surfaceContainerHigh : context.gecis.sayfaRengi,
+      foregroundColor: cs.onSurface,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       titleSpacing: Bosluk.l,

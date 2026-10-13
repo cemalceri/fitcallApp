@@ -3,6 +3,7 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
+import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/models/9_yonetici/uye_detay_models.dart';
@@ -493,6 +494,14 @@ class _UyeDetayHeader extends StatelessWidget {
       baslik: profil.adSoyad,
       basHarfler: basHarfleri(profil.adSoyad),
       altBaslik: '#${profil.uyeNo}',
+      // Üyenin kendi yüklediği fotoğraf; yoksa / açılamazsa baş harfler.
+      avatar: (profil.profilFotografi ?? '').isEmpty
+          ? null
+          : ListeAvatari(
+              basHarfler: basHarfleri(profil.adSoyad),
+              fotoUrl: profil.profilFotografi,
+              cap: 52,
+            ),
       kapsuller: [
         if (profil.seviyeRengi.isNotEmpty) profil.seviyeRengi,
         profil.aktifMi ? 'Aktif' : 'Pasif',

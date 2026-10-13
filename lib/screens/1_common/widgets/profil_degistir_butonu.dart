@@ -2,11 +2,11 @@
 
 import 'dart:convert';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fitcall/common/tema.dart';
 
 /// Header'lardaki profil değiştirme butonu.
 ///
@@ -48,28 +48,11 @@ class ProfilDegistirButonu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(right: 4),
-      child: Material(
-        color: Colors.transparent,
-        child: Tooltip(
-          message: 'Profil değiştir',
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => _profilDegistir(context),
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: (renk ?? context.cs.primary).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(Icons.swap_horiz_rounded,
-                  size: 22, color: renk ?? context.cs.primary),
-            ),
-          ),
-        ),
-      ),
+    return BaslikIkonButonu(
+      ikon: Icons.swap_horiz_rounded,
+      ipucu: 'Profil değiştir',
+      renk: renk,
+      onTap: () => _profilDegistir(context),
     );
   }
 }

@@ -151,56 +151,15 @@ class _HesapSilPageState extends State<HesapSilPage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    // Elle çizilmiş başlık ve renkli gradyan yerine tema başlık çubuğu ve
+    // sayfa zemini: takım renginde, diğer sayfalarla aynı.
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.error.withValues(alpha: 0.08),
-              colorScheme.surface,
-            ],
-          ),
-        ),
+      appBar: AppBar(title: const Text('Hesabı Kalıcı Sil')),
+      body: SizedBox.expand(
         child: SafeArea(
+          top: false,
           child: Column(
             children: [
-              // AppBar
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      tooltip: 'Geri',
-                      onPressed: () => Navigator.pop(context),
-                      icon: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          size: 20,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Hesabı Kalıcı Sil',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.error,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),

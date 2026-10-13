@@ -2,18 +2,23 @@
 //
 // Ofis (ön büro) kabuğu.
 //
-// Mobildeki AKSİYONLARIN tamamı burada: ders açma/düzenleme/iptal/silme ve QR
-// doğrulama. Yönetici kabuğu (lib/screens/7_yonetici/) raporlama ve genel
-// görünüm tarafında kaldı — ciro, tahsilat, bakiye, borç ve hakediş oraya ait.
+// Mobildeki AKSİYONLARIN tamamı burada: ders açma/düzenleme/iptal/silme, QR
+// doğrulama ve (2026-10-12'den beri) web Ders Yönetimi'nin işleri — ders
+// onayı, hakediş işareti, paket düşümü, katılım teyidi, plan dışı kararlar.
+// Yönetici kabuğu (lib/screens/7_yonetici/) raporlama ve genel görünüm
+// tarafında kaldı — ciro, tahsilat, bakiye ve hakediş tutarları oraya ait.
+//
+// Sekmeler: Ana Sayfa (bekleyen işler) · Program · Dersler · Üyeler.
+// Bildirimler başlıktaki zilden ve menüden açılır.
 //
 // Ofisin göremeyeceği bilgiler bu kabukta "gizlenmiş" değil: üye uçları
 // (api/ofis/) o alanları hiç göndermiyor ve modelinde alan olarak da yok.
 // Ofis çalışanına o bilgiler gerekiyorsa kendisine ayrıca yönetici profili
 // tanımlanır; roller karıştırılmaz.
 
-import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
-import 'package:fitcall/screens/1_common/ders_listesi/dersler_page.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
+import 'package:fitcall/screens/8_ofis/ana_sayfa/ofis_ana_sayfa_page.dart';
+import 'package:fitcall/screens/8_ofis/dersler/ofis_dersler_page.dart';
 import 'package:fitcall/screens/8_ofis/program/ofis_program_page.dart';
 import 'package:fitcall/screens/8_ofis/uyeler/ofis_uyeler_page.dart';
 import 'package:fitcall/screens/8_ofis/widgets/ofis_bottom_bar.dart';
@@ -29,8 +34,14 @@ class OfisMainPage extends StatefulWidget {
   State<OfisMainPage> createState() => _OfisMainPageState();
 }
 
-class _OfisMainPageState extends State<OfisMainPage> {
+class _OfisMainPageState extends State<OfisMainPage>
+    with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  // Sekmeler IndexedStack'te canlı kalıyor; Ana Sayfa sayıları ve Dersler'in
+  // günü sekmeye dönünce / uygulama öne gelince tazelenir.
+  final _anaSayfa = GlobalKey<OfisAnaSayfaPageState>();
+  final _dersler = GlobalKey<OfisDerslerPageState>();
 
   int _selectedIndex = 0;
   String _ofisAdi = '';
@@ -40,16 +51,46 @@ class _OfisMainPageState extends State<OfisMainPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    void menu() => _scaffoldKey.currentState?.openDrawer();
     _pages = [
-      OfisProgramPage(onMenuTap: () => _scaffoldKey.currentState?.openDrawer()),
-      const DerslerPage(),
+      OfisAnaSayfaPage(
+        key: _anaSayfa,
+        onMenuTap: menu,
+        onDerslerSekmesi: () {
+          _goTab(2);
+          // Özetten gelindi: bugünün tüm dersleri.
+          _dersler.currentState?.bugune();
+        },
+      ),
+      OfisProgramPage(onMenuTap: menu),
+      // Gün listesi + onay/hakediş/paket/teyit işlemleri (yönetici kabuğundaki
+      // salt-okunur ortak DerslerPage'in yerine).
+      OfisDerslerPage(key: _dersler),
       const OfisUyelerPage(),
-      // Ofise düşen kararlar (plan dışı katılım vb.) bildirim olarak geliyor;
-      // bu yüzden sekme, ayrı bir rota değil.
-      const NotificationPage(gomulu: true),
     ];
     NotificationService.refreshUnreadCount();
     _adYukle();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _aktifiTazele();
+  }
+
+  void _aktifiTazele() {
+    switch (_selectedIndex) {
+      case 0:
+        _anaSayfa.currentState?.sessizYenile();
+      case 2:
+        _dersler.currentState?.sessizYenile();
+    }
   }
 
   Future<void> _adYukle() async {
@@ -59,25 +100,35 @@ class _OfisMainPageState extends State<OfisMainPage> {
   }
 
   void _goTab(int index) {
+    if (index == _selectedIndex) return;
     setState(() => _selectedIndex = index);
+    _aktifiTazele();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      drawer: OfisDrawer(
-        ofisAdi: _ofisAdi,
-        onTabSelected: _goTab,
-        aktifSekme: _selectedIndex,
-      ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: OfisBottomBar(
-        selectedIndex: _selectedIndex,
-        onTabSelected: _goTab,
+    // Alt sekmelerdeyken geri tuşu uygulamadan çıkmasın, Ana Sayfa'ya dönsün
+    // (üye kabuğuyla aynı).
+    return PopScope(
+      canPop: _selectedIndex == 0,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _goTab(0);
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        drawer: OfisDrawer(
+          ofisAdi: _ofisAdi,
+          onTabSelected: _goTab,
+          aktifSekme: _selectedIndex,
+        ),
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,
+        ),
+        bottomNavigationBar: OfisBottomBar(
+          selectedIndex: _selectedIndex,
+          onTabSelected: _goTab,
+        ),
       ),
     );
   }

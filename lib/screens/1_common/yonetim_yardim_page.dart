@@ -284,7 +284,7 @@ const _tumBolumler = <_KapsamliBolum>[
         ),
       ),
       _KapsamliSoru(
-        _Kapsam.ortak,
+        _Kapsam.yonetici,
         SssSoru(
           ikon: Icons.event_note_outlined,
           soru: '"Dersler" sekmesi ile program ızgarası arasındaki fark ne?',
@@ -294,6 +294,77 @@ const _tumBolumler = <_KapsamliBolum>[
               ' ve duruma göre süzülür: Tümü, Tamamlandı, Bekliyor, İptal. Bir dersin'
               ' yoklaması girildi mi, onayı verildi mi sorusunun cevabı listede daha'
               ' hızlı bulunur.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.ofis,
+        SssSoru(
+          ikon: Icons.home_outlined,
+          soru: 'Ana Sayfa\'daki bekleyen işler neler?',
+          cevap:
+              'Üç iş listelenir, her birine dokununca ilgili ekran açılır:\n'
+              '• Ders onayı — son 60 günde bitmiş ama "Yapıldı/Yapılmadı" kararı'
+              ' verilmemiş dersler, gün gün. Daha eski dersler web panelinde.\n'
+              '• Plan dışı / misafir kararı — antrenörün derse eklediği plan dışı'
+              ' üyeler ve misafirler için borç, paket ya da ücretsiz kararı.\n'
+              '• Katılım cevabı bekleyen — bugün ve yarınki derslerde katılım'
+              ' bildirimine cevap vermemiş üyeler.\n'
+              'Üstteki "Bugün" kartı günün ders sayısını gösterir; dokununca'
+              ' Dersler sekmesine geçer.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.ofis,
+        SssSoru(
+          ikon: Icons.fact_check_outlined,
+          soru: 'Ders nasıl onaylanır?',
+          cevap:
+              'Dersler sekmesinde günü seçip derse dokunun; ders bittiyse "Yapıldı"'
+              ' ya da "Yapılmadı" düğmesi çıkar. Yapılmadı derken neden seçip not'
+              ' yazabilirsiniz; bu dersteki plan dışı kararları da geri alınır.'
+              ' Kararı yanlış verdiyseniz "Kararı kaldır" dersi yeniden onay'
+              ' bekleyenlere döndürür. Antrenörün "yapıldı" dediği dersler listenin'
+              ' üstündeki "Hepsini onayla" ile tek seferde onaylanır; antrenörün'
+              ' yapılmadı dediği ya da bildirmediği derslere bu düğme dokunmaz.'
+              ' Kurallar web\'deki Ders Yönetimi ile aynıdır.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.ofis,
+        SssSoru(
+          ikon: Icons.payments_outlined,
+          soru: 'Hakediş "Alır / Almaz" ne demek?',
+          cevap:
+              'Antrenörün (ve varsa yardımcısının) o dersten ders ücreti alıp'
+              ' almayacağının işaretidir; tutar görünmez, yalnız karar verilir.'
+              ' Seçili olana yeniden dokunursanız karar kaldırılır. Varsayılanı'
+              ' ders onayından gelir; özel bir durum yoksa değiştirmeniz gerekmez.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.ofis,
+        SssSoru(
+          ikon: Icons.person_add_alt_1_outlined,
+          soru: 'Plan dışı / misafir kararı nasıl verilir?',
+          cevap:
+              'Menüden ya da Ana Sayfa\'dan "Plan dışı kararlar"ı açıp kişiye'
+              ' dokunun. Üç seçenek var: Borç yaz (tutar girilir, ücreti üstlenen'
+              ' kişinin hesabına yazılır), Paketten (seçilen kişinin aktif'
+              ' paketinden bir hak düşülür) ve Ücretsiz. Açıklama zorunludur: kişi'
+              ' ileride üye olursa borcun hangi dersten geldiği oradan anlaşılır.'
+              ' Misafirden ödeme alma ve misafiri üyeye aktarma web panelindedir.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.ofis,
+        SssSoru(
+          ikon: Icons.how_to_reg_outlined,
+          soru: 'Katılım cevabı vermeyen üye için ne yapabilirim?',
+          cevap:
+              'Gelecek bir derse dokunduğunuzda her katılımcının cevabı görünür.'
+              ' Üye size telefonda ya da yüz yüze geleceğini söylediyse "Katılacak"'
+              ' ile onun yerine işaretleyin. Cevap vermediyse "Hatırlat" uygulamadaki'
+              ' hesabına yeniden katılım bildirimi gönderir.',
         ),
       ),
     ],
@@ -529,8 +600,9 @@ const _tumBolumler = <_KapsamliBolum>[
               'İki tür: (1) bir üye planlı derse "katılamayacağım" işaretlediğinde gelen'
               ' ders teyit bildirimi — dersin iptal olup olmadığını da yazar; (2) bir'
               ' antrenör derse plan dışı katılımcı eklediğinde ya da çıkardığında gelen'
-              ' bildirim. İkisi de zaten ofis rolüne gönderiliyordu, artık mobilde de'
-              ' görünüyor. Bildirime dokununca ilgili dersin detayı açılır.',
+              ' bildirim. Bildirimler Ana Sayfa\'nın başlığındaki zilden ve menüden'
+              ' açılır; bildirime dokununca ilgili dersin detayı açılır. Plan dışı'
+              ' katılımın kararı "Plan dışı kararlar" ekranından verilir.',
         ),
       ),
       _KapsamliSoru(

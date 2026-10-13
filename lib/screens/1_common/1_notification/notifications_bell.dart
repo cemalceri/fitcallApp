@@ -1,4 +1,6 @@
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 
@@ -15,6 +17,18 @@ class NotificationsBell extends StatelessWidget {
     return ValueListenableBuilder<int>(
       valueListenable: NotificationService.unreadCount,
       builder: (_, count, __) {
+        final cs = context.cs;
+        // Renkli başlıkta okunmamış/okunmuş farkı ikonun biçiminden (dolu,
+        // zil sesli) ve rozetten okunur; renk başlık yazısının rengi.
+        final baslikta = baslikUstundeMi(context);
+        final on = baslikta
+            ? context.gecis.onBaslik
+            : (count > 0 ? cs.primary : cs.onSurfaceVariant);
+        final zemin = baslikta
+            ? on.withValues(alpha: 0.16)
+            : (count > 0
+                ? cs.primary.withValues(alpha: 0.1)
+                : cs.outlineVariant);
         return Container(
           margin: const EdgeInsets.only(right: 4),
           child: Material(
@@ -26,12 +40,7 @@ class NotificationsBell extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: count > 0
-                      ? Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.1)
-                      : Theme.of(context).colorScheme.outlineVariant,
+                  color: zemin,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Stack(
@@ -42,9 +51,7 @@ class NotificationsBell extends StatelessWidget {
                             ? Icons.notifications_active_rounded
                             : Icons.notifications_outlined,
                         size: 22,
-                        color: count > 0
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.onSurfaceVariant),
+                        color: on),
                     if (count > 0)
                       Positioned(right: 8, top: 8, child: _Badge(count: count)),
                   ],
@@ -70,15 +77,24 @@ class _Badge extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: isWide ? 4 : 0, vertical: 0),
       constraints: BoxConstraints(minWidth: isWide ? 18 : 16, minHeight: 16),
       decoration: BoxDecoration(
-          // Rozet hata renginde (her temada aynı), çerçevesi zemin renginde.
-          color: Theme.of(context).colorScheme.error,
+          // Rozet hata renginde (her temada aynı), çerçevesi zeminin renginde.
+          // Renkli başlıkta kırmızı rozet başlık kırmızısında kayboluyordu:
+          // orada başlık yazısı renginde dolgu, rakam başlık renginde.
+          color: baslikUstundeMi(context)
+              ? context.gecis.onBaslik
+              : Theme.of(context).colorScheme.error,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-              color: Theme.of(context).colorScheme.surface, width: 1.5)),
+              color: baslikUstundeMi(context)
+                  ? context.gecis.baslik
+                  : Theme.of(context).colorScheme.surface,
+              width: 1.5)),
       child: Center(
           child: Text(displayText,
               style: TextStyle(
-                  color: Theme.of(context).colorScheme.onError,
+                  color: baslikUstundeMi(context)
+                      ? context.gecis.baslik
+                      : Theme.of(context).colorScheme.onError,
                   fontSize: 9,
                   fontWeight: FontWeight.w700,
                   height: 1.2))),

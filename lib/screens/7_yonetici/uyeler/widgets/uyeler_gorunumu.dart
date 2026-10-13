@@ -3,25 +3,37 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
+import 'package:fitcall/screens/1_common/widgets/sayfali_liste_parcalari.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_istatistik_kartlar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 /// Yönetici üye listesinin sunum gövdesi.
+///
+/// Liste sayfalı gelir (aşağı kaydırdıkça 20'şer, bkz. SayfaliListe). Ada göre
+/// sıralıyken baş harf gruplarına bölünür; "Borçlular" filtresinde en borçlu
+/// önce gelir ve tek grup olarak çizilir.
 ///
 /// API çağrısı içermez; veri dışarıdan verilir. Böylece taşma testinde
 /// doğrudan pump edilebilir (bkz. CLAUDE.md "Layout / overflow discipline").
 class UyelerGorunumu extends StatelessWidget {
   final UyeIstatistik? istatistik;
 
-  /// Filtrelenmiş liste.
+  /// Şimdiye kadar yüklenen sayfalar (sunucuda süzülmüş ve sıralanmış).
   final List<UyeListeItem> uyeler;
+
+  /// Filtre + aramaya uyan toplam kayıt; bilinmiyorsa yüklenen sayı yazılır.
+  final int? toplam;
 
   final bool yukleniyor;
   final String? hata;
+
+  /// Sonraki sayfa yükleniyor / alınamadı.
+  final bool dahaYukleniyor;
+  final String? dahaHatasi;
 
   /// 'tumu' | 'aktif' | 'pasif' | 'borclu'
   final String filtre;
@@ -34,12 +46,21 @@ class UyelerGorunumu extends StatelessWidget {
   final ValueChanged<UyeListeItem> onAra;
   final ValueChanged<UyeListeItem> onWhatsapp;
 
+  /// Liste sonuna yaklaşıldı; sonraki sayfa istenir.
+  final VoidCallback? onDahaFazla;
+  final VoidCallback? onDahaTekrarDene;
+
   const UyelerGorunumu({
     super.key,
     required this.istatistik,
     required this.uyeler,
+    this.toplam,
     required this.yukleniyor,
     required this.hata,
+    this.dahaYukleniyor = false,
+    this.dahaHatasi,
+    this.onDahaFazla,
+    this.onDahaTekrarDene,
     required this.filtre,
     required this.aramaDenetleyicisi,
     required this.onFiltre,
@@ -65,13 +86,16 @@ class UyelerGorunumu extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: onYenile,
       // Yenilemede iskelet çıkmaz; mevcut liste durur, üstte çubuk döner.
-      child: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
-          _baslikBari(context),
-          ..._govde(context),
-          const SliverToBoxAdapter(child: SizedBox(height: 80)),
-        ],
+      child: SayfaSonuDinleyici(
+        onSonaYaklasti: onDahaFazla,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            _baslikBari(context),
+            ..._govde(context),
+            const SliverToBoxAdapter(child: SizedBox(height: 80)),
+          ],
+        ),
       ),
     );
   }
@@ -89,13 +113,13 @@ class UyelerGorunumu extends StatelessWidget {
       automaticallyImplyLeading: false,
       title: const Text('Üyeler'),
       actions: [
-        if (istatistik != null)
+        if (!yukleniyor && hata == null)
           Padding(
             padding: const EdgeInsets.only(right: Bosluk.l),
             child: Center(
               child: Text(
-                '${istatistik!.toplamUye} kayıt',
-                style: context.metin.bodySmall,
+                '${toplam ?? uyeler.length} kayıt',
+                style: baslikYazi(context, context.metin.bodySmall),
               ),
             ),
           ),
@@ -146,7 +170,7 @@ class UyelerGorunumu extends StatelessWidget {
                   for (final (deger, etiket) in _filtreler)
                     Padding(
                       padding: const EdgeInsets.only(right: Bosluk.s),
-                      child: _FiltreCipi(
+                      child: BaslikCipi(
                         etiket: etiket,
                         secili: filtre == deger,
                         onSec: () => onFiltre(deger),
@@ -218,10 +242,9 @@ class UyelerGorunumu extends StatelessWidget {
       ];
     }
 
-    // Yöneticinin listede aradığı ilk şey borç durumu; gruplar ona göre.
-    final borclular = uyeler.where((u) => u.bakiye < 0).toList();
-    final guncel = uyeler.where((u) => u.bakiye >= 0).toList();
-
+    // Borçlu/Güncel grupları sayfalı listede tutarsızdı (her yeni sayfa iki
+    // gruba da satır eklerdi). Borç satırın kırmızı bakiyesinden okunuyor;
+    // borçluların hepsi "Borçlular" çipinde, en borçlu önce.
     return [
       if (istatistik != null)
         SliverToBoxAdapter(
@@ -231,8 +254,21 @@ class UyelerGorunumu extends StatelessWidget {
             child: UyeIstatistikKartlar(data: istatistik!),
           ),
         ),
-      ..._grup(context, 'Borçlu', borclular),
-      ..._grup(context, 'Güncel', guncel),
+      if (filtre == 'borclu')
+        ..._grup(context, 'Borçlu', uyeler, toplam ?? uyeler.length)
+      else
+        ...harfGrubuSliverlari<UyeListeItem>(
+          context,
+          ogeler: uyeler,
+          ad: (u) => u.adSoyad,
+          satir: _satir,
+        ),
+      ...sayfaSonuSliverlari(
+        context,
+        dahaYukleniyor: dahaYukleniyor,
+        dahaHatasi: dahaHatasi,
+        onTekrarDene: onDahaTekrarDene,
+      ),
     ];
   }
 
@@ -241,6 +277,7 @@ class UyelerGorunumu extends StatelessWidget {
     BuildContext context,
     String baslik,
     List<UyeListeItem> grup,
+    int sayi,
   ) {
     if (grup.isEmpty) return const [];
 
@@ -249,7 +286,7 @@ class UyelerGorunumu extends StatelessWidget {
         pinned: true,
         delegate: ListeGrupBasligiDelegate(
           baslik: baslik,
-          sayi: grup.length,
+          sayi: sayi,
           yukseklik: listeGrupBasligiYuksekligi(context),
         ),
       ),
@@ -280,6 +317,7 @@ class UyelerGorunumu extends StatelessWidget {
     return ListeSatiri(
       onGorsel: ListeAvatari(
         basHarfler: ListeAvatari.harfler(uye.adSoyad),
+        fotoUrl: uye.profilFotografi,
         ton: avatarTonu,
       ),
       baslik: uye.adSoyad,
@@ -335,52 +373,6 @@ class _PasifRozeti extends StatelessWidget {
       child: Text(
         'Pasif',
         style: context.metin.labelSmall?.copyWith(color: renkler.uyari),
-      ),
-    );
-  }
-}
-
-class _FiltreCipi extends StatelessWidget {
-  final String etiket;
-  final bool secili;
-  final VoidCallback onSec;
-
-  const _FiltreCipi({
-    required this.etiket,
-    required this.secili,
-    required this.onSec,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = context.cs;
-
-    return Semantics(
-      button: true,
-      selected: secili,
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onSec();
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            color: secili ? cs.primary : cs.surfaceContainer,
-            borderRadius: BorderRadius.circular(Yaricap.xl),
-          ),
-          child: Text(
-            etiket,
-            maxLines: 1,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: secili ? FontWeight.w700 : FontWeight.w500,
-              color: secili ? cs.onPrimary : cs.onSurfaceVariant,
-            ),
-          ),
-        ),
       ),
     );
   }

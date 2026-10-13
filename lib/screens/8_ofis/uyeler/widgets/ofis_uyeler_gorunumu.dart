@@ -3,27 +3,38 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_uye_models.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
+import 'package:fitcall/screens/1_common/widgets/sayfali_liste_parcalari.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 /// Ofis üye listesinin sunum gövdesi.
 ///
-/// Yönetici listesinden iki farkı var: satırın sağ değeri bakiye değil SON DERS
-/// tarihi, ve gruplama borç yerine aktif/pasif üzerinden. Model zaten bakiye
-/// taşımıyor (bkz. lib/models/10_ofis/ofis_uye_models.dart), yani buradaki
-/// tercih değil sınırın kendisi.
+/// Yönetici listesinden farkı: satırın sağ değeri bakiye değil SON DERS
+/// tarihi. Model zaten bakiye taşımıyor (bkz.
+/// lib/models/10_ofis/ofis_uye_models.dart), yani buradaki tercih değil
+/// sınırın kendisi.
+///
+/// Liste sayfalı gelir (aşağı kaydırdıkça 20'şer, bkz. SayfaliListe) ve baş
+/// harf gruplarına bölünür.
 ///
 /// API çağrısı içermez; veri dışarıdan verilir. Böylece taşma testinde
 /// doğrudan pump edilebilir (bkz. CLAUDE.md "Layout / overflow discipline").
 class OfisUyelerGorunumu extends StatelessWidget {
-  /// Filtrelenmiş liste.
+  /// Şimdiye kadar yüklenen sayfalar (sunucuda süzülmüş, ada göre sıralı).
   final List<OfisUyeListeItem> uyeler;
+
+  /// Filtre + aramaya uyan toplam kayıt; bilinmiyorsa yüklenen sayı yazılır.
+  final int? toplam;
 
   final bool yukleniyor;
   final String? hata;
+
+  /// Sonraki sayfa yükleniyor / alınamadı.
+  final bool dahaYukleniyor;
+  final String? dahaHatasi;
 
   /// 'tumu' | 'aktif' | 'pasif'
   final String filtre;
@@ -36,11 +47,20 @@ class OfisUyelerGorunumu extends StatelessWidget {
   final ValueChanged<OfisUyeListeItem> onAra;
   final ValueChanged<OfisUyeListeItem> onWhatsapp;
 
+  /// Liste sonuna yaklaşıldı; sonraki sayfa istenir.
+  final VoidCallback? onDahaFazla;
+  final VoidCallback? onDahaTekrarDene;
+
   const OfisUyelerGorunumu({
     super.key,
     required this.uyeler,
+    this.toplam,
     required this.yukleniyor,
     required this.hata,
+    this.dahaYukleniyor = false,
+    this.dahaHatasi,
+    this.onDahaFazla,
+    this.onDahaTekrarDene,
     required this.filtre,
     required this.aramaDenetleyicisi,
     required this.onFiltre,
@@ -63,13 +83,16 @@ class OfisUyelerGorunumu extends StatelessWidget {
   Widget build(BuildContext context) {
     return RefreshIndicator(
       onRefresh: onYenile,
-      child: CustomScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
-          _baslikBari(context),
-          ..._govde(context),
-          const SliverToBoxAdapter(child: SizedBox(height: 80)),
-        ],
+      child: SayfaSonuDinleyici(
+        onSonaYaklasti: onDahaFazla,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            _baslikBari(context),
+            ..._govde(context),
+            const SliverToBoxAdapter(child: SizedBox(height: 80)),
+          ],
+        ),
       ),
     );
   }
@@ -88,8 +111,8 @@ class OfisUyelerGorunumu extends StatelessWidget {
             padding: const EdgeInsets.only(right: Bosluk.l),
             child: Center(
               child: Text(
-                '${uyeler.length} kayıt',
-                style: context.metin.bodySmall,
+                '${toplam ?? uyeler.length} kayıt',
+                style: baslikYazi(context, context.metin.bodySmall),
               ),
             ),
           ),
@@ -140,7 +163,7 @@ class OfisUyelerGorunumu extends StatelessWidget {
                   for (final (deger, etiket) in _filtreler)
                     Padding(
                       padding: const EdgeInsets.only(right: Bosluk.s),
-                      child: _FiltreCipi(
+                      child: BaslikCipi(
                         etiket: etiket,
                         secili: filtre == deger,
                         onSec: () => onFiltre(deger),
@@ -212,42 +235,20 @@ class OfisUyelerGorunumu extends StatelessWidget {
       ];
     }
 
-    // Ön büroda aranan üye neredeyse her zaman aktif olan; pasifler altta.
-    final aktifler = uyeler.where((u) => u.aktifMi).toList();
-    final pasifler = uyeler.where((u) => !u.aktifMi).toList();
-
+    // Aktif/pasif grupları sayfalı listede tutarsızdı (pasifler her yeni
+    // sayfada araya girerdi); pasif üye satırdaki rozetle ayrılıyor.
     return [
-      ..._grup(context, 'Aktif', aktifler),
-      ..._grup(context, 'Pasif', pasifler),
-    ];
-  }
-
-  /// Yapışkan grup başlığı + satırlar. Grup boşsa hiç çizilmez.
-  List<Widget> _grup(
-    BuildContext context,
-    String baslik,
-    List<OfisUyeListeItem> grup,
-  ) {
-    if (grup.isEmpty) return const [];
-
-    return [
-      SliverPersistentHeader(
-        pinned: true,
-        delegate: ListeGrupBasligiDelegate(
-          baslik: baslik,
-          sayi: grup.length,
-          yukseklik: listeGrupBasligiYuksekligi(context),
-        ),
+      ...harfGrubuSliverlari<OfisUyeListeItem>(
+        context,
+        ogeler: uyeler,
+        ad: (u) => u.adSoyad,
+        satir: _satir,
       ),
-      SliverList.builder(
-        itemCount: grup.length,
-        itemBuilder: (context, index) => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (index > 0) const ListeAyraci(),
-            _satir(context, grup[index]),
-          ],
-        ),
+      ...sayfaSonuSliverlari(
+        context,
+        dahaYukleniyor: dahaYukleniyor,
+        dahaHatasi: dahaHatasi,
+        onTekrarDene: onDahaTekrarDene,
       ),
     ];
   }
@@ -258,6 +259,7 @@ class OfisUyelerGorunumu extends StatelessWidget {
     return ListeSatiri(
       onGorsel: ListeAvatari(
         basHarfler: ListeAvatari.harfler(uye.adSoyad),
+        fotoUrl: uye.profilFotografi,
         ton: uye.aktifMi ? ListeTonu.bilgi : ListeTonu.notr,
       ),
       baslik: uye.adSoyad,
@@ -314,50 +316,6 @@ class _PasifRozeti extends StatelessWidget {
       child: Text(
         'Pasif',
         style: context.metin.labelSmall?.copyWith(color: cs.onSurfaceVariant),
-      ),
-    );
-  }
-}
-
-class _FiltreCipi extends StatelessWidget {
-  final String etiket;
-  final bool secili;
-  final VoidCallback onSec;
-
-  const _FiltreCipi({
-    required this.etiket,
-    required this.secili,
-    required this.onSec,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = context.cs;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Yaricap.xl),
-        onTap: () {
-          HapticFeedback.selectionClick();
-          onSec();
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-              horizontal: Bosluk.m, vertical: Bosluk.s),
-          decoration: BoxDecoration(
-            color: secili ? cs.primary : cs.surfaceContainer,
-            borderRadius: BorderRadius.circular(Yaricap.xl),
-          ),
-          child: Text(
-            etiket,
-            maxLines: 1,
-            style: context.metin.labelLarge?.copyWith(
-              color: secili ? cs.onPrimary : cs.onSurfaceVariant,
-              fontWeight: secili ? FontWeight.w700 : FontWeight.w500,
-            ),
-          ),
-        ),
       ),
     );
   }

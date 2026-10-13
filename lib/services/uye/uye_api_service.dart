@@ -28,6 +28,36 @@ class UyeApiService {
     );
   }
 
+  /// Profil fotoğrafını yükler; yeni adresi döndürür. Fotoğraf sunucuda
+  /// kareye kırpılıp küçültülür, istemci yalnız boyutu düşürüp gönderir.
+  static Future<String?> profilFotografiYukle({
+    required List<int> baytlar,
+    required String dosyaAdi,
+  }) async {
+    final sonuc = await ApiClient.postDosyaParsed<String?>(
+      uyeProfilFotografiUrl,
+      dosyaAlani: 'foto',
+      baytlar: baytlar,
+      dosyaAdi: dosyaAdi,
+      // Seçici kaliteyi düşürürken JPEG'e çevirir; PNG yalnız galeriden
+      // olduğu gibi gelirse. Sunucu türü içerikten de doğruluyor.
+      dosyaTuru: dosyaAdi.toLowerCase().endsWith('.png')
+          ? 'image/png'
+          : 'image/jpeg',
+      parser: (json) => (json as Map?)?['profil_fotografi'] as String?,
+    );
+    return sonuc.data;
+  }
+
+  /// Profil fotoğrafını kaldırır.
+  static Future<void> profilFotografiKaldir() async {
+    await ApiClient.postParsed<Map<String, dynamic>>(
+      uyeProfilFotografiSilUrl,
+      const {},
+      (json) => (json as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
+    );
+  }
+
   /// Hesabı Kalıcı Sil
   /// Body: {} – backend kullanıcıyı access token'dan alır
   static Future<ApiResult<Map<String, dynamic>>> kullaniciSil() {

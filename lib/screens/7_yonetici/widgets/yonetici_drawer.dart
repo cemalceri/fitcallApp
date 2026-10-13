@@ -56,13 +56,13 @@ class YoneticiDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       child: SafeArea(
+        top: false,
         child: Column(
           children: [
             YanMenuBasligi(
               ad: yoneticiAdi.isNotEmpty ? yoneticiAdi : 'Yönetici Menüsü',
               altBaslik: 'Yönetim menüsü',
             ),
-            const Divider(height: 1),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),

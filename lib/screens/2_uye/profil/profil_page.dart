@@ -9,6 +9,7 @@ import 'package:fitcall/screens/2_uye/profil/widgets/quick_info_section.dart';
 import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -95,12 +96,15 @@ class _ProfileContent extends StatelessWidget {
           // Kaydırınca isim başlığa oturur (X/Twitter profil kalıbı):
           // eski 340 px'lik başlık ekranın yarısını yiyordu.
           SliverAppBar(
-            // Açıkken şeffaf (yıkama ve kimlik kartı görünür), kapanınca
-            // tema zemin rengine döner (AppBar teması, scrolledUnder).
+            // Takım renginde; genişleyen alan sayfanın kimlik alanı (kart
+            // yok, başlığın kendisi).
             expandedHeight: 224,
             pinned: true,
             automaticallyImplyLeading: geriVar,
-            title: Text('${uye.adi} ${uye.soyadi}'),
+            // Ad açıkken genişleyen alanda yazıyor; çubukta yalnız kapanınca.
+            title: KapaninciBaslik(child: Text('${uye.adi} ${uye.soyadi}')),
+            // iOS'ta aşağı çekince başlık esner, üstünde zemin boşluğu açılmaz.
+            stretch: true,
             actions: [
               IconButton(
                 tooltip: 'Ayarlar',

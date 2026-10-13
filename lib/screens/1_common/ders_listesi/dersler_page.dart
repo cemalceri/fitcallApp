@@ -2,11 +2,11 @@
 
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_istatistik_kartlar.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_liste_item.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
@@ -106,17 +106,26 @@ class _DerslerPageState extends State<DerslerPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final dateFormat = DateFormat('d MMMM yyyy, EEEE', 'tr_TR');
+    // Kısa biçim: oklar ve "Bugün" arasında uzun gün adı kesiliyordu.
+    final dateFormat = DateFormat('d MMM y, EEE', 'tr_TR');
+
+    // Başlık, tarih seçici ve süzgeçler takım renginde bantta; liste sayfa
+    // zemininde.
+    final g = context.gecis;
+    final kontrolZemini = g.onBaslik.withValues(alpha: 0.16);
+    final kontrolStili = IconButton.styleFrom(
+      backgroundColor: kontrolZemini,
+      foregroundColor: g.onBaslik,
+    );
 
     return Scaffold(
-      // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
       body: SafeArea(
+        top: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(16),
+            BaslikBandi(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -125,43 +134,47 @@ class _DerslerPageState extends State<DerslerPage> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
+                      color: g.onBaslik,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   // Tarih seçici
                   Row(
                     children: [
                       IconButton(
-                        tooltip: 'Geri',
+                        tooltip: 'Önceki gün',
                         onPressed: _previousDay,
                         icon: const Icon(Icons.chevron_left),
-                        style: IconButton.styleFrom(
-                          backgroundColor: colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.5),
-                        ),
+                        style: kontrolStili,
                       ),
                       Expanded(
                         child: GestureDetector(
                           onTap: _selectDate,
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
+                            // Yalnız kenarlık: dolgu üstünde beyaz yazı Binay
+                            // açıkta eşiğin altında kalıyordu.
                             decoration: BoxDecoration(
-                              color: colorScheme.surfaceContainerHighest
-                                  .withValues(alpha: 0.5),
+                              border: Border.all(
+                                  color: g.onBaslik.withValues(alpha: 0.6)),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.calendar_today, size: 16),
+                                Icon(Icons.calendar_today,
+                                    size: 16, color: g.onBaslik),
                                 const SizedBox(width: 8),
-                                Text(
-                                  dateFormat.format(_secilenTarih),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: colorScheme.onSurface,
+                                Flexible(
+                                  child: Text(
+                                    dateFormat.format(_secilenTarih),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: g.onBaslik,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -170,14 +183,12 @@ class _DerslerPageState extends State<DerslerPage> {
                         ),
                       ),
                       IconButton(
+                        tooltip: 'Sonraki gün',
                         onPressed: _nextDay,
                         icon: const Icon(Icons.chevron_right),
-                        style: IconButton.styleFrom(
-                          backgroundColor: colorScheme.surfaceContainerHighest
-                              .withValues(alpha: 0.5),
-                        ),
+                        style: kontrolStili,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 4),
                       TextButton(
                         onPressed: _goToToday,
                         child: const Text('Bugün'),
@@ -204,28 +215,28 @@ class _DerslerPageState extends State<DerslerPage> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _FilterChip(
-            label: 'Tümü',
-            selected: _filtre == 'tumu',
-            onSelected: () => _onFiltreChanged('tumu'),
+          BaslikCipi(
+            etiket: 'Tümü',
+            secili: _filtre == 'tumu',
+            onSec: () => _onFiltreChanged('tumu'),
           ),
           const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Tamamlandı',
-            selected: _filtre == 'tamamlandi',
-            onSelected: () => _onFiltreChanged('tamamlandi'),
+          BaslikCipi(
+            etiket: 'Tamamlandı',
+            secili: _filtre == 'tamamlandi',
+            onSec: () => _onFiltreChanged('tamamlandi'),
           ),
           const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Bekliyor',
-            selected: _filtre == 'bekliyor',
-            onSelected: () => _onFiltreChanged('bekliyor'),
+          BaslikCipi(
+            etiket: 'Bekliyor',
+            secili: _filtre == 'bekliyor',
+            onSec: () => _onFiltreChanged('bekliyor'),
           ),
           const SizedBox(width: 8),
-          _FilterChip(
-            label: 'İptal',
-            selected: _filtre == 'iptal',
-            onSelected: () => _onFiltreChanged('iptal'),
+          BaslikCipi(
+            etiket: 'İptal',
+            secili: _filtre == 'iptal',
+            onSec: () => _onFiltreChanged('iptal'),
           ),
         ],
       ),
@@ -291,49 +302,6 @@ class _DerslerPageState extends State<DerslerPage> {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onSelected;
-
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onSelected();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected
-              ? colorScheme.primary
-              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-            color:
-                selected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
-          ),
-        ),
       ),
     );
   }

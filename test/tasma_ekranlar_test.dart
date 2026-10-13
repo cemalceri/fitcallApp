@@ -87,6 +87,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'support/duyuru_ornekleri.dart';
+import 'support/ofis_ornekleri.dart';
 import 'support/tasma_yardimcisi.dart';
 
 import 'package:fitcall/screens/3_antrenor/eksik_yoklama/widgets/eksik_yoklama_listesi.dart';
@@ -100,6 +101,15 @@ import 'package:fitcall/screens/1_common/takvim/takvim_ajanda.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_zaman_cizelgesi.dart';
 import 'package:fitcall/screens/2_uye/takvim/widgets/lesson_block.dart'
     as uye_blok;
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
+import 'package:fitcall/screens/2_uye/profil/widgets/profil_fotografi_secici.dart';
+import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
+import 'package:fitcall/screens/8_ofis/ana_sayfa/widgets/ofis_ana_sayfa_gorunumu.dart';
+import 'package:fitcall/screens/8_ofis/dersler/onay_bekleyen_gunler_page.dart';
+import 'package:fitcall/screens/8_ofis/dersler/widgets/ders_yonetim_sheet.dart';
+import 'package:fitcall/screens/8_ofis/dersler/widgets/ofis_dersler_gorunumu.dart';
+import 'package:fitcall/screens/8_ofis/plan_disi/plan_disi_kararlar_page.dart';
+import 'package:fitcall/screens/8_ofis/plan_disi/widgets/plan_disi_karar_sheet.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/next_lesson_card.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/info_card_item.dart';
@@ -355,11 +365,18 @@ Widget _ofisUyelerGorunumu({
   bool yukleniyor = false,
   String? hata,
   String arama = '',
+  bool dahaYukleniyor = false,
+  String? dahaHatasi,
 }) {
   return OfisUyelerGorunumu(
     uyeler: uyeler,
+    toplam: 248,
     yukleniyor: yukleniyor,
     hata: hata,
+    dahaYukleniyor: dahaYukleniyor,
+    dahaHatasi: dahaHatasi,
+    onDahaFazla: () {},
+    onDahaTekrarDene: () {},
     filtre: 'tumu',
     aramaDenetleyicisi: TextEditingController(text: arama),
     onFiltre: (_) {},
@@ -378,13 +395,21 @@ Widget _uyelerGorunumu({
   bool yukleniyor = false,
   String? hata,
   String arama = '',
+  String filtre = 'tumu',
+  bool dahaYukleniyor = false,
+  String? dahaHatasi,
 }) {
   return UyelerGorunumu(
     istatistik: istatistik,
     uyeler: uyeler,
+    toplam: 248,
     yukleniyor: yukleniyor,
     hata: hata,
-    filtre: 'tumu',
+    dahaYukleniyor: dahaYukleniyor,
+    dahaHatasi: dahaHatasi,
+    onDahaFazla: () {},
+    onDahaTekrarDene: () {},
+    filtre: filtre,
     aramaDenetleyicisi: TextEditingController(text: arama),
     onFiltre: (_) {},
     onYenile: () async {},
@@ -453,6 +478,21 @@ void main() {
         altBaslik: 'Üye No: 104286 · Kartal · Sorumlu hocasısınız',
         kapsuller: ['Sarı top', 'Salı · Perşembe 17:00', 'Telafi hakkı var'],
       ),
+    );
+    // Üyenin kendi profilinde avatar dokunulabilir: rozet + yüklenirken halka.
+    tasmaTesti(
+      'KimlikBaslik (düzenlenebilir avatar, yükleniyor)',
+      () => KimlikBaslik(
+        baslik: 'Deniz Ayşegül Arslanoğulları Kandemir',
+        basHarfler: 'DK',
+        altBaslik: 'Üye No: 104286 · Öğrenci (indirimli)',
+        onAvatarTap: () {},
+        avatarYukleniyor: true,
+      ),
+    );
+    tasmaTesti(
+      'ProfilFotoSecenekleri (fotoğraf var)',
+      () => ProfilFotoSecenekleri(fotoVar: true, onSec: (_) {}),
     );
     tasmaTesti(
       'KimlikYuzeyi + KimlikKapsulu',
@@ -800,7 +840,7 @@ void main() {
   // o regresyonu yakalar.
   group('Yönetici üye listesi', () {
     tasmaTesti(
-      'UyelerGorunumu (borçlu + güncel grupları)',
+      'UyelerGorunumu (harf grupları)',
       () => _uyelerGorunumu(
         istatistik: _uyeIstatistik(),
         uyeler: [
@@ -817,6 +857,34 @@ void main() {
       () => _uyelerGorunumu(
         istatistik: _uyeIstatistik(),
         uyeler: [_uyeListeItem(no: 1, bakiye: 0)],
+      ),
+    );
+
+    tasmaTesti(
+      'UyelerGorunumu (Borçlular filtresi)',
+      () => _uyelerGorunumu(
+        istatistik: _uyeIstatistik(),
+        filtre: 'borclu',
+        uyeler: [
+          _uyeListeItem(no: 1, bakiye: -1850),
+          _uyeListeItem(no: 2, bakiye: -320),
+        ],
+      ),
+    );
+
+    tasmaTesti(
+      'UyelerGorunumu (sonraki sayfa yükleniyor)',
+      () => _uyelerGorunumu(
+        uyeler: [_uyeListeItem(no: 1, bakiye: 0)],
+        dahaYukleniyor: true,
+      ),
+    );
+
+    tasmaTesti(
+      'UyelerGorunumu (sonraki sayfa hatası)',
+      () => _uyelerGorunumu(
+        uyeler: [_uyeListeItem(no: 1, bakiye: 0)],
+        dahaHatasi: 'Sunucuya ulaşılamadı, lütfen bağlantını kontrol et.',
       ),
     );
 
@@ -843,7 +911,7 @@ void main() {
 
   group('Ofis üye listesi', () {
     tasmaTesti(
-      'OfisUyelerGorunumu (aktif + pasif grupları)',
+      'OfisUyelerGorunumu (harf grupları, pasif rozetli)',
       () => _ofisUyelerGorunumu(uyeler: [
         _ofisUyeListeItem(no: 1),
         _ofisUyeListeItem(no: 2),
@@ -854,6 +922,22 @@ void main() {
     tasmaTesti(
       'OfisUyelerGorunumu (tek grup)',
       () => _ofisUyelerGorunumu(uyeler: [_ofisUyeListeItem(no: 1)]),
+    );
+
+    tasmaTesti(
+      'OfisUyelerGorunumu (sonraki sayfa yükleniyor)',
+      () => _ofisUyelerGorunumu(
+        uyeler: [_ofisUyeListeItem(no: 1)],
+        dahaYukleniyor: true,
+      ),
+    );
+
+    tasmaTesti(
+      'OfisUyelerGorunumu (sonraki sayfa hatası)',
+      () => _ofisUyelerGorunumu(
+        uyeler: [_ofisUyeListeItem(no: 1)],
+        dahaHatasi: 'Sunucuya ulaşılamadı, lütfen bağlantını kontrol et.',
+      ),
     );
 
     tasmaTesti(
@@ -872,6 +956,116 @@ void main() {
     tasmaTesti(
       'OfisUyelerGorunumu (arama sonuçsuz)',
       () => _ofisUyelerGorunumu(uyeler: const [], arama: 'zzz'),
+    );
+  });
+
+  group('Ofis ana sayfa, dersler ve plan dışı', () {
+    Widget anaSayfa(
+            {OfisBekleyenIsler? veri, bool yukleniyor = false, String? hata}) =>
+        OfisAnaSayfaGorunumu(
+          ofisAdi: 'Mehmet Yılmazoğulları Kandemir',
+          profilDegistir: true,
+          veri: veri,
+          yukleniyor: yukleniyor,
+          hata: hata,
+          onMenu: () {},
+          onYenile: () async {},
+          onYenidenDene: () {},
+          onOnay: () {},
+          onPlanDisi: () {},
+          onTeyit: () {},
+          onBugununDersleri: () {},
+          zil: const SizedBox(width: 42, height: 42),
+        );
+
+    tasmaTesti('OfisAnaSayfaGorunumu (dolu)',
+        () => anaSayfa(veri: ornekBekleyenIsler()));
+    tasmaTesti('OfisAnaSayfaGorunumu (bekleyen yok)',
+        () => anaSayfa(veri: ornekBekleyenIsler(bos: true)));
+    tasmaTesti(
+        'OfisAnaSayfaGorunumu (yükleniyor)', () => anaSayfa(yukleniyor: true));
+    tasmaTesti(
+        'OfisAnaSayfaGorunumu (hata)',
+        () => anaSayfa(
+            hata: 'Sunucuya ulaşılamadı, lütfen bağlantını kontrol et.'));
+
+    Widget dersler(
+            {bool geri = false, bool yukleniyor = false, bool toplu = false}) =>
+        OfisDerslerGorunumu(
+          tarih: DateTime(2026, 10, 12),
+          gun: yukleniyor ? null : ornekGun(),
+          yukleniyor: yukleniyor,
+          hata: null,
+          suzgec: DersSuzgeci.tumu,
+          topluOnayDevam: toplu,
+          geriVar: geri,
+          onOnceki: () {},
+          onSonraki: () {},
+          onTarihSec: () {},
+          onBugun: () {},
+          onSuzgec: (_) {},
+          onDersSec: (_) {},
+          onTopluOnay: () {},
+          onYenile: () async {},
+          onYenidenDene: () {},
+        );
+
+    tasmaTesti('OfisDerslerGorunumu (dolu gün)', () => dersler());
+    tasmaTesti('OfisDerslerGorunumu (geri oklu, toplu onay sürüyor)',
+        () => dersler(geri: true, toplu: true));
+    tasmaTesti(
+        'OfisDerslerGorunumu (yükleniyor)', () => dersler(yukleniyor: true));
+
+    DersYonetimGovdesi govde(int i) => DersYonetimGovdesi(
+          ders: ornekGun().dersler[i],
+          mesgul: false,
+          onYapildi: () {},
+          onYapilmadi: () {},
+          onKarariKaldir: () {},
+          onHakedis: (_, __) {},
+          onKatilacak: (_) {},
+          onHatirlat: (_) {},
+          onPaketDusum: (_) {},
+          onPlanDisi: () {},
+        );
+
+    tasmaTesti(
+        'DersYonetimGovdesi (geçmiş, plan dışı bekliyor)', () => govde(0));
+    tasmaTesti('DersYonetimGovdesi (onaylı, yardımcılı)', () => govde(2));
+    tasmaTesti('DersYonetimGovdesi (iptal)', () => govde(3));
+    tasmaTesti('DersYonetimGovdesi (gelecek, cevapsızlar)', () => govde(4));
+
+    tasmaTesti(
+      'OnayBekleyenGunlerGorunumu',
+      () => OnayBekleyenGunlerGorunumu(
+        veri: ornekBekleyenIsler(),
+        yukleniyor: false,
+        hata: null,
+        onGunSec: (_) {},
+        onYenile: () async {},
+        onYenidenDene: () {},
+      ),
+    );
+    tasmaTesti(
+      'PlanDisiKararlarGorunumu',
+      () => PlanDisiKararlarGorunumu(
+        dersler: ornekPlanDisi(),
+        yukleniyor: false,
+        hata: null,
+        onKisiSec: (_, __) {},
+        onYenile: () async {},
+        onYenidenDene: () {},
+      ),
+    );
+    tasmaTesti(
+      'PlanDisiKararFormu',
+      () => PlanDisiKararFormu(
+        ders: ornekPlanDisi().first,
+        kisi: ornekPlanDisi().first.kisiler.first,
+        secenekler: ornekSecenekler(),
+        kaydediliyor: false,
+        onKaydet: (_) {},
+      ),
     );
   });
 
@@ -1178,12 +1372,17 @@ void main() {
 
     // Header'lar üç aksiyon butonu + uzun ad taşıyor; profil değiştirme
     // butonu eklenip çıkarıldığında taşma riski buradaydı, kapsama alındı.
+    // Sayfadaki gibi takım renginde başlık bandının içinde.
     tasmaTesti(
       'HomeHeader (çok profilli)',
-      () => HomeHeader(
-        antrenorAdi: 'Ayşe Yılmazoğulları Kandemir',
-        hasMultipleProfiles: true,
-        onMenuTap: () {},
+      () => BaslikBandi(
+        ustGuvenliAlan: false,
+        padding: const EdgeInsets.only(bottom: 8),
+        child: HomeHeader(
+          antrenorAdi: 'Ayşe Yılmazoğulları Kandemir',
+          hasMultipleProfiles: true,
+          onMenuTap: () {},
+        ),
       ),
     );
 
@@ -1406,12 +1605,17 @@ void main() {
       ),
     );
 
+    // Sayfadaki gibi takım renginde başlık bandının içinde.
     tasmaTesti(
       'UyeHeader (çok profilli)',
-      () => UyeHeader(
-        uyeAdi: 'Mehmet Yılmazoğulları Kandemir',
-        hasMultipleProfiles: true,
-        onMenuTap: () {},
+      () => BaslikBandi(
+        ustGuvenliAlan: false,
+        padding: const EdgeInsets.only(bottom: 8),
+        child: UyeHeader(
+          uyeAdi: 'Mehmet Yılmazoğulları Kandemir',
+          hasMultipleProfiles: true,
+          onMenuTap: () {},
+        ),
       ),
     );
 

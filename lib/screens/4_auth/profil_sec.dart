@@ -3,14 +3,14 @@
 // Profil seçimi: bir hesabın üye / antrenör / yönetici profilleri arasından
 // biri seçilir.
 //
-// Sade düz liste: grup başlığı, yuvarlak avatar, iki satır, ince ayraç. Eski
-// tasarımda her profil beyazdan şeffafa geçen gradyanlı bir karttı; koyu
-// modda kartların yarısı beyaz kalıyor, isimler okunmuyordu. Artık kart,
-// gradyan ve gölge yok: zemin her temada ve modda tek parça (üstte temanın
-// sayfa yıkaması). Rol başına ayrı renk de yok; hangi rol olduğu grup
-// başlığından ve ikondan okunur.
+// Her rol bir grup: başlıkta rol ikonu + ad + profil sayısı, profiller altında
+// tek bir yüzey kutusunun içinde. Düz listede gruplar birbirine karışıyor,
+// tek liste gibi görünüyordu. Kutu düz ton (surfaceContainerLow) — eski
+// tasarımın gradyanlı profil kartları koyu modda yarı beyaz kalıp isimleri
+// okutmuyordu, o yüzden kart profil başına değil grup başına ve gradyansız.
 
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/services/core/storage_service.dart';
@@ -122,6 +122,7 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
 
     return Scaffold(
       body: SafeArea(
+        top: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -141,13 +142,9 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                       padding: const EdgeInsets.only(bottom: Bosluk.xl),
                       children: [
                         for (final rol in siraliRoller) ...[
-                          _grupBasligi(context, rol),
-                          for (final (i, p)
-                              in groupedProfiles[rol]!.indexed) ...[
-                            _profilSatiri(context, p),
-                            if (i < groupedProfiles[rol]!.length - 1)
-                              const ListeAyraci(),
-                          ],
+                          _grupBasligi(
+                              context, rol, groupedProfiles[rol]!.length),
+                          _grupKutusu(context, groupedProfiles[rol]!),
                         ],
                       ],
                     ),
@@ -158,20 +155,19 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     );
   }
 
+  /// Takım renginde başlık bandı.
   Widget _baslik(BuildContext context) {
-    final cs = context.cs;
     final geriVar = Navigator.of(context).canPop();
-    return Padding(
+    return BaslikBandi(
       padding: EdgeInsets.fromLTRB(
-          geriVar ? Bosluk.xs : Bosluk.l, Bosluk.m, Bosluk.l, Bosluk.xs),
+          geriVar ? Bosluk.xs : Bosluk.l, Bosluk.m, Bosluk.l, Bosluk.l),
       child: Row(
         children: [
           if (geriVar)
             IconButton(
               tooltip: 'Geri',
               onPressed: () => Navigator.pop(context),
-              icon: Icon(Icons.arrow_back_ios_new_rounded,
-                  size: 20, color: cs.onSurface),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             ),
           Expanded(
             child: Column(
@@ -179,13 +175,13 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
               children: [
                 Text(
                   'Profil seç',
-                  style: context.metin.headlineSmall
+                  style: baslikYazi(context, context.metin.headlineSmall)
                       ?.copyWith(letterSpacing: -0.3),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Devam etmek için bir profil seçin',
-                  style: context.metin.bodySmall,
+                  style: baslikYazi(context, context.metin.bodySmall),
                 ),
               ],
             ),
@@ -195,25 +191,69 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
     );
   }
 
-  Widget _grupBasligi(BuildContext context, String rol) {
+  Widget _grupBasligi(BuildContext context, String rol, int adet) {
     final (etiket, ikon) = _rolBilgisi(rol);
-    final renk = context.cs.onSurfaceVariant;
+    final cs = context.cs;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-          Bosluk.l, Bosluk.xl - Bosluk.xs, Bosluk.l, Bosluk.xs),
+          Bosluk.l, Bosluk.xl, Bosluk.l, Bosluk.s),
       child: Row(
         children: [
-          Icon(ikon, size: 16, color: renk),
-          const SizedBox(width: Bosluk.s),
-          Text(
-            etiket,
-            style: context.metin.labelMedium?.copyWith(
-              fontSize: 13,
-              letterSpacing: 0.4,
-              color: renk,
+          Container(
+            width: 28,
+            height: 28,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: ListeTonu.vurgu.zemin(context),
+              borderRadius: BorderRadius.circular(Yaricap.s),
+            ),
+            child: Icon(ikon, size: 17, color: ListeTonu.vurgu.on(context)),
+          ),
+          const SizedBox(width: Bosluk.s + 2),
+          Flexible(
+            child: Text(
+              etiket,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.metin.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
+          const SizedBox(width: Bosluk.s),
+          Text(
+            '$adet',
+            style: context.metin.labelMedium
+                ?.copyWith(color: cs.onSurfaceVariant),
+          ),
         ],
+      ),
+    );
+  }
+
+  /// Bir rolün profilleri tek kutuda; satırlar arasında ince ayraç.
+  Widget _grupKutusu(
+      BuildContext context, List<KullaniciProfilModel> profiller) {
+    final cs = context.cs;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Bosluk.l),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(Yaricap.l),
+          border: Border.all(color: cs.outlineVariant),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(Yaricap.l - 1),
+          child: Column(
+            children: [
+              for (final (i, p) in profiller.indexed) ...[
+                _profilSatiri(context, p),
+                if (i < profiller.length - 1)
+                  const ListeAyraci(solBosluk: 70),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -256,7 +296,7 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
         onTap: () => _profilSecildi(p),
         child: Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: Bosluk.l, vertical: Bosluk.m),
+              horizontal: Bosluk.m, vertical: Bosluk.m),
           child: Row(
             children: [
               // Açık profil ana renk halkasıyla gösterilir.
@@ -273,6 +313,8 @@ class _ProfilSecPageState extends State<ProfilSecPage> {
                   basHarfler: ListeAvatari.harfler(ad),
                   ton: ListeTonu.vurgu,
                   cap: 42,
+                  // Üye profilinde kendi yüklediği fotoğraf.
+                  fotoUrl: p.uye?.profilFotografi,
                 ),
               ),
               const SizedBox(width: Bosluk.m),

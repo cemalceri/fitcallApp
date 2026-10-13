@@ -11,6 +11,7 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -179,9 +180,9 @@ class _MuhasebePageState extends State<MuhasebePage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
     return Scaffold(
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             _buildAppBar(colorScheme),
@@ -206,29 +207,19 @@ class _MuhasebePageState extends State<MuhasebePage> {
     // dönülecek bir sayfa varken çıkar.
     final geriVar = Navigator.of(context).canPop();
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(geriVar ? 8 : 16, 8, 16, 0),
+    // Takım renginde başlık bandı; bakiye kartı (kimlik yüzeyi) altında
+    // sayfa zemininde.
+    return BaslikBandi(
+      padding: EdgeInsets.fromLTRB(geriVar ? 4 : 16, 6, 8, 12),
       child: Row(
         children: [
           if (geriVar) ...[
             IconButton(
               tooltip: 'Geri',
               onPressed: () => Navigator.pop(context),
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest
-                      .withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 20,
-                  color: colorScheme.onSurface,
-                ),
-              ),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
           ],
           Expanded(
             child: Column(
@@ -239,35 +230,20 @@ class _MuhasebePageState extends State<MuhasebePage> {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
                     letterSpacing: -0.5,
                   ),
                 ),
                 Text(
                   'Borç ve ödeme hareketleri',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: TextStyle(fontSize: 13),
                 ),
               ],
             ),
           ),
-          IconButton(
-            tooltip: 'Yenile',
-            onPressed: _verileriYukle,
-            icon: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.refresh_rounded,
-                color: colorScheme.primary,
-                size: 22,
-              ),
-            ),
+          BaslikIkonButonu(
+            ikon: Icons.refresh_rounded,
+            ipucu: 'Yenile',
+            onTap: _verileriYukle,
           ),
         ],
       ),

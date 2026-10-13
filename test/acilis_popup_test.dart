@@ -56,12 +56,12 @@ void main() {
 
   group('dogumGunuMu', () {
     test('ay ve gün eşleşince kutlanır, yıl önemsiz', () {
-      expect(dogumGunuMu(DateTime(2012, 10, 9), DateTime(2026, 10, 9, 8)),
-          isTrue);
-      expect(dogumGunuMu(DateTime(2012, 10, 9), DateTime(2026, 10, 10)),
-          isFalse);
-      expect(dogumGunuMu(DateTime(2012, 9, 10), DateTime(2026, 10, 9)),
-          isFalse);
+      expect(
+          dogumGunuMu(DateTime(2012, 10, 9), DateTime(2026, 10, 9, 8)), isTrue);
+      expect(
+          dogumGunuMu(DateTime(2012, 10, 9), DateTime(2026, 10, 10)), isFalse);
+      expect(
+          dogumGunuMu(DateTime(2012, 9, 10), DateTime(2026, 10, 9)), isFalse);
     });
 
     test('1 Ocak doğum tarihi hiç kutlanmaz (yer tutucu/sahte tarih)', () {
@@ -93,7 +93,8 @@ void main() {
 
   group('duyuruPopupOzeti / duyuruDetayiVarMi', () {
     test('alt başlık doluysa özet odur', () {
-      final d = _duyuru(altBaslik: '  7-14 yaş, kontenjan sınırlı ', icerik: 'x');
+      final d =
+          _duyuru(altBaslik: '  7-14 yaş, kontenjan sınırlı ', icerik: 'x');
       expect(duyuruPopupOzeti(d), '7-14 yaş, kontenjan sınırlı');
     });
 
@@ -240,8 +241,7 @@ void main() {
     });
 
     testWidgets('imza boşsa gösterilmez', (tester) async {
-      await _ac(tester,
-          DogumGunuPopup(ad: 'Elif', imza: null, onKapat: () {}));
+      await _ac(tester, DogumGunuPopup(ad: 'Elif', imza: null, onKapat: () {}));
       expect(find.text('Binay Akademi'), findsNothing);
     });
 

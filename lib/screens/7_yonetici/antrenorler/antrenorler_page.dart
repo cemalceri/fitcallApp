@@ -1,8 +1,8 @@
 // lib/screens/9_yonetici/antrenorler/antrenorler_page.dart
 
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_istatistik_kartlar.dart';
@@ -88,14 +88,14 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
       body: SafeArea(
+        top: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(16),
+            // Başlık takım renginde bantta.
+            BaslikBandi(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -104,16 +104,12 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Antrenör listesi ve performans bilgileri',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                    style: const TextStyle(fontSize: 14),
                   ),
                   const SizedBox(height: 16),
                   _buildFiltreler(colorScheme),
@@ -134,22 +130,22 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _FilterChip(
-            label: 'Aktif',
-            selected: _filtre == 'aktif',
-            onSelected: () => _onFiltreChanged('aktif'),
+          BaslikCipi(
+            etiket: 'Aktif',
+            secili: _filtre == 'aktif',
+            onSec: () => _onFiltreChanged('aktif'),
           ),
           const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Pasif',
-            selected: _filtre == 'pasif',
-            onSelected: () => _onFiltreChanged('pasif'),
+          BaslikCipi(
+            etiket: 'Pasif',
+            secili: _filtre == 'pasif',
+            onSec: () => _onFiltreChanged('pasif'),
           ),
           const SizedBox(width: 8),
-          _FilterChip(
-            label: 'Tümü',
-            selected: _filtre == 'tumu',
-            onSelected: () => _onFiltreChanged('tumu'),
+          BaslikCipi(
+            etiket: 'Tümü',
+            secili: _filtre == 'tumu',
+            onSec: () => _onFiltreChanged('tumu'),
           ),
         ],
       ),
@@ -218,49 +214,6 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onSelected;
-
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onSelected();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected
-              ? colorScheme.primary
-              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-            color:
-                selected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
-          ),
-        ),
       ),
     );
   }

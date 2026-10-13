@@ -130,8 +130,10 @@ void main() {
       await tester.tap(find.widgetWithText(ChoiceChip, 'Üyeler'));
       await tester.pump();
 
-      expect(find.textContaining('Program ekranını nasıl okurum'), findsNothing);
-      expect(find.textContaining('Üye listesinde ne arayabilir'), findsOneWidget);
+      expect(
+          find.textContaining('Program ekranını nasıl okurum'), findsNothing);
+      expect(
+          find.textContaining('Üye listesinde ne arayabilir'), findsOneWidget);
     });
   });
 }

@@ -1,9 +1,11 @@
 // lib/screens/8_ofis/uyeler/ofis_uyeler_page.dart
 
+import 'dart:async';
+
+import 'package:fitcall/common/sayfali_liste.dart';
 import 'package:fitcall/models/10_ofis/ofis_uye_models.dart';
 import 'package:fitcall/screens/8_ofis/uyeler/ofis_uye_detay_page.dart';
 import 'package:fitcall/screens/8_ofis/uyeler/widgets/ofis_uyeler_gorunumu.dart';
-import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/ofis/ofis_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,8 +13,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// Ofis üye listesi — veri katmanı.
 ///
-/// Görsel gövde [OfisUyelerGorunumu]'nda; burada yalnız API, filtre ve gezinme
-/// var. Yönetici listesinin aksine bakiye/borç boyutu yok (bkz. api/ofis/).
+/// Görsel gövde [OfisUyelerGorunumu]'nda; burada yalnız API, filtre/arama ve
+/// gezinme var. Yönetici listesinin aksine bakiye/borç boyutu yok (bkz. api/ofis/).
 class OfisUyelerPage extends StatefulWidget {
   const OfisUyelerPage({super.key});
 
@@ -23,77 +25,74 @@ class OfisUyelerPage extends StatefulWidget {
 class _OfisUyelerPageState extends State<OfisUyelerPage> {
   final TextEditingController _aramaController = TextEditingController();
 
-  // Tüm liste tek seferde çekilir; arama/filtre client-side yapılır (API dövülmez).
-  List<OfisUyeListeItem> _tumUyeler = [];
-  bool _loading = true;
-  String? _errorMessage;
+  // Liste sayfalı: aşağı kaydırdıkça 20'şer gelir; arama ve filtre sunucuda.
+  late final SayfaliListe<OfisUyeListeItem> _liste =
+      SayfaliListe<OfisUyeListeItem>(_getirici(), anahtar: (u) => u.id);
 
   String _filtre = 'tumu'; // 'tumu' | 'aktif' | 'pasif'
+
+  /// Sunucuya en son gönderilen arama; aynı metinle tekrar istek atılmaz.
+  String _sonArama = '';
+  Timer? _aramaZamanlayici;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
-    _aramaController.addListener(() => setState(() {}));
+    _liste.addListener(_degisti);
+    _liste.yenile();
+    _aramaController.addListener(_aramaDegisti);
   }
 
   @override
   void dispose() {
+    _aramaZamanlayici?.cancel();
+    _liste.dispose();
     _aramaController.dispose();
     super.dispose();
   }
 
-  /// [iskeletGoster]: ilk açılışta iskelet çizilir; aşağı çekip yenilemede
-  /// mevcut liste ekranda kalır.
-  Future<void> _loadData({bool iskeletGoster = true}) async {
-    setState(() {
-      if (iskeletGoster) _loading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final sonuc = await OfisApiService.uyeler(hepsi: true);
-      if (!mounted) return;
-      setState(() {
-        _tumUyeler = sonuc.data?.uyeler ?? [];
-        _loading = false;
-      });
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _errorMessage = e.message;
-        _loading = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _errorMessage = 'Veriler yüklenirken bir hata oluştu.';
-        _loading = false;
-      });
-    }
+  void _degisti() {
+    if (mounted) setState(() {});
   }
 
-  /// Client-side arama + filtre.
-  List<OfisUyeListeItem> get _filtrelenmis {
-    var list = _tumUyeler;
+  SayfaGetirici<OfisUyeListeItem> _getirici() {
+    final arama = _aramaController.text.trim();
+    final filtre = _filtre;
+    return (sayfa) async {
+      final sonuc = await OfisApiService.uyeler(
+        sayfa: sayfa,
+        arama: arama,
+        filtre: filtre,
+      );
+      final veri = sonuc.data;
+      return SayfaSonucu(
+        ogeler: veri?.uyeler ?? const [],
+        toplamSayfa: veri?.toplamSayfa ?? 1,
+        toplam: veri?.toplamUye ?? 0,
+      );
+    };
+  }
 
-    if (_filtre == 'aktif') {
-      list = list.where((u) => u.aktifMi).toList();
-    } else if (_filtre == 'pasif') {
-      list = list.where((u) => !u.aktifMi).toList();
-    }
+  /// Yazmayı bırakınca (350 ms) sunucuda aranır; her harfte istek atılmaz.
+  void _aramaDegisti() {
+    setState(() {}); // temizle butonu
+    _aramaZamanlayici?.cancel();
+    _aramaZamanlayici = Timer(const Duration(milliseconds: 350), () {
+      final arama = _aramaController.text.trim();
+      if (arama == _sonArama || !mounted) return;
+      _sonArama = arama;
+      _liste.yenile(getir: _getirici());
+    });
+  }
 
-    final q = _aramaController.text.trim().toLowerCase();
-    if (q.isNotEmpty) {
-      list = list
-          .where((u) =>
-              u.adSoyad.toLowerCase().contains(q) ||
-              (u.telefon ?? '').contains(q) ||
-              u.uyeNo.toString().contains(q))
-          .toList();
-    }
-
-    return list;
+  void _filtreSec(String filtre) {
+    if (filtre == _filtre) return;
+    // Bekleyen arama zamanlayıcısı da bu istekle karşılanır; aynı istek
+    // iki kez gitmesin.
+    _aramaZamanlayici?.cancel();
+    _sonArama = _aramaController.text.trim();
+    setState(() => _filtre = filtre);
+    _liste.yenile(getir: _getirici());
   }
 
   void _acUyeDetay(OfisUyeListeItem uye) {
@@ -125,14 +124,19 @@ class _OfisUyelerPageState extends State<OfisUyelerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: OfisUyelerGorunumu(
-        uyeler: _filtrelenmis,
-        yukleniyor: _loading,
-        hata: _errorMessage,
+        uyeler: _liste.ogeler,
+        toplam: _liste.toplam,
+        yukleniyor: _liste.ilkYukleniyor,
+        hata: _liste.hata,
+        dahaYukleniyor: _liste.dahaYukleniyor,
+        dahaHatasi: _liste.dahaHatasi,
+        onDahaFazla: _liste.dahaFazla,
+        onDahaTekrarDene: _liste.dahaTekrarDene,
         filtre: _filtre,
         aramaDenetleyicisi: _aramaController,
-        onFiltre: (f) => setState(() => _filtre = f),
-        onYenile: () => _loadData(iskeletGoster: false),
-        onYenidenDene: _loadData,
+        onFiltre: _filtreSec,
+        onYenile: () => _liste.yenile(iskelet: false),
+        onYenidenDene: _liste.yenile,
         onUyeSec: _acUyeDetay,
         onAra: (u) => _ara(u.telefon),
         onWhatsapp: (u) => _whatsapp(u.telefon),
