@@ -12,7 +12,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 | | |
 |---|---|
-| Mobil | `pubspec` sürümü **3.10.0+43** — renk temaları (takım renkleri + geçişli tasarım dili), açılış popup'ları, yönetici/ofis Duyurular ekranı, ödül "nasıl kazanılır?", yönetici ekranı etiketleri ve 09-29 temizliği içeride. `v3.10.0` tag'iyle Codemagic'e gönderildi (2026-10-10; Codemagic 26.6 havuzu yoğun olduğu için Xcode 26.5'e sabitlendi, tag `3b6effa`'da) |
+| Mobil | `pubspec` sürümü **3.11.0+44** — profil fotoğrafı, ofis Ana Sayfa + Dersler, sayfalı üye listesi, takım rengi tüm sayfalarda ve iki turluk denetim düzeltmeleri içeride. `v3.11.0` tag'iyle Codemagic'e gönderildi (2026-10-13). Önceki sürüm 3.10.0+43 `v3.10.0` tag'iyle 2026-10-10'da gitmişti |
 | Testler | `flutter test` **2730 geçiyor** (2026-10-13), `flutter analyze` temiz; backend süiti **1090 geçiyor**, 0 kırık (2026-10-13) |
 | Backend | Canlı: `1d527c5` (Heroku **v305**, 2026-10-10). Sonrası **deploy bekliyor**: `6c269f5` (0091 ödeme alındı bildirimi), `4ddb8be`, `6329486` ve 2026-10-12 turu (0092 profil fotoğrafı adresi + ofis uçları) — bkz. açık iş 9 |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08); **3.10.0** `v3.10.0` tag'iyle gönderildi (2026-10-10) |
@@ -43,8 +43,8 @@ Ayrıntı aşağıda "Tamamlanan turlar"da. Yayın sırası kuralı geçerli: **
   `uyeProfilFotografiSil`, `ofisBekleyenIsler`, `ofisDersYonetimiGun`, `ofisDersOnay`, `ofisGunuOnayla`, `ofisDersHakedis`,
   `ofisPaketDusum`, `ofisManuelTeyit`, `ofisTeyitHatirlat`, `ofisPlanDisiBekleyenler/Secenekler/Karar`. "Paket bitiyor"
   kartının adresi (`/uyelikPaket`) yalnız backend değişikliği — deploy edilince eski uygulamalarda da düzelir.
-- **Mobil:** yeni yerel paket `image_picker` → yeni sürüm gerekir (`version:` bump + `release_notes.json` henüz
-  yapılmadı). iOS `Info.plist`'e fotoğraf galerisi izni metni eklendi, kamera metni profil fotoğrafını da anıyor.
+- **Mobil:** yeni yerel paket `image_picker`. Sürüm **3.11.0+44** olarak yükseltildi, `release_notes.json`
+  yeniden yazıldı (349 karakter), `SURUM_NOTLARI.md`'ye 3.11.0 bölümü eklendi. iOS `Info.plist`'e fotoğraf galerisi izni metni eklendi, kamera metni profil fotoğrafını da anıyor.
 - **Fotoğraf hattı tek (2026-10-13):** web üye formu da `profil_fotografi_yukle` ile Firebase'e yazıyor, web profil
   sayfası ve admin `profil_fotografi_url`'i gösteriyor. `UyeModel.profil_fotografi` (ImageField) terk edildi — alan
   duruyor ama kimse yazmıyor; ileride ayrı bir migration'la düşürülebilir (**kullanıcı kararı bekliyor**, geri

@@ -8,6 +8,50 @@
 > gizlilik metni de istiyor — çıkmak istemediğimiz bir bakım yükü.
 > (3.6.0 ve öncesindeki en-US bölümleri tarihsel kayıt olarak duruyor.)
 
+## 3.11.0 — 2026-10-13
+
+### Mağaza metni (tr-TR)
+
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 349).
+Metin yalnız son kullanıcıyı (üye) ilgilendiren maddeleri taşır; ofis/yönetici yenilikleri teknik bölümde.
+
+- Profil fotoğrafı: Profilim ekranında fotoğrafınıza dokunup kameradan çekebilir ya da galeriden seçebilirsiniz; dilediğiniz zaman kaldırabilirsiniz. Fotoğrafınız antrenörünüzün ve kulübün ekranlarında görünür.
+- Günlük ders özetindeki sayılar açık ve koyu temada daha okunaklı.
+- Giriş, profil seçimi, ödeme ve hesap ekranlarında hata düzeltmeleri.
+
+### Teknik
+
+- **Profil fotoğrafı (üye).** Profilim ekranındaki avatar dokunulabilir: kamera / galeri / kaldır.
+  İstemci yalnız küçültüyor (en uzun kenar 1200 px, JPEG %85); kareye kırpma sunucuda, ortadan
+  ([profil_fotografi_secici.dart](lib/screens/2_uye/profil/widgets/profil_fotografi_secici.dart)).
+  Dosya Firebase Storage'a gidiyor (`profil/<uye_id>/<uuid>.jpg`) — duyuru görselleriyle aynı hat;
+  Heroku dyno diskine yazan eski `ImageField` terk edildi, **web formu da aynı servise bağlandı**, yani
+  web'den yüklenen fotoğraf mobilde, mobilden yüklenen web'de görünüyor. Çıktı 512 px JPEG, üst sınır
+  200 KB. Fotoğraf; giriş, ders katılımcı listeleri, yönetici/ofis üye listeleri ve detaylarında avatar
+  olarak çiziliyor. Üye ya da hesap silinince Firebase'deki dosya da siliniyor (KVKK).
+- **Ofis profili.** Ana Sayfa'da bekleyen işler (onay bekleyen dersler, plan dışı kararlar, cevapsız
+  yoklamalar) ve Dersler ekranı: yönetici onayı, "antrenörün yapıldı dediklerini onayla", hakediş, paket
+  düşümü, manuel teyit ve hatırlatma, plan dışı/misafir kararı. Kurallar web ile ortak serviste.
+- **Sayfalı üye listesi.** Yönetici ve ofis üye listeleri 20'şer geliyor, arama ve filtre sunucuda
+  ([sayfali_liste.dart](lib/common/sayfali_liste.dart)); arama çok kelimeli ve Türkçe İ/ı varyantlı.
+- **Takım rengi her sayfada.** Sayfa zemini temanın açık tonu, başlık bandı ve alt menü düz tema rengi
+  (`BaslikBandi`, `TemaGecisleri`); kimlik yüzeyi sayfa başına bir tane.
+- **Denetim turu (iki bağımsız ajan + iki doğrulama ajanı).** Yayın engeli olan iki hata yakalandı:
+  `baseUrl` yanlışlıkla yerel sunucuya commit edilmişti ve ofis hakediş düğmesi dersi sessizce
+  "yapılmadı" yapıyordu. Ayrıca: üye listesi istatistiklerinde yarış durumu, ofis Ana Sayfa'da sonsuz
+  iskelet, üye kabuğunda fail-open erişim varsayılanı, profil seçiminde fazladan `pop()`, satır ile
+  işlem sayfası arasında ayrışan "ders bitti" ölçütü, ders özeti kartlarında eşik altı kontrast
+  (turuncu 2,16:1) ve ders onay dialoğunda 6 px taşma düzeltildi.
+- **Testler:** `flutter test` 2730 (2505'ten), `flutter analyze` temiz; backend süiti 1090.
+  Taşma matrisine `ProfileHeader`, `ErisimKisitli`, `GecisCubugu`, başlık bandı parçaları ve
+  sarmalayıcısız `IskeletListe` varyantları; kontrast testine `ListeTonu` ön plan/zemin çiftleri;
+  gömülü renk mandalının `Colors.x` tabanı 176 → 144.
+
+### Yayın notu
+
+**Backend bu sürümden ÖNCE deploy edilmeli** (`0091` + `0092` migration'ları, Pillow 10.4.0 ve
+`uyeProfilFotografi` / `ofis*` uçları). Aksi halde profil fotoğrafı ve ofis ekranları canlıda çalışmaz.
+
 ## 3.10.0 — 2026-10-10
 
 ### Mağaza metni (tr-TR)
