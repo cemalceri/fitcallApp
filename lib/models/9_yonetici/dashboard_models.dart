@@ -539,11 +539,16 @@ class UyeIstatistik {
   final int pasifUye;
   final int buAyYeniKayit;
 
+  /// Bakiyesi eksideki üye sayısı; "Borçlu" kartı. Yalnız yönetici ucunda
+  /// gelir; alanı göndermeyen eski sunucuda null ("–" yazılır, 0 değil).
+  final int? borcluUye;
+
   UyeIstatistik({
     required this.toplamUye,
     required this.aktifUye,
     required this.pasifUye,
     required this.buAyYeniKayit,
+    this.borcluUye,
   });
 
   factory UyeIstatistik.fromJson(Map<String, dynamic> json) {
@@ -552,6 +557,7 @@ class UyeIstatistik {
       aktifUye: json['aktif_uye'] ?? 0,
       pasifUye: json['pasif_uye'] ?? 0,
       buAyYeniKayit: json['bu_ay_yeni_kayit'] ?? 0,
+      borcluUye: (json['borclu_uye'] as num?)?.toInt(),
     );
   }
 }

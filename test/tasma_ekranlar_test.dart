@@ -362,6 +362,7 @@ UyeIstatistik _uyeIstatistik() => UyeIstatistik.fromJson({
       'aktif_uye': 161,
       'pasif_uye': 23,
       'bu_ay_yeni_kayit': 7,
+      'borclu_uye': 1234,
     });
 
 OfisUyeListeItem _ofisUyeListeItem({int no = 1, bool aktif = true}) =>
@@ -1051,6 +1052,16 @@ void main() {
       'UyelerGorunumu (tek grup)',
       () => _uyelerGorunumu(
         istatistik: _uyeIstatistik(),
+        uyeler: [_uyeListeItem(no: 1, bakiye: 0)],
+      ),
+    );
+
+    // Filtre artık başlıktaki sayılı kartlar; istatistik gelmeden ("–") ve
+    // "Yeni" seçiliyken de taşmamalı.
+    tasmaTesti(
+      'UyelerGorunumu (Yeni filtresi, istatistik yok)',
+      () => _uyelerGorunumu(
+        filtre: 'yeni',
         uyeler: [_uyeListeItem(no: 1, bakiye: 0)],
       ),
     );

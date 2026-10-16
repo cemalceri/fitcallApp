@@ -35,7 +35,7 @@ class _UyelerPageState extends State<UyelerPage> {
   /// yeni listenin üstünde kalıyordu.
   UyeIstatistik? get _istatistik => _liste.ek as UyeIstatistik?;
 
-  String _filtre = 'tumu'; // 'tumu' | 'aktif' | 'pasif' | 'borclu'
+  String _filtre = 'tumu'; // 'tumu' | 'aktif' | 'pasif' | 'borclu' | 'yeni'
 
   /// Sunucuya en son gönderilen arama; aynı metinle tekrar istek atılmaz.
   String _sonArama = '';
@@ -69,9 +69,14 @@ class _UyelerPageState extends State<UyelerPage> {
       final sonuc = await YoneticiApiService.getUyeler(
         sayfa: sayfa,
         arama: arama,
-        // "Borçlular" aktif/pasif ayırmaz: bakiye koşulu + en borçlu önce.
+        // "Borçlu" aktif/pasif ayırmaz: bakiye koşulu + en borçlu önce.
+        // "Yeni" (bu ay kaydolanlar) en yeni üye önce.
         filtre: borclu ? 'tumu' : filtre,
-        siralama: borclu ? 'bakiye' : 'ad',
+        siralama: borclu
+            ? 'bakiye'
+            : filtre == 'yeni'
+                ? 'uye_no'
+                : 'ad',
         sadeceBorclu: borclu,
       );
       final veri = sonuc.data;

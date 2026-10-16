@@ -14,8 +14,9 @@ import 'package:intl/intl.dart';
 /// Yönetici üye listesinin sunum gövdesi.
 ///
 /// Liste sayfalı gelir (aşağı kaydırdıkça 20'şer, bkz. SayfaliListe). Ada göre
-/// sıralıyken baş harf gruplarına bölünür; "Borçlular" filtresinde en borçlu
-/// önce gelir ve tek grup olarak çizilir.
+/// sıralıyken baş harf gruplarına bölünür; "Borçlu" filtresinde en borçlu,
+/// "Yeni"de en yeni üye önce gelir ve tek grup olarak çizilir. Filtre,
+/// başlıktaki sayılı kartlardır ([UyeIstatistikKartlar]).
 ///
 /// API çağrısı içermez; veri dışarıdan verilir. Böylece taşma testinde
 /// doğrudan pump edilebilir (bkz. CLAUDE.md "Layout / overflow discipline").
@@ -35,7 +36,7 @@ class UyelerGorunumu extends StatelessWidget {
   final bool dahaYukleniyor;
   final String? dahaHatasi;
 
-  /// 'tumu' | 'aktif' | 'pasif' | 'borclu'
+  /// 'tumu' | 'aktif' | 'pasif' | 'borclu' | 'yeni'
   final String filtre;
   final TextEditingController aramaDenetleyicisi;
 
@@ -74,13 +75,6 @@ class UyelerGorunumu extends StatelessWidget {
   static final _currency =
       NumberFormat.currency(locale: 'tr_TR', symbol: '₺', decimalDigits: 0);
 
-  static const _filtreler = [
-    ('tumu', 'Tümü'),
-    ('aktif', 'Aktif'),
-    ('pasif', 'Pasif'),
-    ('borclu', 'Borçlular'),
-  ];
-
   @override
   Widget build(BuildContext context) {
     // Durum çubuğunun arkası sabit takım renginde; kayan başlık onun altından
@@ -104,7 +98,7 @@ class UyelerGorunumu extends StatelessWidget {
     );
   }
 
-  /// Başlık + arama + süzgeç.
+  /// Başlık + arama + filtre kartları.
   ///
   /// `floating` + `snap`: aşağı kaydırınca yukarı kayar, yukarı çekince anında
   /// geri gelir — arama kutusu için liste başına dönmek gerekmiyor.
@@ -162,16 +156,15 @@ class UyelerGorunumu extends StatelessWidget {
                 ),
               ),
             ),
+            // Sayılı kartlar filtrenin kendisi; başlıkta durdukları için
+            // liste boşken / yüklenirken de seçilebilir.
             Padding(
               padding:
                   const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.m),
-              child: SizedBox(
-                height: BaslikSecici.yukseklik(context),
-                child: BaslikSecici<String>(
-                  secenekler: _filtreler,
-                  secili: filtre,
-                  onSec: onFiltre,
-                ),
+              child: UyeIstatistikKartlar(
+                data: istatistik,
+                secili: filtre,
+                onSec: onFiltre,
               ),
             ),
           ],
@@ -180,12 +173,15 @@ class UyelerGorunumu extends StatelessWidget {
     );
   }
 
-  /// Arama kutusu + süzgeç şeridinin toplam yüksekliği. Yazı ölçeği 1.3'e
+  /// Arama kutusu + filtre kartlarının toplam yüksekliği. Yazı ölçeği 1.3'e
   /// çıkabildiği için sabit değer taşma üretiyordu.
   double _aramaSeridiYuksekligi(BuildContext context) {
     final olcek = MediaQuery.textScalerOf(context);
     final arama = olcek.scale(16) * 1.4 + Bosluk.m * 2 + 2;
-    return arama + Bosluk.s + BaslikSecici.yukseklik(context) + Bosluk.m;
+    return arama +
+        Bosluk.s +
+        UyeIstatistikKartlar.yukseklik(context) +
+        Bosluk.m;
   }
 
   List<Widget> _govde(BuildContext context) {
@@ -236,17 +232,12 @@ class UyelerGorunumu extends StatelessWidget {
 
     // Borçlu/Güncel grupları sayfalı listede tutarsızdı (her yeni sayfa iki
     // gruba da satır eklerdi). Borç satırın kırmızı bakiyesinden okunuyor;
-    // borçluların hepsi "Borçlular" çipinde, en borçlu önce.
+    // borçluların hepsi "Borçlu" kartında, en borçlu önce.
     return [
-      if (istatistik != null)
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(Bosluk.l),
-            child: UyeIstatistikKartlar(data: istatistik!),
-          ),
-        ),
       if (filtre == 'borclu')
         ..._grup(context, 'Borçlu', uyeler, toplam ?? uyeler.length)
+      else if (filtre == 'yeni')
+        ..._grup(context, 'Bu ay kaydolanlar', uyeler, toplam ?? uyeler.length)
       else
         ...harfGrubuSliverlari<UyeListeItem>(
           context,
