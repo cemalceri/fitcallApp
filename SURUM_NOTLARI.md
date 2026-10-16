@@ -48,26 +48,31 @@ görüyor (tam ekran popup; kalıcı erişim Ayarlar › "Neler yeni").
 
 ### Mağaza metni (tr-TR)
 
-`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 487).
-**3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16): metin o iki sürümün üye yeniliklerini de anlatıyor.
-Her zamanki gibi elle, son kullanıcı için kısa maddelerle yazılır; "Neler yeni?" notlarından (`surum_notlari.json`)
-**bağımsızdır**, ondan beslenmez ve onun metnini kopyalamaz (kullanıcı kararı 2026-10-16).
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 494).
+Kullanıcı isteğiyle (2026-10-16) **3.9.0 dahil** sonraki bütün sürümlerin üye yeniliklerini anlatıyor
+(3.10.0 ve 3.11.0 mağazaya çıkmadı). Kulüp adı geçmiyor, yalnız renk adları. Her zamanki gibi elle, son
+kullanıcı için kısa maddelerle yazılır; "Neler yeni?" notlarından (`surum_notlari.json`) **bağımsızdır**,
+ondan beslenmez ve onun metnini kopyalamaz (kullanıcı kararı 2026-10-16).
 
-- Renk temaları: Binay Akademi'nin yanında Sarı-Kırmızı, Sarı-Lacivert, Bordo-Mavi, Siyah-Beyaz ve Ay-Yıldız. Ayarlar'daki Görünüm bölümünden seçin.
-- Ekranlar sade bir tasarımla yenilendi; koyu temada yazılar daha okunaklı.
+- Renk temaları: Sarı-Kırmızı, Sarı-Lacivert, Bordo-Mavi, Siyah-Beyaz ve Ay-Yıldız (Ayarlar › Görünüm).
+- Ekranlar sadeleşti; koyu temada yazılar daha okunaklı.
 - Profil fotoğrafı: kameradan çekin ya da galeriden seçin.
-- Doğum gününüzde kutlama, önemli duyurular açılışta.
 - Ödemeniz alınınca, paketiniz tanımlanınca ya da bitince bildirim gelir.
+- Doğum gününüzde kutlama, önemli duyurular açılışta.
+- Ödül sayacında "Nasıl kazanılır?" bilgisi.
+- Yardım & SSS yenilendi.
 - Yenilikleri artık uygulamada görebilirsiniz.
 - Çeşitli hata düzeltmeleri.
 
 ### "Neler yeni?" popup'ı
 
-İlk sürüm notu popup'ı bu sürümle çıkıyor. Notlar backend `surum_notlari.json`'da: 3.10.0, 3.11.0
-ve 3.12.0'ın maddeleri rol başına tek 3.12.0 bloğunda (üye 7, antrenör 4, ofis 8, yönetici 8; popup ilk
-4'ü gösterir, gerisi "Tümünü gör"). Yayınlanmamış 3.11.0 bloğu kaldırıldı. Heroku v319 ile yüklendi,
-`yayinda: false`). Mağazada canlı görülünce Django admin › Sürüm Notları'ndan
-`yayinda_mi` açılacak.
+İlk sürüm notu popup'ı bu sürümle çıkıyor. Notlar backend `surum_notlari.json`'da: **3.9.0'dan 3.12.0'a**
+kadar her şey rol başına tek 3.12.0 bloğunda (üye 8, antrenör 6, ofis 10, yönetici 9 madde; popup ilk 4'ü
+gösterir, gerisi "Tümünü gör"). Sıra önem sırası: her rolün ilk dört maddesi o profilin en büyük
+yenilikleri. "Yol" satırları ekrandaki menü adlarıyla (yönetici: Dashboard / Raporlar / Üyeler).
+Kullanıcı kararı (2026-10-16): güncelleyen kullanıcı popup'ı **otomatik görsün** — notlar mağaza onayını
+beklemeden yayında (`yayinda_mi` açık). Popup yalnız 3.12.0 kurulu cihazda çıktığı için eski
+sürümdekilere etkisi yok.
 
 ### Teknik
 
@@ -82,11 +87,17 @@ ve 3.12.0'ın maddeleri rol başına tek 3.12.0 bloğunda (üye 7, antrenör 4, 
   seçili dönemin tarih aralığı sağda (`DonemFiltresi.aralik`, sunucudaki `get_tarih_araligi` ile aynı).
 - **Pano dönem kutusu (yönetici, kullanıcı kararı "A").** Bugün / Bu Hafta / Bu Ay seçimi başlıktan
   içeriğe, yalnız ona bağlı kartlarla (ciro, tahsilat, ders, iptal) aynı çerçeveye taşındı (`DonemKutusu`);
-  aktif üye ve toplam alacak "Şu an", haftalık grafik "Bu haftanın günleri", hızlı erişim ve günün özeti
-  "Bugün" altında. Dönem değişince yalnız kutu iskelete döner; yenilemede pano yerinde kalır.
-- **Raporlar (yönetici).** Seçici panodaki gibi içerikte; iki grup: dönem kutusu (seçici + özet kartlar +
-  ciro + tahsilat) ve "Kort ve antrenör" (ısı haritası, kort doluluğu, antrenörler; başlıkta seçili günler).
-  Uzun listeler (aylık günler, kortlar, antrenörler) kartın içinde kayıyor (`RaporKaydirmaliListe`, 186 px).
+  aktif üye ve toplam alacak "Şu an", haftalık grafik "Bu haftanın günleri", hızlı erişim "Bugün" altında.
+  Dönem değişince yalnız kutu iskelete döner; yenilemede pano yerinde kalır. **Bugünün özeti en üstte**
+  ve "Yeni Üye · Ders · Doluluk" (eski "Yeni Kayıt" bugün açılan üye kaydıydı, adı netleşti; "Bekleyen
+  Telafi" yerine bugünün iptal edilmemiş ders sayısı — hızlı erişimdeki `toplam_ders`, backend değişmedi).
+- **Raporlar (yönetici).** Seçici panodaki gibi içerikte; iki kutu, **ikisinin de kendi seçicisi var**:
+  "Ciro ve tahsilat" (özet kartlar + ciro + tahsilat) ve "Kort ve antrenör" (kort doluluğu + antrenörler)
+  ([rapor_gruplari.dart](lib/screens/7_yonetici/raporlar/widgets/rapor_gruplari.dart)). Her kutu
+  `yoneticiRaporlar`'ı kendi `bolum`'üyle ister (`donem` / `kort_antrenor`), ciro günleri iki kez
+  hesaplanmaz; alanı tanımayan eski sunucu hepsini döndürür. **Isı haritası en altta, seçiciden bağımsız**:
+  ızgara hep haftanın günleri olduğu için bu haftanın tamamı (Pzt–Paz, planlı dersler dahil, sunucuda
+  `bu_hafta_tamami`; eski sunucu bu değeri tanımaz, yalnız bugünü döndürür). Uzun listeler (aylık günler, kortlar, antrenörler) kartın içinde kayıyor (`RaporKaydirmaliListe`, 186 px).
   Aktif üye kartı Raporlar'dan kaldırıldı (dönemden bağımsız; panoda "Şu an"). Özet kartlar ve bölüm
   başlıkları dar ekranda / büyük yazıda taşıyordu; bölümler taşma matrisine eklendi.
 - **Üyeler (yönetici).** Tümü / Aktif / Pasif / Borçlular butonları kalktı; filtre başlıktaki sayılı
@@ -97,9 +108,13 @@ ve 3.12.0'ın maddeleri rol başına tek 3.12.0 bloğunda (üye 7, antrenör 4, 
 - **Ofis.** Ana Sayfa başlığına çıkış düğmesi; ofis ekranlarındaki başlık görünümü düzeltildi.
 - **Üye.** Sonraki ders kartı kort adını önekle yazıyordu ("Kort Merkez Kort"); bildirim satırı
   `RichText` yerine `Text.rich` (temanın yazı ailesi ve yazı boyutu ayarı).
+- **Yardım (yönetim).** Dashboard, Raporlar ve Üyeler cevapları yeni düzene göre yeniden yazıldı.
 - **Backend (önce deploy edildi, Heroku v317–v318):** `setDersDegerlendirme` / `getDersDegerlendirme`
   değerlendireni ve rolü token'dan alıyor (istekteki `user_id` yok sayılıyor);
   `getDersTumDegerlendirmeler` yalnız yönetici.
+- **Backend (bu sürümden önce deploy):** yönetici üye listesi `yeni` filtresi + `borclu_uye`; raporlar
+  `bolum`; ısı haritası `bu_hafta_tamami`; iptal talebi / ders onay / `getDersKatilimlari` uçlarında
+  kimlik token'dan ve ders sahipliği kontrolü.
 - **Mağaza görselleri.** App Store 2.3.3 reddi (eski ekran görüntüleri) için `tool/magaza_gorselleri/`:
   gerçek sayfalar iOS modunda, SF Pro ve sahte API ile 4 boyutta çiziliyor (bkz. oradaki README).
 

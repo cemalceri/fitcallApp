@@ -124,6 +124,8 @@ const Map<String, IconData> surumNotuIkonlari = {
   'lock_rounded': Icons.lock_rounded,
   'star_rounded': Icons.star_rounded,
   'auto_awesome_rounded': Icons.auto_awesome_rounded,
+  'help_rounded': Icons.help_rounded,
+  'filter_list_rounded': Icons.filter_list_rounded,
 };
 
 const IconData surumNotuVarsayilanIkon = Icons.auto_awesome_rounded;
