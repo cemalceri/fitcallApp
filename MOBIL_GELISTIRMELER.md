@@ -8,13 +8,13 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-10-13)
+## 📌 Şu anki durum (2026-10-16)
 
 | | |
 |---|---|
-| Mobil | `pubspec` sürümü **3.11.0+44** — profil fotoğrafı, ofis Ana Sayfa + Dersler, sayfalı üye listesi, takım rengi tüm sayfalarda ve iki turluk denetim düzeltmeleri içeride. `v3.11.0` tag'iyle Codemagic'e gönderildi (2026-10-13). Önceki sürüm 3.10.0+43 `v3.10.0` tag'iyle 2026-10-10'da gitmişti |
-| Testler | `flutter test` **3084 geçiyor** (2026-10-16), `flutter analyze` temiz; backend süiti **1177 geçiyor**, 0 kırık (2026-10-16) |
-| Backend | Canlı: `1d527c5` (Heroku **v305**, 2026-10-10). Sonrası **deploy bekliyor**: `6c269f5` (0091 ödeme alındı bildirimi), `4ddb8be`, `6329486` ve 2026-10-12 turu (0092 profil fotoğrafı adresi + ofis uçları) — bkz. açık iş 9 |
+| Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi. Commit'li ve push'lu, **tag atılmadı** (kullanıcı kararı bekliyor, bkz. açık iş 10). Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
+| Testler | `flutter test` **3057 geçiyor** (2026-10-16), `flutter analyze` temiz; backend süiti **1185 geçiyor**, 0 kırık (2026-10-16) |
+| Backend | Canlı: `7e741d0` (Heroku **v318**, 2026-10-16) — değerlendirmeler yalnız yönetici + `degerlendirme_sayisi`, eski değerlendirme uçlarında güvenlik düzeltmesi, 3.12.0 sürüm notları (`yayinda: false`). Deploy bekleyen yok |
 | Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08); **3.10.0** `v3.10.0` tag'iyle gönderildi (2026-10-10) |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
@@ -45,7 +45,19 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 
 ## 🔴 Açık işler
 
-### 9. 2026-10-12 notlar turu + 10-13 denetim düzeltmeleri — kodlandı, deploy bekliyor
+### 10. 3.12.0 yayını — backend canlı, mobil tag bekliyor (2026-10-16)
+- **App Store 3.11.0 (45) reddi:** Guideline 2.3.3, eski 6.7"/6.5" ekran görüntüleri. "Bug fix" muafiyeti
+  istendi, Apple kabul etmedi; gönderim kullanıcı tarafından iptal edildi. Yeni görseller
+  `tool/magaza_gorselleri/` ile üretildi (6.3" zorunlu grup, 6.9", 6.5", iPad 13") ve 3.11.0 sürüm sayfasına
+  yüklendi. Codemagic düzenlenebilir sürümü (DEVELOPER_REJECTED dahil) bulup numarasını 3.12.0 yapıyor ve build'i
+  ona bağlıyor — görseller korunur (codemagic-cli-tools `_get_editable_app_store_version`).
+- **Sıradaki:** `v3.12.0` tag'i → Codemagic. Mağazada canlı görülünce Django admin › Sürüm Notları'ndan 3.12.0
+  `yayinda_mi` açılacak (popup ancak o zaman çıkar).
+- **Açık bulgu:** `CreateIptalTalebiApiView` de `user_id`'yi istekten alıyor (değerlendirme uçlarıyla aynı
+  sınıf açık); bu turda dokunulmadı.
+
+
+### 9. 2026-10-12 notlar turu + 10-13 denetim düzeltmeleri — yayında (3.11.0, Heroku v310)
 Ayrıntı aşağıda "Tamamlanan turlar"da. Yayın sırası kuralı geçerli: **önce backend, sonra mobil**.
 - **Backend:** `python manage.py migrate` (0091 + 0092; 0091 önceki turdan bekliyor). `requirements.txt`'te
   **Pillow 10.4.0** (fotoğraf kırpma; Heroku build kurar). Yeni uçlar: `uyeProfilFotografi`,

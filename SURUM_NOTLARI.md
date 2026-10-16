@@ -44,6 +44,43 @@ görüyor (tam ekran popup; kalıcı erişim Ayarlar › "Neler yeni").
    popup işe yaramıyor demektir; kararı tek sürüme değil birkaç sürüme bakarak
    ver.
 
+## 3.12.0 — 2026-10-16
+
+### Mağaza metni (tr-TR)
+
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 286).
+Metin yalnız üyeyi ilgilendiren maddeleri taşır; yönetici/ofis yenilikleri popup'ta ve teknik bölümde.
+
+- Neler yeni?: Güncellemeden sonraki ilk açılışta, sizi ilgilendiren yenilikler kısa bir listeyle gösteriliyor; Ayarlar'dan tekrar açabilirsiniz.
+- Ana sayfadaki sonraki ders kartında kort adı iki kez yazılıyordu, düzeltildi.
+- Bildirim listesi telefonunuzun yazı boyutu ayarına uyuyor.
+
+### "Neler yeni?" popup'ı
+
+İlk sürüm notu popup'ı bu sürümle çıkıyor. Notlar backend `surum_notlari.json`'da (3.12.0 bloğu,
+Heroku v318 ile yüklendi, `yayinda: false`). Mağazada canlı görülünce Django admin › Sürüm Notları'ndan
+`yayinda_mi` açılacak.
+
+### Teknik
+
+- **"Neler yeni?" (tüm profiller).** Tam ekran sürüm notu popup'ı ve Ayarlar › "Neler yeni" arşivi
+  (`b807f8d`). Ofis ve yönetici kabukları da açılış popup sırasına girdi.
+- **Antrenör değerlendirmeleri (yönetici).** Antrenörler satırı iki dokunma alanı: sol taraf (ad, ok)
+  hakediş saatlerine, sağdaki puan hücresi ("★ 4.8 (23)" / "Yorumlar ›") değerlendirmeler listesine
+  gider. Önceki iki seçenekli alt sayfa kaldırıldı. Liste ve detay `lib/screens/1_common/degerlendirmeler/`;
+  uç `degerlendirmeListesi` yalnız yönetici. Yorum sayısı `degerlendirme_sayisi` alanından; alanı
+  göndermeyen sunucuda yalnız ortalama görünür.
+- **Başlık bantları (yönetici).** Raporlar / Antrenörler / Üyeler başlığında dönem seçimi tam genişlik,
+  seçili dönemin tarih aralığı sağda (`DonemFiltresi.aralik`, sunucudaki `get_tarih_araligi` ile aynı).
+- **Ofis.** Ana Sayfa başlığına çıkış düğmesi; ofis ekranlarındaki başlık görünümü düzeltildi.
+- **Üye.** Sonraki ders kartı kort adını önekle yazıyordu ("Kort Merkez Kort"); bildirim satırı
+  `RichText` yerine `Text.rich` (temanın yazı ailesi ve yazı boyutu ayarı).
+- **Backend (önce deploy edildi, Heroku v317–v318):** `setDersDegerlendirme` / `getDersDegerlendirme`
+  değerlendireni ve rolü token'dan alıyor (istekteki `user_id` yok sayılıyor);
+  `getDersTumDegerlendirmeler` yalnız yönetici.
+- **Mağaza görselleri.** App Store 2.3.3 reddi (eski ekran görüntüleri) için `tool/magaza_gorselleri/`:
+  gerçek sayfalar iOS modunda, SF Pro ve sahte API ile 4 boyutta çiziliyor (bkz. oradaki README).
+
 ## 3.11.0 — 2026-10-13
 
 ### Mağaza metni (tr-TR)
