@@ -10,6 +10,7 @@
 // build edilmiyor. Aramak listeyi kısaltıp aranan kaydı görünür kılıyor.
 
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/sss_gorunumu.dart';
 import 'package:fitcall/screens/1_common/yonetim_yardim_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -136,4 +137,30 @@ void main() {
           find.textContaining('Üye listesinde ne arayabilir'), findsOneWidget);
     });
   });
+
+  // `SssSoru.yol` sürüm notu popup'ı için eklendi ve OPSİYONEL: yardım
+  // sayfaları bunu vermiyor, o zaman "nereden ulaşılır" çipi hiç çizilmemeli.
+  group('SssSoru.yol opsiyonelliği', () {
+    test('yol verilmeyen soruda yolVar false', () {
+      const soru = SssSoru(
+        ikon: Icons.help_outline_rounded,
+        soru: 'Bakiyemi nasıl görürüm?',
+        cevap: 'Hesabım ekranından.',
+      );
+      expect(soru.yol, '');
+      expect(soru.yolVar, isFalse);
+    });
+
+    testWidgets('yardım sayfasında yol çipi çizilmez', (tester) async {
+      await _ac(tester, ofis: true);
+      await tester.enterText(find.byType(TextField), 'ders');
+      await tester.pumpAndSettle();
+
+      // Çip yalnız `yol` dolu olan maddelerde var; yardım sayfasında yok.
+      expect(find.byIcon(Icons.explore_outlined), findsNothing);
+      // Sayfa yine çiziliyor (arama sonucu geldi).
+      expect(find.byType(SssKarti), findsWidgets);
+    });
+  });
+
 }

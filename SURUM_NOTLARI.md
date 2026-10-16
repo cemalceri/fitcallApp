@@ -8,6 +8,42 @@
 > gizlilik metni de istiyor — çıkmak istemediğimiz bir bakım yükü.
 > (3.6.0 ve öncesindeki en-US bölümleri tarihsel kayıt olarak duruyor.)
 
+## Sürüm notu popup'ı — her sürümde yapılacaklar
+
+3.12.0'dan itibaren sürüm notları mağaza vitrininde kalmıyor: yeni sürümü kuran
+kullanıcı ilk açılışta **kendi profiline** ait yenilikleri açılır liste olarak
+görüyor (tam ekran popup; kalıcı erişim Ayarlar › "Neler yeni").
+
+İçeriğin tek doğruluk kaynağı **backend deposundaki `surum_notlari.json`**
+(`C:\Django	enis`). Mağaza metni (`release_notes.json`) ve bu dosyanın
+"Mağaza metni" bloğu hâlâ elle yazılıyor; popup bunlardan bağımsızdır.
+
+1. `surum_notlari.json`'a yeni sürüm bloğunu yaz: `surum`, `yayin_tarihi`,
+   `rol_basliklari` ve `maddeler`. Her madde `roller` listesiyle hangi
+   profilleri ilgilendirdiğini söyler (ortak madde bir kez yazılır, yükleyici
+   her role çoğaltır).
+2. Madde yazarken üç soru: kullanıcı ekranda bir **fark** görecek mi; "hangi
+   menüden" cümlesini (`yol`) yazabiliyor muyum; bu rol o ekrana **girebiliyor**
+   mu? Bir rol için madde yoksa o rolü **hiç yazma** — "çeşitli iyileştirmeler"
+   dolgusu yerine o profil popup görmez.
+3. Sınırlar: başlık ≤ 42, açıklama ≤ 180 karakter (yükleyici aşarsa hata
+   verir), rol başına en çok 4 madde popup'ta görünür — fazlası "Tümünü gör"
+   ile arşiv sayfasına düşer.
+4. `python manage.py surum_notlari_yukle` (dry-run) ile doğrula. Heroku
+   `release` fazı `--uygula` ile kendisi koşuyor, elle yüklemek gerekmez.
+5. Backend'i deploy et (sıra değişmedi: **önce backend**). Notlar
+   `yayinda_mi=False` gelir, yani henüz kimseye çıkmaz.
+6. `pubspec.yaml` sürümünü bump'la, `release_notes.json`'ı yeniden yaz, tag'i
+   pushla, Codemagic'i bekle.
+7. **Mağazada canlı görülünce** Django admin › Sürüm Notları'ndan
+   `yayinda_mi`'yı aç ve kendi hesabında bir açılış dene. Popup yalnız
+   istemcinin kurduğu sürümle birebir eşleşen notu gösterdiği için, aşamalı
+   yayında güncellemeyen kullanıcı hiçbir şey görmez.
+8. Benimseme: Django admin › Sürüm Notu Görülmeleri — `kaynak` ve
+   `acilan_maddeler`. En az bir madde açan / gören oranı **%25'in altındaysa**
+   popup işe yaramıyor demektir; kararı tek sürüme değil birkaç sürüme bakarak
+   ver.
+
 ## 3.11.0 — 2026-10-13
 
 ### Mağaza metni (tr-TR)

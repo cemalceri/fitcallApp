@@ -260,6 +260,36 @@ void main() {
         test('"şimdi" çizgisinin etiketi okunur', () {
           metin('şimdi etiketi', uzerineYazi(r.simdiCizgisi), r.simdiCizgisi);
         });
+
+        // Sürüm notu popup'ı / yardım kartları: açılır kartın kapalı ve açık
+        // zeminleri ile "nereden ulaşılır" çipi (SssKarti, _YolCipi).
+        test('açılır kart ve yol çipi okunur', () {
+          for (final (ad, zemin) in [
+            ('kapalı kart', cs.surfaceContainerLowest),
+            ('açık kart', cs.surfaceContainerHigh),
+          ]) {
+            metin('madde başlığı / $ad', cs.onSurface, zemin);
+            metin('madde açıklaması / $ad', cs.onSurfaceVariant, zemin);
+            // Kartın oku ve ikon kapsülü grafik öğe: eşik 3:1. Başlık METİN
+            // olduğu için vurgu rengiyle yazılmıyor (4,49:1 veriyordu).
+            metin('kart oku / $ad', cs.primary, zemin, 3);
+          }
+          metin('açık kart ikonu', cs.onPrimary, cs.primary, 3);
+          metin('yol çipi', r.bilgi, r.bilgiZemin);
+          // Çipin ikonu grafik öğe: eşik 3:1.
+          metin('yol çipi ikonu', r.bilgi, r.bilgiZemin, 3);
+        });
+
+        // Popup'ın kimlik yüzeyi: sürüm rozeti kapsül zemini üstünde.
+        test('sürüm rozeti kimlik yüzeyinde okunur', () {
+          final zeminler = gradyanOrnekle(g.kimlik)
+              .map(kapsulAlti)
+              .toList(growable: false);
+          final oran = enKotu(g.onKimlik, zeminler);
+          expect(oran, greaterThanOrEqualTo(4.5),
+              reason: '${_ad(takim, mod)} · sürüm rozeti '
+                  '${oran.toStringAsFixed(2)}:1');
+        });
       });
     }
   }

@@ -11,6 +11,7 @@ import 'package:fitcall/common/constants.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
+import 'package:fitcall/screens/1_common/neler_yeni_page.dart';
 import 'package:fitcall/screens/1_common/hesap/hesap_sil_page.dart';
 import 'package:fitcall/screens/1_common/hesap/sifre_degistir_page.dart';
 import 'package:fitcall/screens/1_common/widgets/kvkk.dart';
@@ -182,6 +183,15 @@ class _AyarlarPageState extends State<AyarlarPage> {
           const _BolumBasligi('Uygulama'),
           _Kart(
             children: [
+              _AyarSatiri(
+                ikon: Icons.auto_awesome_rounded,
+                baslik: 'Neler yeni',
+                altBaslik: 'Bu sürümde gelen yenilikler',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NelerYeniPage()),
+                ),
+              ),
               _AyarSatiri(
                 ikon: Icons.info_outline_rounded,
                 baslik: 'Sürüm',

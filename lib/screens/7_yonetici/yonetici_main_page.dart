@@ -13,6 +13,7 @@ import 'package:fitcall/screens/7_yonetici/raporlar/raporlar_page.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/uyeler_page.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/antrenorler_page.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/dersler_page.dart';
+import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_bottom_bar.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
@@ -47,6 +48,11 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
       const DerslerPage(),
     ];
     _yoneticiAdiYukle();
+    // Sürüm notu popup'ı ("Neler yeni?"). Duyuru popup'ı burada ÇIKMAZ: sıranın
+    // rol filtresi onu üye ve antrenöre bırakıyor (bilinçli karar).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AcilisPopuplari.calistir(context);
+    });
   }
 
   Future<void> _yoneticiAdiYukle() async {

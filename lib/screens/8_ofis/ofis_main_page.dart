@@ -16,6 +16,7 @@
 // Ofis çalışanına o bilgiler gerekiyorsa kendisine ayrıca yönetici profili
 // tanımlanır; roller karıştırılmaz.
 
+import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
 import 'package:fitcall/screens/8_ofis/ana_sayfa/ofis_ana_sayfa_page.dart';
 import 'package:fitcall/screens/8_ofis/dersler/ofis_dersler_page.dart';
@@ -71,6 +72,11 @@ class _OfisMainPageState extends State<OfisMainPage>
     ];
     NotificationService.refreshUnreadCount();
     _adYukle();
+    // Sürüm notu popup'ı ("Neler yeni?"). Duyuru popup'ı burada ÇIKMAZ: sıranın
+    // rol filtresi onu üye ve antrenöre bırakıyor (bilinçli karar).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AcilisPopuplari.calistir(context);
+    });
   }
 
   @override

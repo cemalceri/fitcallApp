@@ -18,12 +18,24 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Tek bir soru-cevap.
+///
+/// [yol] yalnız sürüm notu popup'ının kullandığı opsiyonel alan: "nereden
+/// ulaşılır" satırı ("Hesabım › fotoğrafa dokun"). Yardım sayfaları bunu
+/// vermiyor, o zaman çip çizilmez — mevcut çağrı yerleri değişmedi.
 class SssSoru {
   final IconData ikon;
   final String soru;
   final String cevap;
+  final String yol;
 
-  const SssSoru({required this.ikon, required this.soru, required this.cevap});
+  const SssSoru({
+    required this.ikon,
+    required this.soru,
+    required this.cevap,
+    this.yol = '',
+  });
+
+  bool get yolVar => yol.trim().isNotEmpty;
 }
 
 /// Soruların konu başlığı. Tek bölümlü sayfalarda çip satırı çizilmez.
@@ -293,7 +305,20 @@ class _SssGorunumuState extends State<SssGorunumu> {
 class SssKarti extends StatefulWidget {
   final SssSoru sss;
 
-  const SssKarti({super.key, required this.sss});
+  /// Kart ilk çizimde açık gelsin mi (sürüm notu popup'ında ilk madde açık).
+  final bool baslangictaAcik;
+
+  /// Kart her açıldığında çağrılır — sürüm notu ölçümü (hangi madde okundu)
+  /// bunu kullanıyor. Sunucu tarafı id'leri birleştirdiği için tekrar çağrı
+  /// zararsız.
+  final VoidCallback? onAcildi;
+
+  const SssKarti({
+    super.key,
+    required this.sss,
+    this.baslangictaAcik = false,
+    this.onAcildi,
+  });
 
   @override
   State<SssKarti> createState() => _SssKartiState();
@@ -301,7 +326,7 @@ class SssKarti extends StatefulWidget {
 
 class _SssKartiState extends State<SssKarti>
     with SingleTickerProviderStateMixin {
-  bool _acik = false;
+  late bool _acik = widget.baslangictaAcik;
   late AnimationController _kontrolcu;
   late Animation<double> _okDonusu;
   late Animation<double> _acilma;
@@ -317,6 +342,11 @@ class _SssKartiState extends State<SssKarti>
       CurvedAnimation(parent: _kontrolcu, curve: Curves.easeInOut),
     );
     _acilma = CurvedAnimation(parent: _kontrolcu, curve: Curves.easeInOut);
+    if (_acik) {
+      _kontrolcu.value = 1;
+      // Açık başlayan kart da okunmuş sayılır (ölçüm gösterimle tutarlı olsun).
+      WidgetsBinding.instance.addPostFrameCallback((_) => widget.onAcildi?.call());
+    }
   }
 
   @override
@@ -334,6 +364,7 @@ class _SssKartiState extends State<SssKarti>
         _kontrolcu.reverse();
       }
     });
+    if (_acik) widget.onAcildi?.call();
   }
 
   @override
@@ -381,10 +412,15 @@ class _SssKartiState extends State<SssKarti>
                       child: Padding(
                         padding: const EdgeInsets.only(top: Bosluk.xs),
                         child: Text(
+                          // Açıkken de `onSurface`: vurgu rengi
+                          // `surfaceContainerHigh` üstünde Binay açık temada
+                          // 4,49:1 veriyordu (eşik 4,5 — test_tema_kontrast).
+                          // Açıklık sinyali zemin, kenar, ikon kapsülü ve ok
+                          // ile zaten veriliyor.
                           widget.sss.soru,
                           style: context.metin.bodyLarge?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: _acik ? cs.primary : cs.onSurface,
+                            color: cs.onSurface,
                           ),
                         ),
                       ),
@@ -407,12 +443,21 @@ class _SssKartiState extends State<SssKarti>
                   sizeFactor: _acilma,
                   child: Padding(
                     padding: const EdgeInsets.only(top: Bosluk.l),
-                    child: Text(
-                      widget.sss.cevap,
-                      style: context.metin.bodyMedium?.copyWith(
-                        height: 1.5,
-                        color: cs.onSurfaceVariant,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.sss.cevap,
+                          style: context.metin.bodyMedium?.copyWith(
+                            height: 1.5,
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                        if (widget.sss.yolVar) ...[
+                          const SizedBox(height: Bosluk.m),
+                          _YolCipi(yol: widget.sss.yol),
+                        ],
+                      ],
                     ),
                   ),
                 ),
@@ -420,6 +465,49 @@ class _SssKartiState extends State<SssKarti>
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                         "NEREDEN ULAŞILIR" ÇİPİ                            */
+/* -------------------------------------------------------------------------- */
+
+/// Menü yolu çipi: "Hesabım › fotoğrafa dokun".
+///
+/// Renkler semantik bilgi tonundan gelir (gömülü renk yok); uzun yol metni
+/// sarar, kesilmez — kullanıcıyı ekrana götüren tek cümle budur.
+class _YolCipi extends StatelessWidget {
+  final String yol;
+
+  const _YolCipi({required this.yol});
+
+  @override
+  Widget build(BuildContext context) {
+    final renkler = context.renkler;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: Bosluk.m, vertical: Bosluk.s),
+      decoration: BoxDecoration(
+        color: renkler.bilgiZemin,
+        borderRadius: BorderRadius.circular(Yaricap.s),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.explore_outlined, size: 16, color: renkler.bilgi),
+          const SizedBox(width: Bosluk.s),
+          Expanded(
+            child: Text(
+              yol,
+              style: context.metin.labelLarge?.copyWith(
+                color: renkler.bilgi,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

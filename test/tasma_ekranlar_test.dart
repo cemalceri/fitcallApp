@@ -20,11 +20,14 @@ import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
+import 'package:fitcall/models/1_common/surum_notu_model.dart';
 import 'package:fitcall/models/1_common/duyuru_okuma_models.dart';
 import 'package:fitcall/screens/1_common/duyurular/widgets/duyuru_yonetim_listesi.dart';
 import 'package:fitcall/screens/1_common/duyurular/widgets/okuma_durumu_gorunumu.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/dogum_gunu_popup.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/duyuru_popup.dart';
+import 'package:fitcall/screens/1_common/acilis_popup/widgets/surum_notu_popup.dart';
+import 'package:fitcall/screens/1_common/neler_yeni_page.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_detay_sheet.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/duyuru_carousel.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_sheet.dart';
@@ -2022,6 +2025,121 @@ void main() {
         onKapat: () {},
       ),
     );
+    // Sürüm notu popup'ı: tek madde (ilk madde açık gelir, liste kısa).
+    tasmaTesti(
+      'SurumNotuGovdesi (tek madde)',
+      () => SurumNotuGovdesi(
+        blok: _surumNotu(maddeSayisi: 1),
+        onKapat: () {},
+      ),
+    );
+
+    // Sınırdaki hâl: 4 madde + uzun açıklama + uzun yol metni.
+    tasmaTesti(
+      'SurumNotuGovdesi (4 madde, uzun metin)',
+      () => SurumNotuGovdesi(
+        blok: _surumNotu(maddeSayisi: 4, uzun: true),
+        onKapat: () {},
+      ),
+    );
+
+    // Sınır aşıldı: "Tümünü gör" butonu da çizilir, popup 4 madde gösterir.
+    tasmaTesti(
+      'SurumNotuGovdesi (7 madde, Tümünü gör)',
+      () => SurumNotuGovdesi(
+        blok: _surumNotu(maddeSayisi: 7),
+        onKapat: () {},
+        onTumunuGor: () {},
+      ),
+    );
+
+    // Alt başlık ve yol yok (yalnız hata düzeltmesi maddesi), rozet de yok.
+    tasmaTesti(
+      'SurumNotuGovdesi (yolsuz madde, sürümsüz)',
+      () => SurumNotuGovdesi(
+        blok: SurumNotuBlogu.fromJson(const {
+          'id': 3,
+          'surum': '',
+          'baslik': 'Neler yeni?',
+          'maddeler': [
+            {
+              'id': 1,
+              'baslik': 'Hata düzeltmeleri',
+              'aciklama': 'Giriş ve ödeme ekranlarındaki hatalar düzeltildi.',
+              'yol': '',
+              'sira': 1,
+            }
+          ],
+        }),
+        onKapat: () {},
+      ),
+    );
+
+    // Arşiv sayfası: API'ye çıkmadan, iki sürümlük liste.
+    tasmaTesti(
+      'NelerYeniPage (iki sürüm)',
+      () => NelerYeniPage(
+        surum: '3.12.0',
+        yukleyici: (_) async => [
+          _surumNotu(maddeSayisi: 3, uzun: true),
+          SurumNotuBlogu.fromJson(const {
+            'id': 9,
+            'surum': '3.11.0',
+            'baslik': 'Neler yeni?',
+            'maddeler': [
+              {
+                'id': 90,
+                'baslik': 'Profil fotoğrafı',
+                'aciklama': 'Fotoğrafınıza dokunup kameradan çekebilirsiniz.',
+                'yol': 'Hesabım › fotoğrafa dokun',
+                'ikon': 'photo_camera_rounded',
+                'sira': 1,
+              }
+            ],
+          }),
+        ],
+      ),
+    );
+
+    tasmaTesti(
+      'NelerYeniPage (boş)',
+      () => NelerYeniPage(surum: '3.12.0', yukleyici: (_) async => const []),
+    );
+  });
+}
+
+/// [maddeSayisi] kadar maddeli sürüm notu bloğu; [uzun] ise sözleşme
+/// sınırındaki metinler (başlık 42, açıklama 180 karakter) kullanılır.
+SurumNotuBlogu _surumNotu({required int maddeSayisi, bool uzun = false}) {
+  final baslik = uzun
+      ? 'Üye listesi artık çok daha hızlı açılıyor'  // 42 karakter
+      : 'Profil fotoğrafı';
+  final aciklama = uzun
+      ? 'Liste yirmişer yükleniyor, arama ve filtre sunucuda çalışıyor; uzun '
+          'listede takılma yok. Arama birden çok kelime kabul ediyor ve Türkçe '
+          'büyük İ ile küçük ı harflerini ayırt ediyor.'
+      : 'Fotoğrafınıza dokunup kameradan çekebilirsiniz.';
+  final yol = uzun
+      ? 'Menü › Üye Listesi › arama kutusu › filtre simgesi'
+      : 'Hesabım › fotoğrafa dokun';
+
+  return SurumNotuBlogu.fromJson({
+    'id': 7,
+    'surum': '3.12.0',
+    'rol': 'uye',
+    'baslik': 'Neler yeni?',
+    'alt_baslik': '',
+    'maddeler': [
+      for (var i = 1; i <= maddeSayisi; i++)
+        {
+          'id': i,
+          'baslik': baslik,
+          'aciklama': aciklama,
+          'yol': yol,
+          'ikon': i.isEven ? 'manage_search_rounded' : 'photo_camera_rounded',
+          'sira': i,
+        }
+    ],
   });
 }
 

@@ -13,6 +13,15 @@
 //     havuzu 2000-01-01) yüzünden toplu kutlama riski var.
 //   - Duyuru hesap başına bir kez; asıl kayıt sunucuda (DuyuruOkuma), cihazdaki
 //     kayıt yalnız "okundu" isteği ağ hatasıyla düşerse tekrar çıkmasın diye.
+//
+// Sürüm notu popup'ı (kullanıcı kararı, 2026-10-15):
+//   - Sıranın EN SONUNDA: doğum günü ve duyuru aynı açılışta çıktıysa sürüm
+//     notu bir sonraki açılışa kalır (son kullanma tarihi yok, ayrıca kalıcı
+//     erişimi var: Ayarlar > "Neler yeni").
+//   - Kurulu sürümün notu, sürüm + ROL başına bir kez. Rol bazlı, çünkü içerik
+//     rol süzgeçli: aynı hesabın üye ve ofis profili kendi notunu ayrı görür.
+//   - Kapatmak = görüldü. Kayıt gösterimden ÖNCE yazılır (doğum günündeki
+//     gerekçe) ve sunucuya da işlenir; ağ hatası popup'ı bozmaz.
 
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/services/core/storage_service.dart';
@@ -59,7 +68,12 @@ class AcilisPopupKayitlari {
 
   static const String dogumGunuAnahtari = 'acilis_popup_dogum_gunu';
   static const String duyuruAnahtari = 'acilis_popup_duyurular';
-  static const List<String> tumu = [dogumGunuAnahtari, duyuruAnahtari];
+  static const String surumAnahtari = 'acilis_popup_surum';
+  static const List<String> tumu = [
+    dogumGunuAnahtari,
+    duyuruAnahtari,
+    surumAnahtari,
+  ];
 
   /// Cihazda tutulan duyuru kaydı sınırı; eskiler düşer.
   static const int _duyuruKayitSiniri = 50;
@@ -89,6 +103,23 @@ class AcilisPopupKayitlari {
 
   static Future<bool> duyuruGosterildiMi(int userId, int duyuruId) async =>
       (await _duyurular()).contains('$userId:$duyuruId');
+
+  /// `{"rol:userId": "3.12.0"}` — en son hangi sürümün notu gösterildi.
+  static Future<Map<String, dynamic>> _surumler() async =>
+      await SecureStorageService.getValue<Map<String, dynamic>>(
+          surumAnahtari) ??
+      <String, dynamic>{};
+
+  static Future<bool> surumNotuGosterildiMi(
+      String rol, int userId, String surum) async =>
+      (await _surumler())['$rol:$userId'] == surum;
+
+  static Future<void> surumNotuGosterildi(
+      String rol, int userId, String surum) async {
+    final kayit = await _surumler();
+    kayit['$rol:$userId'] = surum;
+    await SecureStorageService.setValue(surumAnahtari, kayit);
+  }
 
   static Future<void> duyuruGosterildi(int userId, int duyuruId) async {
     final liste = await _duyurular();

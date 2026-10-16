@@ -107,6 +107,11 @@ String getAktifDuyurularUrl = "$baseUrl/getAktifDuyurular";
 String getDuyuruDetayUrl = "$baseUrl/getDuyuruDetay";
 String setDuyuruOkunduUrl = "$baseUrl/setDuyuruOkundu";
 String getPopupDuyuruUrl = "$baseUrl/getPopupDuyuru";
+
+// "Neler yeni?" sürüm notu popup'ı: kurulu sürümün, aktif profile ait notu.
+String getSurumYenilikleriUrl = "$baseUrl/getSurumYenilikleri";
+String setSurumYenilikGorunduUrl = "$baseUrl/setSurumYenilikGorundu";
+String getSurumNotuArsiviUrl = "$baseUrl/getSurumNotuArsivi";
 String yoneticiDuyurularUrl = "$baseUrl/yoneticiDuyurular";
 String yoneticiDuyuruOkumaDurumuUrl = "$baseUrl/yoneticiDuyuruOkumaDurumu";
 
@@ -119,6 +124,8 @@ const String getDersDegerlendirmeUrl = "$baseUrl/getDersDegerlendirme";
 const String setDersDegerlendirmeUrl = "$baseUrl/setDersDegerlendirme";
 const String getDersTumDegerlendirmelerUrl =
     "$baseUrl/getDersTumDegerlendirmeler";
+// Yalnız yönetici: bir antrenörün puan + yorum + ders detayı.
+const String degerlendirmeListesiUrl = "$baseUrl/degerlendirmeListesi";
 
 // İptal Talebi
 const String createIptalTalebiUrl = "$baseUrl/etkinlikIptalTalebiOlustur";
