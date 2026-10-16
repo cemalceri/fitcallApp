@@ -93,10 +93,19 @@ class _FiltreKarti extends StatelessWidget {
     final cs = context.cs;
     final on = ton.on(context);
     final yaricap = BorderRadius.circular(Yaricap.m);
+    void dokun() {
+      if (secili) return;
+      HapticFeedback.selectionClick();
+      onTap();
+    }
+
+    // InkWell ExcludeSemantics'in altında kaldığı için dokunma eylemi burada
+    // verilir; yoksa ekran okuyucu kartı okur ama seçemez.
     return Semantics(
       button: true,
       selected: secili,
-      label: '$etiket $deger üye',
+      label: deger == '–' ? etiket : '$etiket $deger üye',
+      onTap: secili ? null : dokun,
       child: ExcludeSemantics(
         child: Material(
           color: secili ? ton.zemin(context) : cs.surface,
@@ -109,11 +118,7 @@ class _FiltreKarti extends StatelessWidget {
           ),
           child: InkWell(
             borderRadius: yaricap,
-            onTap: () {
-              if (secili) return;
-              HapticFeedback.selectionClick();
-              onTap();
-            },
+            onTap: dokun,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 4,

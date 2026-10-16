@@ -12,9 +12,9 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 | | |
 |---|---|
-| Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi. Commit'li ve push'lu, **tag atılmadı** (kullanıcı kararı bekliyor, bkz. açık iş 10). Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
-| Testler | `flutter test` **3057 geçiyor** (2026-10-16), `flutter analyze` temiz; backend süiti **1185 geçiyor**, 0 kırık (2026-10-16) |
-| Backend | Canlı: `bcd3a3b` (Heroku **v319**, 2026-10-16) — değerlendirmeler yalnız yönetici + `degerlendirme_sayisi`, eski değerlendirme uçlarında güvenlik düzeltmesi, 3.12.0 sürüm notları (3.10.0–3.12.0 birleşik, `yayinda: false`). Deploy bekleyen yok |
+| Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi, yönetici pano / Raporlar dönem kutusu, Üyeler sayılı kart filtreleri. Commit'li; 2026-10-16 yönetici turu **push'lanmadı**, **tag atılmadı** (kullanıcı kararı bekliyor, bkz. açık iş 10). Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
+| Testler | `flutter test` **3188 geçiyor** (2026-10-16), `flutter analyze` temiz; backend süiti **1231 geçiyor**, 0 kırık (2026-10-16) |
+| Backend | Canlı: `74de9c0` (Heroku, 2026-10-16) — değerlendirmeler yalnız yönetici, iptal talebi / ders onay uçlarında güvenlik, 3.12.0 sürüm notları (`yayinda: false`). **Deploy bekleyen (push'lanmadı):** `94892c3` (`getDersKatilimlari` yalnız dersin antrenörüne), `f2b4872` (yönetici üye listesi "yeni" filtresi + `borclu_uye`), `8ecbd89` (3.12.0 yönetici notu). Mobil "Yeni" kartı `f2b4872`'yi ister — **3.12.0 tag'inden önce deploy** |
 | Mağaza | **3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16; 3.11.0 App Store'da 2.3.3 ile döndü, gönderim iptal). 3.12.0'ın mağaza metni bu yüzden 3.10.0'dan bu yana gelen üye yeniliklerini anlatıyor; "Neler yeni?" notları da öyle. **İkisi bağımsız:** mağaza metni elle yazılır, `surum_notlari.json`'dan beslenmez. Daha önce: 3.9.0 `v3.9.0` (2026-09-08), 3.8.1 |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
@@ -183,7 +183,9 @@ Yedi not netleştirildi (kararlar: tema **A + B**, ofise web Ders Yönetimi'nin 
 - **Ofis ve yönetici üye listeleri sayfalı:** aşağı kaydırdıkça 20'şer (`SayfaliListe`), arama ve filtre sunucuda (çok
   kelimeli, Türkçe İ/ı duyarlı), ada göre sıralıyken baş harf grupları; sayfa sınırında tekrar/kayıp olmasın diye
   sıralamaya `id`. Borçlu/Güncel ve Aktif/Pasif grupları sayfalı listede tutarsız olduğu için kalktı (borç satırdaki
-  kırmızı tutardan, pasif rozetten okunuyor; "Borçlular" çipi en borçlu önce).
+  kırmızı tutardan, pasif rozetten okunuyor). Yönetici listesinde filtre butonları da kalktı (2026-10-16): başlıktaki
+  sayılı kartlar (Toplam · Aktif · Pasif · Borçlu · Yeni) filtrenin kendisi; "Borçlu" en borçlu, "Yeni" bu ay
+  kaydolanlar önce.
 - **Ofis Ana Sayfa + Dersler (web Ders Yönetimi'nin mobili):** sekmeler Ana Sayfa · Program · Dersler · Üyeler
   (Bildirimler zilde ve menüde). Ana Sayfa: bugünün özeti + bekleyen işler (son 60 günün onay bekleyen dersleri, plan
   dışı/misafir kararları, bugün-yarın katılım cevabı bekleyenler). Dersler: gün gezinmesi, süzgeçler (onay bekleyen /

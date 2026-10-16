@@ -86,9 +86,14 @@ ve 3.12.0'ın maddeleri rol başına tek 3.12.0 bloğunda (üye 7, antrenör 4, 
   "Bugün" altında. Dönem değişince yalnız kutu iskelete döner; yenilemede pano yerinde kalır.
 - **Raporlar (yönetici).** Seçici panodaki gibi içerikte; iki grup: dönem kutusu (seçici + özet kartlar +
   ciro + tahsilat) ve "Kort ve antrenör" (ısı haritası, kort doluluğu, antrenörler; başlıkta seçili günler).
-  Uzun listeler (aylık günler, kortlar, antrenörler) kartın içinde kayıyor (`RaporKaydirmaliListe`, 280 px).
+  Uzun listeler (aylık günler, kortlar, antrenörler) kartın içinde kayıyor (`RaporKaydirmaliListe`, 186 px).
   Aktif üye kartı Raporlar'dan kaldırıldı (dönemden bağımsız; panoda "Şu an"). Özet kartlar ve bölüm
   başlıkları dar ekranda / büyük yazıda taşıyordu; bölümler taşma matrisine eklendi.
+- **Üyeler (yönetici).** Tümü / Aktif / Pasif / Borçlular butonları kalktı; filtre başlıktaki sayılı
+  kartlar (Toplam · Aktif · Pasif · Borçlu · Yeni, `UyeIstatistikKartlar`), seçili kart vurgulu, liste
+  boşken de seçilebilir. "Borçlu" en borçlu önce, "Yeni" bu ay kaydolanlar en yeni üye önce. Borçlu
+  sayısı yalnız yönetici ucunda (`borclu_uye`); alanı göndermeyen sunucuda "–". "Yeni" filtresi backend
+  `f2b4872` ister — eski sunucu filtreyi yok sayıp tüm üyeleri listeler (sıra yine önce backend).
 - **Ofis.** Ana Sayfa başlığına çıkış düğmesi; ofis ekranlarındaki başlık görünümü düzeltildi.
 - **Üye.** Sonraki ders kartı kort adını önekle yazıyordu ("Kort Merkez Kort"); bildirim satırı
   `RichText` yerine `Text.rich` (temanın yazı ailesi ve yazı boyutu ayarı).
