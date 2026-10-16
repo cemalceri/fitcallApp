@@ -12,9 +12,9 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 | | |
 |---|---|
-| Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi, yönetici Dashboard (bugünün özeti üstte) / Raporlar (iki ayrı dönem seçici, haftalık ısı haritası) / Üyeler (sayılı kart filtreleri). Commit'li ve push'lu; **`v3.12.0` tag'i kullanıcının "Neler yeni?" önizlemesini onaylamasını bekliyor**. Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
+| Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi, yönetici Dashboard (bugünün özeti üstte) / Raporlar (iki ayrı dönem seçici, haftalık ısı haritası) / Üyeler (sayılı kart filtreleri). **`v3.12.0` tag'lendi** (2026-10-16) → Codemagic: Play production + App Store incelemesi. Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
 | Testler | `flutter test` **3217 geçiyor** (2026-10-16; yerel 3.41.8 ve CI'daki stable 3.47 ile), `flutter analyze` temiz; backend süiti **1234 geçiyor**, 0 kırık (2026-10-16) |
-| Backend | Canlı: `61c9345` (Heroku **v322**, 2026-10-16) — yönetici üye listesi `yeni` filtresi + `borclu_uye`, raporlar `bolum`, ısı haritası `bu_hafta_tamami`, `getDersKatilimlari` yalnız dersin antrenörüne, 3.12.0 sürüm notları 3.9.0'dan (`yayinda: false` → onaydan sonra açılacak). Deploy bekleyen yok |
+| Backend | Canlı: `9336642` (Heroku **v323**, 2026-10-16) — yönetici üye listesi `yeni` filtresi + `borclu_uye`, raporlar `bolum`, ısı haritası `bu_hafta_tamami`, `getDersKatilimlari` yalnız dersin antrenörüne, 3.12.0 sürüm notları 3.9.0'dan, **yayında** (kullanıcı önizlemeyi onayladı). Deploy bekleyen yok |
 | Mağaza | **3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16; 3.11.0 App Store'da 2.3.3 ile döndü, gönderim iptal). 3.12.0'ın mağaza metni ve "Neler yeni?" notları kullanıcı isteğiyle **3.9.0 dahil** sonraki bütün sürümleri anlatıyor. **İkisi bağımsız:** mağaza metni elle yazılır, `surum_notlari.json`'dan beslenmez. Daha önce: 3.9.0 `v3.9.0` (2026-09-08), 3.8.1 |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
@@ -45,14 +45,16 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 
 ## 🔴 Açık işler
 
-### 10. 3.12.0 yayını — backend canlı (v322), tag önizleme onayını bekliyor (2026-10-16)
+### 10. 3.12.0 yayını — backend canlı (v323), `v3.12.0` tag'lendi (2026-10-16)
 - **App Store 3.11.0 (45) reddi:** Guideline 2.3.3, eski 6.7"/6.5" ekran görüntüleri. "Bug fix" muafiyeti
   istendi, Apple kabul etmedi; gönderim kullanıcı tarafından iptal edildi. Yeni görseller
   `tool/magaza_gorselleri/` ile üretildi (6.3" zorunlu grup, 6.9", 6.5", iPad 13") ve 3.11.0 sürüm sayfasına
   yüklendi. Codemagic düzenlenebilir sürümü (DEVELOPER_REJECTED dahil) bulup numarasını 3.12.0 yapıyor ve build'i
   ona bağlıyor — görseller korunur (codemagic-cli-tools `_get_editable_app_store_version`).
-- **Sıradaki:** kullanıcı "Neler yeni?" önizlemesini onaylayınca 3.12.0 `yayinda_mi` açılır (kullanıcı kararı:
-  güncelleyen otomatik görsün; popup yalnız 3.12.0 kurulu cihazda çıkar) ve `v3.12.0` tag'i → Codemagic.
+- **Yapıldı:** kullanıcı "Neler yeni?" önizlemesini onayladı; 3.12.0 `yayinda_mi` açık (güncelleyen otomatik görür,
+  popup yalnız 3.12.0 kurulu cihazda çıkar), `v3.12.0` tag'i push'landı → Codemagic.
+- **Sıradaki:** Codemagic build'ini ve App Store incelemesini izlemek; mağazada canlı görülünce
+  `mobil_uygulama_konfig` (kullanıcı admin'den yönetiyor).
 - **Açık bulgu:** `CreateIptalTalebiApiView` de `user_id`'yi istekten alıyor (değerlendirme uçlarıyla aynı
   sınıf açık); bu turda dokunulmadı.
 
