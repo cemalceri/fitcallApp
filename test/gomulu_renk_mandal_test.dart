@@ -18,8 +18,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// Taban sayılar (2026-10-13 turu). Düşürdükçe güncelleyin; artırmayın.
 /// `Colors.x` tabanı 176'dan 144'e indirildi: tema turunda kazanılan 32
 /// birim boşlukta yeni sabit renkler testi kırmadan geri sızabiliyordu.
+/// 2026-10-16: 140 — antrenör istatistik kartları ListeTonu'ya geçti.
 const int _hexTabani = 42;
-const int _adliRenkTabani = 144;
+const int _adliRenkTabani = 140;
 
 /// Temaya ait olmayan, temizlenmiş eski palet.
 const List<String> _yasakHexler = [

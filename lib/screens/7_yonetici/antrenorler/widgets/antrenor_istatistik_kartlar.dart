@@ -1,5 +1,6 @@
-// lib/screens/9_yonetici/antrenorler/widgets/antrenor_istatistik_kartlar.dart
+// lib/screens/7_yonetici/antrenorler/widgets/antrenor_istatistik_kartlar.dart
 
+import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:flutter/material.dart';
 
@@ -16,7 +17,7 @@ class AntrenorIstatistikKartlar extends StatelessWidget {
           child: _MiniStatCard(
             label: 'Toplam',
             value: data.toplamAntrenor.toString(),
-            color: Colors.blue,
+            ton: ListeTonu.bilgi,
           ),
         ),
         const SizedBox(width: 8),
@@ -24,7 +25,7 @@ class AntrenorIstatistikKartlar extends StatelessWidget {
           child: _MiniStatCard(
             label: 'Aktif',
             value: data.aktifAntrenor.toString(),
-            color: Colors.green,
+            ton: ListeTonu.basari,
           ),
         ),
         const SizedBox(width: 8),
@@ -32,7 +33,7 @@ class AntrenorIstatistikKartlar extends StatelessWidget {
           child: _MiniStatCard(
             label: 'Bugün Ders',
             value: data.bugunToplamDers.toString(),
-            color: Colors.orange,
+            ton: ListeTonu.vurgu,
           ),
         ),
         const SizedBox(width: 8),
@@ -40,8 +41,9 @@ class AntrenorIstatistikKartlar extends StatelessWidget {
           child: _MiniStatCard(
             label: 'Ort. Puan',
             value: data.ortalamaPuan?.toStringAsFixed(1) ?? '-',
-            color: Colors.amber,
-            icon: Icons.star,
+            // Antrenör satırındaki puan hücresiyle aynı ton ve yıldız.
+            ton: ListeTonu.uyari,
+            icon: Icons.star_rounded,
           ),
         ),
       ],
@@ -52,19 +54,23 @@ class AntrenorIstatistikKartlar extends StatelessWidget {
 class _MiniStatCard extends StatelessWidget {
   final String label;
   final String value;
-  final Color color;
+
+  /// Sayının tonu — sabit renk değil: eski mavi/yeşil/turuncu/amber açık
+  /// zeminde eşiğin altında kalıyordu ve takım temasını izlemiyordu.
+  final ListeTonu ton;
   final IconData? icon;
 
   const _MiniStatCard({
     required this.label,
     required this.value,
-    required this.color,
+    required this.ton,
     this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final color = ton.on(context);
 
     return Container(
       padding: const EdgeInsets.all(12),
