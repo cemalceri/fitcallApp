@@ -2,6 +2,7 @@
 // anahtarları backend'in (api/ofis/ders_yonetimi.py + ders_yonetimi_service)
 // döndürdüğüyle aynı; model ayrıştırması da böylece sınanmış olur.
 
+import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
 
@@ -114,6 +115,7 @@ OfisBekleyenIsler ornekBekleyenIsler({bool bos = false}) =>
               ],
       },
       'plan_disi_bekleyen': {'kisi': bos ? 0 : 5, 'ders': bos ? 0 : 3},
+      'ders_kayit_talebi_bekleyen': bos ? 0 : 2,
       'teyit_bekleyen': {
         'kisi': bos ? 0 : 12,
         'ders': bos ? 0 : 6,
@@ -173,3 +175,39 @@ PlanDisiSecenekler ornekSecenekler() => PlanDisiSecenekler.fromJson({
         },
       ],
     });
+
+/// Ders kayıt talebi örneği (backend talep_sozlugu biçimi). Uzun not ve uzun
+/// ad taşma testleri için bilerek seçildi.
+Map<String, dynamic> ornekTalepJson({
+  int id = 1,
+  String tarih = '2026-07-23',
+  String saat = '17:30',
+  String bitisSaat = '18:30',
+  int kortId = 2,
+  String aciklama =
+      "Kort 3 sulandı, Ali Kaya ve Ece Turan ile Kort 5'e geçtik; "
+          'kendi 17:00 grubum bugün yapılmadı.',
+}) =>
+    {
+      'id': id,
+      'kaynak': 'ANTRENOR',
+      'durum': 'BEKLIYOR',
+      'talep_eden_adi': 'Mehmet Hocaoğlu Uzunsoyadlı',
+      'antrenor_id': 1,
+      'antrenor_adi': 'Mehmet Hocaoğlu Uzunsoyadlı',
+      'antrenor_renk': '#4F7FE0',
+      'kort_id': kortId,
+      'kort_adi': 'Kapalı Kort $kortId',
+      'tarih': tarih,
+      'baslangic_tarih_saat': '${tarih}T$saat:00+03:00',
+      'bitis_tarih_saat': '${tarih}T$bitisSaat:00+03:00',
+      'saat': saat,
+      'bitis_saat': bitisSaat,
+      'aciklama': aciklama,
+      'red_nedeni': null,
+      'olusturulma_zamani': '${tarih}T16:05:00+03:00',
+      'olusan_etkinlik_id': null,
+    };
+
+DersKayitTalebi ornekTalep({int id = 1, String saat = '17:30'}) =>
+    DersKayitTalebi.fromJson(ornekTalepJson(id: id, saat: saat));

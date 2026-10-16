@@ -40,6 +40,8 @@ import 'package:fitcall/screens/3_antrenor/eksik_yoklama/antrenor_eksik_yoklama_
 
 import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
 import 'package:fitcall/screens/1_common/ayarlar/ayarlar_page.dart';
+import 'package:fitcall/screens/3_antrenor/program/antrenor_program_page.dart';
+import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/ofis_ders_kayit_talepleri_page.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 
 /// Uygulama genelinde kullanacağımız sayfaların enum değerleri
@@ -62,6 +64,7 @@ enum SayfaAdi {
   antrenorDersler,
   antrenorEksikYoklama,
   antrenorHakedis,
+  antrenorTumProgram,
   antrenorOgrenciler,
   antrenorYardim,
   yoneticiYardim,
@@ -71,6 +74,7 @@ enum SayfaAdi {
   yoneticiHakedis,
   ofisAnasayfa,
   ofisProgram,
+  ofisDersKayitTalepleri,
   ofisUyeler,
   yoneticiDuyurular,
   ofisDuyurular,
@@ -100,6 +104,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.antrenorDersler: '/antrenor_dersler',
   SayfaAdi.antrenorEksikYoklama: '/antrenor_eksik_yoklama',
   SayfaAdi.antrenorHakedis: '/antrenorHakedis',
+  SayfaAdi.antrenorTumProgram: '/antrenorTumProgram',
   SayfaAdi.antrenorOgrenciler: '/antrenor_ogrenciler',
   SayfaAdi.antrenorYardim: '/antrenor_yardim',
   SayfaAdi.yoneticiYardim: '/yonetici_yardim',
@@ -109,6 +114,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.yoneticiHakedis: '/yoneticiHakedis',
   SayfaAdi.ofisAnasayfa: '/ofisAnasayfa',
   SayfaAdi.ofisProgram: '/ofisProgram',
+  SayfaAdi.ofisDersKayitTalepleri: '/ofisDersKayitTalepleri',
   SayfaAdi.ofisUyeler: '/ofisUyeler',
   SayfaAdi.yoneticiDuyurular: '/yoneticiDuyurular',
   SayfaAdi.ofisDuyurular: '/ofisDuyurular',
@@ -139,6 +145,7 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.antrenorEksikYoklama]!: (c) =>
       const AntrenorEksikYoklamaPage(),
   routeEnums[SayfaAdi.antrenorHakedis]!: (c) => const AntrenorHakedisPage(),
+  routeEnums[SayfaAdi.antrenorTumProgram]!: (c) => const AntrenorProgramPage(),
   routeEnums[SayfaAdi.antrenorOgrenciler]!: (c) => AntrenorOgrencilerPage(),
   routeEnums[SayfaAdi.antrenorYardim]!: (c) => const AntrenorYardimPage(),
   routeEnums[SayfaAdi.yoneticiYardim]!: (c) =>
@@ -150,6 +157,8 @@ final Map<String, WidgetBuilder> routes = {
       const HakedisAntrenorSecimPage(),
   routeEnums[SayfaAdi.ofisAnasayfa]!: (c) => const OfisMainPage(),
   routeEnums[SayfaAdi.ofisProgram]!: (c) => const OfisProgramPage(),
+  routeEnums[SayfaAdi.ofisDersKayitTalepleri]!: (c) =>
+      const OfisDersKayitTalepleriPage(),
   routeEnums[SayfaAdi.ofisUyeler]!: (c) => const OfisUyelerPage(),
   // Aynı ekran; kabuklar yalnız üye satırının açtığı detay sayfasında ayrılır.
   routeEnums[SayfaAdi.yoneticiDuyurular]!: (c) => DuyuruYonetimPage(
@@ -202,6 +211,8 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.ofisProgram]!: AccessRule.anyone,
   routeEnums[SayfaAdi.ofisUyeler]!: AccessRule.anyone,
   routeEnums[SayfaAdi.antrenorHakedis]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.antrenorTumProgram]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.ofisDersKayitTalepleri]!: AccessRule.anyone,
 };
 
 /* ------------------ 4) onGenerateRoute ------------------ */

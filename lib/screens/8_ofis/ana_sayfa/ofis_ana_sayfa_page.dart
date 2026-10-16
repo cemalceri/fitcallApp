@@ -5,6 +5,7 @@
 // OfisAnaSayfaGorunumu'nda; burada API ve gezinme var. Bir işten dönülünce
 // sayılar tazelenir.
 
+import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/ofis_ders_kayit_talepleri_page.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
@@ -127,6 +128,7 @@ class OfisAnaSayfaPageState extends State<OfisAnaSayfaPage> {
         )),
         onBugununDersleri: widget.onDerslerSekmesi ??
             () => _ac(OfisDerslerPage(baslangicTarihi: bugunKulup())),
+        onDersKayitTalepleri: () => _ac(const OfisDersKayitTalepleriPage()),
       ),
     );
   }

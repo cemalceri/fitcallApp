@@ -70,6 +70,10 @@ class BildirimGorselYardimci {
         return Icons.swap_horiz_rounded;
       case NotificationType.ofisPlanDisiKatilim:
         return Icons.person_add_alt_1_rounded;
+      case NotificationType.ofisDersKayitTalebi:
+      case NotificationType.dersKayitTalebiOnaylandi:
+      case NotificationType.dersKayitTalebiReddedildi:
+        return Icons.edit_calendar_rounded;
       default:
         return Icons.notifications_rounded;
     }
@@ -83,10 +87,12 @@ class BildirimGorselYardimci {
       case NotificationType.paketSatinAlma:
       case NotificationType.odemeAlindi:
       case NotificationType.antrenorDevirKabul:
+      case NotificationType.dersKayitTalebiOnaylandi:
         return context.bildirimRenk.basariYesil;
       case NotificationType.dersIptal:
       case NotificationType.gecikenOdeme:
       case NotificationType.antrenorDevirRed:
+      case NotificationType.dersKayitTalebiReddedildi:
         return context.bildirimRenk.hataKirmizi;
       case NotificationType.paketBitiyor:
       case NotificationType.paketSuresiDoluyor:
@@ -96,6 +102,7 @@ class BildirimGorselYardimci {
       // Plan dışı kayıtlar antrenör ve yönetici ekranlarında da turuncu
       // "Plan Dışı" etiketiyle gösteriliyor; bildirim aynı dili konuşsun.
       case NotificationType.ofisPlanDisiKatilim:
+      case NotificationType.ofisDersKayitTalebi:
         return context.bildirimRenk.uyariTuruncu;
       case NotificationType.paketHakGuncelleme:
       case NotificationType.uyelikTanimlandi:

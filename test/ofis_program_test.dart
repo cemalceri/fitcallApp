@@ -7,9 +7,9 @@
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
-import 'package:fitcall/screens/8_ofis/program/widgets/program_gorunumu.dart';
-import 'package:fitcall/screens/8_ofis/program/widgets/program_gun_seridi.dart';
-import 'package:fitcall/screens/8_ofis/program/widgets/program_izgara.dart';
+import 'package:fitcall/screens/1_common/program/program_gorunumu.dart';
+import 'package:fitcall/screens/1_common/program/program_gun_seridi.dart';
+import 'package:fitcall/screens/1_common/program/program_izgara.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';

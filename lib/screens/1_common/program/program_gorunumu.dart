@@ -1,4 +1,4 @@
-// lib/screens/8_ofis/program/widgets/program_gorunumu.dart
+// lib/screens/1_common/program/program_gorunumu.dart
 //
 // Program sayfasının GÖRSEL gövdesi — durumsuz ve veriyle beslenen tek parça.
 //
@@ -7,6 +7,10 @@
 // çağırdığı için widget testinde render edilemiyordu; bu yüzden başlık ve gün
 // şeridi hiçbir testin kapsamına girmemiş ve gün şeridindeki 1 piksellik taşma
 // ancak cihazda ortaya çıkmıştı. Bu widget testte doğrudan render edilebilir.
+//
+// Ofis (aksiyonlu) ve antrenörün tüm programı (salt-okunur) ortak kullanır.
+// Rol kontrolü YOK: salt-okunurluk `onBosSlotTap` verilmemesiyle, vurgu
+// `vurgulaAntrenorId` ile, bekleyen talepler programın verisiyle gelir.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/common/tema.dart';
@@ -38,6 +42,17 @@ class ProgramGorunumu extends StatelessWidget {
   /// başlığında.
   final VoidCallback? onMenuTap;
 
+  /// Sayfa ayrı rota olarak açıldığında geri oku (menü yerine).
+  final VoidCallback? onGeri;
+
+  final String baslik;
+
+  /// Bekleyen ders kayıt talebine dokunulduğunda.
+  final ValueChanged<DersKayitTalebi>? onTalepTap;
+
+  /// Bu antrenörün dersleri vurgulanır (antrenörün tüm programı).
+  final int? vurgulaAntrenorId;
+
   const ProgramGorunumu({
     super.key,
     required this.program,
@@ -50,6 +65,10 @@ class ProgramGorunumu extends StatelessWidget {
     this.onBugun,
     this.onBosSlotTap,
     this.onMenuTap,
+    this.onGeri,
+    this.baslik = 'Ders Programı',
+    this.onTalepTap,
+    this.vurgulaAntrenorId,
   });
 
   String _gunAnahtari(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
@@ -69,6 +88,8 @@ class ProgramGorunumu extends StatelessWidget {
           onSonraki: onSonrakiHafta,
           onBugun: onBugun,
           onMenu: onMenuTap,
+          onGeri: onGeri,
+          baslik: baslik,
         ),
         ProgramGunSeridi(
           gunler: program.gunler,
@@ -86,6 +107,9 @@ class ProgramGorunumu extends StatelessWidget {
                 secilenGun: gunBasi,
                 onDersTap: onDersTap,
                 onBosSlotTap: onBosSlotTap,
+                talepler: program.gununTalepleri(gunBasi),
+                onTalepTap: onTalepTap,
+                vurgulaAntrenorId: vurgulaAntrenorId,
               ),
               if (islemDevamEdiyor)
                 const Positioned(
@@ -114,6 +138,12 @@ class ProgramBaslik extends StatelessWidget {
   /// Kabuk menüsü. null ise ikon hiç çizilmez (sayfa tek başına açıldığında).
   final VoidCallback? onMenu;
 
+  /// Ayrı rota olarak açılan sayfada geri oku. [onMenu] ile birlikte
+  /// verilmez; ikisi de null ise sol uçta ikon yoktur.
+  final VoidCallback? onGeri;
+
+  final String baslik;
+
   const ProgramBaslik({
     super.key,
     required this.haftaBaslangic,
@@ -122,6 +152,8 @@ class ProgramBaslik extends StatelessWidget {
     this.onSonraki,
     this.onBugun,
     this.onMenu,
+    this.onGeri,
+    this.baslik = 'Ders Programı',
   });
 
   /// Takım renginde başlık bandı: durum çubuğunun arkasına uzanır, yazı ve
@@ -135,7 +167,14 @@ class ProgramBaslik extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(4, 4, 4, 6),
       child: Row(
         children: [
-          if (onMenu != null)
+          if (onGeri != null)
+            IconButton(
+              onPressed: onGeri,
+              icon: const Icon(Icons.arrow_back_rounded),
+              tooltip: 'Geri',
+              visualDensity: VisualDensity.compact,
+            )
+          else if (onMenu != null)
             IconButton(
               onPressed: onMenu,
               icon: const Icon(Icons.menu_rounded),
@@ -153,7 +192,7 @@ class ProgramBaslik extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Ders Programı',
+                  baslik,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

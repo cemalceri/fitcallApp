@@ -31,6 +31,7 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
   final VoidCallback onPlanDisi;
   final VoidCallback onTeyit;
   final VoidCallback onBugununDersleri;
+  final VoidCallback onDersKayitTalepleri;
 
   /// Bildirim zili (testte ağ/servis gerektirmeyen yer tutucu verilebilir).
   final Widget zil;
@@ -49,6 +50,7 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
     required this.onPlanDisi,
     required this.onTeyit,
     required this.onBugununDersleri,
+    required this.onDersKayitTalepleri,
     this.zil = const NotificationsBell(),
   });
 
@@ -169,8 +171,8 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
           child: BosDurum(
             ikon: Icons.task_alt_rounded,
             baslik: 'Bekleyen iş yok',
-            aciklama: 'Ders onayları, plan dışı kararlar ve katılım '
-                'bildirimleri güncel.',
+            aciklama: 'Ders onayları, kayıt talepleri, plan dışı kararlar '
+                've katılım bildirimleri güncel.',
             ikonRengi: context.renkler.basari,
           ),
         )
@@ -186,6 +188,18 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
           sayi: v.onayBekleyen,
           birim: 'ders',
           onTap: onOnay,
+        ),
+        const ListeAyraci(),
+        _IsSatiri(
+          ikon: Icons.edit_calendar_rounded,
+          ton: v.dersKayitTalebi > 0 ? ListeTonu.uyari : ListeTonu.notr,
+          baslik: 'Ders kayıt talepleri',
+          alt: v.dersKayitTalebi == 0
+              ? 'Bekleyen talep yok'
+              : 'Antrenörün programa eklenmesini istediği dersler',
+          sayi: v.dersKayitTalebi,
+          birim: 'talep',
+          onTap: onDersKayitTalepleri,
         ),
         const ListeAyraci(),
         _IsSatiri(

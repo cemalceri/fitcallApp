@@ -7,6 +7,7 @@
 // uyarmak için.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/program/talep_notu_kutusu.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -25,11 +26,23 @@ class EtkinlikFormSheet extends StatefulWidget {
   final int? onSecilenKortId;
   final DateTime? onSecilenBaslangic;
 
+  /// Ders kayıt talebinden açıldığında talepten gelen bitiş ve antrenör.
+  final DateTime? onSecilenBitis;
+  final int? onSecilenAntrenorId;
+
+  /// Ders kayıt talebinden açıldıysa: istek [talep] id'sini taşır, formun
+  /// başında talep edenin notu görünür. Kurallar haftalık programla aynı;
+  /// ürün, üyeler ve top rengini ofis seçer.
+  final DersKayitTalebi? talep;
+
   const EtkinlikFormSheet({
     super.key,
     required this.veriler,
     this.onSecilenKortId,
     this.onSecilenBaslangic,
+    this.onSecilenBitis,
+    this.onSecilenAntrenorId,
+    this.talep,
   });
 
   static Future<EtkinlikKaydetIstegi?> ac(
@@ -37,6 +50,9 @@ class EtkinlikFormSheet extends StatefulWidget {
     required EtkinlikFormVerileri veriler,
     int? onSecilenKortId,
     DateTime? onSecilenBaslangic,
+    DateTime? onSecilenBitis,
+    int? onSecilenAntrenorId,
+    DersKayitTalebi? talep,
   }) {
     return showModalBottomSheet<EtkinlikKaydetIstegi>(
       context: context,
@@ -46,7 +62,27 @@ class EtkinlikFormSheet extends StatefulWidget {
         veriler: veriler,
         onSecilenKortId: onSecilenKortId,
         onSecilenBaslangic: onSecilenBaslangic,
+        onSecilenBitis: onSecilenBitis,
+        onSecilenAntrenorId: onSecilenAntrenorId,
+        talep: talep,
       ),
+    );
+  }
+
+  /// Talepten dolu form: kort, başlangıç, bitiş ve antrenör talepten gelir.
+  static Future<EtkinlikKaydetIstegi?> talepIcinAc(
+    BuildContext context, {
+    required EtkinlikFormVerileri veriler,
+    required DersKayitTalebi talep,
+  }) {
+    return ac(
+      context,
+      veriler: veriler,
+      onSecilenKortId: talep.kortId,
+      onSecilenBaslangic: talep.baslangic,
+      onSecilenBitis: talep.bitis,
+      onSecilenAntrenorId: talep.antrenorId,
+      talep: talep,
     );
   }
 
@@ -89,12 +125,27 @@ class _EtkinlikFormSheetState extends State<EtkinlikFormSheet> {
       _ucretCtrl.text = mevcut.ucret;
       _aciklamaCtrl.text = mevcut.aciklama;
     } else {
-      _kortId = widget.onSecilenKortId ??
-          (widget.veriler.kortlar.isNotEmpty
-              ? widget.veriler.kortlar.first.id
-              : null);
+      // Talepten gelen kort seçenek listesinde yoksa (ör. kort pasife
+      // alındı) ilk kort seçilir; olmayan değerle açılır liste çöker.
+      final onKort = widget.onSecilenKortId;
+      _kortId =
+          onKort != null && widget.veriler.kortlar.any((k) => k.id == onKort)
+              ? onKort
+              : (widget.veriler.kortlar.isNotEmpty
+                  ? widget.veriler.kortlar.first.id
+                  : null);
       _baslangic = _varsayilanBaslangic();
-      _bitis = _baslangic.add(const Duration(hours: 1));
+      final onBitis = widget.onSecilenBitis;
+      _bitis = onBitis != null && onBitis.isAfter(_baslangic)
+          ? onBitis
+          : _baslangic.add(const Duration(hours: 1));
+      // Talep eden antrenör seçenek listesinde varsa seçili gelir (pasif ya
+      // da listede olmayan antrenör sessizce atanmaz).
+      final antrenorId = widget.onSecilenAntrenorId;
+      if (antrenorId != null &&
+          widget.veriler.antrenorler.any((a) => a.id == antrenorId)) {
+        _antrenorId = antrenorId;
+      }
       _seviye = widget.veriler.seviyeler.isNotEmpty
           ? widget.veriler.seviyeler.first.kod
           : null;
@@ -220,6 +271,7 @@ class _EtkinlikFormSheetState extends State<EtkinlikFormSheet> {
         ucret: _ucretCtrl.text.trim().isEmpty ? '0' : _ucretCtrl.text.trim(),
         aciklama: _aciklamaCtrl.text.trim(),
         uyeIdler: _uyeIdler,
+        talepId: widget.talep?.id,
       ),
     );
   }
@@ -258,13 +310,21 @@ class _EtkinlikFormSheetState extends State<EtkinlikFormSheet> {
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                   children: [
                     Text(
-                      _duzenleme ? 'Dersi düzenle' : 'Yeni ders',
+                      _duzenleme
+                          ? 'Dersi düzenle'
+                          : widget.talep != null
+                              ? 'Talepten ders kaydı'
+                              : 'Yeni ders',
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
                         color: renk.onSurface,
                       ),
                     ),
+                    if (widget.talep != null) ...[
+                      const SizedBox(height: 8),
+                      TalepNotuKutusu(talep: widget.talep!),
+                    ],
                     if (widget.veriler.etkinlik?.sabitPlanMi == true) ...[
                       const SizedBox(height: 8),
                       _bilgiKutusu(

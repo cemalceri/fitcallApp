@@ -70,7 +70,14 @@ class NotificationRouter {
       return;
     }
 
-    // 4) Default: bildirim detay sheet
+    // 4) Ofise ders kayıt talebi: talep listesini aç (kayıt / ret oradan)
+    if (_isOfisDersKayitTalebi(notification)) {
+      nav.pushNamed(routeEnums[SayfaAdi.ofisDersKayitTalepleri]!);
+      NotificationFCMService.instance.notifyDismissed();
+      return;
+    }
+
+    // 5) Default: bildirim detay sheet
     await BildirimDetaySheetWidget.goster(
         context: ctx, notification: notification);
     NotificationFCMService.instance.notifyDismissed();
@@ -105,6 +112,12 @@ class NotificationRouter {
   bool _isYoklamaHatirlatma(NotificationModel n) {
     return n.notificationType == NotificationType.yoklamaHatirlatma ||
         n.actionScreen == 'antrenor_yoklama';
+  }
+
+  /// Ofise gelen ders kayıt talebi mi?
+  bool _isOfisDersKayitTalebi(NotificationModel n) {
+    return n.notificationType == NotificationType.ofisDersKayitTalebi ||
+        n.actionScreen == 'ders_kayit_talepleri';
   }
 
   int? _talepIdOf(NotificationModel n) {

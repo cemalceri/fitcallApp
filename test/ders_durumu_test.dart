@@ -10,7 +10,7 @@ import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_liste_item.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
-import 'package:fitcall/screens/8_ofis/program/widgets/program_constants.dart';
+import 'package:fitcall/screens/1_common/program/program_constants.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Map<String, dynamic> _dersJson(String durum, String? onayDurumu) => {

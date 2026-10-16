@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi, yönetici Dashboard (bugünün özeti üstte) / Raporlar (iki ayrı dönem seçici, haftalık ısı haritası) / Üyeler (sayılı kart filtreleri). **`v3.12.0` tag'lendi** (2026-10-16) → Codemagic: Play production + App Store incelemesi. Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
-| Testler | `flutter test` **3217 geçiyor** (2026-10-16; yerel 3.41.8 ve CI'daki stable 3.47 ile), `flutter analyze` temiz; backend süiti **1234 geçiyor**, 0 kırık (2026-10-16) |
+| Testler | `flutter test` **3375 geçiyor** (2026-10-17, yerel 3.41.8), `flutter analyze` temiz; backend `ders-kayit-talebi` dalında **1304 geçiyor** — tek kırık `test_mobil_auditlog_aktor` başka oturumun `b15ca39` commit'inden, o dalda da kırık (2026-10-17) |
 | Backend | Canlı: `9336642` (Heroku **v323**, 2026-10-16) — yönetici üye listesi `yeni` filtresi + `borclu_uye`, raporlar `bolum`, ısı haritası `bu_hafta_tamami`, `getDersKatilimlari` yalnız dersin antrenörüne, 3.12.0 sürüm notları 3.9.0'dan, **yayında** (kullanıcı önizlemeyi onayladı). Deploy bekleyen yok |
 | Mağaza | **3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16; 3.11.0 App Store'da 2.3.3 ile döndü, gönderim iptal). 3.12.0'ın mağaza metni ve "Neler yeni?" notları kullanıcı isteğiyle **3.9.0 dahil** sonraki bütün sürümleri anlatıyor. **İkisi bağımsız:** mağaza metni elle yazılır, `surum_notlari.json`'dan beslenmez. Daha önce: 3.9.0 `v3.9.0` (2026-09-08), 3.8.1 |
 
@@ -44,6 +44,21 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 ---
 
 ## 🔴 Açık işler
+
+### 11. Ders kayıt talebi + antrenörün tüm programı — kodlandı, push'landı, deploy/sürüm bekliyor (2026-10-17)
+- **Antrenör:** Takvim başlığındaki ikon → salt-okunur **Tüm Program** (`3_antrenor/program/`): ofisin
+  ızgarasının aynısı (ortak `1_common/program/`), kendi dersleri vurgulu, derse dokununca yalnız bilgi.
+  Tek eylem **"+ Ders kayıt talebi"**: tarih, kort, başlangıç, bitiş, açıklama (hepsi zorunlu, dolu açılır).
+  Bekleyen talep ızgarada kesik çizgili blok; dokununca "Geri çek". Sonuç bildirimle gelir.
+- **Ofis:** Ana Sayfa'da "Ders kayıt talepleri (n)" → liste (`8_ofis/ders_kayit_talepleri/`): not, "Programda
+  göster", Reddet (gerekçe zorunlu), "Kayıt oluştur" → haftalık programın formu talepten dolu açılır, kayıt
+  `yoneticiEtkinlikKaydet`'e `talep_id` ile gider (kurallar haftalık programla aynı, talep aynı işlemde kapanır).
+  Ofis programında da talepler kesik çizgili blok; dokununca aynı iki işlem. Web: `/etkinlik/ders-kayit-talepleri`.
+- **Kullanıcı kararları (2026-10-16):** antrenör diğer derslerde katılımcıların **tam adını** görür (misafir adı,
+  iptal nedeni, onay/hakediş durumu gizli — `api/ders_kayit_talebi/metots.py` beyaz listesi); yeni talepte
+  **ofise push** gider. Model (`DersKayitTalebiModel`) üye talebine hazır; üye ekranı ileride.
+- **Sıradaki:** backend deploy (migration `0096`) → sonra mobil sürüm. Web sayfası, sayfa yetkisi kısıtlı
+  kullanıcılarda admin'deki SayfaYetki'ye `calendarapp:ders_kayit_talepleri` eklenince görünür.
 
 ### 10. 3.12.0 yayını — backend canlı (v323), `v3.12.0` tag'lendi (2026-10-16)
 - **App Store 3.11.0 (45) reddi:** Guideline 2.3.3, eski 6.7"/6.5" ekran görüntüleri. "Bug fix" muafiyeti

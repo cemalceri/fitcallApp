@@ -1,4 +1,4 @@
-// lib/screens/8_ofis/program/widgets/program_izgara.dart
+// lib/screens/1_common/program/program_izgara.dart
 //
 // Günün kort × saat ızgarası.
 //
@@ -6,6 +6,10 @@
 // Kort başlıkları gövdeyle aynı yatay ofseti paylaşır (iki ScrollController
 // birbirine bağlı), böylece dikey kaydırmada başlıklar yerinde kalır.
 // Dış Column'un yüksekliği sınırlı olduğundan gövde Expanded içinde; taşma yok.
+//
+// Ofis ve antrenör ortak kullanır. Izgara rolü bilmez: salt-okunurluk
+// yapısaldır (`onBosSlotTap` null verilince boş alan dokunma katmanı hiç
+// kurulmaz), vurgu ve talepler de veriyle gelir.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/common/tema.dart';
@@ -13,18 +17,37 @@ import 'package:flutter/material.dart';
 
 import 'program_constants.dart';
 import 'program_ders_blok.dart';
+import 'program_talep_blok.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
-/// Aynı kortta çakışan dersleri yan yana yerleştirmek için hesaplanan konum.
+/// Izgarada yer kaplayan öğe: ders ya da bekleyen ders kayıt talebi. Talep
+/// de çakışma yerleşimine girer, böylece derslerin üstüne binmez.
+class _Oge {
+  final ProgramDersi? ders;
+  final DersKayitTalebi? talep;
+
+  const _Oge.ders(ProgramDersi d)
+      : ders = d,
+        talep = null;
+  const _Oge.talep(DersKayitTalebi t)
+      : ders = null,
+        talep = t;
+
+  DateTime get baslangic => ders?.baslangic ?? talep!.baslangic;
+  DateTime get bitis => ders?.bitis ?? talep!.bitis;
+  int get sureDakika => ders?.sureDakika ?? talep!.sureDakika;
+}
+
+/// Aynı kortta çakışan öğeleri yan yana yerleştirmek için hesaplanan konum.
 class _Yerlesim {
-  final ProgramDersi ders;
+  final _Oge oge;
   final double ust;
   final double yukseklik;
   final int kolon;
   final int kolonSayisi;
 
   _Yerlesim({
-    required this.ders,
+    required this.oge,
     required this.ust,
     required this.yukseklik,
     required this.kolon,
@@ -41,6 +64,14 @@ class ProgramIzgara extends StatefulWidget {
   /// Boş bir zaman aralığına dokunulduğunda (kort, başlangıç) verir.
   final void Function(SecenekKort kort, DateTime baslangic)? onBosSlotTap;
 
+  /// Günün bekleyen ders kayıt talepleri (kesik çizgili blok).
+  final List<DersKayitTalebi> talepler;
+  final ValueChanged<DersKayitTalebi>? onTalepTap;
+
+  /// Bu antrenörün dersleri öne çıkar (antrenörün tüm programı). Rol
+  /// kontrolü değil, veri: hangi derslerin "senin" olduğunu sayfa söyler.
+  final int? vurgulaAntrenorId;
+
   const ProgramIzgara({
     super.key,
     required this.kortlar,
@@ -48,6 +79,9 @@ class ProgramIzgara extends StatefulWidget {
     required this.secilenGun,
     required this.onDersTap,
     this.onBosSlotTap,
+    this.talepler = const [],
+    this.onTalepTap,
+    this.vurgulaAntrenorId,
   });
 
   @override
@@ -87,7 +121,7 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
   (int, int) get _saatAraligi {
     var bas = ProgramOlculeri.varsayilanBaslangicSaati;
     var bit = ProgramOlculeri.varsayilanBitisSaati;
-    for (final d in widget.dersler) {
+    for (final d in _ogeler) {
       if (d.baslangic.hour < bas) bas = d.baslangic.hour;
       final bitisSaati = d.bitis.minute > 0 ? d.bitis.hour + 1 : d.bitis.hour;
       if (bitisSaati > bit) bit = bitisSaati;
@@ -96,16 +130,22 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
     return (bas, bit.clamp(bas + 1, 24));
   }
 
-  /// Bir kortun derslerini çakışma gruplarına ayırıp kolon indeksi atar.
-  List<_Yerlesim> _kortYerlesimi(
-      List<ProgramDersi> kortDersleri, int baslangicSaati) {
-    if (kortDersleri.isEmpty) return const [];
+  List<_Oge> get _ogeler => [
+        ...widget.dersler.map(_Oge.ders),
+        ...widget.talepler.map(_Oge.talep),
+      ];
 
-    final sirali = [...kortDersleri]
+  int? _kortIdsi(_Oge o) => o.ders?.kortId ?? o.talep!.kortId;
+
+  /// Bir kortun öğelerini çakışma gruplarına ayırıp kolon indeksi atar.
+  List<_Yerlesim> _kortYerlesimi(List<_Oge> kortOgeleri, int baslangicSaati) {
+    if (kortOgeleri.isEmpty) return const [];
+
+    final sirali = [...kortOgeleri]
       ..sort((a, b) => a.baslangic.compareTo(b.baslangic));
 
     final sonuc = <_Yerlesim>[];
-    var grup = <ProgramDersi>[];
+    var grup = <_Oge>[];
     DateTime? grupBitis;
 
     void grubuYerlestir() {
@@ -131,14 +171,14 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
       for (var i = 0; i < grup.length; i++) {
         final d = grup[i];
         sonuc.add(_Yerlesim(
-          ders: d,
+          oge: d,
           ust: ProgramZaman.zamandanPiksel(d.baslangic, baslangicSaati),
           yukseklik: ProgramZaman.sureyeGoreYukseklik(d.sureDakika),
           kolon: atamalar[i],
           kolonSayisi: kolonSonlari.length,
         ));
       }
-      grup = <ProgramDersi>[];
+      grup = <_Oge>[];
       grupBitis = null;
     }
 
@@ -373,13 +413,15 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
 
     for (var ki = 0; ki < widget.kortlar.length; ki++) {
       final kort = widget.kortlar[ki];
-      final kortDersleri =
-          widget.dersler.where((d) => d.kortId == kort.id).toList();
-      final yerlesimler = _kortYerlesimi(kortDersleri, basSaat);
+      final kortOgeleri =
+          _ogeler.where((o) => _kortIdsi(o) == kort.id).toList();
+      final yerlesimler = _kortYerlesimi(kortOgeleri, basSaat);
 
       for (final y in yerlesimler) {
         final kolonGenislik =
             ProgramOlculeri.kortKolonGenisligi / y.kolonSayisi;
+        final ders = y.oge.ders;
+        final talep = y.oge.talep;
         bloklar.add(Positioned(
           left: ki * ProgramOlculeri.kortKolonGenisligi +
               y.kolon * kolonGenislik +
@@ -387,11 +429,21 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
           top: y.ust,
           width: kolonGenislik - ProgramOlculeri.blokYatayBosluk * 2,
           height: y.yukseklik,
-          child: ProgramDersBlok(
-            ders: y.ders,
-            yukseklik: y.yukseklik,
-            onTap: () => widget.onDersTap(y.ders),
-          ),
+          child: ders != null
+              ? ProgramDersBlok(
+                  ders: ders,
+                  yukseklik: y.yukseklik,
+                  vurgulu: widget.vurgulaAntrenorId != null &&
+                      ders.antrenorId == widget.vurgulaAntrenorId,
+                  onTap: () => widget.onDersTap(ders),
+                )
+              : ProgramTalepBlok(
+                  talep: talep!,
+                  yukseklik: y.yukseklik,
+                  onTap: widget.onTalepTap == null
+                      ? null
+                      : () => widget.onTalepTap!(talep),
+                ),
         ));
       }
     }

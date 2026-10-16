@@ -50,6 +50,9 @@ class OfisBekleyenIsler {
   /// Cevap bekleyen katılımcıların günlere dağılımı (bugün, yarın).
   final List<(DateTime, int)> teyitGunleri;
 
+  /// Antrenörün açtığı, karar bekleyen ders kayıt talepleri.
+  final int dersKayitTalebi;
+
   const OfisBekleyenIsler({
     required this.bugunDers,
     required this.bugunIptal,
@@ -63,19 +66,24 @@ class OfisBekleyenIsler {
     required this.teyitKisi,
     required this.teyitDers,
     this.teyitGunleri = const [],
+    this.dersKayitTalebi = 0,
   });
 
   /// Katılım cevabı beklenen ilk gün (yoksa bugün).
-  DateTime get ilkTeyitGunu => teyitGunleri.isEmpty
-      ? bugunKulup()
-      : teyitGunleri.first.$1;
+  DateTime get ilkTeyitGunu =>
+      teyitGunleri.isEmpty ? bugunKulup() : teyitGunleri.first.$1;
 
-  bool get isYok => onayBekleyen == 0 && planDisiKisi == 0 && teyitKisi == 0;
+  bool get isYok =>
+      onayBekleyen == 0 &&
+      planDisiKisi == 0 &&
+      teyitKisi == 0 &&
+      dersKayitTalebi == 0;
 
   factory OfisBekleyenIsler.fromJson(Map<String, dynamic> j) {
     final bugun = Map<String, dynamic>.from(j['bugun'] as Map? ?? {});
     final onay = Map<String, dynamic>.from(j['onay_bekleyen'] as Map? ?? {});
-    final plan = Map<String, dynamic>.from(j['plan_disi_bekleyen'] as Map? ?? {});
+    final plan =
+        Map<String, dynamic>.from(j['plan_disi_bekleyen'] as Map? ?? {});
     final teyit = Map<String, dynamic>.from(j['teyit_bekleyen'] as Map? ?? {});
     return OfisBekleyenIsler(
       bugunDers: _int(bugun['ders']),
@@ -93,8 +101,10 @@ class OfisBekleyenIsler {
       teyitDers: _int(teyit['ders']),
       teyitGunleri: (teyit['gunler'] as List? ?? [])
           .map((e) => Map<String, dynamic>.from(e as Map))
-          .map((m) => (parseApiGun(m['tarih']) ?? bugunKulup(), _int(m['kisi'])))
+          .map(
+              (m) => (parseApiGun(m['tarih']) ?? bugunKulup(), _int(m['kisi'])))
           .toList(),
+      dersKayitTalebi: _int(j['ders_kayit_talebi_bekleyen']),
     );
   }
 }

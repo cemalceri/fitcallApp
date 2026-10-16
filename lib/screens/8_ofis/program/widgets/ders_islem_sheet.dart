@@ -8,7 +8,7 @@ import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'program_constants.dart';
+import 'package:fitcall/screens/1_common/program/program_constants.dart';
 
 enum DersIslemi { duzenle, iptalEt, iptalGeriAl, sil }
 

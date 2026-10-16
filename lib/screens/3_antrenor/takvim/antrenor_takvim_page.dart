@@ -1,5 +1,6 @@
 // lib/screens/3_antrenor/takvim/antrenor_takvim_page.dart
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
@@ -328,6 +329,16 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
       appBar: AppBar(
         title: const Text('Antrenör Takvimi'),
         actions: [
+          // Tüm antrenörlerin salt-okunur programı; seçili gün taşınır.
+          IconButton(
+            tooltip: 'Tüm program',
+            onPressed: () => Navigator.pushNamed(
+              context,
+              routeEnums[SayfaAdi.antrenorTumProgram]!,
+              arguments: {'tarih': formatApiGun(_selectedDay)},
+            ),
+            icon: const Icon(Icons.view_week_rounded),
+          ),
           IconButton(
             tooltip: _ajandaGorunumu ? 'Izgara görünümü' : 'Ajanda görünümü',
             onPressed: _gorunumDegistir,

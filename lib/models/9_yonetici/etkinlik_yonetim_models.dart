@@ -9,6 +9,9 @@
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:flutter/material.dart';
 
+/// Sunucu antrenör rengi göndermediğinde kullanılan nötr gri (veri rengi).
+const _varsayilanAntrenorRengi = Color(0xFF8C8C8C);
+
 Color _renk(String? hex, Color varsayilan) {
   if (hex == null || hex.isEmpty) return varsayilan;
   final temiz = hex.replaceAll('#', '').trim();
@@ -68,7 +71,7 @@ class SecenekAntrenor {
   factory SecenekAntrenor.fromJson(Map<String, dynamic> j) => SecenekAntrenor(
         id: _int(j['id']),
         adSoyad: j['ad_soyad']?.toString() ?? '',
-        renk: _renk(j['renk']?.toString(), const Color(0xFF8C8C8C)),
+        renk: _renk(j['renk']?.toString(), _varsayilanAntrenorRengi),
         pasif: j['pasif'] == true,
       );
 }
@@ -247,7 +250,7 @@ class ProgramDersi {
       antrenorId: j['antrenor_id'] == null ? null : _int(j['antrenor_id']),
       antrenorAdi: j['antrenor_adi']?.toString() ?? '',
       antrenorRenk:
-          _renk(j['antrenor_renk']?.toString(), const Color(0xFF8C8C8C)),
+          _renk(j['antrenor_renk']?.toString(), _varsayilanAntrenorRengi),
       urunId: j['urun_id'] == null ? null : _int(j['urun_id']),
       urunAdi: j['urun_adi']?.toString() ?? '',
       seviye: j['seviye']?.toString() ?? '',
@@ -319,6 +322,13 @@ class HaftalikProgram {
   final List<SecenekKort> kortlar;
   final List<ProgramDersi> dersler;
 
+  /// Karar bekleyen ders kayıt talepleri (ızgarada kesik çizgili blok).
+  /// Ofis ucu hepsini, antrenör ucu yalnız antrenörün kendi taleplerini verir.
+  final List<DersKayitTalebi> talepler;
+
+  /// Antrenörün tüm program ucunda dolu: kendi dersleri vurgulanır.
+  final int? benimAntrenorId;
+
   HaftalikProgram({
     required this.haftaBaslangic,
     required this.haftaBitis,
@@ -326,6 +336,8 @@ class HaftalikProgram {
     required this.gunler,
     required this.kortlar,
     required this.dersler,
+    this.talepler = const [],
+    this.benimAntrenorId,
   });
 
   factory HaftalikProgram.fromJson(Map<String, dynamic> j) => HaftalikProgram(
@@ -344,6 +356,13 @@ class HaftalikProgram {
             .map((e) =>
                 ProgramDersi.fromJson((e as Map).cast<String, dynamic>()))
             .toList(),
+        talepler: (j['talepler'] as List? ?? const [])
+            .map((e) =>
+                DersKayitTalebi.fromJson((e as Map).cast<String, dynamic>()))
+            .toList(),
+        benimAntrenorId: j['benim_antrenor_id'] == null
+            ? null
+            : _int(j['benim_antrenor_id']),
       );
 
   /// Verilen günün dersleri (iptaller dahil).
@@ -352,6 +371,85 @@ class HaftalikProgram {
     return dersler.where((d) => d.tarih == anahtar).toList()
       ..sort((a, b) => a.baslangic.compareTo(b.baslangic));
   }
+
+  /// Verilen günün bekleyen talepleri.
+  List<DersKayitTalebi> gununTalepleri(DateTime gun) {
+    final anahtar = formatApiGun(gun);
+    return talepler.where((t) => t.tarih == anahtar).toList()
+      ..sort((a, b) => a.baslangic.compareTo(b.baslangic));
+  }
+}
+
+/* =========================== DERS KAYIT TALEBİ =========================== */
+
+/// Programda olmayan bir ders için kayıt talebi. Bugün antrenör açıyor;
+/// model üye talebine de hazır ([kaynak] = 'UYE').
+/// Backend: calendarapp/services/ders_kayit_talebi_service.py `talep_sozlugu`.
+class DersKayitTalebi {
+  final int id;
+  final String kaynak; // ANTRENOR | UYE
+  final String durum; // BEKLIYOR | KAYDEDILDI | REDDEDILDI | GERI_CEKILDI
+  final String talepEdenAdi;
+  final int? antrenorId;
+  final String antrenorAdi;
+  final Color antrenorRenk;
+  final int? kortId;
+  final String kortAdi;
+  final String tarih; // "2026-10-16"
+  final DateTime baslangic;
+  final DateTime bitis;
+  final String saat;
+  final String bitisSaat;
+  final String aciklama;
+  final String? redNedeni;
+  final DateTime? olusturulma;
+
+  DersKayitTalebi({
+    required this.id,
+    this.kaynak = 'ANTRENOR',
+    this.durum = 'BEKLIYOR',
+    this.talepEdenAdi = '',
+    this.antrenorId,
+    this.antrenorAdi = '',
+    required this.antrenorRenk,
+    this.kortId,
+    this.kortAdi = '',
+    required this.tarih,
+    required this.baslangic,
+    required this.bitis,
+    this.saat = '',
+    this.bitisSaat = '',
+    this.aciklama = '',
+    this.redNedeni,
+    this.olusturulma,
+  });
+
+  factory DersKayitTalebi.fromJson(Map<String, dynamic> j) {
+    final bas = parseApiTarihOrNow(j['baslangic_tarih_saat']);
+    return DersKayitTalebi(
+      id: _int(j['id']),
+      kaynak: j['kaynak']?.toString() ?? 'ANTRENOR',
+      durum: j['durum']?.toString() ?? 'BEKLIYOR',
+      talepEdenAdi: j['talep_eden_adi']?.toString() ?? '',
+      antrenorId: j['antrenor_id'] == null ? null : _int(j['antrenor_id']),
+      antrenorAdi: j['antrenor_adi']?.toString() ?? '',
+      antrenorRenk:
+          _renk(j['antrenor_renk']?.toString(), _varsayilanAntrenorRengi),
+      kortId: j['kort_id'] == null ? null : _int(j['kort_id']),
+      kortAdi: j['kort_adi']?.toString() ?? '',
+      tarih: j['tarih']?.toString() ?? '',
+      baslangic: bas,
+      bitis: parseApiTarih(j['bitis_tarih_saat']) ??
+          bas.add(const Duration(hours: 1)),
+      saat: j['saat']?.toString() ?? '',
+      bitisSaat: j['bitis_saat']?.toString() ?? '',
+      aciklama: j['aciklama']?.toString() ?? '',
+      redNedeni: _bosDegilse(j['red_nedeni']),
+      olusturulma: parseApiTarih(j['olusturulma_zamani']),
+    );
+  }
+
+  int get sureDakika => bitis.difference(baslangic).inMinutes;
 }
 
 /* ============================ FORM VERİLERİ ============================ */
@@ -541,6 +639,10 @@ class EtkinlikKaydetIstegi {
   final String aciklama;
   final List<int> uyeIdler;
 
+  /// Ders kayıt talebinden açıldıysa talebin id'si: backend dersi aynı
+  /// servisle kaydeder ve talebi aynı işlemde kapatır.
+  final int? talepId;
+
   EtkinlikKaydetIstegi({
     this.pk,
     required this.urunId,
@@ -554,6 +656,7 @@ class EtkinlikKaydetIstegi {
     this.ucret = '0',
     this.aciklama = '',
     required this.uyeIdler,
+    this.talepId,
   });
 
   Map<String, dynamic> toJson() => {
@@ -570,5 +673,6 @@ class EtkinlikKaydetIstegi {
         'ucret': ucret,
         'aciklama': aciklama,
         'uye_id_list': uyeIdler,
+        if (talepId != null) 'talep_id': talepId,
       };
 }

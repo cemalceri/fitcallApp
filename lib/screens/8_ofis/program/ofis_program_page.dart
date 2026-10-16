@@ -25,15 +25,20 @@ import 'widgets/ders_iptal_dialog.dart';
 import 'widgets/ders_islem_sheet.dart';
 import 'widgets/ders_sil_dialog.dart';
 import 'widgets/etkinlik_form_sheet.dart';
-import 'widgets/program_gorunumu.dart';
+import 'package:fitcall/screens/1_common/program/program_gorunumu.dart';
 import 'package:fitcall/common/tarih_util.dart';
+import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/talep_islemleri.dart';
 
 class OfisProgramPage extends StatefulWidget {
   /// Kabuğun drawer'ını açar. Ayrı rota olarak açıldığında null gelir ve
   /// menü ikonu hiç çizilmez.
   final VoidCallback? onMenuTap;
 
-  const OfisProgramPage({super.key, this.onMenuTap});
+  /// Ayrı rota olarak bir güne açılırken (ders kayıt talebinde "Programda
+  /// göster"). Verilmezse bugün.
+  final DateTime? baslangicTarihi;
+
+  const OfisProgramPage({super.key, this.onMenuTap, this.baslangicTarihi});
 
   @override
   State<OfisProgramPage> createState() => _OfisProgramPageState();
@@ -45,7 +50,7 @@ class _OfisProgramPageState extends State<OfisProgramPage> {
   bool _islemDevamEdiyor = false;
   String? _hata;
 
-  DateTime _secilenGun = simdiKulup();
+  late DateTime _secilenGun = widget.baslangicTarihi ?? simdiKulup();
 
   @override
   void initState() {
@@ -245,6 +250,22 @@ class _OfisProgramPageState extends State<OfisProgramPage> {
     });
   }
 
+  /// Kesik çizgili blok: bekleyen ders kayıt talebi. Kayıt formu talepten dolu
+  /// açılır (kurallar aynı), ya da gerekçeyle reddedilir.
+  Future<void> _talebeDokunuldu(DersKayitTalebi talep) async {
+    final eylem = await TalepEylemSheet.ac(context, talep);
+    if (eylem == null || !mounted) return;
+    await _kilitli(() async {
+      if (!mounted) return;
+      final islem = switch (eylem) {
+        TalepEylemi.kayitOlustur => DersKayitTalebiIslemleri.kayitOlustur,
+        TalepEylemi.reddet => DersKayitTalebiIslemleri.reddet,
+      };
+      final tamam = await islem(context, talep);
+      if (tamam && mounted) await _yukle();
+    });
+  }
+
   Future<void> _derseDokunuldu(ProgramDersi ders) async {
     final islem = await DersIslemSheet.ac(context, ders);
     if (islem == null || !mounted) return;
@@ -284,8 +305,13 @@ class _OfisProgramPageState extends State<OfisProgramPage> {
                 onSonrakiHafta: _yukleniyor ? null : () => _haftaDegistir(1),
                 onBugun: _yukleniyor ? null : _bugune,
                 onMenuTap: widget.onMenuTap,
+                onGeri:
+                    widget.onMenuTap == null && Navigator.of(context).canPop()
+                        ? () => Navigator.of(context).maybePop()
+                        : null,
                 onGunSec: _gunSec,
                 onDersTap: _derseDokunuldu,
+                onTalepTap: _talebeDokunuldu,
                 onBosSlotTap: (kort, baslangic) =>
                     _yeniDers(kortId: kort.id, baslangic: baslangic),
               ),

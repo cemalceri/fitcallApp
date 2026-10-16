@@ -260,7 +260,8 @@ void main() {
 
       final kararli =
           YonetimDersi.fromJson(dersJson(saatSonra: -3, yonetici: true));
-      expect(kararli.kararVerilebilir, isTrue, reason: 'karar değiştirilebilir');
+      expect(kararli.kararVerilebilir, isTrue,
+          reason: 'karar değiştirilebilir');
       expect(kararli.onayBekliyor, isFalse);
     });
   });
@@ -350,6 +351,7 @@ void main() {
         onPlanDisi: () => acilan.add('plan'),
         onTeyit: () => acilan.add('teyit'),
         onBugununDersleri: () => acilan.add('bugun'),
+        onDersKayitTalepleri: () => acilan.add('talep'),
         zil: const SizedBox(),
       )));
       expect(find.text('137'), findsOneWidget);
@@ -374,6 +376,7 @@ void main() {
         onPlanDisi: () {},
         onTeyit: () {},
         onBugununDersleri: () {},
+        onDersKayitTalepleri: () {},
         zil: const SizedBox(),
       )));
       expect(find.text('Bekleyen iş yok'), findsOneWidget);

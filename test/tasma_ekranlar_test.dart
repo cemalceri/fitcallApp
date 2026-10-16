@@ -86,10 +86,14 @@ import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_antrenor_listes
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ay_panosu.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ay_izgarasi.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ders_karti.dart';
-import 'package:fitcall/screens/8_ofis/program/widgets/program_gorunumu.dart';
-import 'package:fitcall/screens/8_ofis/program/widgets/program_gun_seridi.dart';
-import 'package:fitcall/screens/8_ofis/program/widgets/program_izgara.dart';
+import 'package:fitcall/screens/1_common/program/program_gorunumu.dart';
+import 'package:fitcall/screens/1_common/program/program_gun_seridi.dart';
+import 'package:fitcall/screens/1_common/program/program_izgara.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/uye_secim_sheet.dart';
+import 'package:fitcall/screens/3_antrenor/program/widgets/ders_kayit_talebi_sheet.dart';
+import 'package:fitcall/screens/3_antrenor/program/widgets/program_bilgi_sheet.dart';
+import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/talep_islemleri.dart';
+import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/widgets/ders_kayit_talepleri_gorunumu.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_bottom_bar.dart';
 import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
@@ -856,6 +860,115 @@ void main() {
     });
   });
 
+  /* =================== DERS KAYIT TALEBİ (ANTRENÖR + OFİS) =================== */
+
+  group('Ders kayıt talebi', () {
+    // Antrenörün tüm programı: salt-okunur, geri oklu, kendi dersleri vurgulu,
+    // bekleyen talep kesik çizgili blok olarak yerleşimde.
+    HaftalikProgram talepliProgram() => HaftalikProgram.fromJson({
+          ..._programJson(),
+          'benim_antrenor_id': 1,
+          'talepler': [
+            ornekTalepJson(id: 1, kortId: 2),
+            ornekTalepJson(id: 2, kortId: 3, saat: '09:00', bitisSaat: '09:30'),
+          ],
+        });
+
+    tasmaTesti('ProgramGorunumu (antrenör, tüm program)', () {
+      return ProgramGorunumu(
+        program: talepliProgram(),
+        secilenGun: DateTime(2026, 7, 23),
+        baslik: 'Tüm Program',
+        onGeri: () {},
+        onOncekiHafta: () {},
+        onSonrakiHafta: () {},
+        onBugun: () {},
+        onGunSec: (_) {},
+        onDersTap: (_) {},
+        onTalepTap: (_) {},
+        vurgulaAntrenorId: 1,
+      );
+    });
+
+    tasmaTesti('DersKayitTalebiSheet', () {
+      final p = talepliProgram();
+      return DersKayitTalebiSheet(
+        kortlar: p.kortlar,
+        varsayilan: TalepVarsayilani.hesapla(
+          program: p,
+          gun: DateTime(2026, 7, 23),
+          simdi: DateTime(2026, 7, 23, 12, 10),
+        ),
+      );
+    });
+
+    tasmaTesti('ProgramDersBilgiSheet', () {
+      final p = talepliProgram();
+      return ProgramDersBilgiSheet(ders: p.dersler.first, benim: true);
+    });
+
+    tasmaTesti('ProgramDersBilgiSheet (iptal)', () {
+      final p = talepliProgram();
+      return ProgramDersBilgiSheet(ders: p.dersler[1]);
+    });
+
+    tasmaTesti('ProgramTalepBilgiSheet',
+        () => ProgramTalepBilgiSheet(talep: ornekTalep()));
+
+    tasmaTesti('DersKayitTalepleriGorunumu (dolu)', () {
+      return DersKayitTalepleriGorunumu(
+        talepler: [ornekTalep(id: 1), ornekTalep(id: 2, saat: '19:00')],
+        yukleniyor: false,
+        onGeri: () {},
+        onYenile: () async {},
+        onYenidenDene: () {},
+        onKayitOlustur: (_) {},
+        onReddet: (_) {},
+        onProgramdaGoster: (_) {},
+      );
+    });
+
+    tasmaTesti('DersKayitTalepleriGorunumu (boş)', () {
+      return DersKayitTalepleriGorunumu(
+        talepler: const [],
+        yukleniyor: false,
+        onYenile: () async {},
+        onYenidenDene: () {},
+        onKayitOlustur: (_) {},
+        onReddet: (_) {},
+        onProgramdaGoster: (_) {},
+      );
+    });
+
+    tasmaTesti('DersKayitTalepleriGorunumu (hata)', () {
+      return DersKayitTalepleriGorunumu(
+        talepler: null,
+        yukleniyor: false,
+        hata: 'Sunucuya ulaşılamadı.',
+        onYenile: () async {},
+        onYenidenDene: () {},
+        onKayitOlustur: (_) {},
+        onReddet: (_) {},
+        onProgramdaGoster: (_) {},
+      );
+    });
+
+    tasmaTesti(
+        'EtkinlikFormSheet (talepten)',
+        () => EtkinlikFormSheet(
+              veriler: _formVerileri(),
+              onSecilenKortId: 2,
+              onSecilenBaslangic: DateTime(2026, 7, 23, 17, 30),
+              onSecilenBitis: DateTime(2026, 7, 23, 18, 30),
+              talep: ornekTalep(),
+            ));
+
+    tasmaTesti(
+        'TalepReddetDialog', () => TalepReddetDialog(talep: ornekTalep()));
+
+    tasmaTesti('TalepEylemSheet', () => TalepEylemSheet(talep: ornekTalep()));
+  });
+
   /* ===================== HAKEDİŞ SAATLERİ (ORTAK) ===================== */
   // Bu bileşenler yönetici ve antrenör ekranlarında ORTAK kullanılıyor
   // (screens/1_common/hakedis/), tek bir taşma taraması ikisini de kapsar.
@@ -1176,6 +1289,7 @@ void main() {
           onPlanDisi: () {},
           onTeyit: () {},
           onBugununDersleri: () {},
+          onDersKayitTalepleri: () {},
           zil: const SizedBox(width: 42, height: 42),
         );
 

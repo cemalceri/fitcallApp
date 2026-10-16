@@ -54,6 +54,12 @@ String setAntrenorCalismaGunleriUrl = "$baseUrl/setAntrenorCalismaGunleri";
 const String antrenorHakedisOzetUrl = "$baseUrl/antrenorHakedisOzet";
 const String antrenorHakedisDerslerUrl = "$baseUrl/antrenorHakedisDersler";
 
+// Antrenörün salt-okunur tüm programı + ders kayıt talebi
+// (backend api/ders_kayit_talebi/metots.py)
+const String antrenorHaftalikProgramUrl = "$baseUrl/antrenorHaftalikProgram";
+const String dersKayitTalebiOlusturUrl = "$baseUrl/dersKayitTalebiOlustur";
+const String dersKayitTalebiGeriCekUrl = "$baseUrl/dersKayitTalebiGeriCek";
+
 // =================== ETKİNLİK ===================
 String setDersTeyit = "$baseUrl/setDersTeyit";
 String setTeyitOkundu = "$baseUrl/setTeyitOkundu";
@@ -153,6 +159,10 @@ const String ofisTeyitHatirlatUrl = "$baseUrl/ofisTeyitHatirlat";
 const String ofisPlanDisiBekleyenlerUrl = "$baseUrl/ofisPlanDisiBekleyenler";
 const String ofisPlanDisiSeceneklerUrl = "$baseUrl/ofisPlanDisiSecenekler";
 const String ofisPlanDisiKararUrl = "$baseUrl/ofisPlanDisiKarar";
+// Ders kayıt talepleri: kayıt yoneticiEtkinlikKaydet'e talep_id ile gider
+const String ofisDersKayitTalepleriUrl = "$baseUrl/ofisDersKayitTalepleri";
+const String ofisDersKayitTalebiReddetUrl =
+    "$baseUrl/ofisDersKayitTalebiReddet";
 
 // =================== YÖNETİCİ ===================
 const String yoneticiDashboard = "$baseUrl/yoneticiDashboard";

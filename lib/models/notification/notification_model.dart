@@ -25,6 +25,13 @@ class NotificationType {
 
   /// Ofise gider: antrenör derse plan dışı üye/misafir ekledi ya da eklediğini sildi.
   static const ofisPlanDisiKatilim = 'OFIS_PLAN_DISI_KATILIM';
+
+  /// Ofise gider: antrenör ders kayıt talebi açtı.
+  static const ofisDersKayitTalebi = 'OFIS_DERS_KAYIT_TALEBI';
+
+  /// Talebi açana gider: ofis kaydı oluşturdu / gerekçeyle reddetti.
+  static const dersKayitTalebiOnaylandi = 'DERS_KAYIT_TALEBI_ONAYLANDI';
+  static const dersKayitTalebiReddedildi = 'DERS_KAYIT_TALEBI_REDDEDILDI';
 }
 
 class ActionType {
