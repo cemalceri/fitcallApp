@@ -1,8 +1,8 @@
 // lib/screens/8_ofis/ana_sayfa/widgets/ofis_ana_sayfa_gorunumu.dart
 //
 // Ofis Ana Sayfası'nın sunum gövdesi: takım renginde başlık (karşılama,
-// bildirim, profil değiştir), bugünün özeti (kimlik yüzeyi) ve bekleyen işler.
-// Her iş satırı ilgili ekrana götürür. API çağrısı içermez.
+// bildirim, profil değiştir, çıkış), bugünün özeti (kimlik yüzeyi) ve bekleyen
+// işler. Her iş satırı ilgili ekrana götürür. API çağrısı içermez.
 
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/common/tema.dart';
@@ -14,6 +14,7 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
+import 'package:fitcall/services/core/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -115,6 +116,16 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
         ),
         zil,
         if (profilDegistir) const ProfilDegistirButonu(),
+        // Çıkış — üye/antrenör/yönetici başlıklarındakiyle aynı, onaylı.
+        BaslikIkonButonu(
+          ikon: Icons.logout_rounded,
+          ipucu: 'Çıkış yap',
+          onTap: () async {
+            if (await cikisOnayla(context) && context.mounted) {
+              AuthService.logout(context);
+            }
+          },
+        ),
       ],
     );
   }

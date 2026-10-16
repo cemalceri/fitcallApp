@@ -1,5 +1,6 @@
 // lib/screens/7_yonetici/raporlar/raporlar_page.dart
 
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
@@ -86,30 +87,16 @@ class _RaporlarPageState extends State<RaporlarPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Başlık takım renginde bantta.
-            BaslikBandi(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Raporlar',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Detaylı performans, ciro ve tahsilat raporları',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  const SizedBox(height: 16),
-                  PeriodFilterTabs(
-                    seciliDonem: _seciliDonem,
-                    onDonemChanged: _onDonemChanged,
-                  ),
-                ],
+            // Sağda seçili dönemin günleri: "Bu Hafta" pazartesiden bugüne.
+            SekmeBasligi(
+              baslik: 'Raporlar',
+              sag: BaslikKapsulu(
+                _seciliDonem.aralikMetni(bugunKulup()),
+                ikon: Icons.date_range_rounded,
+              ),
+              alt: PeriodFilterTabs(
+                seciliDonem: _seciliDonem,
+                onDonemChanged: _onDonemChanged,
               ),
             ),
 
@@ -160,7 +147,8 @@ class _RaporlarPageState extends State<RaporlarPage> {
       onRefresh: _loadData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        // Üstte de boşluk: özet kartlar başlık bandının kenarına yapışıyordu.
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

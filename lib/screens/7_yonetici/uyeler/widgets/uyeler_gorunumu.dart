@@ -83,24 +83,28 @@ class UyelerGorunumu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: onYenile,
-      // Yenilemede iskelet çıkmaz; mevcut liste durur, üstte çubuk döner.
-      child: SayfaSonuDinleyici(
-        onSonaYaklasti: onDahaFazla,
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            _baslikBari(context),
-            ..._govde(context),
-            const SliverToBoxAdapter(child: SizedBox(height: 80)),
-          ],
+    // Durum çubuğunun arkası sabit takım renginde; kayan başlık onun altından
+    // geçer. Yoksa başlık kayarken yazısı saat/kamera bölgesine giriyordu.
+    return RenkliDurumCubugu(
+      child: RefreshIndicator(
+        onRefresh: onYenile,
+        // Yenilemede iskelet çıkmaz; mevcut liste durur, üstte çubuk döner.
+        child: SayfaSonuDinleyici(
+          onSonaYaklasti: onDahaFazla,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              _baslikBari(context),
+              ..._govde(context),
+              const SliverToBoxAdapter(child: SizedBox(height: 80)),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  /// Başlık + arama + filtre çipleri.
+  /// Başlık + arama + süzgeç.
   ///
   /// `floating` + `snap`: aşağı kaydırınca yukarı kayar, yukarı çekince anında
   /// geri gelir — arama kutusu için liste başına dönmek gerekmiyor.
@@ -117,10 +121,7 @@ class UyelerGorunumu extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(right: Bosluk.l),
             child: Center(
-              child: Text(
-                '${toplam ?? uyeler.length} kayıt',
-                style: baslikYazi(context, context.metin.bodySmall),
-              ),
+              child: BaslikKapsulu('${toplam ?? uyeler.length} kayıt'),
             ),
           ),
       ],
@@ -161,22 +162,16 @@ class UyelerGorunumu extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(
-              height: _cipYuksekligi(context),
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: Bosluk.l),
-                children: [
-                  for (final (deger, etiket) in _filtreler)
-                    Padding(
-                      padding: const EdgeInsets.only(right: Bosluk.s),
-                      child: BaslikCipi(
-                        etiket: etiket,
-                        secili: filtre == deger,
-                        onSec: () => onFiltre(deger),
-                      ),
-                    ),
-                ],
+            Padding(
+              padding:
+                  const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.m),
+              child: SizedBox(
+                height: BaslikSecici.yukseklik(context),
+                child: BaslikSecici<String>(
+                  secenekler: _filtreler,
+                  secili: filtre,
+                  onSec: onFiltre,
+                ),
               ),
             ),
           ],
@@ -185,16 +180,13 @@ class UyelerGorunumu extends StatelessWidget {
     );
   }
 
-  /// Arama kutusu + çip şeridinin toplam yüksekliği. Yazı ölçeği 1.3'e
+  /// Arama kutusu + süzgeç şeridinin toplam yüksekliği. Yazı ölçeği 1.3'e
   /// çıkabildiği için sabit değer taşma üretiyordu.
   double _aramaSeridiYuksekligi(BuildContext context) {
     final olcek = MediaQuery.textScalerOf(context);
     final arama = olcek.scale(16) * 1.4 + Bosluk.m * 2 + 2;
-    return arama + Bosluk.s + _cipYuksekligi(context) + Bosluk.s;
+    return arama + Bosluk.s + BaslikSecici.yukseklik(context) + Bosluk.m;
   }
-
-  double _cipYuksekligi(BuildContext context) =>
-      MediaQuery.textScalerOf(context).scale(13) * 1.3 + Bosluk.s * 2;
 
   List<Widget> _govde(BuildContext context) {
     if (yukleniyor) {
@@ -249,8 +241,7 @@ class UyelerGorunumu extends StatelessWidget {
       if (istatistik != null)
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-                Bosluk.l, Bosluk.s, Bosluk.l, Bosluk.l),
+            padding: const EdgeInsets.all(Bosluk.l),
             child: UyeIstatistikKartlar(data: istatistik!),
           ),
         ),

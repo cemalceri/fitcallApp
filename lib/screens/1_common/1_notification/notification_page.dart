@@ -462,10 +462,12 @@ class _BildirimSatiri extends StatelessWidget {
               // sosyal uygulamaların bildirim satırı tek paragraf okunur ve
               // liste bir satır daha sığdırır.
               Expanded(
-                child: RichText(
+                // Text.rich: RichText temanın yazı ailesini ve kullanıcının
+                // yazı boyutu ayarını almıyordu.
+                child: Text.rich(
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  text: TextSpan(
+                  TextSpan(
                     style: TextStyle(
                       fontSize: 14,
                       color: context.bildirimRenk.yaziAna,

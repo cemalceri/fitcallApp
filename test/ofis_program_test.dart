@@ -466,28 +466,21 @@ void main() {
   group('ProgramBaslik profil değiştirme', () {
     setUpAll(() => initializeDateFormatting('tr', null));
 
-    Future<void> ac(WidgetTester tester, {required bool profilDegistir}) =>
-        tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ProgramBaslik(
-              haftaBaslangic: DateTime(2026, 7, 20),
-              haftaBitis: DateTime(2026, 7, 26),
-              onMenu: () {},
-              profilDegistir: profilDegistir,
-            ),
+    // Ofiste profil değiştirme diğer rollerdeki gibi Ana Sayfa başlığında;
+    // programda ikinci kez durmuyor (kullanıcı kararı 2026-10-15).
+    testWidgets('program başlığında profil değiştirme butonu yok',
+        (tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: ProgramBaslik(
+            haftaBaslangic: DateTime(2026, 7, 20),
+            haftaBitis: DateTime(2026, 7, 26),
+            onMenu: () {},
           ),
-        ));
-
-    // Ofis kabuğunda diğer rollerdeki başlık yok; buton programın başlığında.
-    testWidgets('birden fazla profil varsa buton görünür', (tester) async {
-      await ac(tester, profilDegistir: true);
-      expect(find.byType(ProfilDegistirButonu), findsOneWidget);
-      expect(find.byTooltip('Profil değiştir'), findsOneWidget);
-    });
-
-    testWidgets('tek profilde buton yok', (tester) async {
-      await ac(tester, profilDegistir: false);
+        ),
+      ));
       expect(find.byType(ProfilDegistirButonu), findsNothing);
+      expect(find.byTooltip('Profil değiştir'), findsNothing);
     });
   });
 }

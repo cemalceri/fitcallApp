@@ -19,8 +19,12 @@ import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
+import 'package:fitcall/models/1_common/degerlendirme_models.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/models/1_common/surum_notu_model.dart';
+import 'package:fitcall/screens/1_common/degerlendirmeler/widgets/degerlendirme_detayi.dart';
+import 'package:fitcall/screens/1_common/degerlendirmeler/widgets/degerlendirmeler_gorunumu.dart';
+import 'package:fitcall/screens/1_common/degerlendirmeler/widgets/puan_parcalari.dart';
 import 'package:fitcall/models/1_common/duyuru_okuma_models.dart';
 import 'package:fitcall/screens/1_common/duyurular/widgets/duyuru_yonetim_listesi.dart';
 import 'package:fitcall/screens/1_common/duyurular/widgets/okuma_durumu_gorunumu.dart';
@@ -66,6 +70,7 @@ import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/misafir_ekle_sheet.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/yoklama_hizli_secim.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/daily_summary_card.dart';
+import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_liste_item.dart';
@@ -90,6 +95,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'support/degerlendirme_ornekleri.dart';
 import 'support/duyuru_ornekleri.dart';
 import 'support/ofis_ornekleri.dart';
 import 'support/tasma_yardimcisi.dart';
@@ -428,7 +434,10 @@ Widget _uyelerGorunumu({
   );
 }
 
-AntrenorListeItem _antrenorListeItem({bool puanli = true}) =>
+AntrenorListeItem _antrenorListeItem({
+  bool puanli = true,
+  int degerlendirme = 123,
+}) =>
     AntrenorListeItem.fromJson({
       'id': 1,
       'adi': 'Ayşe',
@@ -441,6 +450,7 @@ AntrenorListeItem _antrenorListeItem({bool puanli = true}) =>
       'bugun_ders_sayisi': 12,
       'haftalik_ders_sayisi': 48,
       'ortalama_puan': puanli ? 4.8 : null,
+      'degerlendirme_sayisi': puanli ? degerlendirme : 0,
       'ogrenci_sayisi': 126,
     });
 
@@ -607,6 +617,52 @@ void main() {
         child: Center(child: Text('İçerikle kayan başlık')),
       ),
     );
+    // Raporlar: sağda dönemin günleri, altta tam genişlik dönem seçici.
+    tasmaTesti(
+      'SekmeBasligi (tarih kapsülü + dönem seçici)',
+      () => SekmeBasligi(
+        baslik: 'Raporlar',
+        sag: BaslikKapsulu(
+          DonemFiltresi.buHafta.aralikMetni(DateTime(2026, 10, 2)),
+          ikon: Icons.date_range_rounded,
+        ),
+        alt: PeriodFilterTabs(
+          seciliDonem: DonemFiltresi.buHafta,
+          onDonemChanged: (_) {},
+        ),
+      ),
+    );
+    tasmaTesti(
+      'SekmeBasligi (sayı kapsülü + üçlü seçici)',
+      () => SekmeBasligi(
+        baslik: 'Antrenörler',
+        sag: const BaslikKapsulu('128 antrenör'),
+        alt: BaslikSecici<String>(
+          secenekler: const [
+            ('aktif', 'Aktif'),
+            ('pasif', 'Pasif'),
+            ('tumu', 'Tümü'),
+          ],
+          secili: 'aktif',
+          onSec: (_) {},
+        ),
+      ),
+    );
+    tasmaTesti(
+      'BaslikSecici (dört dilim)',
+      () => BaslikBandi(
+        child: BaslikSecici<int>(
+          secenekler: const [
+            (0, 'Tümü'),
+            (1, 'Aktif'),
+            (2, 'Pasif'),
+            (3, 'Borçlular'),
+          ],
+          secili: 3,
+          onSec: (_) {},
+        ),
+      ),
+    );
     tasmaTesti(
       'KapaninciBaslik',
       () => const KapaninciBaslik(
@@ -735,8 +791,8 @@ void main() {
       );
     });
 
-    // Ofis kabuğundaki en kalabalık hâl: menü + profil değiştirme butonu.
-    tasmaTesti('ProgramBaslik (menü + profil değiştir)', () {
+    // Ofis kabuğundaki hâl: menülü.
+    tasmaTesti('ProgramBaslik (menülü)', () {
       return ProgramBaslik(
         haftaBaslangic: DateTime(2026, 7, 20),
         haftaBitis: DateTime(2026, 7, 26),
@@ -744,7 +800,6 @@ void main() {
         onSonraki: () {},
         onBugun: () {},
         onMenu: () {},
-        profilDegistir: true,
       );
     });
 
@@ -939,7 +994,8 @@ void main() {
       'AntrenorListeItemWidget',
       () => AntrenorListeItemWidget(
         antrenor: _antrenorListeItem(),
-        onTap: () {},
+        onHakedis: () {},
+        onDegerlendirmeler: () {},
       ),
     );
 
@@ -947,9 +1003,21 @@ void main() {
       'AntrenorListeItemWidget (puansız)',
       () => AntrenorListeItemWidget(
         antrenor: _antrenorListeItem(puanli: false),
-        onTap: () {},
+        onHakedis: () {},
+        onDegerlendirmeler: () {},
       ),
     );
+    // Hücredeki sayı en geniş hâlinde: "4.8 (7)" ve "4.8 (1B+)".
+    for (final n in [7, 1500]) {
+      tasmaTesti(
+        'AntrenorListeItemWidget ($n değerlendirme)',
+        () => AntrenorListeItemWidget(
+          antrenor: _antrenorListeItem(degerlendirme: n),
+          onHakedis: () {},
+          onDegerlendirmeler: () {},
+        ),
+      );
+    }
   });
 
   /* ================= YÖNETİCİ — ÜYE LİSTESİ (GÖVDE) ================= */
@@ -1184,6 +1252,84 @@ void main() {
         secenekler: ornekSecenekler(),
         kaydediliyor: false,
         onKaydet: (_) {},
+      ),
+    );
+  });
+
+  group('Ders değerlendirmeleri', () {
+    Widget liste({
+      List<DersDegerlendirmesi>? veri,
+      bool yukleniyor = false,
+      String? hata,
+      String filtre = 'tumu',
+      String? altBaslik = 'Can Burak ALTINERoğulları',
+      bool dahaYukleniyor = false,
+    }) =>
+        DegerlendirmelerGorunumu(
+          baslik: 'Değerlendirmeler',
+          altBaslik: altBaslik,
+          degerlendirmeler: veri ??
+              [
+                ornekDegerlendirme(id: 1),
+                ornekDegerlendirme(id: 2, puan: 2, yorum: null),
+                ornekDegerlendirme(id: 3, puan: 4, digerSayisi: 0),
+              ],
+          ozet: const DegerlendirmeOzeti(ortalama: 4.57, adet: 1284),
+          toplam: 1284,
+          yukleniyor: yukleniyor,
+          hata: hata,
+          dahaYukleniyor: dahaYukleniyor,
+          filtre: filtre,
+          onFiltre: (_) {},
+          onYenile: () async {},
+          onYenidenDene: () {},
+          onSec: (_) {},
+        );
+
+    tasmaTesti('DegerlendirmelerGorunumu (dolu)', () => liste());
+    tasmaTesti(
+      'DegerlendirmelerGorunumu (alt başlıksız, sonraki sayfa yükleniyor)',
+      () => liste(altBaslik: null, dahaYukleniyor: true),
+    );
+    for (final f in ['tumu', 'yorumlu', 'dusuk']) {
+      tasmaTesti('DegerlendirmelerGorunumu (boş, $f)',
+          () => liste(veri: const [], filtre: f));
+    }
+    tasmaTesti('DegerlendirmelerGorunumu (yükleniyor)',
+        () => liste(veri: const [], yukleniyor: true));
+    tasmaTesti(
+      'DegerlendirmelerGorunumu (hata)',
+      () => liste(
+          veri: const [],
+          hata: 'Sunucuya ulaşılamadı, lütfen bağlantını kontrol et.'),
+    );
+    tasmaTesti(
+      'DegerlendirmeDetayi (uzun yorum, yardımcı, iptal, misafir)',
+      () => DegerlendirmeDetayi(
+        degerlendirme: ornekDegerlendirme(
+          yorum: 'Çok verimli geçti. ' * 12,
+          yardimci: true,
+          iptal: true,
+          digerSayisi: 6,
+        ),
+      ),
+    );
+    tasmaTesti(
+      'DegerlendirmeDetayi (yorumsuz, tek kişilik)',
+      () => DegerlendirmeDetayi(
+        degerlendirme: ornekDegerlendirme(yorum: null, digerSayisi: 0),
+      ),
+    );
+    tasmaTesti(
+      'PuanRozeti (sayılı, puansız, tam sayı)',
+      () => const Column(
+        children: [
+          PuanRozeti(puan: 4.567, sayi: 1500),
+          PuanRozeti(puan: 4.567, sayi: 0),
+          PuanRozeti(puan: null),
+          PuanRozeti(puan: 5, tamSayi: true),
+          YildizSirasi(puan: 3, boyut: 22),
+        ],
       ),
     );
   });
@@ -2025,6 +2171,7 @@ void main() {
         onKapat: () {},
       ),
     );
+
     // Sürüm notu popup'ı: tek madde (ilk madde açık gelir, liste kısa).
     tasmaTesti(
       'SurumNotuGovdesi (tek madde)',

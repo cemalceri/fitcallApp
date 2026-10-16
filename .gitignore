@@ -76,3 +76,7 @@ ios/Podfile.lock
 
 # Android build çıktıları
 android/build/
+
+# Mağaza görselleri: SF Pro lisansı dağıtıma izin vermiyor, çıktılar build/ altında
+/tool/magaza_gorselleri/fontlar/
+/magaza_gorselleri/

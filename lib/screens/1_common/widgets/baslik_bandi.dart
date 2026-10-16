@@ -250,6 +250,196 @@ class BaslikCipi extends StatelessWidget {
 }
 
 
+/// Kabuk sekmelerinin (Raporlar, Antrenörler…) başlık bandı: solda sayfa
+/// adı, sağda bağlam bilgisi ([BaslikKapsulu]), altında tam genişlik
+/// [BaslikSecici]. Açıklama satırı bilerek yok: sekme adı ve alt bardaki
+/// simge yeterli, bant kısa kalsın.
+class SekmeBasligi extends StatelessWidget {
+  final String baslik;
+  final Widget? sag;
+  final Widget? alt;
+
+  const SekmeBasligi({
+    super.key,
+    required this.baslik,
+    this.sag,
+    this.alt,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BaslikBandi(
+      padding: const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.s, Bosluk.l, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ConstrainedBox(
+            // Dashboard'daki 44'lük ikon butonlarıyla aynı satır yüksekliği.
+            constraints: const BoxConstraints(minHeight: 44),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    baslik,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+                if (sag != null) ...[
+                  const SizedBox(width: Bosluk.m),
+                  sag!,
+                ],
+              ],
+            ),
+          ),
+          if (alt != null) ...[
+            const SizedBox(height: Bosluk.m),
+            alt!,
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Başlık satırının sağındaki bilgi kapsülü: "859 kayıt", "12 – 15 Eki".
+///
+/// Yalnız kenarlık: başlık yazısı rengindeki %16 dolgu üstünde beyaz yazı
+/// Binay açıkta 4.5:1'in altında kalıyordu; yazı doğrudan başlık rengi
+/// üstünde.
+class BaslikKapsulu extends StatelessWidget {
+  final String metin;
+  final IconData? ikon;
+
+  const BaslikKapsulu(this.metin, {super.key, this.ikon});
+
+  @override
+  Widget build(BuildContext context) {
+    final on = context.gecis.onBaslik;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        border: Border.all(color: on.withValues(alpha: 0.6)),
+        borderRadius: BorderRadius.circular(Yaricap.xl),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (ikon != null) ...[
+            Icon(ikon, size: 14, color: on),
+            const SizedBox(width: 6),
+          ],
+          Flexible(
+            child: Text(
+              metin,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: on,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Renkli başlıktaki tek seçimli süzgeç: bandın tüm genişliğine yayılan,
+/// eşit dilimli seçici (dönem, aktif/pasif…). Seçili dilim başlık yazı
+/// renginde dolgu, üstünde başlık rengi; ray yalnız kenarlık.
+///
+/// Çiplerden farkı: sola yığılıp bandın sağını boş bırakmaz.
+class BaslikSecici<T> extends StatelessWidget {
+  final List<(T, String)> secenekler;
+  final T secili;
+  final ValueChanged<T> onSec;
+
+  const BaslikSecici({
+    super.key,
+    required this.secenekler,
+    required this.secili,
+    required this.onSec,
+  });
+
+  static const double _yaziBoyu = 13;
+  static const double _satirOrani = 1.3;
+  static const double _dilimDikey = 7;
+  static const double _rayIc = 3;
+
+  /// Seçicinin toplam yüksekliği (SliverAppBar `bottom` hesabı için). Yazı
+  /// ölçeği 1.3'e çıkabildiği için sabit değer verilmez.
+  static double yukseklik(BuildContext context) =>
+      MediaQuery.textScalerOf(context).scale(_yaziBoyu) * _satirOrani +
+      _dilimDikey * 2 +
+      _rayIc * 2 +
+      2; // kenarlık
+
+  @override
+  Widget build(BuildContext context) {
+    final g = context.gecis;
+    return Container(
+      padding: const EdgeInsets.all(_rayIc),
+      decoration: BoxDecoration(
+        border: Border.all(color: g.onBaslik.withValues(alpha: 0.6)),
+        borderRadius: BorderRadius.circular(Yaricap.m),
+      ),
+      child: Row(
+        children: [
+          for (final (deger, etiket) in secenekler)
+            Expanded(
+              child: _dilim(context, deger, etiket, deger == secili),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dilim(BuildContext context, T deger, String etiket, bool seciliMi) {
+    final g = context.gecis;
+    return Semantics(
+      button: true,
+      selected: seciliMi,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          if (seciliMi) return;
+          HapticFeedback.lightImpact();
+          onSec(deger);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(
+              horizontal: 4, vertical: _dilimDikey),
+          decoration: BoxDecoration(
+            color: seciliMi ? g.onBaslik : Colors.transparent,
+            borderRadius: BorderRadius.circular(Yaricap.m - _rayIc),
+          ),
+          child: Text(
+            etiket,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: _yaziBoyu,
+              height: _satirOrani,
+              fontWeight: seciliMi ? FontWeight.w700 : FontWeight.w500,
+              color: seciliMi ? g.baslik : g.onBaslik,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// SliverAppBar başlığı: yalnız başlık kapanınca görünür. Açıkken aynı bilgi
 /// genişleyen alanda yazıyor (profil sayfaları); iki kez okunmasın.
 class KapaninciBaslik extends StatelessWidget {

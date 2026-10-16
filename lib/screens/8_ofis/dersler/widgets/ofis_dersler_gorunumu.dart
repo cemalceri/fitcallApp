@@ -131,6 +131,20 @@ class OfisDerslerGorunumu extends StatelessWidget {
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
               ),
+              // Başlık satırının sağında: tarih satırı oklar + tarih olarak
+              // dengeli kalır, başlığın sağı boş kalmaz.
+              TextButton.icon(
+                onPressed: onBugun,
+                icon: const Icon(Icons.today_rounded, size: 18),
+                label: const Text('Bugün', maxLines: 1),
+                style: TextButton.styleFrom(
+                  shape: const StadiumBorder(),
+                  side: BorderSide(color: g.onBaslik.withValues(alpha: 0.6)),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  minimumSize: const Size(0, 36),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -189,7 +203,6 @@ class OfisDerslerGorunumu extends StatelessWidget {
                 icon: const Icon(Icons.chevron_right),
                 style: kontrolStili,
               ),
-              TextButton(onPressed: onBugun, child: const Text('Bugün')),
             ],
           ),
           const SizedBox(height: 10),

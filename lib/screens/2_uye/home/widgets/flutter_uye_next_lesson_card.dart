@@ -184,7 +184,9 @@ class _LessonContent extends StatelessWidget {
                         ),
                         _InfoPill(
                           icon: Icons.location_on_outlined,
-                          text: 'Kort ${lesson.kortAdi}',
+                          // Kort adı zaten "Merkez Kort" gibi geliyor; önüne
+                          // "Kort " eklemek "Kort Merkez Kort" yazıyordu.
+                          text: lesson.kortAdi,
                         ),
                         if (lesson.antrenorAdi != null)
                           _InfoPill(

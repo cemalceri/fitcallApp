@@ -2,6 +2,7 @@
 
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 // ==================== ENUMS ====================
 
@@ -28,6 +29,28 @@ extension DonemFiltresiExtension on DonemFiltresi {
       case DonemFiltresi.buAy:
         return 'Bu Ay';
     }
+  }
+
+  /// Dönemin kapsadığı günler — sunucudaki `get_tarih_araligi` ile aynı:
+  /// dönem bugünde biter; hafta pazartesi, ay ayın 1'i başlar.
+  (DateTime, DateTime) aralik(DateTime bugun) {
+    final gun = DateTime(bugun.year, bugun.month, bugun.day);
+    return switch (this) {
+      DonemFiltresi.bugun => (gun, gun),
+      DonemFiltresi.buHafta =>
+        (DateTime(gun.year, gun.month, gun.day - (gun.weekday - 1)), gun),
+      DonemFiltresi.buAy => (DateTime(gun.year, gun.month, 1), gun),
+    };
+  }
+
+  /// Başlıktaki kısa aralık: "15 Eki", "12 – 15 Eki", "29 Eyl – 2 Eki".
+  String aralikMetni(DateTime bugun) {
+    final (bas, bit) = aralik(bugun);
+    final gunAy = DateFormat('d MMM', 'tr_TR');
+    if (bas == bit) return gunAy.format(bit);
+    final basMetni =
+        bas.month == bit.month ? '${bas.day}' : gunAy.format(bas);
+    return '$basMetni – ${gunAy.format(bit)}';
   }
 }
 
@@ -667,6 +690,11 @@ class AntrenorListeItem {
   final int bugunDersSayisi;
   final int haftalikDersSayisi;
   final double? ortalamaPuan;
+
+  /// Ortalamanın dayandığı üye puanı sayısı (tüm zamanlar). Alanı henüz
+  /// göndermeyen sunucuda null: ortalama sayısız gösterilir, 0 sanılıp
+  /// "Puan yok" yazılmaz.
+  final int? degerlendirmeSayisi;
   final int ogrenciSayisi;
 
   AntrenorListeItem({
@@ -681,6 +709,7 @@ class AntrenorListeItem {
     required this.bugunDersSayisi,
     required this.haftalikDersSayisi,
     this.ortalamaPuan,
+    this.degerlendirmeSayisi,
     required this.ogrenciSayisi,
   });
 
@@ -699,6 +728,7 @@ class AntrenorListeItem {
       ortalamaPuan: json['ortalama_puan'] != null
           ? double.tryParse(json['ortalama_puan'].toString())
           : null,
+      degerlendirmeSayisi: json['degerlendirme_sayisi'],
       ogrenciSayisi: json['ogrenci_sayisi'] ?? 0,
     );
   }

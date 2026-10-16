@@ -7,6 +7,7 @@ import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_istatistik_kartlar.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart';
+import 'package:fitcall/screens/1_common/degerlendirmeler/degerlendirmeler_page.dart';
 import 'package:fitcall/screens/1_common/hakedis/hakedis_ay_panosu_page.dart';
 import 'package:fitcall/screens/1_common/hakedis/hakedis_veri_kaynagi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
@@ -69,8 +70,8 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
     _loadData();
   }
 
-  /// Antrenöre dokununca hakediş saatleri panosu — drawer'daki "Hakediş
-  /// Saatleri" ile aynı ekran, antrenör seçim adımı atlanmış hâli.
+  /// Satırın sol tarafı: drawer'daki "Hakediş Saatleri" ile aynı ekran,
+  /// antrenör seçim adımı atlanmış hâli.
   void _hakedisAc(AntrenorListeItem antrenor) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -83,9 +84,25 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
     );
   }
 
+  /// Satırın sağındaki puan hücresi: yalnız bu antrenörün dersleri.
+  /// Ortalama ve sayı, listedeki rozetle aynı tanımla (ana antrenör, üye
+  /// puanları) sayılır.
+  void _degerlendirmelerAc(AntrenorListeItem antrenor) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DegerlendirmelerPage(
+          antrenorId: antrenor.id,
+          antrenorAdi: antrenor.adSoyad,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final sayi = _loading || _errorMessage != null
+        ? null
+        : _data?.antrenorler.length;
 
     return Scaffold(
       body: SafeArea(
@@ -93,27 +110,18 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Başlık takım renginde bantta.
-            BaslikBandi(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Antrenörler',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Antrenör listesi ve performans bilgileri',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildFiltreler(colorScheme),
+            SekmeBasligi(
+              baslik: 'Antrenörler',
+              // Seçili süzgece uyan antrenör sayısı (Üyeler'deki "kayıt").
+              sag: sayi == null ? null : BaslikKapsulu('$sayi antrenör'),
+              alt: BaslikSecici<String>(
+                secenekler: const [
+                  ('aktif', 'Aktif'),
+                  ('pasif', 'Pasif'),
+                  ('tumu', 'Tümü'),
                 ],
+                secili: _filtre,
+                onSec: _onFiltreChanged,
               ),
             ),
 
@@ -121,33 +129,6 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
             Expanded(child: _buildContent()),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildFiltreler(ColorScheme colorScheme) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          BaslikCipi(
-            etiket: 'Aktif',
-            secili: _filtre == 'aktif',
-            onSec: () => _onFiltreChanged('aktif'),
-          ),
-          const SizedBox(width: 8),
-          BaslikCipi(
-            etiket: 'Pasif',
-            secili: _filtre == 'pasif',
-            onSec: () => _onFiltreChanged('pasif'),
-          ),
-          const SizedBox(width: 8),
-          BaslikCipi(
-            etiket: 'Tümü',
-            secili: _filtre == 'tumu',
-            onSec: () => _onFiltreChanged('tumu'),
-          ),
-        ],
       ),
     );
   }
@@ -196,9 +177,9 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
         itemCount: antrenorler.length + 1,
         itemBuilder: (context, index) {
           if (index == 0) {
+            // Üstte de boşluk: kartlar başlık bandının kenarına yapışıyordu.
             return Padding(
-              padding:
-                  const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.l),
+              padding: const EdgeInsets.all(Bosluk.l),
               child: AntrenorIstatistikKartlar(data: _data!.istatistikler),
             );
           }
@@ -209,7 +190,8 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
               if (index > 1) const ListeAyraci(),
               AntrenorListeItemWidget(
                 antrenor: antrenor,
-                onTap: () => _hakedisAc(antrenor),
+                onHakedis: () => _hakedisAc(antrenor),
+                onDegerlendirmeler: () => _degerlendirmelerAc(antrenor),
               ),
             ],
           );

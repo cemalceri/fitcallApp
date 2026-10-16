@@ -13,7 +13,6 @@
 // paket/borç işlemleri) iki tarafta da aynı çalışır.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
-import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/yonetici/yonetici_etkinlik_service.dart';
@@ -47,18 +46,11 @@ class _OfisProgramPageState extends State<OfisProgramPage> {
   String? _hata;
 
   DateTime _secilenGun = simdiKulup();
-  bool _profilDegistir = false;
 
   @override
   void initState() {
     super.initState();
     _yukle();
-    _profilDegistirKontrol();
-  }
-
-  Future<void> _profilDegistirKontrol() async {
-    final goster = await ProfilDegistirButonu.gosterilmeliMi();
-    if (goster && mounted) setState(() => _profilDegistir = true);
   }
 
   DateTime get _gunBasi =>
@@ -292,7 +284,6 @@ class _OfisProgramPageState extends State<OfisProgramPage> {
                 onSonrakiHafta: _yukleniyor ? null : () => _haftaDegistir(1),
                 onBugun: _yukleniyor ? null : _bugune,
                 onMenuTap: widget.onMenuTap,
-                profilDegistir: _profilDegistir,
                 onGunSec: _gunSec,
                 onDersTap: _derseDokunuldu,
                 onBosSlotTap: (kort, baslangic) =>
