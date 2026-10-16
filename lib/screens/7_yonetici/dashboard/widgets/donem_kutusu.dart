@@ -15,6 +15,9 @@ import 'package:flutter/material.dart';
 /// (aktif üye, toplam alacak, haftalık grafik, günün özeti) dönemle hiç
 /// değişmiyordu; hangisinin etkilendiği görünmüyordu (kullanıcı kararı
 /// 2026-10-16, "A: dönem kutusu").
+///
+/// Raporlar'da iki kutu alt alta, her birinin kendi seçicisi var; hangisinin
+/// neyi seçtiği [baslik] ile okunur.
 class DonemKutusu extends StatelessWidget {
   final DonemFiltresi seciliDonem;
   final ValueChanged<DonemFiltresi> onDonemChanged;
@@ -31,6 +34,10 @@ class DonemKutusu extends StatelessWidget {
   /// panonun 2 × 2 kart iskeleti.
   final List<double>? iskeletYukseklikleri;
 
+  /// Seçicinin üstündeki grup adı; panoda yok (tek kutu).
+  final String? baslik;
+  final IconData? ikon;
+
   const DonemKutusu({
     super.key,
     required this.seciliDonem,
@@ -38,6 +45,8 @@ class DonemKutusu extends StatelessWidget {
     required this.yukleniyor,
     required this.child,
     this.iskeletYukseklikleri,
+    this.baslik,
+    this.ikon,
   });
 
   @override
@@ -48,6 +57,25 @@ class DonemKutusu extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (baslik != null) ...[
+            Row(
+              children: [
+                if (ikon != null) ...[
+                  Icon(ikon, size: 18, color: cs.primary),
+                  const SizedBox(width: 6),
+                ],
+                Expanded(
+                  child: Text(
+                    baslik!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.metin.titleSmall,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: Bosluk.s),
+          ],
           PeriodFilterTabs(
             seciliDonem: seciliDonem,
             onDonemChanged: onDonemChanged,
@@ -102,7 +130,7 @@ class DonemKutusu extends StatelessWidget {
   }
 }
 
-/// Dönem kutusu ve dönem gruplarının ortak çerçevesi: sayfa tonunun biraz
+/// Dönem kutularının ortak çerçevesi: sayfa tonunun biraz
 /// koyusu zemin, ana renkte ince kenar. İçindeki kartlar (yüzey rengi, tam
 /// kenar) bu zeminde kendi çerçeveleriyle ayrılır — önceden ikisi de beyazdı
 /// ve iç kartlar kayboluyordu (kullanıcı isteği 2026-10-16).
@@ -125,71 +153,6 @@ class DonemCercevesi extends StatelessWidget {
         border: Border.all(color: cs.primary.withValues(alpha: 0.45)),
       ),
       child: child,
-    );
-  }
-}
-
-/// Seçicisi olmayan ama aynı döneme bağlı ikinci grup (Raporlar: doluluk,
-/// kortlar, antrenörler). Başlıkta seçili günler yazar: hangi dönemi
-/// gösterdiği seçiciye bakmadan da okunur.
-class DonemGrubu extends StatelessWidget {
-  final IconData ikon;
-  final String baslik;
-  final DonemFiltresi donem;
-  final bool yukleniyor;
-  final List<double> iskeletYukseklikleri;
-  final Widget child;
-
-  const DonemGrubu({
-    super.key,
-    required this.ikon,
-    required this.baslik,
-    required this.donem,
-    required this.yukleniyor,
-    required this.iskeletYukseklikleri,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = context.cs;
-    return DonemCercevesi(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Icon(ikon, size: 18, color: cs.primary),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  baslik,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.metin.titleSmall,
-                ),
-              ),
-              const SizedBox(width: Bosluk.s),
-              Icon(Icons.date_range_rounded,
-                  size: 16, color: cs.onSurfaceVariant),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  donem.aralikMetni(bugunKulup()),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.metin.bodySmall,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: Bosluk.m),
-          if (yukleniyor)
-            BlokIskeleti(yukseklikler: iskeletYukseklikleri)
-          else
-            child,
-        ],
-      ),
     );
   }
 }

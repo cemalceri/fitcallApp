@@ -73,12 +73,7 @@ import 'package:fitcall/screens/7_yonetici/dashboard/widgets/daily_summary_card.
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_ozet_kartlar.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/ciro_raporu_section.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/tahsilat_raporu_section.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_haritasi_section.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_raporu_section.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/antrenor_performans_section.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_gruplari.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/donem_kutusu.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_liste_item.dart';
@@ -1439,6 +1434,7 @@ void main() {
     tasmaTesti('DailySummaryCard', () {
       return DailySummaryCard(
         data: GununOzeti(yeniKayit: 12, telafiDers: 41, dolulukYuzdesi: 38.4),
+        bugunkuDers: 148,
       );
     });
 
@@ -1575,47 +1571,48 @@ void main() {
         });
     for (final yukleniyor in [false, true]) {
       tasmaTesti(
-        'Raporlar dönem kutusu (Bu Ay${yukleniyor ? ', yükleniyor' : ''})',
-        () => DonemKutusu(
-          seciliDonem: DonemFiltresi.buAy,
+        'Raporlar ciro ve tahsilat grubu (Bu Ay${yukleniyor ? ', yükleniyor' : ''})',
+        () => RaporDonemGrubu(
+          donem: DonemFiltresi.buAy,
           onDonemChanged: (_) {},
           yukleniyor: yukleniyor,
-          iskeletYukseklikleri: const [100, 220, 220],
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              RaporOzetKartlar(data: ayRaporu().ozetKartlar),
-              const SizedBox(height: 16),
-              CiroRaporuSection(data: ayRaporu().ciroRaporu),
-              const SizedBox(height: 16),
-              TahsilatRaporuSection(data: ayRaporu().tahsilatRaporu),
-            ],
-          ),
+          data: ayRaporu(),
         ),
         sar: kaydirmali,
       );
       tasmaTesti(
         'Raporlar kort ve antrenör grubu (Bu Ay${yukleniyor ? ', yükleniyor' : ''})',
-        () => DonemGrubu(
-          ikon: Icons.sports_tennis_rounded,
-          baslik: 'Kort ve antrenör',
+        () => RaporKortAntrenorGrubu(
           donem: DonemFiltresi.buAy,
+          onDonemChanged: (_) {},
           yukleniyor: yukleniyor,
-          iskeletYukseklikleri: const [220, 220, 220],
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              DolulukHaritasiSection(data: ayHaritasi()),
-              const SizedBox(height: 16),
-              DolulukRaporuSection(data: ayRaporu().dolulukRaporu),
-              const SizedBox(height: 16),
-              AntrenorPerformansSection(data: ayRaporu().antrenorPerformans),
-            ],
-          ),
+          data: ayRaporu(),
         ),
         sar: kaydirmali,
       );
     }
+    // Ay dönen hafta: etiketin en uzun hâli ("29 Eyl – 5 Eki").
+    tasmaTesti(
+      'Raporlar haftalık yoğunluk (ısı haritası)',
+      () => RaporHaftalikYogunluk(
+        data: ayHaritasi(),
+        bugun: DateTime(2026, 10, 1),
+      ),
+      sar: kaydirmali,
+    );
+    tasmaTesti(
+      'Raporlar haftalık yoğunluk (ders yok)',
+      () => RaporHaftalikYogunluk(
+        data: DolulukHaritasi.fromJson(const {
+          'gunler': ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+          'saatler': [],
+          'hucreler': [],
+          'max_sayi': 0,
+          'toplam_ders': 0,
+        }),
+        bugun: DateTime(2026, 10, 16),
+      ),
+    );
 
     tasmaTesti(
       'PanoBolumEtiketi',

@@ -301,8 +301,7 @@ const _tumBolumler = <_KapsamliBolum>[
         SssSoru(
           ikon: Icons.home_outlined,
           soru: 'Ana Sayfa\'daki bekleyen işler neler?',
-          cevap:
-              'Üç iş listelenir, her birine dokununca ilgili ekran açılır:\n'
+          cevap: 'Üç iş listelenir, her birine dokununca ilgili ekran açılır:\n'
               '• Ders onayı — son 60 günde bitmiş ama "Yapıldı/Yapılmadı" kararı'
               ' verilmemiş dersler, gün gün. Daha eski dersler web panelinde.\n'
               '• Plan dışı / misafir kararı — antrenörün derse eklediği plan dışı'
@@ -406,10 +405,14 @@ const _tumBolumler = <_KapsamliBolum>[
         _Kapsam.yonetici,
         SssSoru(
           ikon: Icons.group_outlined,
-          soru: 'Üyeler listesindeki gruplar ve kaydırma hareketleri ne işe yarar?',
+          soru:
+              'Üyeler listesindeki kartlar ve kaydırma hareketleri ne işe yarar?',
           cevap:
-              'Liste "Borçlu" ve "Güncel" başlıklarıyla gruplanır; başlıklar'
-              ' kaydırırken ekranın üstünde yapışık kalır. Bir satırı yana kaydırınca'
+              'Üstteki Toplam, Aktif, Pasif, Borçlu ve Yeni kartları hem sayıyı'
+              ' gösterir hem filtredir: dokununca liste süzülür. Borçlu en borçluyu,'
+              ' Yeni bu ay kaydolanları önce gösterir; Toplam ada göre, baş harf'
+              ' gruplarıyla listeler. Borç satırdaki kırmızı tutardan, pasiflik'
+              ' rozetten okunur. Bir satırı yana kaydırınca'
               ' Ara ve WhatsApp kısayolları açılır; ekran okuyucuyla kullanıyorsanız aynı'
               ' eylemler satıra uzun basınca alt sayfada listelenir. Arama kutusu aşağı'
               ' kaydırınca gizlenir, yukarı çekince geri gelir.',
@@ -419,10 +422,11 @@ const _tumBolumler = <_KapsamliBolum>[
         _Kapsam.yonetici,
         SssSoru(
           ikon: Icons.account_balance_wallet_outlined,
-          soru: '"Borçlu Üyeler" sayfası ile üye listesindeki borçlu grubu aynı mı?',
+          soru:
+              '"Borçlu Üyeler" sayfası ile üye listesindeki borçlu grubu aynı mı?',
           cevap:
-              'Aynı veriye iki farklı giriştir. Üye listesi bütün üyeleri gösterip'
-              ' borçluları başa gruplar; drawer\'daki "Borçlu Üyeler" sayfası yalnız'
+              'Aynı veriye iki farklı giriştir. Üye listesinde "Borçlu" kartı'
+              ' borçluları en borçlu önce süzer; drawer\'daki "Borçlu Üyeler" sayfası yalnız'
               ' borçluları, toplam borç özetiyle birlikte listeler. Tahsilat turu'
               ' yapıyorsanız ikincisi daha pratiktir.',
         ),
@@ -503,9 +507,10 @@ const _tumBolumler = <_KapsamliBolum>[
           ikon: Icons.dashboard_outlined,
           soru: 'Dashboard neyi gösteriyor?',
           cevap:
-              'Üstteki dönem seçiciyle (gün/hafta/ay) seçtiğiniz aralığın özetini:'
-              ' temel sayı kartları, günlük özet, haftalık grafik ve sık kullanılan'
-              ' sayfalara hızlı erişim. Bütün hesaplar sunucuda yapılır; uygulama kendi'
+              'En üstte bugünün özeti (yeni üye, ders, doluluk). Bugün / Bu Hafta / Bu Ay'
+              ' seçimi yalnız ona bağlı kartlarla (ciro, tahsilat, ders, iptal) aynı'
+              ' kutudadır; aktif üye ve alacak "Şu an", haftalık grafik bu haftanın'
+              ' günleridir. Bütün hesaplar sunucuda yapılır; uygulama kendi'
               ' başına toplama/çıkarma yapmaz. Bir bölümün verisi alınamazsa o bölüm'
               ' yanlış sayı göstermek yerine gizlenir.',
         ),
@@ -516,8 +521,10 @@ const _tumBolumler = <_KapsamliBolum>[
           ikon: Icons.bar_chart_rounded,
           soru: 'Raporlar sekmesinde neler var?',
           cevap:
-              'Ciro, tahsilat, doluluk, kort doluluk haritası ve antrenör performansı'
-              ' bölümleri. Hepsi seçtiğiniz döneme göre yeniden hesaplanır. Rapor'
+              'İki kutu, ikisinin de kendi dönem seçimi var: "Ciro ve tahsilat" (özet'
+              ' kartlar, günlük ciro ve tahsilat) ile "Kort ve antrenör" (kort'
+              ' doluluğu, antrenör performansı). En alttaki ısı haritası her zaman bu'
+              ' haftayı (Pzt–Paz, planlı dersler dahil) saat saat gösterir. Rapor'
               ' ekranları salt okunurdur — buradan bir kayıt değiştirilmez.',
         ),
       ),
@@ -561,8 +568,7 @@ const _tumBolumler = <_KapsamliBolum>[
         SssSoru(
           ikon: Icons.category_outlined,
           soru: 'Üç grup ne anlama geliyor?',
-          cevap:
-              '• Hakediş alacak — ders yapıldı ve hakedişe sayılıyor.\n'
+          cevap: '• Hakediş alacak — ders yapıldı ve hakedişe sayılıyor.\n'
               '• Bekliyor — henüz karar verilmemiş dersler; yoklama ya da yönetici onayı'
               ' tamamlanınca bir üst ya da alt gruba geçer.\n'
               '• Hakediş dışı — sayılmayacak dersler.\n\n'

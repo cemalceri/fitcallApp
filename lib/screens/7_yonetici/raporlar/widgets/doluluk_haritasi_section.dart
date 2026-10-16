@@ -81,7 +81,7 @@ class DolulukHaritasiSection extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Center(
-                child: Text('Bu dönemde ders yok',
+                child: Text('Bu hafta ders yok',
                     style: TextStyle(color: colorScheme.onSurfaceVariant)),
               ),
             )

@@ -3,6 +3,9 @@
 // Yönetici panosunun kimlik yüzeyi. Para ve artı/eksi trend taşımayan tek kart
 // olduğu için bu seçildi: renkli yüzeyin üstünde yeşil/kırmızı trend
 // kullanmak anlamı bozardı. Değerler beyaz, durum rengi yok.
+//
+// Panonun en üstünde (kullanıcı isteği 2026-10-16): Yeni Üye · Ders · Doluluk.
+// "Bekleyen Telafi" (kullanılmamış hak sayısı) yerine bugünün ders sayısı.
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
@@ -12,7 +15,14 @@ import 'package:flutter/material.dart';
 class DailySummaryCard extends StatelessWidget {
   final GununOzeti data;
 
-  const DailySummaryCard({super.key, required this.data});
+  /// Bugünün iptal edilmemiş dersleri (hızlı erişimdeki `toplam_ders`).
+  final int bugunkuDers;
+
+  const DailySummaryCard({
+    super.key,
+    required this.data,
+    required this.bugunkuDers,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -56,18 +66,17 @@ class DailySummaryCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
+                // Bugün kaydı açılan üye (backend `bugun_yeni`); ders değil.
                 child: _SummaryItem(
                   value: data.yeniKayit.toString(),
-                  label: 'Yeni Kayıt',
+                  label: 'Yeni Üye',
                 ),
               ),
               ayrac,
               Expanded(
-                // Bugün yapılan telafi dersi değil: kullanılmamış, süresi
-                // geçmemiş telafi hakkı sayısı (backend `telafi_bekleyen`).
                 child: _SummaryItem(
-                  value: data.telafiDers.toString(),
-                  label: 'Bekleyen Telafi',
+                  value: bugunkuDers.toString(),
+                  label: 'Ders',
                 ),
               ),
               ayrac,

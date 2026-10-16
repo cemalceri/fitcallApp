@@ -186,6 +186,13 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Bugünün özeti en üstte (kullanıcı isteği 2026-10-16).
+            DailySummaryCard(
+              data: _data!.gununOzeti,
+              bugunkuDers: _data!.hizliErisimDersler.toplamDers,
+            ),
+            const SizedBox(height: 20),
+
             // Seçilen döneme bağlı kartlar, seçiciyle aynı kutuda.
             DonemKutusu(
               seciliDonem: _seciliDonem,
@@ -231,10 +238,6 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
               onAntrenorTap: () => widget.onTabChange?.call(3), // Antrenörler
               onDerslerTap: () => widget.onTabChange?.call(4), // Dersler
             ),
-            const SizedBox(height: 16),
-
-            // Günün özeti
-            DailySummaryCard(data: _data!.gununOzeti),
             const SizedBox(height: 24),
           ],
         ),

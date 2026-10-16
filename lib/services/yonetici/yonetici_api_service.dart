@@ -25,13 +25,18 @@ class YoneticiApiService {
 
   // ==================== RAPORLAR ====================
 
-  /// Raporlar verilerini getirir
+  /// Raporlar verilerini getirir.
+  ///
+  /// [bolum]: 'donem' (özet + ciro + tahsilat) | 'kort_antrenor' (kort
+  /// doluluğu + antrenörler); iki grubun ayrı dönem seçicisi var. Alanı
+  /// tanımayan eski sunucu hepsini döndürür, okunan kısım yine doğru.
   static Future<ApiResult<RaporlarData>> getRaporlar({
     required DonemFiltresi donem,
+    String? bolum,
   }) {
     return ApiClient.postParsed<RaporlarData>(
       yoneticiRaporlar,
-      {'donem': donem.apiValue},
+      {'donem': donem.apiValue, if (bolum != null) 'bolum': bolum},
       (json) => RaporlarData.fromJson(json as Map<String, dynamic>),
       auth: true,
     );
@@ -75,13 +80,14 @@ class YoneticiApiService {
     );
   }
 
-  /// Kort doluluk ısı haritası (saat x haftanın günü)
-  static Future<ApiResult<DolulukHaritasi>> getDolulukHaritasi({
-    required DonemFiltresi donem,
-  }) {
+  /// Kort doluluk ısı haritası (saat x haftanın günü), bu haftanın
+  /// tamamı: Pzt–Paz, ileri tarihli planlı dersler dahil (sunucuda
+  /// 'bu_hafta_tamami'). Izgara hep bir hafta olduğu için dönem seçicisine
+  /// bağlı değil (kullanıcı isteği 2026-10-16).
+  static Future<ApiResult<DolulukHaritasi>> getDolulukHaritasi() {
     return ApiClient.postParsed<DolulukHaritasi>(
       yoneticiDolulukHaritasi,
-      {'donem': donem.apiValue},
+      {'donem': 'bu_hafta_tamami'},
       (json) => DolulukHaritasi.fromJson(json as Map<String, dynamic>),
       auth: true,
     );

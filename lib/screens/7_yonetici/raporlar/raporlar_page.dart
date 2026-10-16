@@ -1,6 +1,6 @@
 // lib/screens/7_yonetici/raporlar/raporlar_page.dart
 
-import 'package:fitcall/screens/7_yonetici/dashboard/widgets/donem_kutusu.dart';
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -9,20 +9,16 @@ import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_haritasi_section.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_ozet_kartlar.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/ciro_raporu_section.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/tahsilat_raporu_section.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_raporu_section.dart';
-import 'package:fitcall/screens/7_yonetici/raporlar/widgets/antrenor_performans_section.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_gruplari.dart';
 
-/// Raporlar: dönem seçimi panodaki gibi içerikte (kullanıcı isteği
-/// 2026-10-16). İki grup, ikisi de seçili döneme bağlı:
-///   1. dönem kutusu — seçici + özet kartlar + ciro + tahsilat
-///   2. kort ve antrenör — ısı haritası + kort doluluğu + antrenörler
-/// Uzun listeler (ciro/tahsilat günleri, kortlar, antrenörler) kendi
-/// kartlarında kayar. Aktif üye kartı (o anki sayı, dönemden bağımsız)
-/// burada gösterilmez; panoda "Şu an" altında.
+/// Raporlar: dönem seçimi panodaki gibi içerikte. Kullanıcı isteğiyle
+/// (2026-10-16) iki grubun kendi seçicisi var, ısı haritası en altta:
+///   1. Ciro ve tahsilat — seçici + özet kartlar + ciro + tahsilat
+///   2. Kort ve antrenör — seçici + kort doluluğu + antrenörler
+///   3. Bu hafta — ısı haritası (Pzt–Paz; ızgara hep bir hafta, seçiciye
+///      bağlı değil)
+/// Uzun listeler kendi kartlarında kayar. Aktif üye kartı (o anki sayı,
+/// dönemden bağımsız) burada gösterilmez; panoda "Şu an" altında.
 class RaporlarPage extends StatefulWidget {
   const RaporlarPage({super.key});
 
@@ -30,18 +26,31 @@ class RaporlarPage extends StatefulWidget {
   State<RaporlarPage> createState() => _RaporlarPageState();
 }
 
+/// Kendi seçicisi olan bir grubun durumu. Sunucu yalnız [bolum]'ü hesaplar.
+class _RaporGrubu {
+  final String bolum;
+  DonemFiltresi donem = DonemFiltresi.buHafta;
+  RaporlarData? data;
+
+  /// Dönem değişti, sayfa yerinde; yalnız grubun içi iskelette.
+  bool yukleniyor = false;
+
+  /// Hızlı art arda seçimde ya da yenileme sürerken geç gelen eski yanıt
+  /// yenisini ezmesin.
+  int istekNo = 0;
+
+  _RaporGrubu(this.bolum);
+
+  Future<RaporlarData?> getir(DonemFiltresi donem) async =>
+      (await YoneticiApiService.getRaporlar(donem: donem, bolum: bolum)).data;
+}
+
 class _RaporlarPageState extends State<RaporlarPage> {
-  DonemFiltresi _seciliDonem = DonemFiltresi.buHafta;
-  RaporlarData? _data;
+  final _ciro = _RaporGrubu('donem');
+  final _kort = _RaporGrubu('kort_antrenor');
   DolulukHaritasi? _harita;
   bool _loading = true;
   String? _errorMessage;
-
-  /// Dönem değişti, sayfa yerinde; iki grubun içi iskelette.
-  bool _donemYukleniyor = false;
-
-  /// Hızlı art arda dönem seçiminde geç gelen eski yanıt yenisini ezmesin.
-  int _istekNo = 0;
 
   @override
   void initState() {
@@ -49,41 +58,45 @@ class _RaporlarPageState extends State<RaporlarPage> {
     _loadData();
   }
 
-  Future<(RaporlarData?, DolulukHaritasi?)> _getir(DonemFiltresi donem) async {
-    // İki isteği eşzamanlı başlat
-    final raporFuture = YoneticiApiService.getRaporlar(donem: donem);
-    final haritaFuture = YoneticiApiService.getDolulukHaritasi(donem: donem);
-    final rapor = await raporFuture;
-    final harita = await haritaFuture;
-    return (rapor.data, harita.data);
-  }
-
   Future<void> _loadData() async {
-    final no = ++_istekNo;
+    final ciroNo = ++_ciro.istekNo;
+    final kortNo = ++_kort.istekNo;
     setState(() {
       _loading = true;
       _errorMessage = null;
     });
 
     try {
-      final (rapor, harita) = await _getir(_seciliDonem);
-      if (mounted && no == _istekNo) {
-        setState(() {
-          _data = rapor;
-          _harita = harita;
-          _loading = false;
-          _donemYukleniyor = false;
-        });
-      }
+      // Üç istek eşzamanlı; biri hata verirse diğerlerinin hatası yutulur.
+      final sonuc = await Future.wait<Object?>([
+        _ciro.getir(_ciro.donem),
+        _kort.getir(_kort.donem),
+        YoneticiApiService.getDolulukHaritasi().then((r) => r.data),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        // Yenileme sürerken grubun dönemi değiştiyse o grubun yeni isteği
+        // kazanır; bu yanıt yalnız değişmeyen gruba yazılır.
+        if (ciroNo == _ciro.istekNo) {
+          _ciro.data = sonuc[0] as RaporlarData? ?? _ciro.data;
+          _ciro.yukleniyor = false;
+        }
+        if (kortNo == _kort.istekNo) {
+          _kort.data = sonuc[1] as RaporlarData? ?? _kort.data;
+          _kort.yukleniyor = false;
+        }
+        _harita = sonuc[2] as DolulukHaritasi? ?? _harita;
+        _loading = false;
+      });
     } on ApiException catch (e) {
-      if (mounted && no == _istekNo) {
+      if (mounted) {
         setState(() {
           _errorMessage = e.message;
           _loading = false;
         });
       }
     } catch (e) {
-      if (mounted && no == _istekNo) {
+      if (mounted) {
         setState(() {
           _errorMessage = 'Veriler yüklenirken bir hata oluştu.';
           _loading = false;
@@ -92,33 +105,32 @@ class _RaporlarPageState extends State<RaporlarPage> {
     }
   }
 
-  /// Panodaki gibi: dönem değişince sayfa iskelete dönmez, yalnız iki grubun
-  /// içi yenilenir. Hata olursa önceki seçime dönülür.
-  Future<void> _onDonemChanged(DonemFiltresi donem) async {
-    if (_data == null) {
-      setState(() => _seciliDonem = donem);
+  /// Panodaki gibi: dönem değişince sayfa iskelete dönmez, yalnız o grubun
+  /// içi yenilenir. Hata olursa grup önceki seçimine döner.
+  Future<void> _donemDegisti(_RaporGrubu grup, DonemFiltresi donem) async {
+    if (grup.data == null) {
+      setState(() => grup.donem = donem);
       _loadData();
       return;
     }
-    final onceki = _seciliDonem;
-    final no = ++_istekNo;
+    final onceki = grup.donem;
+    final no = ++grup.istekNo;
     setState(() {
-      _seciliDonem = donem;
-      _donemYukleniyor = true;
+      grup.donem = donem;
+      grup.yukleniyor = true;
     });
     try {
-      final (rapor, harita) = await _getir(donem);
-      if (!mounted || no != _istekNo) return;
+      final data = await grup.getir(donem);
+      if (!mounted || no != grup.istekNo) return;
       setState(() {
-        _data = rapor ?? _data;
-        _harita = harita;
-        _donemYukleniyor = false;
+        grup.data = data ?? grup.data;
+        grup.yukleniyor = false;
       });
     } catch (e) {
-      if (!mounted || no != _istekNo) return;
+      if (!mounted || no != grup.istekNo) return;
       setState(() {
-        _seciliDonem = onceki;
-        _donemYukleniyor = false;
+        grup.donem = onceki;
+        grup.yukleniyor = false;
       });
       ShowMessage.error(
         context,
@@ -135,7 +147,7 @@ class _RaporlarPageState extends State<RaporlarPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Dönem seçimi ve seçili günler içerikteki dönem kutusunda.
+            // Dönem seçimleri ve seçili günler içerikteki kutularda.
             const SekmeBasligi(baslik: 'Raporlar'),
             Expanded(child: _buildContent()),
           ],
@@ -145,12 +157,15 @@ class _RaporlarPageState extends State<RaporlarPage> {
   }
 
   Widget _buildContent() {
+    final ciro = _ciro.data;
+    final kort = _kort.data;
+
     // Aşağı çekip yenilemede rapor yerinde durur; iskelet yalnız ilk açılışta.
-    if (_loading && _data == null) {
+    if (_loading && ciro == null) {
       return const IskeletKart(anaKartYuksekligi: 110);
     }
 
-    if (_errorMessage != null && _data == null) {
+    if (_errorMessage != null && ciro == null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -176,7 +191,7 @@ class _RaporlarPageState extends State<RaporlarPage> {
       );
     }
 
-    if (_data == null) {
+    if (ciro == null) {
       return const Center(child: Text('Veri bulunamadı'));
     }
 
@@ -188,48 +203,24 @@ class _RaporlarPageState extends State<RaporlarPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 1. Seçici + özet kartlar + ciro + tahsilat
-            DonemKutusu(
-              seciliDonem: _seciliDonem,
-              onDonemChanged: _onDonemChanged,
-              yukleniyor: _donemYukleniyor,
-              iskeletYukseklikleri: const [100, 300, 300],
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  RaporOzetKartlar(
-                    data: _data!.ozetKartlar.where((k) => !k.anlikMi).toList(),
-                  ),
-                  const SizedBox(height: 16),
-                  CiroRaporuSection(data: _data!.ciroRaporu),
-                  const SizedBox(height: 16),
-                  TahsilatRaporuSection(data: _data!.tahsilatRaporu),
-                ],
-              ),
+            RaporDonemGrubu(
+              donem: _ciro.donem,
+              onDonemChanged: (d) => _donemDegisti(_ciro, d),
+              yukleniyor: _ciro.yukleniyor,
+              data: ciro,
             ),
             const SizedBox(height: 20),
-
-            // 2. Aynı dönemin kort ve antrenör raporları
-            DonemGrubu(
-              ikon: Icons.sports_tennis_rounded,
-              baslik: 'Kort ve antrenör',
-              donem: _seciliDonem,
-              yukleniyor: _donemYukleniyor,
-              iskeletYukseklikleri: const [300, 280, 280],
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Doluluk ısı haritası (saat x haftanın günü)
-                  if (_harita != null) ...[
-                    DolulukHaritasiSection(data: _harita!),
-                    const SizedBox(height: 16),
-                  ],
-                  DolulukRaporuSection(data: _data!.dolulukRaporu),
-                  const SizedBox(height: 16),
-                  AntrenorPerformansSection(data: _data!.antrenorPerformans),
-                ],
-              ),
+            RaporKortAntrenorGrubu(
+              donem: _kort.donem,
+              onDonemChanged: (d) => _donemDegisti(_kort, d),
+              yukleniyor: _kort.yukleniyor,
+              // Yanıtta veri yoksa bölümler boş durumunu gösterir.
+              data: kort ?? RaporlarData.fromJson(const {}),
             ),
+            if (_harita != null) ...[
+              const SizedBox(height: 20),
+              RaporHaftalikYogunluk(data: _harita!, bugun: bugunKulup()),
+            ],
           ],
         ),
       ),
