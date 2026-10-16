@@ -35,7 +35,7 @@ class StatCard extends StatelessWidget {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          color: colorScheme.outlineVariant,
         ),
         boxShadow: [
           BoxShadow(
@@ -194,7 +194,7 @@ class StatCardDouble extends StatelessWidget {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          color: colorScheme.outlineVariant,
         ),
         boxShadow: [
           BoxShadow(

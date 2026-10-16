@@ -27,9 +27,9 @@ void main() {
   testWidgets('uzun liste sınırda durur, kendi içinde kayar', (tester) async {
     await tester.pumpWidget(_sar(31));
     final liste = tester.getSize(find.byType(RaporKaydirmaliListe));
-    expect(liste.height, 280);
+    expect(liste.height, 186);
     // Alttaki bölüm 31 satırın (930 px) altına itilmiyor.
-    expect(tester.getTopLeft(find.text('Alttaki bölüm')).dy, lessThan(300));
+    expect(tester.getTopLeft(find.text('Alttaki bölüm')).dy, lessThan(200));
 
     expect(find.text('Gün 30'), findsNothing);
     await tester.drag(find.byType(ListView), const Offset(0, -1000));

@@ -102,8 +102,10 @@ class DonemKutusu extends StatelessWidget {
   }
 }
 
-/// Dönem kutusu ve dönem gruplarının ortak çerçevesi: yüzey zemin, ana
-/// renkte ince kenar. Etkilenen içeriği seçiciyle görsel olarak birleştirir.
+/// Dönem kutusu ve dönem gruplarının ortak çerçevesi: sayfa tonunun biraz
+/// koyusu zemin, ana renkte ince kenar. İçindeki kartlar (yüzey rengi, tam
+/// kenar) bu zeminde kendi çerçeveleriyle ayrılır — önceden ikisi de beyazdı
+/// ve iç kartlar kayboluyordu (kullanıcı isteği 2026-10-16).
 class DonemCercevesi extends StatelessWidget {
   final Widget child;
 
@@ -115,7 +117,10 @@ class DonemCercevesi extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(Bosluk.m),
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: Color.alphaBlend(
+          cs.primary.withValues(alpha: 0.06),
+          context.gecis.sayfaRengi,
+        ),
         borderRadius: BorderRadius.circular(Yaricap.l),
         border: Border.all(color: cs.primary.withValues(alpha: 0.45)),
       ),

@@ -10,6 +10,10 @@ class RaporOzetKartlar extends StatelessWidget {
 
   IconData _getIcon(String iconName) {
     switch (iconName) {
+      // Sunucu "Toplam Ciro" için trending_up gönderiyor; eşlenmediği için
+      // kartta bilgi (i) simgesi çıkıyordu.
+      case 'trending_up':
+        return Icons.trending_up;
       case 'attach_money':
         return Icons.attach_money;
       case 'event':
@@ -43,7 +47,7 @@ class RaporOzetKartlar extends StatelessWidget {
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+                color: colorScheme.outlineVariant,
               ),
             ),
             child: Column(

@@ -193,7 +193,7 @@ class _RaporlarPageState extends State<RaporlarPage> {
               seciliDonem: _seciliDonem,
               onDonemChanged: _onDonemChanged,
               yukleniyor: _donemYukleniyor,
-              iskeletYukseklikleri: const [100, 220, 220],
+              iskeletYukseklikleri: const [100, 300, 300],
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -215,7 +215,7 @@ class _RaporlarPageState extends State<RaporlarPage> {
               baslik: 'Kort ve antrenör',
               donem: _seciliDonem,
               yukleniyor: _donemYukleniyor,
-              iskeletYukseklikleri: const [220, 220, 220],
+              iskeletYukseklikleri: const [300, 280, 280],
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

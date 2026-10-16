@@ -15,7 +15,11 @@ import 'package:intl/date_symbol_data_local.dart';
 DashboardData _pano() => DashboardData.fromJson({
       'ciro': {'toplam_ciro': '8400', 'ders_sayisi': 14},
       'tahsilat': {'toplam_tahsilat': '5250', 'islem_sayisi': 6},
-      'ders': {'toplam_ders': 18, 'tamamlanan_ders': 14, 'iptal_edilen_ders': 2},
+      'ders': {
+        'toplam_ders': 18,
+        'tamamlanan_ders': 14,
+        'iptal_edilen_ders': 2
+      },
       'uye': {'aktif_uye_sayisi': 212},
       'toplam_alacak': {'toplam_borc': '41300', 'borclu_uye_sayisi': 9},
     });
@@ -75,6 +79,30 @@ void main() {
     final bos = await yukseklik(true);
     expect(find.text('Ciro'), findsNothing);
     expect(bos, closeTo(dolu, 1));
+  });
+
+  // Grup zemini sayfa tonunun üstüne %6 ana renk (DonemCercevesi). Üzerindeki
+  // başlık / tarih aralığı / seçici yazıları her temada okunur kalmalı; iç
+  // kartlar (yüzey) bu zeminden ayrılmalı.
+  test('grup zemininde yazılar her temada okunur', () {
+    for (final takim in TakimTemasi.values) {
+      for (final parlaklik in Brightness.values) {
+        final t = FitcallTema.temasi(takim, parlaklik);
+        final cs = t.colorScheme;
+        final zemin = Color.alphaBlend(
+          cs.primary.withValues(alpha: 0.06),
+          t.extension<TemaGecisleri>()!.sayfaRengi,
+        );
+        final ad = '${takim.kod} ${parlaklik.name}';
+        expect(kontrastOrani(cs.onSurface, zemin), greaterThanOrEqualTo(4.5),
+            reason: '$ad onSurface');
+        expect(kontrastOrani(cs.onSurfaceVariant, zemin),
+            greaterThanOrEqualTo(4.5),
+            reason: '$ad onSurfaceVariant');
+        expect(kontrastOrani(cs.primary, zemin), greaterThanOrEqualTo(3),
+            reason: '$ad primary (ikon)');
+      }
+    }
   });
 
   test('raporlarda yalnız aktif üye kartı dönemden bağımsız', () {

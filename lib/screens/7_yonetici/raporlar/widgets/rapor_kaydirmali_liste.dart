@@ -15,7 +15,8 @@ class RaporKaydirmaliListe extends StatefulWidget {
   const RaporKaydirmaliListe({
     super.key,
     required this.satirlar,
-    this.azamiYukseklik = 280,
+    // 280 px'te liste hâlâ uzun görünüyordu; üçte ikisi (kullanıcı isteği).
+    this.azamiYukseklik = 186,
   });
 
   @override
