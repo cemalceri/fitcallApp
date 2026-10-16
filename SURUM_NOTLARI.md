@@ -48,17 +48,18 @@ görüyor (tam ekran popup; kalıcı erişim Ayarlar › "Neler yeni").
 
 ### Mağaza metni (tr-TR)
 
-`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 496).
-**3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16): metin ve popup notları 3.10.0'dan bu yana
-gelen her şeyi anlatıyor. Metin yalnız üyeyi ilgilendiren maddeleri taşır; diğer roller popup'ta.
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 487).
+**3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16): metin o iki sürümün üye yeniliklerini de anlatıyor.
+Her zamanki gibi elle, son kullanıcı için kısa maddelerle yazılır; "Neler yeni?" notlarından (`surum_notlari.json`)
+**bağımsızdır**, ondan beslenmez ve onun metnini kopyalamaz (kullanıcı kararı 2026-10-16).
 
-- Renk temaları: Binay Akademi'nin yanında Sarı-Kırmızı, Sarı-Lacivert, Bordo-Mavi, Siyah-Beyaz ve Ay-Yıldız. Ayarlar › Görünüm'den seçin.
-- Yenilenen ekranlar: seçtiğiniz renk her sayfada; koyu temada yazılar daha okunaklı.
-- Profil fotoğrafı: Hesabım'da fotoğrafınıza dokunup çekin ya da galeriden seçin.
-- Neler yeni: güncellemeden sonra yenilikler uygulamada.
-- Doğum günü kutlaması, önemli duyurular açılışta.
-- Ödeme alınınca, paket tanımlanınca ya da bitince bildirim.
-- Hata düzeltmeleri.
+- Renk temaları: Binay Akademi'nin yanında Sarı-Kırmızı, Sarı-Lacivert, Bordo-Mavi, Siyah-Beyaz ve Ay-Yıldız. Ayarlar'daki Görünüm bölümünden seçin.
+- Ekranlar sade bir tasarımla yenilendi; koyu temada yazılar daha okunaklı.
+- Profil fotoğrafı: kameradan çekin ya da galeriden seçin.
+- Doğum gününüzde kutlama, önemli duyurular açılışta.
+- Ödemeniz alınınca, paketiniz tanımlanınca ya da bitince bildirim gelir.
+- Yenilikleri artık uygulamada görebilirsiniz.
+- Çeşitli hata düzeltmeleri.
 
 ### "Neler yeni?" popup'ı
 
