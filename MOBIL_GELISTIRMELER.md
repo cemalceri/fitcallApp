@@ -14,8 +14,8 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 |---|---|
 | Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi. Commit'li ve push'lu, **tag atılmadı** (kullanıcı kararı bekliyor, bkz. açık iş 10). Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
 | Testler | `flutter test` **3057 geçiyor** (2026-10-16), `flutter analyze` temiz; backend süiti **1185 geçiyor**, 0 kırık (2026-10-16) |
-| Backend | Canlı: `7e741d0` (Heroku **v318**, 2026-10-16) — değerlendirmeler yalnız yönetici + `degerlendirme_sayisi`, eski değerlendirme uçlarında güvenlik düzeltmesi, 3.12.0 sürüm notları (`yayinda: false`). Deploy bekleyen yok |
-| Mağaza | Play'de **3.8.0** yayında; App Store'da yayındaki sürüm **3.7.0** (3.8.0 gönderimi iptal edilmişti). **3.8.1** gönderildi; **3.9.0** `v3.9.0` tag'iyle gönderildi (2026-09-08); **3.10.0** `v3.10.0` tag'iyle gönderildi (2026-10-10) |
+| Backend | Canlı: `bcd3a3b` (Heroku **v319**, 2026-10-16) — değerlendirmeler yalnız yönetici + `degerlendirme_sayisi`, eski değerlendirme uçlarında güvenlik düzeltmesi, 3.12.0 sürüm notları (3.10.0–3.12.0 birleşik, `yayinda: false`). Deploy bekleyen yok |
+| Mağaza | **3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16; 3.11.0 App Store'da 2.3.3 ile döndü, gönderim iptal). 3.12.0'ın mağaza metni ve "Neler yeni?" notları bu yüzden 3.10.0'dan bu yana her şeyi anlatıyor. Daha önce: 3.9.0 `v3.9.0` (2026-09-08), 3.8.1 |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
 olduğu uçlar (`kayitFormVerileri`, `uyeBasvuru`, `sifremiUnuttum`, `sifreSifirlamaGonder`) canlıda

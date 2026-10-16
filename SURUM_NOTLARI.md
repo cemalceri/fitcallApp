@@ -48,17 +48,24 @@ görüyor (tam ekran popup; kalıcı erişim Ayarlar › "Neler yeni").
 
 ### Mağaza metni (tr-TR)
 
-`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 286).
-Metin yalnız üyeyi ilgilendiren maddeleri taşır; yönetici/ofis yenilikleri popup'ta ve teknik bölümde.
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 496).
+**3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16): metin ve popup notları 3.10.0'dan bu yana
+gelen her şeyi anlatıyor. Metin yalnız üyeyi ilgilendiren maddeleri taşır; diğer roller popup'ta.
 
-- Neler yeni?: Güncellemeden sonraki ilk açılışta, sizi ilgilendiren yenilikler kısa bir listeyle gösteriliyor; Ayarlar'dan tekrar açabilirsiniz.
-- Ana sayfadaki sonraki ders kartında kort adı iki kez yazılıyordu, düzeltildi.
-- Bildirim listesi telefonunuzun yazı boyutu ayarına uyuyor.
+- Renk temaları: Binay Akademi'nin yanında Sarı-Kırmızı, Sarı-Lacivert, Bordo-Mavi, Siyah-Beyaz ve Ay-Yıldız. Ayarlar › Görünüm'den seçin.
+- Yenilenen ekranlar: seçtiğiniz renk her sayfada; koyu temada yazılar daha okunaklı.
+- Profil fotoğrafı: Hesabım'da fotoğrafınıza dokunup çekin ya da galeriden seçin.
+- Neler yeni: güncellemeden sonra yenilikler uygulamada.
+- Doğum günü kutlaması, önemli duyurular açılışta.
+- Ödeme alınınca, paket tanımlanınca ya da bitince bildirim.
+- Hata düzeltmeleri.
 
 ### "Neler yeni?" popup'ı
 
-İlk sürüm notu popup'ı bu sürümle çıkıyor. Notlar backend `surum_notlari.json`'da (3.12.0 bloğu,
-Heroku v318 ile yüklendi, `yayinda: false`). Mağazada canlı görülünce Django admin › Sürüm Notları'ndan
+İlk sürüm notu popup'ı bu sürümle çıkıyor. Notlar backend `surum_notlari.json`'da: 3.10.0, 3.11.0
+ve 3.12.0'ın maddeleri rol başına tek 3.12.0 bloğunda (üye 7, antrenör 4, ofis 8, yönetici 8; popup ilk
+4'ü gösterir, gerisi "Tümünü gör"). Yayınlanmamış 3.11.0 bloğu kaldırıldı. Heroku v319 ile yüklendi,
+`yayinda: false`). Mağazada canlı görülünce Django admin › Sürüm Notları'ndan
 `yayinda_mi` açılacak.
 
 ### Teknik
