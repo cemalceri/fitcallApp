@@ -6,15 +6,28 @@ import 'package:flutter/material.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
 import 'package:intl/intl.dart';
 
+/// Panodaki kart grupları. Dönem seçimi yalnız [donem] grubunu değiştirir;
+/// [anlik] grubu o anki durumu gösterir (aktif üye, toplam alacak). İkisi
+/// ayrı çizilir ki seçicinin neyi etkilediği görünsün.
+enum PanoKartGrubu { donem, anlik }
+
 class StatCardsGrid extends StatelessWidget {
   final DashboardData data;
+  final PanoKartGrubu grup;
   final VoidCallback? onToplamAlacakTap;
 
   const StatCardsGrid({
     super.key,
     required this.data,
+    required this.grup,
     this.onToplamAlacakTap,
   });
+
+  /// Kart yüksekliği genişlikten değil içerikten: sabit en-boy oranı (1.1)
+  /// 360 dp'de kartları gerçek fontla 5–13 px taşırıyordu. Sabit kısım
+  /// (dolgu + ikon + boşluklar) + yazı ölçeğiyle büyüyen üç satır yazı.
+  static double kartYuksekligi(BuildContext context) =>
+      88 + 80 * MediaQuery.textScalerOf(context).scale(1);
 
   String _formatCurrency(double value) {
     final formatter = NumberFormat.currency(
@@ -30,20 +43,24 @@ class StatCardsGrid extends StatelessWidget {
     // İkonlar ana renkte; yalnız durum bildirenler (iptal, alacak) her temada
     // aynı durum rengini alır. Eskiden altı kart altı ayrı renkteydi.
     final ana = context.cs.primary;
-    // Kart yüksekliği genişlikten değil içerikten: sabit en-boy oranı (1.1)
-    // 360 dp'de kartları gerçek fontla 5–13 px taşırıyordu. Sabit kısım
-    // (dolgu + ikon + boşluklar) + yazı ölçeğiyle büyüyen üç satır yazı.
-    final olcek = MediaQuery.textScalerOf(context).scale(1);
     return GridView(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        mainAxisExtent: 88 + 80 * olcek,
+        mainAxisExtent: kartYuksekligi(context),
       ),
-      children: [
+      children: switch (grup) {
+        PanoKartGrubu.donem => _donemKartlari(context, ana),
+        PanoKartGrubu.anlik => _anlikKartlar(context, ana),
+      },
+    );
+  }
+
+  List<Widget> _donemKartlari(BuildContext context, Color ana) => [
         // Ciro (ders bazlı getiri)
         StatCard(
           baslik: 'Ciro',
@@ -78,14 +95,16 @@ class StatCardsGrid extends StatelessWidget {
         StatCard(
           baslik: 'İptal Edilen',
           deger: data.ders.iptalEdilenDers.toString(),
-          altBaslik: 'Seçilen döneme göre',
+          altBaslik: 'Önceki dönem ${data.ders.oncekiDonemIptal}',
           ikon: Icons.cancel_outlined,
           ikonRenk: context.renkler.hata,
           degisimYuzdesi: data.ders.iptalDegisimYuzdesi != null
               ? -data.ders.iptalDegisimYuzdesi!
               : null,
         ),
+      ];
 
+  List<Widget> _anlikKartlar(BuildContext context, Color ana) => [
         // Aktif Üye
         StatCard(
           baslik: 'Aktif Üye',
@@ -113,7 +132,5 @@ class StatCardsGrid extends StatelessWidget {
                 : null,
           ),
         ),
-      ],
-    );
-  }
+      ];
 }

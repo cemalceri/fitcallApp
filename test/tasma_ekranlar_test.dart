@@ -72,6 +72,7 @@ import 'package:fitcall/screens/3_antrenor/takvim/widgets/yoklama_hizli_secim.da
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/daily_summary_card.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
+import 'package:fitcall/screens/7_yonetici/dashboard/widgets/donem_kutusu.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_liste_item.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/ders_iptal_dialog.dart';
@@ -1436,10 +1437,7 @@ void main() {
 
     // Sabit en-boy oranıyla (1.1) 360 dp'de gerçek fontla taşıyordu; yükseklik
     // artık içerikten.
-    tasmaTesti(
-      'StatCardsGrid (büyük tutarlar, uzun başlıklar)',
-      () => StatCardsGrid(
-        data: DashboardData.fromJson({
+    DashboardData buyukPano() => DashboardData.fromJson({
           'ciro': {
             'toplam_ciro': '12345678',
             'ders_sayisi': 1842,
@@ -1455,14 +1453,46 @@ void main() {
             'tamamlanan_ders': 1842,
             'iptal_edilen_ders': 118,
             'doluluk_yuzdesi': 87.4,
+            'onceki_donem_iptal': 1234,
           },
           'uye': {'aktif_uye_sayisi': 1234, 'degisim_yuzdesi': 4.1},
           'toplam_alacak': {'toplam_borc': '4567890', 'borclu_uye_sayisi': 321},
-        }),
-        onToplamAlacakTap: () {},
-      ),
-      sar: (w) => SingleChildScrollView(
-          child: Padding(padding: const EdgeInsets.all(16), child: w)),
+        });
+    Widget kaydirmali(Widget w) => SingleChildScrollView(
+        child: Padding(padding: const EdgeInsets.all(16), child: w));
+
+    // Sabit en-boy oranıyla (1.1) 360 dp'de gerçek fontla taşıyordu; yükseklik
+    // artık içerikten. Pano iki grupta çizilir: dönem kartları ve "şu an".
+    for (final grup in PanoKartGrubu.values) {
+      tasmaTesti(
+        'StatCardsGrid ${grup.name} (büyük tutarlar, uzun başlıklar)',
+        () => StatCardsGrid(
+          data: buyukPano(),
+          grup: grup,
+          onToplamAlacakTap: () {},
+        ),
+        sar: kaydirmali,
+      );
+    }
+
+    // Seçici + tarih aralığı + 2×2 kart tek çerçevede; dönem değişirken
+    // aynı yükseklikte iskelet.
+    for (final yukleniyor in [false, true]) {
+      tasmaTesti(
+        'DonemKutusu (${yukleniyor ? 'yükleniyor' : 'dolu'})',
+        () => DonemKutusu(
+          seciliDonem: DonemFiltresi.buHafta,
+          onDonemChanged: (_) {},
+          yukleniyor: yukleniyor,
+          child: StatCardsGrid(data: buyukPano(), grup: PanoKartGrubu.donem),
+        ),
+        sar: kaydirmali,
+      );
+    }
+    tasmaTesti(
+      'PanoBolumEtiketi',
+      () => const PanoBolumEtiketi(
+          ikon: Icons.bar_chart_rounded, etiket: 'Bu haftanın günleri'),
     );
 
     // Alt bar 6 sekmelik NavigationBar iken "Antrenörler" etiketi alt satıra

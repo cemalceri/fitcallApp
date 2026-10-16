@@ -9,7 +9,8 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/borclu_uyeler_page.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/dashboard_header.dart';
-import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
+import 'package:fitcall/screens/7_yonetici/dashboard/widgets/donem_kutusu.dart';
+import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/weekly_chart_card.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/quick_access_section.dart';
@@ -36,6 +37,12 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
   bool _loading = true;
   String? _errorMessage;
 
+  /// Dönem değişti, sayfa yerinde; yalnız dönem kutusu iskelette.
+  bool _donemYukleniyor = false;
+
+  /// Hızlı art arda dönem seçiminde geç gelen eski yanıt yenisini ezmesin.
+  int _istekNo = 0;
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +52,7 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
   }
 
   Future<void> _loadData() async {
+    final no = ++_istekNo;
     setState(() {
       _loading = true;
       _errorMessage = null;
@@ -52,10 +60,11 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
 
     try {
       final result = await YoneticiApiService.getDashboard(donem: _seciliDonem);
-      if (mounted) {
+      if (mounted && no == _istekNo) {
         setState(() {
           _data = result.data;
           _loading = false;
+          _donemYukleniyor = false;
         });
       }
     } on ApiException catch (e) {
@@ -75,34 +84,51 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
     }
   }
 
-  void _onDonemChanged(DonemFiltresi donem) {
-    setState(() => _seciliDonem = donem);
-    _loadData();
+  /// Dönem değişince sayfa iskelete dönmez (seçici artık içerikte): veri
+  /// yerinde kalır, yalnız dönem kutusu yenilenir. Hata olursa önceki seçime
+  /// dönülür ki kutudaki sayılar seçili dönemle çelişmesin.
+  Future<void> _onDonemChanged(DonemFiltresi donem) async {
+    if (_data == null) {
+      setState(() => _seciliDonem = donem);
+      _loadData();
+      return;
+    }
+    final onceki = _seciliDonem;
+    final no = ++_istekNo;
+    setState(() {
+      _seciliDonem = donem;
+      _donemYukleniyor = true;
+    });
+    try {
+      final result = await YoneticiApiService.getDashboard(donem: donem);
+      if (!mounted || no != _istekNo) return;
+      setState(() {
+        _data = result.data ?? _data;
+        _donemYukleniyor = false;
+      });
+    } catch (e) {
+      if (!mounted || no != _istekNo) return;
+      setState(() {
+        _seciliDonem = onceki;
+        _donemYukleniyor = false;
+      });
+      ShowMessage.error(
+        context,
+        e is ApiException ? e.message : 'Veriler yüklenirken bir hata oluştu.',
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Başlık (karşılama + dönem seçimi) takım renginde bantta ve sabit;
-    // yüklenirken de görünür.
+    // Başlık bandında yalnız karşılama; dönem seçimi etkilediği kartlarla
+    // birlikte içerikteki dönem kutusunda (DonemKutusu).
     return Scaffold(
       body: Column(
         children: [
           BaslikBandi(
-            padding: const EdgeInsets.fromLTRB(8, 4, 8, 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DashboardHeader(onMenuTap: widget.onMenuTap),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: PeriodFilterTabs(
-                    seciliDonem: _seciliDonem,
-                    onDonemChanged: _onDonemChanged,
-                  ),
-                ),
-              ],
-            ),
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 10),
+            child: DashboardHeader(onMenuTap: widget.onMenuTap),
           ),
           Expanded(child: _buildContent()),
         ],
@@ -111,7 +137,8 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
   }
 
   Widget _buildContent() {
-    if (_loading) {
+    // Aşağı çekip yenilemede mevcut pano durur; iskelet yalnız ilk açılışta.
+    if (_loading && _data == null) {
       return const IskeletDashboard();
     }
 
@@ -159,9 +186,21 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // İstatistik kartları
+            // Seçilen döneme bağlı kartlar, seçiciyle aynı kutuda.
+            DonemKutusu(
+              seciliDonem: _seciliDonem,
+              onDonemChanged: _onDonemChanged,
+              yukleniyor: _donemYukleniyor,
+              child: StatCardsGrid(data: _data!, grup: PanoKartGrubu.donem),
+            ),
+            const SizedBox(height: 20),
+
+            // Dönemden bağımsız: o anki durum.
+            const PanoBolumEtiketi(
+                ikon: Icons.schedule_rounded, etiket: 'Şu an'),
             StatCardsGrid(
               data: _data!,
+              grup: PanoKartGrubu.anlik,
               onToplamAlacakTap: () {
                 HapticFeedback.lightImpact();
                 Navigator.of(context).push(
@@ -171,9 +210,13 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
                 );
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
 
-            // Haftalık ciro/tahsilat grafiği
+            // Grafik her zaman bu haftanın günleri (Pzt → Paz), dönemden bağımsız.
+            const PanoBolumEtiketi(
+              ikon: Icons.bar_chart_rounded,
+              etiket: 'Bu haftanın günleri',
+            ),
             WeeklyChartCard(
               ciroData: _data!.haftalikCiro,
               tahsilatData: _data!.haftalikTahsilat,
@@ -181,7 +224,7 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
             ),
             const SizedBox(height: 20),
 
-            // Hızlı erişim
+            const PanoBolumEtiketi(ikon: Icons.today_rounded, etiket: 'Bugün'),
             QuickAccessSection(
               data: _data!,
               onRaporlarTap: () => widget.onTabChange?.call(1), // Raporlar

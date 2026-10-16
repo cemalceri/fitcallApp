@@ -1,5 +1,6 @@
 // lib/screens/7_yonetici/raporlar/raporlar_page.dart
 
+import 'package:fitcall/screens/7_yonetici/dashboard/widgets/donem_kutusu.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
@@ -80,7 +81,6 @@ class _RaporlarPageState extends State<RaporlarPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: SafeArea(
         top: false,
@@ -152,8 +152,11 @@ class _RaporlarPageState extends State<RaporlarPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Özet kartlar
-            RaporOzetKartlar(data: _data!.ozetKartlar),
+            // Özet kartlar — yalnız seçilen döneme bağlı olanlar; aktif üye
+            // (o anki sayı) en altta "Şu an" bölümünde.
+            RaporOzetKartlar(
+              data: _data!.ozetKartlar.where((k) => !k.anlikMi).toList(),
+            ),
             const SizedBox(height: 24),
 
             // Ciro raporu (ders bazlı)
@@ -177,6 +180,16 @@ class _RaporlarPageState extends State<RaporlarPage> {
             // Antrenör performans
             AntrenorPerformansSection(data: _data!.antrenorPerformans),
             const SizedBox(height: 24),
+
+            // Dönemden bağımsız: o anki durum.
+            if (_data!.ozetKartlar.any((k) => k.anlikMi)) ...[
+              const PanoBolumEtiketi(
+                  ikon: Icons.schedule_rounded, etiket: 'Şu an'),
+              RaporOzetKartlar(
+                data: _data!.ozetKartlar.where((k) => k.anlikMi).toList(),
+              ),
+              const SizedBox(height: 24),
+            ],
           ],
         ),
       ),

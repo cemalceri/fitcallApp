@@ -80,6 +80,11 @@ ve 3.12.0'ın maddeleri rol başına tek 3.12.0 bloğunda (üye 7, antrenör 4, 
   göndermeyen sunucuda yalnız ortalama görünür.
 - **Başlık bantları (yönetici).** Raporlar / Antrenörler / Üyeler başlığında dönem seçimi tam genişlik,
   seçili dönemin tarih aralığı sağda (`DonemFiltresi.aralik`, sunucudaki `get_tarih_araligi` ile aynı).
+- **Pano dönem kutusu (yönetici, kullanıcı kararı "A").** Bugün / Bu Hafta / Bu Ay seçimi başlıktan
+  içeriğe, yalnız ona bağlı kartlarla (ciro, tahsilat, ders, iptal) aynı çerçeveye taşındı (`DonemKutusu`);
+  aktif üye ve toplam alacak "Şu an", haftalık grafik "Bu haftanın günleri", hızlı erişim ve günün özeti
+  "Bugün" altında. Dönem değişince yalnız kutu iskelete döner; yenilemede pano yerinde kalır. Raporlar'da
+  seçici başlıkta kaldı (sayfanın tamamı döneme bağlı), aktif üye kartı en alta "Şu an"a alındı.
 - **Ofis.** Ana Sayfa başlığına çıkış düğmesi; ofis ekranlarındaki başlık görünümü düzeltildi.
 - **Üye.** Sonraki ders kartı kort adını önekle yazıyordu ("Kort Merkez Kort"); bildirim satırı
   `RichText` yerine `Text.rich` (temanın yazı ailesi ve yazı boyutu ayarı).

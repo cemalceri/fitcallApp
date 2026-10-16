@@ -249,7 +249,6 @@ class BaslikCipi extends StatelessWidget {
   }
 }
 
-
 /// Kabuk sekmelerinin (Raporlar, Antrenörler…) başlık bandı: solda sayfa
 /// adı, sağda bağlam bilgisi ([BaslikKapsulu]), altında tam genişlik
 /// [BaslikSecici]. Açıklama satırı bilerek yok: sekme adı ve alt bardaki
@@ -362,11 +361,16 @@ class BaslikSecici<T> extends StatelessWidget {
   final T secili;
   final ValueChanged<T> onSec;
 
+  /// true: başlık bandı yerine içerik yüzeyinde (kart içinde) çizilir —
+  /// seçici etkilediği verilerle aynı kutuda durduğunda (yönetici panosu).
+  final bool yuzeyde;
+
   const BaslikSecici({
     super.key,
     required this.secenekler,
     required this.secili,
     required this.onSec,
+    this.yuzeyde = false,
   });
 
   static const double _yaziBoyu = 13;
@@ -388,7 +392,11 @@ class BaslikSecici<T> extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(_rayIc),
       decoration: BoxDecoration(
-        border: Border.all(color: g.onBaslik.withValues(alpha: 0.6)),
+        border: Border.all(
+          color: yuzeyde
+              ? context.cs.outlineVariant
+              : g.onBaslik.withValues(alpha: 0.6),
+        ),
         borderRadius: BorderRadius.circular(Yaricap.m),
       ),
       child: Row(
@@ -417,10 +425,12 @@ class BaslikSecici<T> extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(
-              horizontal: 4, vertical: _dilimDikey),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 4, vertical: _dilimDikey),
           decoration: BoxDecoration(
-            color: seciliMi ? g.onBaslik : Colors.transparent,
+            color: seciliMi
+                ? (yuzeyde ? context.cs.primary : g.onBaslik)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(Yaricap.m - _rayIc),
           ),
           child: Text(
@@ -431,7 +441,11 @@ class BaslikSecici<T> extends StatelessWidget {
               fontSize: _yaziBoyu,
               height: _satirOrani,
               fontWeight: seciliMi ? FontWeight.w700 : FontWeight.w500,
-              color: seciliMi ? g.baslik : g.onBaslik,
+              color: yuzeyde
+                  ? (seciliMi
+                      ? context.cs.onPrimary
+                      : context.cs.onSurfaceVariant)
+                  : (seciliMi ? g.baslik : g.onBaslik),
             ),
           ),
         ),
@@ -468,8 +482,8 @@ Future<bool> cikisOnayla(BuildContext context) async {
     context: context,
     builder: (c) => AlertDialog(
       title: const Text('Çıkış yapılsın mı?'),
-      content: const Text(
-          'Yeniden girmek için kullanıcı adı ve şifre gerekecek.'),
+      content:
+          const Text('Yeniden girmek için kullanıcı adı ve şifre gerekecek.'),
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(c, false),
