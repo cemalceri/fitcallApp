@@ -380,10 +380,10 @@ class RaporOzetKarti {
     );
   }
 
-  /// Dönemden bağımsız kart: o anki aktif üye sayısı. Raporlar'da dönem
-  /// seçimiyle değişen kartlardan ayrı, "Şu an" altında gösterilir. Sunucu
-  /// bunu ayrı bir alanla işaretlemiyor; başlığa bakılır (değişirse kart
-  /// yalnızca dönem kartlarının arasına geri döner, kırılmaz).
+  /// Dönemden bağımsız kart: o anki aktif üye sayısı. Raporlar'da her şey
+  /// seçili döneme bağlı olduğu için gösterilmez (panoda "Şu an" altında).
+  /// Sunucu bunu ayrı bir alanla işaretlemiyor; başlığa bakılır (değişirse
+  /// kart yalnızca dönem kartlarının arasına geri döner, kırılmaz).
   bool get anlikMi => baslik.trim().toLowerCase() == 'aktif üye';
 
   Color get renkColor {

@@ -24,9 +24,12 @@ class RaporOzetKartlar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    // Yükseklik yazı ölçeğiyle büyür: sabit 100 px, 1.3 ölçekte ve uzun
+    // tutarda (satır kırılınca) kartı alttan taşırıyordu.
+    final olcek = MediaQuery.textScalerOf(context).scale(1);
 
     return SizedBox(
-      height: 100,
+      height: 60 + 40 * olcek,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: data.length,
@@ -66,16 +69,24 @@ class RaporOzetKartlar extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      item.deger,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
+                    // Tutar tek satır; sığmazsa küçülür (₺12.345.678).
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        item.deger,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
                     Text(
                       item.baslik,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 11,
                         color: colorScheme.onSurfaceVariant,

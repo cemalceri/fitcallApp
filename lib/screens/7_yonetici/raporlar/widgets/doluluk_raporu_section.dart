@@ -1,5 +1,6 @@
 // lib/screens/7_yonetici/raporlar/widgets/doluluk_raporu_section.dart
 
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_kaydirmali_liste.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 
@@ -35,12 +36,14 @@ class DolulukRaporuSection extends StatelessWidget {
                     const Icon(Icons.grid_view, size: 18, color: Colors.blue),
               ),
               const SizedBox(width: 10),
-              Text(
-                'Kort Doluluk Oranları',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
+              Expanded(
+                child: Text(
+                  'Kort Doluluk Oranları',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
             ],
@@ -57,55 +60,66 @@ class DolulukRaporuSection extends StatelessWidget {
               ),
             )
           else
-            ...data.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            item.kortAdi,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: colorScheme.onSurface,
+            RaporKaydirmaliListe(
+              satirlar: [
+                for (final item in data)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                item.kortAdi,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
                             ),
-                          ),
-                          Text(
-                            '%${item.dolulukYuzdesi.toStringAsFixed(0)}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: _getDolulukColor(item.dolulukYuzdesi),
+                            const SizedBox(width: 8),
+                            Text(
+                              '%${item.dolulukYuzdesi.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: _getDolulukColor(item.dolulukYuzdesi),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: item.dolulukYuzdesi / 100,
-                          backgroundColor: colorScheme.surfaceContainerHighest,
-                          valueColor: AlwaysStoppedAnimation(
-                            _getDolulukColor(item.dolulukYuzdesi),
-                          ),
-                          minHeight: 8,
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${item.doluSaat} / ${item.toplamSaat} saat',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: colorScheme.onSurfaceVariant,
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: item.dolulukYuzdesi / 100,
+                            backgroundColor:
+                                colorScheme.surfaceContainerHighest,
+                            valueColor: AlwaysStoppedAnimation(
+                              _getDolulukColor(item.dolulukYuzdesi),
+                            ),
+                            minHeight: 8,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          '${item.doluSaat} / ${item.toplamSaat} saat',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                )),
+              ],
+            ),
         ],
       ),
     );

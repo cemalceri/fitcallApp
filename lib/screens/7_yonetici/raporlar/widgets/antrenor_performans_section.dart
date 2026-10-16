@@ -1,5 +1,6 @@
 // lib/screens/7_yonetici/raporlar/widgets/antrenor_performans_section.dart
 
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_kaydirmali_liste.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 
@@ -35,12 +36,14 @@ class AntrenorPerformansSection extends StatelessWidget {
                     size: 18, color: Colors.purple),
               ),
               const SizedBox(width: 10),
-              Text(
-                'Antrenör Performansı',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
+              Expanded(
+                child: Text(
+                  'Antrenör Performansı',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
             ],
@@ -57,91 +60,96 @@ class AntrenorPerformansSection extends StatelessWidget {
               ),
             )
           else
-            ...data.map((item) => Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      // Avatar
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Center(
-                          child: Text(
-                            item.antrenorAdi.isNotEmpty
-                                ? item.antrenorAdi[0].toUpperCase()
-                                : '?',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // Info
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.antrenorAdi,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${item.tamamlananDers}/${item.toplamDers} ders • ${item.iptalDers} iptal',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Puan
-                      if (item.ortalamaPuan != null)
+            RaporKaydirmaliListe(
+              satirlar: [
+                for (final item in data)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest
+                          .withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        // Avatar
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: Colors.amber.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
+                            color: colorScheme.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                          child: Center(
+                            child: Text(
+                              item.antrenorAdi.isNotEmpty
+                                  ? item.antrenorAdi[0].toUpperCase()
+                                  : '?',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.star,
-                                  size: 14, color: Colors.amber),
-                              const SizedBox(width: 4),
                               Text(
-                                item.ortalamaPuan!.toStringAsFixed(1),
-                                style: const TextStyle(
-                                  fontSize: 13,
+                                item.antrenorAdi,
+                                style: TextStyle(
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.amber,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${item.tamamlananDers}/${item.toplamDers} ders • ${item.iptalDers} iptal',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                    ],
+                        // Puan
+                        if (item.ortalamaPuan != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.star,
+                                    size: 14, color: Colors.amber),
+                                const SizedBox(width: 4),
+                                Text(
+                                  item.ortalamaPuan!.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.amber,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                )),
+              ],
+            ),
         ],
       ),
     );

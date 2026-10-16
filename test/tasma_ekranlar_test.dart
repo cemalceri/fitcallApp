@@ -72,6 +72,13 @@ import 'package:fitcall/screens/3_antrenor/takvim/widgets/yoklama_hizli_secim.da
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/daily_summary_card.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
+import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_ozet_kartlar.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/ciro_raporu_section.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/tahsilat_raporu_section.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_haritasi_section.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_raporu_section.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/antrenor_performans_section.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/donem_kutusu.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_liste_item.dart';
@@ -1489,6 +1496,116 @@ void main() {
         sar: kaydirmali,
       );
     }
+    // Raporlar "Bu Ay": 31 günlük ciro/tahsilat, çok kort ve antrenör —
+    // listeler kendi kartında kayar, sayfayı uzatmaz. İki grup da dönem
+    // çerçevesinde (kenar boşluğu bölümleri 24 px daraltır).
+    RaporlarData ayRaporu() => RaporlarData.fromJson({
+          'ozet_kartlar': [
+            for (final b in ['Toplam Ciro', 'Toplam Tahsilat', 'Toplam Ders'])
+              {
+                'baslik': b,
+                'deger': '₺12.345.678',
+                'alt_baslik': '1842 ders',
+                'ikon': 'event',
+                'renk': '#FF9800'
+              },
+          ],
+          'ciro_raporu': [
+            for (var g = 1; g <= 31; g++)
+              {
+                'tarih': '2026-10-${g.toString().padLeft(2, '0')}',
+                'ciro': '1234567',
+                'ders_sayisi': 118
+              },
+          ],
+          'tahsilat_raporu': [
+            for (var g = 1; g <= 31; g++)
+              {
+                'tarih': '2026-10-${g.toString().padLeft(2, '0')}',
+                'tahsilat': '987654',
+                'islem_sayisi': 64
+              },
+          ],
+          'doluluk_raporu': [
+            for (var k = 1; k <= 9; k++)
+              {
+                'kort_adi': 'Tekli Kapalı Kort $k',
+                'kort_id': k,
+                'toplam_saat': 420,
+                'dolu_saat': 388,
+                'doluluk_yuzdesi': 92.4
+              },
+          ],
+          'antrenor_performans': [
+            for (var a = 1; a <= 12; a++)
+              {
+                'antrenor_id': a,
+                'antrenor_adi': 'Ayşe Yılmaz Öğretmenoğulları',
+                'toplam_ders': 188,
+                'tamamlanan_ders': 174,
+                'iptal_ders': 14,
+                'ortalama_puan': 4.8
+              },
+          ],
+        });
+    DolulukHaritasi ayHaritasi() => DolulukHaritasi.fromJson({
+          'donem': 'bu_ay',
+          'gunler': ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+          'saatler': [for (var h = 7; h <= 22; h++) h],
+          'hucreler': [
+            for (var h = 7; h <= 22; h++)
+              {
+                'saat': h,
+                'degerler': [12, 9, 14, 8, 11, 15, 6]
+              },
+          ],
+          'max_sayi': 15,
+          'toplam_ders': 1880,
+        });
+    for (final yukleniyor in [false, true]) {
+      tasmaTesti(
+        'Raporlar dönem kutusu (Bu Ay${yukleniyor ? ', yükleniyor' : ''})',
+        () => DonemKutusu(
+          seciliDonem: DonemFiltresi.buAy,
+          onDonemChanged: (_) {},
+          yukleniyor: yukleniyor,
+          iskeletYukseklikleri: const [100, 220, 220],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              RaporOzetKartlar(data: ayRaporu().ozetKartlar),
+              const SizedBox(height: 16),
+              CiroRaporuSection(data: ayRaporu().ciroRaporu),
+              const SizedBox(height: 16),
+              TahsilatRaporuSection(data: ayRaporu().tahsilatRaporu),
+            ],
+          ),
+        ),
+        sar: kaydirmali,
+      );
+      tasmaTesti(
+        'Raporlar kort ve antrenör grubu (Bu Ay${yukleniyor ? ', yükleniyor' : ''})',
+        () => DonemGrubu(
+          ikon: Icons.sports_tennis_rounded,
+          baslik: 'Kort ve antrenör',
+          donem: DonemFiltresi.buAy,
+          yukleniyor: yukleniyor,
+          iskeletYukseklikleri: const [220, 220, 220],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              DolulukHaritasiSection(data: ayHaritasi()),
+              const SizedBox(height: 16),
+              DolulukRaporuSection(data: ayRaporu().dolulukRaporu),
+              const SizedBox(height: 16),
+              AntrenorPerformansSection(data: ayRaporu().antrenorPerformans),
+            ],
+          ),
+        ),
+        sar: kaydirmali,
+      );
+    }
+
     tasmaTesti(
       'PanoBolumEtiketi',
       () => const PanoBolumEtiketi(
@@ -2289,7 +2406,7 @@ void main() {
 /// sınırındaki metinler (başlık 42, açıklama 180 karakter) kullanılır.
 SurumNotuBlogu _surumNotu({required int maddeSayisi, bool uzun = false}) {
   final baslik = uzun
-      ? 'Üye listesi artık çok daha hızlı açılıyor'  // 42 karakter
+      ? 'Üye listesi artık çok daha hızlı açılıyor' // 42 karakter
       : 'Profil fotoğrafı';
   final aciklama = uzun
       ? 'Liste yirmişer yükleniyor, arama ve filtre sunucuda çalışıyor; uzun '

@@ -23,8 +23,13 @@ class DonemKutusu extends StatelessWidget {
   /// iskelet durur, kutu boyu oynamaz.
   final bool yukleniyor;
 
-  /// 2 × 2 dönem kartları (bkz. [StatCardsGrid] / [PanoKartGrubu.donem]).
+  /// Panoda 2 × 2 dönem kartları (bkz. [StatCardsGrid]); Raporlar'da özet
+  /// kartlar + ciro + tahsilat.
   final Widget child;
+
+  /// Yüklenirken çizilecek iskelet bloklarının yükseklikleri. Verilmezse
+  /// panonun 2 × 2 kart iskeleti.
+  final List<double>? iskeletYukseklikleri;
 
   const DonemKutusu({
     super.key,
@@ -32,19 +37,14 @@ class DonemKutusu extends StatelessWidget {
     required this.onDonemChanged,
     required this.yukleniyor,
     required this.child,
+    this.iskeletYukseklikleri,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = context.cs;
     final kartBoyu = StatCardsGrid.kartYuksekligi(context);
-    return Container(
-      padding: const EdgeInsets.all(Bosluk.m),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(Yaricap.l),
-        border: Border.all(color: cs.primary.withValues(alpha: 0.45)),
-      ),
+    return DonemCercevesi(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -70,7 +70,9 @@ class DonemKutusu extends StatelessWidget {
             ],
           ),
           const SizedBox(height: Bosluk.m),
-          if (yukleniyor)
+          if (yukleniyor && iskeletYukseklikleri != null)
+            BlokIskeleti(yukseklikler: iskeletYukseklikleri!)
+          else if (yukleniyor)
             SizedBox(
               height: kartBoyu * 2 + 12,
               child: IskeletGecikmeli(
@@ -95,6 +97,122 @@ class DonemKutusu extends StatelessWidget {
           else
             child,
         ],
+      ),
+    );
+  }
+}
+
+/// Dönem kutusu ve dönem gruplarının ortak çerçevesi: yüzey zemin, ana
+/// renkte ince kenar. Etkilenen içeriği seçiciyle görsel olarak birleştirir.
+class DonemCercevesi extends StatelessWidget {
+  final Widget child;
+
+  const DonemCercevesi({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = context.cs;
+    return Container(
+      padding: const EdgeInsets.all(Bosluk.m),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(Yaricap.l),
+        border: Border.all(color: cs.primary.withValues(alpha: 0.45)),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Seçicisi olmayan ama aynı döneme bağlı ikinci grup (Raporlar: doluluk,
+/// kortlar, antrenörler). Başlıkta seçili günler yazar: hangi dönemi
+/// gösterdiği seçiciye bakmadan da okunur.
+class DonemGrubu extends StatelessWidget {
+  final IconData ikon;
+  final String baslik;
+  final DonemFiltresi donem;
+  final bool yukleniyor;
+  final List<double> iskeletYukseklikleri;
+  final Widget child;
+
+  const DonemGrubu({
+    super.key,
+    required this.ikon,
+    required this.baslik,
+    required this.donem,
+    required this.yukleniyor,
+    required this.iskeletYukseklikleri,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = context.cs;
+    return DonemCercevesi(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(ikon, size: 18, color: cs.primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  baslik,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.metin.titleSmall,
+                ),
+              ),
+              const SizedBox(width: Bosluk.s),
+              Icon(Icons.date_range_rounded,
+                  size: 16, color: cs.onSurfaceVariant),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  donem.aralikMetni(bugunKulup()),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.metin.bodySmall,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Bosluk.m),
+          if (yukleniyor)
+            BlokIskeleti(yukseklikler: iskeletYukseklikleri)
+          else
+            child,
+        ],
+      ),
+    );
+  }
+}
+
+/// Alt alta bloklardan oluşan iskelet; toplam yüksekliği baştan sabit
+/// (gecikme süresinde kutu çökmesin).
+class BlokIskeleti extends StatelessWidget {
+  final List<double> yukseklikler;
+
+  const BlokIskeleti({super.key, required this.yukseklikler});
+
+  @override
+  Widget build(BuildContext context) {
+    final toplam = yukseklikler.fold<double>(0, (a, b) => a + b) +
+        12.0 * (yukseklikler.length - 1);
+    return SizedBox(
+      height: toplam,
+      child: IskeletGecikmeli(
+        child: Parilti(
+          child: Column(
+            children: [
+              for (final (i, h) in yukseklikler.indexed) ...[
+                if (i > 0) const SizedBox(height: 12),
+                IskeletKutu(yukseklik: h, yaricap: Yaricap.l),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
