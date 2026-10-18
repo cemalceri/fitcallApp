@@ -6,6 +6,8 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/muhasebe/muhasebe_service.dart';
 import 'package:fitcall/services/muhasebe/para_hareket_service.dart';
+import 'package:fitcall/services/muhasebe/dekont_service.dart';
+import 'package:fitcall/screens/6_muhasebe/havale/widgets/havale_bilgi_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
@@ -15,7 +17,6 @@ import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class MuhasebePage extends StatefulWidget {
   const MuhasebePage({super.key});
@@ -39,6 +40,10 @@ class _MuhasebePageState extends State<MuhasebePage> {
 
   double _kalanBakiye = 0;
   bool _ilkYukleme = true;
+
+  /// Kontrol bekleyen havale dekontu sayısı (bakiye yalnız onayla değişir;
+  /// üye bakiyenin neden değişmediğini görsün, ikinci kez havale yapmasın).
+  int _bekleyenDekont = 0;
 
   /// Devam eden dönem isteği; aynı anda ikinci istek açılmasını engeller
   Future<void>? _aktifYukleme;
@@ -101,6 +106,7 @@ class _MuhasebePageState extends State<MuhasebePage> {
 
     if (!mounted || nesil != _nesil) return;
     setState(() => _ilkYukleme = false);
+    _dekontSayisiniYukle();
 
     // İlk ekranı doldurmaya yetecek kadar hareket çek
     while (mounted &&
@@ -150,17 +156,27 @@ class _MuhasebePageState extends State<MuhasebePage> {
     }
   }
 
-  void _odemeSayfasiniAc() {
+  /// Bekleyen dekont sayısı. Hata ekranı bozmasın: sayı yalnız bilgi satırı.
+  Future<void> _dekontSayisiniYukle() async {
+    try {
+      final sonuc = await DekontService.dekontlarim();
+      if (mounted) setState(() => _bekleyenDekont = sonuc.bekleyenSayisi);
+    } catch (_) {}
+  }
+
+  /// Havale / EFT sayfası: hesaplar + dekontlar. Borçtan bağımsız açılır
+  /// (avans ödeyen, borcu yeni sıfırlanmış üye de dekontlarına ulaşsın).
+  Future<void> _odemeSayfasiniAc({bool dekontlar = false}) async {
     HapticFeedback.mediumImpact();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _OdemeBilgiSheet(
-        tutar: _kalanBakiye.abs(),
-        currencyFormat: _currencyFormat,
-      ),
+    await Navigator.pushNamed(
+      context,
+      routeEnums[SayfaAdi.havaleEft]!,
+      arguments: {
+        'kalanBakiye': _kalanBakiye,
+        if (dekontlar) 'sekme': 'dekontlar',
+      },
     );
+    if (mounted) _dekontSayisiniYukle();
   }
 
   void _hareketDetayiniAc(ParaHareketModel hareket) {
@@ -187,6 +203,14 @@ class _MuhasebePageState extends State<MuhasebePage> {
           children: [
             _buildAppBar(colorScheme),
             if (!_ilkYukleme) _buildBakiyeKarti(colorScheme),
+            if (!_ilkYukleme && _bekleyenDekont > 0)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                child: HavaleBilgiSatiri(
+                  bekleyenSayisi: _bekleyenDekont,
+                  onTap: () => _odemeSayfasiniAc(dekontlar: true),
+                ),
+              ),
             Expanded(
               child: _ilkYukleme
                   ? _buildLoadingState()
@@ -335,27 +359,26 @@ class _MuhasebePageState extends State<MuhasebePage> {
                 ),
               ),
             ),
-            if (borcVar) ...[
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _odemeSayfasiniAc,
-                  icon: const Icon(Icons.payment_rounded, size: 18),
-                  label: const Text('Öde'),
-                  // Kimlik yüzeyinin üstünde buton zemin renginde: ana renk
-                  // yüzeyle aynı aileden olduğu için orada kaybolurdu.
-                  style: FilledButton.styleFrom(
-                    backgroundColor: colorScheme.surface,
-                    foregroundColor: colorScheme.onSurface,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+            const SizedBox(height: 14),
+            // Borç yokken de görünür: avans ödeme ve dekontlara erişim.
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _odemeSayfasiniAc,
+                icon: const Icon(Icons.payment_rounded, size: 18),
+                label: Text(borcVar ? 'Öde' : 'Ödeme yap'),
+                // Kimlik yüzeyinin üstünde buton zemin renginde: ana renk
+                // yüzeyle aynı aileden olduğu için orada kaybolurdu.
+                style: FilledButton.styleFrom(
+                  backgroundColor: colorScheme.surface,
+                  foregroundColor: colorScheme.onSurface,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
-            ],
+            ),
           ],
         ),
       ),
@@ -780,184 +803,6 @@ class _DetaySatiri extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/*                            Ödeme Bilgi Sheet                               */
-/* -------------------------------------------------------------------------- */
-
-class _OdemeBilgiSheet extends StatelessWidget {
-  final double tutar;
-  final NumberFormat currencyFormat;
-
-  const _OdemeBilgiSheet({
-    required this.tutar,
-    required this.currencyFormat,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: colorScheme.outlineVariant,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.info_outline_rounded,
-                    size: 48,
-                    color: colorScheme.onPrimaryContainer,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Online Ödeme Yakında!',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Kalan Borç',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      Text(
-                        currencyFormat.format(tutar),
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: context.renkler.uyariZemin,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.lightbulb_outline_rounded,
-                        color: context.renkler.uyari,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Şimdilik kulübe başvurun',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: context.renkler.uyari,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Online ödeme özelliği üzerinde çalışıyoruz. Şu an için ödeme yapmak istiyorsanız lütfen kulüp yönetimiyle iletişime geçin.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: context.renkler.uyari,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text('Kapat'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          const phoneNumber = '905422462982';
-                          const whatsappUrl = 'https://wa.me/$phoneNumber';
-                          launchUrl(Uri.parse(whatsappUrl),
-                              mode: LaunchMode.externalApplication);
-                        },
-                        icon: const Icon(Icons.phone_outlined, size: 18),
-                        label: const Text('İletişim'),
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
         ],
       ),
     );

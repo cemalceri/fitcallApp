@@ -78,6 +78,13 @@ String notificationAction = "$baseUrl/n/"; // + token
 // =================== MUHASEBE ===================
 String getMuhasebeOzet = "$baseUrl/getMuhasebeOzet";
 String getParaHareketi = "$baseUrl/getParaHareketi";
+// Havale/EFT: kulübün hesapları + üyenin dekontları (backend api/dekont/metots.py).
+// Dekont yükleme multipart, alan `dosya`; işleme yalnız web'de.
+const String uyeBankaHesaplariUrl = "$baseUrl/uyeBankaHesaplari";
+const String uyeDekontlarimUrl = "$baseUrl/uyeDekontlarim";
+const String uyeDekontYukleUrl = "$baseUrl/uyeDekontYukle";
+const String uyeDekontGeriCekUrl = "$baseUrl/uyeDekontGeriCek";
+const String uyeDekontDosyaUrl = "$baseUrl/uyeDekontDosya";
 String odemeHesaplaUrl = "$baseUrl/odemeHesapla";
 String odemeBaslatUrl = "$baseUrl/odemeBaslat";
 String odemeDurumUrl = "$baseUrl/odemeDurum/";

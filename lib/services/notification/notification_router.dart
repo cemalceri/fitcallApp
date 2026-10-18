@@ -3,8 +3,22 @@ import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_sheet.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/ders_teyit_bildirim_page.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/ders_devir_bildirim_page.dart';
+import 'package:fitcall/screens/8_ofis/uyeler/ofis_uye_detay_page.dart';
 import 'package:fitcall/services/notification/notification_fcm_service.dart';
 import 'package:flutter/material.dart';
+
+/// Ofise gelen dekont bildiriminin üye id'si; başka bildirimde null.
+/// `notification_type` uygulama kapalıyken eksik gelebildiği için
+/// `action_screen` de kontrol edilir.
+int? ofisDekontUyeId(NotificationModel n) {
+  final dekontMu = n.notificationType == NotificationType.ofisDekontYuklendi ||
+      n.actionScreen == 'ofis_uye_detay';
+  if (!dekontMu) return null;
+  final v = n.actionParams?['uye_id'] ?? n.displayData?['uye_id'];
+  if (v == null) return null;
+  if (v is int) return v;
+  return int.tryParse(v.toString());
+}
 
 class NotificationRouter {
   final GlobalKey<NavigatorState> navigatorKey;
@@ -77,7 +91,18 @@ class NotificationRouter {
       return;
     }
 
-    // 5) Default: bildirim detay sheet
+    // 5) Ofise dekont bildirimi: üye detayını aç (ofis para görmez; dekont
+    // web'deki Dekontlar sayfasında işlenir, mobilde ekranı yok).
+    final dekontUyeId = ofisDekontUyeId(notification);
+    if (dekontUyeId != null) {
+      nav.push(MaterialPageRoute(
+        builder: (_) => OfisUyeDetayPage(uyeId: dekontUyeId),
+      ));
+      NotificationFCMService.instance.notifyDismissed();
+      return;
+    }
+
+    // 6) Default: bildirim detay sheet
     await BildirimDetaySheetWidget.goster(
         context: ctx, notification: notification);
     NotificationFCMService.instance.notifyDismissed();

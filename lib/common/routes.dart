@@ -32,6 +32,8 @@ import 'package:fitcall/screens/2_uye/gecmis_dersler/gecmis_dersler_page.dart';
 import 'package:fitcall/screens/2_uye/profil/profil_page.dart';
 import 'package:fitcall/screens/2_uye/profil/widgets/telafi_haklari_page.dart';
 import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_page.dart';
+import 'package:fitcall/screens/6_muhasebe/havale/dekont_yukle_page.dart';
+import 'package:fitcall/screens/6_muhasebe/havale/havale_eft_page.dart';
 import 'package:fitcall/screens/6_muhasebe/muhasebe_page.dart';
 
 import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
@@ -57,6 +59,8 @@ enum SayfaAdi {
   uyelikPaket,
   telafiHaklari,
   muhasebe,
+  havaleEft,
+  dekontYukle,
   dersler,
   uyeGecmisDersler,
   antrenorAnasayfa,
@@ -97,6 +101,8 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.uyelikPaket: '/uyelikPaket',
   SayfaAdi.telafiHaklari: '/telafiHaklari',
   SayfaAdi.muhasebe: '/muhasebe',
+  SayfaAdi.havaleEft: '/havaleEft',
+  SayfaAdi.dekontYukle: '/dekontYukle',
   SayfaAdi.dersler: '/dersler',
   SayfaAdi.uyeGecmisDersler: '/uyeGecmisDersler',
   SayfaAdi.antrenorAnasayfa: '/antrenorAnasayfa',
@@ -137,6 +143,8 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.uyelikPaket]!: (c) => const UyeUrunListPage(),
   routeEnums[SayfaAdi.telafiHaklari]!: (c) => const TelafiHaklariPage(),
   routeEnums[SayfaAdi.muhasebe]!: (c) => const MuhasebePage(),
+  routeEnums[SayfaAdi.havaleEft]!: (c) => const HavaleEftPage(),
+  routeEnums[SayfaAdi.dekontYukle]!: (c) => const DekontYuklePage(),
   routeEnums[SayfaAdi.dersler]!: (c) => const DersListesiPage(),
   routeEnums[SayfaAdi.uyeGecmisDersler]!: (c) => const GecmisDerslerPage(),
   routeEnums[SayfaAdi.antrenorAnasayfa]!: (c) => const AntrenorKabuk(),
@@ -195,6 +203,8 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.uyelikPaket]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.telafiHaklari]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.muhasebe]!: AccessRule.anaHesapOnly,
+  routeEnums[SayfaAdi.havaleEft]!: AccessRule.anaHesapOnly,
+  routeEnums[SayfaAdi.dekontYukle]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.bildirimler]!: AccessRule.anaHesapOnly,
 
   // Örnekler (şimdilik serbest):

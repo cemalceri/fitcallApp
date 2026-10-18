@@ -74,6 +74,8 @@ class BildirimGorselYardimci {
       case NotificationType.dersKayitTalebiOnaylandi:
       case NotificationType.dersKayitTalebiReddedildi:
         return Icons.edit_calendar_rounded;
+      case NotificationType.ofisDekontYuklendi:
+        return Icons.receipt_long_rounded;
       default:
         return Icons.notifications_rounded;
     }
@@ -106,6 +108,7 @@ class BildirimGorselYardimci {
         return context.bildirimRenk.uyariTuruncu;
       case NotificationType.paketHakGuncelleme:
       case NotificationType.uyelikTanimlandi:
+      case NotificationType.ofisDekontYuklendi:
         return context.bildirimRenk.anaMavi;
       default:
         return context.bildirimRenk.yaziIkincil;

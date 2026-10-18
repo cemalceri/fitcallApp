@@ -10,6 +10,16 @@
 // edilemiyor; bu yüzden veriyle beslenen sunum widget'ları test ediliyor.
 // Ofis program sayfasının gövdesi bu amaçla ProgramGorunumu'na ayrıldı.
 
+import 'dart:convert';
+
+import 'package:fitcall/models/6_muhasebe/banka_hesabi_model.dart';
+import 'package:fitcall/models/6_muhasebe/dekont_model.dart';
+import 'package:fitcall/screens/6_muhasebe/havale/widgets/banka_hesabi_karti.dart';
+import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_detay.dart';
+import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_listesi.dart';
+import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_yukle_govdesi.dart';
+import 'package:fitcall/screens/6_muhasebe/havale/widgets/havale_bilgi_satiri.dart';
+import 'package:fitcall/screens/6_muhasebe/havale/widgets/hesaplar_gorunumu.dart';
 import 'package:fitcall/models/2_uye/gecmis_ders_model.dart';
 import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
 import 'package:fitcall/models/2_uye/uye_odul_model.dart';
@@ -2520,6 +2530,184 @@ void main() {
     tasmaTesti(
       'NelerYeniPage (boş)',
       () => NelerYeniPage(surum: '3.12.0', yukleyici: (_) async => const []),
+    );
+  });
+
+  /* ===================== ÜYE — HAVALE / DEKONT ===================== */
+
+  group('Havale / dekont', () {
+    // Ağ görseli widget testinde yüklenemez: karekod yerine düz kutu.
+    Widget karekod(BuildContext c, String url) => const SizedBox.expand();
+
+    BankaHesabiModel hesap({bool karekodlu = true, bool uzun = false}) =>
+        BankaHesabiModel(
+          id: 1,
+          etiket: uzun ? 'Şirket hesabı (fatura kesilen, KDV dahil)' : 'Şirket hesabı',
+          bankaAdi: uzun ? 'Türkiye Cumhuriyeti Ziraat Bankası A.Ş.' : 'Örnek Bank',
+          aliciAdi: uzun
+              ? 'Binay Spor Eğitim Danışmanlık Sanayi ve Ticaret Limited Şirketi'
+              : 'Binay Spor',
+          iban: 'TR330006100519786457841326',
+          ibanGruplu: 'TR33 0006 1005 1978 6457 8413 26',
+          karekodUrl: karekodlu ? 'https://ornek/kare.png' : null,
+        );
+
+    DekontModel dekont(String durum,
+            {String? beyan,
+            String red = '',
+            bool yeniden = false,
+            List<String> uyeler = const []}) =>
+        DekontModel.fromJson({
+          'id': durum.hashCode + (yeniden ? 1 : 0),
+          'durum': durum,
+          'olusturulma_zamani': '2026-10-14T09:42:00+03:00',
+          'beyan_tutar': beyan,
+          'islenen_tutar': durum == 'ISLENDI' ? beyan : null,
+          'red_nedeni': red,
+          'aciklama': 'Ali ve Ayşe Ekim aidatı, kalan kısmı Kasım ayında',
+          'dosya_adi': 'banka_uygulamasi_ekran_goruntusu_14_ekim_2026.jpg',
+          'yeniden_kontrol': yeniden,
+          'islenen_uyeler': [
+            for (final u in uyeler) {'ad': u}
+          ],
+        });
+
+    final dekontlar = [
+      dekont('BEKLIYOR', beyan: '1250000.00'),
+      dekont('BEKLIYOR', yeniden: true),
+      dekont('ISLENDI',
+          beyan: '20500.00', uyeler: ['Ali Yılmazoğlu', 'Zeynep Yılmazoğlu']),
+      dekont('REDDEDILDI',
+          red: 'Dekonttaki tutar ile yazdığın tutar uyuşmuyor, lütfen doğru '
+              'dekontu yükleyin. Gerekirse kulüple iletişime geçin.'),
+    ];
+
+    tasmaTesti(
+      'BankaHesabiKarti (karekod kapalı, uzun adlar)',
+      () => Padding(
+        padding: const EdgeInsets.all(16),
+        child:
+            BankaHesabiKarti(hesap: hesap(uzun: true), karekodYapici: karekod),
+      ),
+    );
+    tasmaTesti(
+      'BankaHesabiKarti (karekod açık, Paylaş)',
+      () => SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: BankaHesabiKarti(
+          hesap: hesap(uzun: true),
+          karekodAcikBaslasin: true,
+          karekodYapici: karekod,
+          onKarekodPaylas: (_) {},
+        ),
+      ),
+    );
+    tasmaTesti(
+      'BankaHesabiKarti (karekodsuz)',
+      () => Padding(
+        padding: const EdgeInsets.all(16),
+        child: BankaHesabiKarti(
+            hesap: hesap(karekodlu: false), karekodYapici: karekod),
+      ),
+    );
+    tasmaTesti(
+      'HesaplarGorunumu (iki hesap)',
+      () => HesaplarGorunumu(
+        hesaplar: [hesap(uzun: true), hesap(karekodlu: false)],
+        karekodYapici: karekod,
+        onKarekodPaylas: (_) {},
+      ),
+    );
+    tasmaTesti(
+      'HesaplarGorunumu (hesap yok, iletişim)',
+      () => HesaplarGorunumu(hesaplar: const [], onIletisim: () {}),
+    );
+    tasmaTesti(
+      'DekontlarimGorunumu (her durum, uzun gerekçe, vurgulu)',
+      () => DekontlarimGorunumu(
+        dekontlar: dekontlar,
+        vurgulananId: dekontlar.first.id,
+        onTap: (_) {},
+        onGeriCek: (_) {},
+      ),
+    );
+    tasmaTesti(
+      'DekontlarimGorunumu (boş)',
+      () => DekontlarimGorunumu(
+        dekontlar: const [],
+        onTap: (_) {},
+        onGeriCek: (_) {},
+        onDekontYukle: () {},
+      ),
+    );
+    for (final d in dekontlar) {
+      tasmaTesti(
+        'DekontDetayIcerik (${d.durumMetni})',
+        () => SingleChildScrollView(
+          child: DekontDetayIcerik(
+            dekont: d,
+            onDosyaGor: () {},
+            onGeriCek: () {},
+            dosyaAciliyor: d.yenidenKontrol,
+          ),
+        ),
+      );
+    }
+    tasmaTesti(
+      'DekontYukleGovdesi (dosya seçilmedi)',
+      () => SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: DekontYukleGovdesi(
+          tutarController: TextEditingController(),
+          aciklamaController: TextEditingController(),
+          onDosyaSec: () {},
+        ),
+      ),
+    );
+    tasmaTesti(
+      'DekontYukleGovdesi (PDF, 5 MB hatası, tutar hatası)',
+      () => SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: DekontYukleGovdesi(
+          dosyaAdi: 'hesap_hareketleri_ekim_2026_tum_islemler_detayli.pdf',
+          dosyaBoyutu: 7549747,
+          pdfMi: true,
+          hata: 'Dosya 7,2 MB; en fazla 5 MB olabilir. Dekontun ekran '
+              'görüntüsünü yükleyebilirsin.',
+          tutarHatasi: 'Tutarı rakamla yaz, ör. 12.500',
+          tutarController: TextEditingController(text: 'on iki bin'),
+          aciklamaController: TextEditingController(),
+          onDosyaSec: () {},
+        ),
+      ),
+    );
+    tasmaTesti(
+      'DekontYukleGovdesi (fotoğraf seçili, gönderiliyor)',
+      () => SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: DekontYukleGovdesi(
+          dosyaAdi: 'dekont.jpg',
+          dosyaBoyutu: 840000,
+          onizleme: base64Decode(
+              'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg=='),
+          tutarController: TextEditingController(text: '12.500'),
+          aciklamaController: TextEditingController(text: 'Ekim aidatı'),
+          onDosyaSec: () {},
+          etkin: false,
+        ),
+      ),
+    );
+    tasmaTesti(
+      'DosyaKaynagiSecenekleri',
+      () => SingleChildScrollView(
+          child: DosyaKaynagiSecenekleri(onSec: (_) {})),
+    );
+    tasmaTesti(
+      'HavaleBilgiSatiri (çok dekont)',
+      () => Padding(
+        padding: const EdgeInsets.all(12),
+        child: HavaleBilgiSatiri(bekleyenSayisi: 12, onTap: () {}),
+      ),
     );
   });
 }

@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi, yönetici Dashboard (bugünün özeti üstte) / Raporlar (iki ayrı dönem seçici, haftalık ısı haritası) / Üyeler (sayılı kart filtreleri). **`v3.12.0` tag'lendi** (2026-10-16) → Codemagic: Play production + App Store incelemesi. Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
-| Testler | `flutter test` **3375 geçiyor** (2026-10-17, yerel 3.41.8), `flutter analyze` temiz; backend master **1313 geçiyor**, kırık yok (2026-10-18) |
+| Testler | `flutter test` **3594 geçiyor** (2026-10-18, yerel 3.41.8), `flutter analyze` temiz; backend `dekont` dalında **1357 geçiyor**, kırık yok (2026-10-18) |
 | Backend | Canlı: `7788ffa` (Heroku **v327**, 2026-10-18) — ders kayıt talebi + antrenörün salt-okunur tüm programı (`0097_ders_kayit_talebi`); öncesinde başka oturumdan paket hak düzelt/devret, paket notları (`0096_uyeurun_aciklama`), auditlog mobil aktörü. GitHub master canlıyla eşit. Deploy bekleyen yok |
 | Mağaza | **3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16; 3.11.0 App Store'da 2.3.3 ile döndü, gönderim iptal). 3.12.0'ın mağaza metni ve "Neler yeni?" notları kullanıcı isteğiyle **3.9.0 dahil** sonraki bütün sürümleri anlatıyor. **İkisi bağımsız:** mağaza metni elle yazılır, `surum_notlari.json`'dan beslenmez. Daha önce: 3.9.0 `v3.9.0` (2026-09-08), 3.8.1 |
 
@@ -45,7 +45,7 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 
 ## 🔴 Açık işler
 
-### 13. Ödeme sayfasına IBAN + karekod, havale yapanlar için dekont yükleme — kararlar alındı, kodlanmadı (2026-10-18)
+### 13. Ödeme sayfasına IBAN + karekod, havale yapanlar için dekont yükleme — kodlandı, deploy/sürüm bekliyor (2026-10-18)
 **Talep:** ödeme sayfasında kulübün IBAN bilgisi ve bu IBAN'ın karekodu gösterilecek. Havale/EFT ile ödeme
 yapan üye, dekontunu uygulamadan yükleyebilecek.
 
@@ -79,8 +79,36 @@ için örnek, profil fotoğrafı akışı (`uyeProfilFotografi`, Pillow).
 fotoğraflar sunucuda küçültülür (profil fotoğrafı akışı gibi); bekleyen dekontu üye geri çekebilir, işlenmişi
 silemez. Üyelerin web'de ödeme sayfası yok, yalnız mobil. Ekran tasarımı: ön muhasebe, UI/UX ve ürün yönetimi ajanlarının uzlaştığı 3 tasarım (Gelen kutusu / İnceleme masası / Defterin içinde) tasarım tuvalinde çizildi (2026-10-18), kullanıcının seçimi bekleniyor.
 
-**Sıra:** backend (model + migration — canlıdaki en son `0097`, #12 de `0098`'i isteyecek; hangisi önce biterse —,
-web Dekontlar sayfası, mobil uçları, ofis bildirimi) → deploy → mobil.
+**Tasarım:** 3 ajanın (ön muhasebe, UI/UX, ürün yönetimi) uzlaştığı üç tasarımdan **Tasarım 2 "İnceleme masası"**
+seçildi (ön muhasebenin tercihi; kullanıcı onayı 2026-10-18), ekran duyarlı. Maketler: tasarım tuvali
+"IBAN ve Dekont Tasarımları". Dosya sınırı **5 MB**.
+
+**Kodlandı (2026-10-18):**
+- **Backend** (`C:\Django\tenis-dekont` worktree'si, dal **`dekont`**, migration **`0098_dekont`**; master'a alınmadı,
+  deploy yok): `BankaHesabiModel` (admin'den, karekod görseli yükleme), `DekontModel`, `ParaHareketiModel.dekont`
+  (1 dekont → N satır). Kurallar `calendarapp/services/dekont_service.py`; dosya Firebase'de **gizli** blob, yalnız
+  yetkili uçlardan. Mobil uçlar `api/dekont/metots.py`: `uyeBankaHesaplari`, `uyeDekontlarim`, `uyeDekontYukle`
+  (multipart `dosya`), `uyeDekontGeriCek`, `uyeDekontDosya`. Ofis push'u `OFIS_DEKONT_YUKLENDI` (tutarsız,
+  `action_params` yalnız `uye_id`). Web masası `muhasebe/dekontlar/` (≥1400 px üç sütun, 992–1399 iki sütun,
+  <992 liste→detay): onay + kardeşe bölme, olası mükerrer kutusu + onay adımlı "Bu kayda bağla", aramalı bağlama,
+  gerekçeli ret (çipler tam cümle doldurur), "Onayı geri al", J/K ile gezinme, menüde "Dekontlar (n)" rozeti.
+  Son bağlı ödeme satırı silinirse dekont "yeniden kontrol" ile kuyruğa döner (`dekont_signals`). 43 test
+  (`tests/api/test_dekont.py`), süit **1357 geçti**.
+- **Mobil** (`main`, sürüm yok): Hesap Özeti'nde "Öde" artık hep görünür (borç yoksa "Ödeme yap") ve eski
+  "Online Ödeme Yakında!" yer tutucusu yerine **Havale / EFT** sayfasını açar (`6_muhasebe/havale/`): başlıkta
+  Hesaplar | Dekontlarım; hesap kartında 4'lü gruplu seçilebilir IBAN, kopyala (✓ + snackbar), açılır karekod +
+  Paylaş + "galeriden okut" notu; tam ekran **Dekont yükle** (Kamera / Galeri / PDF — `file_selector` eklendi,
+  fotoğraf 2000 px / %85 küçültülür, 5 MB ve tür satır içi denetlenir); yüklemeden sonra Dekontlarım'a geçip yeni
+  satırı vurgular; ret gerekçesi listede, geri çekme kaydırarak. Bekleyen dekont varsa bakiye kartının altında
+  bilgi satırı. Ofis push'una dokununca ofis üye detayı açılır. Testler: `test/dekont_test.dart` + taşma testleri.
+
+**Kullanıcıya sorulacak tek nokta:** dekont onaylanınca açılan ödeme satırı, her ödemede olduğu gibi mevcut
+"ödeme alındı" bildirimini üyeye gönderir (`uye_bilgilendirme_signals`). "Dekont durumu için push yok" kararıyla
+çelişip çelişmediği teyit edilmeli; istenirse dekonttan açılan satırlar bu bildirimden muaf tutulabilir.
+
+**Sıra:** backend `dekont` dalı master'a → deploy (migration 0098) → mobil sürüm. Canlıda önce admin'den banka
+hesapları (IBAN + karekod görseli) girilmeli; web sayfası kısıtlı kullanıcılarda SayfaYetki'ye
+`calendarapp:dekontlar` eklenince görünür. #12 kendi migration'ını `0099` olarak almalı.
 
 ### 12. Yönetici Üyeler: birlikte çalışan filtre + sıralama, web'de borç kesinleşmesi — planlandı, kodlanmadı (2026-10-18)
 **Amaç:** yönetici Üyeler sekmesinde, alışveriş sitesindeki ürün aramasında olduğu gibi birden çok filtre

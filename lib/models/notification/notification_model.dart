@@ -29,6 +29,10 @@ class NotificationType {
   /// Ofise gider: antrenör ders kayıt talebi açtı.
   static const ofisDersKayitTalebi = 'OFIS_DERS_KAYIT_TALEBI';
 
+  /// Ofise gider: üye havale dekontu yükledi. Ofis para görmez: bildirimde
+  /// tutar yok, dokununca üye detayı açılır; işlem web'deki Dekontlar'da.
+  static const ofisDekontYuklendi = 'OFIS_DEKONT_YUKLENDI';
+
   /// Talebi açana gider: ofis kaydı oluşturdu / gerekçeyle reddetti.
   static const dersKayitTalebiOnaylandi = 'DERS_KAYIT_TALEBI_ONAYLANDI';
   static const dersKayitTalebiReddedildi = 'DERS_KAYIT_TALEBI_REDDEDILDI';
