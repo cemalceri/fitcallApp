@@ -8,13 +8,13 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-10-16)
+## 📌 Şu anki durum (2026-10-18)
 
 | | |
 |---|---|
 | Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi, yönetici Dashboard (bugünün özeti üstte) / Raporlar (iki ayrı dönem seçici, haftalık ısı haritası) / Üyeler (sayılı kart filtreleri). **`v3.12.0` tag'lendi** (2026-10-16) → Codemagic: Play production + App Store incelemesi. Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
-| Testler | `flutter test` **3375 geçiyor** (2026-10-17, yerel 3.41.8), `flutter analyze` temiz; backend `ders-kayit-talebi` dalında **1304 geçiyor** — tek kırık `test_mobil_auditlog_aktor` başka oturumun `b15ca39` commit'inden, o dalda da kırık (2026-10-17) |
-| Backend | Canlı: `9336642` (Heroku **v323**, 2026-10-16) — yönetici üye listesi `yeni` filtresi + `borclu_uye`, raporlar `bolum`, ısı haritası `bu_hafta_tamami`, `getDersKatilimlari` yalnız dersin antrenörüne, 3.12.0 sürüm notları 3.9.0'dan, **yayında** (kullanıcı önizlemeyi onayladı). Deploy bekleyen yok |
+| Testler | `flutter test` **3375 geçiyor** (2026-10-17, yerel 3.41.8), `flutter analyze` temiz; backend master **1313 geçiyor**, kırık yok (2026-10-18) |
+| Backend | Canlı: `7788ffa` (Heroku **v327**, 2026-10-18) — ders kayıt talebi + antrenörün salt-okunur tüm programı (`0097_ders_kayit_talebi`); öncesinde başka oturumdan paket hak düzelt/devret, paket notları (`0096_uyeurun_aciklama`), auditlog mobil aktörü. GitHub master canlıyla eşit. Deploy bekleyen yok |
 | Mağaza | **3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16; 3.11.0 App Store'da 2.3.3 ile döndü, gönderim iptal). 3.12.0'ın mağaza metni ve "Neler yeni?" notları kullanıcı isteğiyle **3.9.0 dahil** sonraki bütün sürümleri anlatıyor. **İkisi bağımsız:** mağaza metni elle yazılır, `surum_notlari.json`'dan beslenmez. Daha önce: 3.9.0 `v3.9.0` (2026-09-08), 3.8.1 |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
@@ -87,9 +87,8 @@ raporlama içindir ve aksiyon ekranı yoktur. Ofis bu alanları hiç görmez.
    - **Neden UyeModel'e alan eklenmiyor:** `api/auth/serializers.py` ve `api/etkinlik/serializers.py` UyeModel'i
      `fields='__all__'` ile dışarı veriyor. Alan oraya eklenirse üyenin kendi profiline ve antrenöre giden
      katılımcı verisine sızar.
-   - **Migration numarası çakışıyor:** canlı master'da `0096_uyeurun_aciklama` var (heroku/master `27f8140`,
-     2026-10-17), `ders-kayit-talebi` dalında da `0096_ders_kayit_talebi` duruyor; ikisi de `0095`'e bağlı. Dal
-     master'a alınırken 0097 olarak yeniden numaralanmalı. Bu işin migration'ı da o sırada en son olanın üstüne gelir.
+   - **Migration:** canlıdaki en son `0097_ders_kayit_talebi` (2026-10-18); bu işinki `0098` olur (başlarken
+     master'daki en son numarayı yine kontrol et).
 2. **Web** (`muhasebe_list` görünümü, `templates/calendarapp/muhasebe/uye_muhasebe/muhasebe_list.html`): üye
    özetinin yanına küçük bir kart eklenir. Kartta "Borç kesinleşti" onay kutusu, "Son kontrol tarihi" tarih seçici
    ve Kaydet düğmesi var; kayıt AJAX ile yeni `muhasebe/borc-kontrol-kaydet/` ucuna gider (`custom_login_required`).
@@ -182,7 +181,7 @@ eski backend `filtreler`'i yok sayar, ekranda süzülmemiş liste görünür.
 **Kapsam dışı (istenirse ayrı iş):** web muhasebe ana listesine (`muhasebe/index`) kesinleşme ve kontrol
 sütunları ya da filtreleri; mobilden kesinleşme işaretleme (yönetici kabuğu aksiyonsuz kalır).
 
-### 11. Ders kayıt talebi + antrenörün tüm programı — kodlandı, push'landı, deploy/sürüm bekliyor (2026-10-17)
+### 11. Ders kayıt talebi + antrenörün tüm programı — backend canlı (v327), mobil sürüm bekliyor (2026-10-18)
 - **Antrenör:** Takvim başlığındaki ikon → salt-okunur **Tüm Program** (`3_antrenor/program/`): ofisin
   ızgarasının aynısı (ortak `1_common/program/`), kendi dersleri vurgulu, derse dokununca yalnız bilgi.
   Tek eylem **"+ Ders kayıt talebi"**: tarih, kort, başlangıç, bitiş, açıklama (hepsi zorunlu, dolu açılır).
@@ -194,10 +193,10 @@ sütunları ya da filtreleri; mobilden kesinleşme işaretleme (yönetici kabuğ
 - **Kullanıcı kararları (2026-10-16):** antrenör diğer derslerde katılımcıların **tam adını** görür (misafir adı,
   iptal nedeni, onay/hakediş durumu gizli — `api/ders_kayit_talebi/metots.py` beyaz listesi); yeni talepte
   **ofise push** gider. Model (`DersKayitTalebiModel`) üye talebine hazır; üye ekranı ileride.
-- **Sıradaki:** backend deploy → sonra mobil sürüm. **Migration çakışması (2026-10-18'de görüldü):** canlı
-  master'a başka bir oturumdan `0096_uyeurun_aciklama` girdi. Daldaki `0096_ders_kayit_talebi` master'a alınırken
-  0097 olarak yeniden numaralanmalı ve `0096_uyeurun_aciklama`'ya bağlanmalı. Web sayfası, sayfa yetkisi kısıtlı
-  kullanıcılarda admin'deki SayfaYetki'ye `calendarapp:ders_kayit_talepleri` eklenince görünür.
+- **Backend canlı (2026-10-18, Heroku v327):** dal master'ın üstüne rebase edildi, migration `0097_ders_kayit_talebi`
+  olarak yeniden numaralandı (`0096_uyeurun_aciklama`'ya bağlı), süit 1313 geçti. Yeni uçlar canlıda yanıt veriyor.
+- **Sıradaki:** mobil sürüm (kullanıcı henüz sürüm geçmeyecek). Web sayfası, sayfa yetkisi kısıtlı kullanıcılarda
+  admin'deki SayfaYetki'ye `calendarapp:ders_kayit_talepleri` eklenince görünür.
 
 ### 10. 3.12.0 yayını — backend canlı (v323), `v3.12.0` tag'lendi (2026-10-16)
 - **App Store 3.11.0 (45) reddi:** Guideline 2.3.3, eski 6.7"/6.5" ekran görüntüleri. "Bug fix" muafiyeti
