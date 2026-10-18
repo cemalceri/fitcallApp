@@ -45,6 +45,143 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 
 ## 🔴 Açık işler
 
+### 13. Ödeme sayfasına IBAN + karekod, havale yapanlar için dekont yükleme — not alındı, ayrı oturumda detaylanacak (2026-10-18)
+**Talep:** ödeme sayfasında kulübün IBAN bilgisi ve bu IBAN'ın karekodu gösterilecek. Havale/EFT ile ödeme
+yapan üye, dekontunu uygulamadan yükleyebilecek.
+
+**Bugünkü durum:** üyenin ödeme sayfası Muhasebe sekmesi (`lib/screens/6_muhasebe/muhasebe_page.dart`).
+Şu an yalnız Param POS ile kartla online ödeme var (`widgets/payment_summary_sheet.dart` → WebView). Mobilde
+ve backend'de IBAN ya da dekont yükleme yok. **Ad çakışmasına dikkat:** `PaymentOrderModel.dekont_id`, Param
+POS'un işlem numarası; üyenin yüklediği dekont dosyası değil. Dosya yükleme için örnek, profil fotoğrafı akışı
+(`uyeProfilFotografi`, Pillow).
+
+**Detaylandırılırken netleşecekler:**
+- IBAN ve alıcı adı nerede tutulacak? (işletme modeli mi, `mobil_uygulama_konfig` mi?) Karekod hangi biçimde
+  olacak: yalnız IBAN metni mi, banka uygulamalarının okuduğu bir biçim mi? Kopyala düğmesi de olacak mı?
+- Dekont: hangi dosya türleri (fotoğraf, PDF), boyut sınırı; tutar, tarih ve açıklama da istenecek mi?
+- Yüklenen dekontu kim, nerede görüp onaylayacak (web muhasebe, yönetici, ofis)? Ofis para göremez
+  (CLAUDE.md'deki sınır). Onaylanınca `ParaHareketiModel`'e ödeme satırı kendiliğinden mi düşecek, elle mi girilecek?
+- Üyeye geri bildirim: bekliyor / onaylandı / reddedildi durumu ve bildirim.
+- Web'deki ödeme sayfası da aynı şeyi gösterecek mi?
+
+### 12. Yönetici Üyeler: birlikte çalışan filtre + sıralama, web'de borç kesinleşmesi — planlandı, kodlanmadı (2026-10-18)
+**Amaç:** yönetici Üyeler sekmesinde, alışveriş sitesindeki ürün aramasında olduğu gibi birden çok filtre
+birlikte uygulanır ve üstüne bir sıralama seçilir. Hepsi sunucuda çalışır, liste sayfalı kalır (20'şer).
+İki yeni alan **web'de girilir**; mobil bu alanları yalnız okur ve onlarla süzer, çünkü yönetici kabuğu
+raporlama içindir ve aksiyon ekranı yoktur. Ofis bu alanları hiç görmez.
+
+**Kullanıcı kararları (2026-10-18):**
+- "Borç kesinleşti" ve "son kontrol tarihi" **üyeye ait**, ay satırına değil: her üyenin tek bayrağı ve tek tarihi var.
+- **Tamamen elle yönetilir:** kontrolden sonra yeni aidat, geriye dönük ders düzeltmesi, yeniden hesaplama ya da
+  ödeme girilmesi bayrağa ve tarihe dokunmaz. Otomatik düşürme ya da "kontrolden sonra değişti" uyarısı yok.
+- Son kontrol tarihi **takvimden elle seçilir** (bugün otomatik yazılmaz). "Kesinleşti" ayrı bir onay kutusu; ikisi bağımsız.
+- Mobildeki ayrı **Borçlu Üyeler sayfası kalkar.** Dashboard kartı ve menü, Üyeler sekmesini "borçlu + en borçlu önce"
+  ön ayarıyla açar; tek liste, tek filtre sistemi kalır.
+
+**Backend (`C:\Django\tenis`)**
+1. **Model:** `UyeBorcKontrolModel(BaseAbstract)`, `calendarapp/models/concrete/muhasebe.py`'de. Alanlar:
+   `uye` OneToOne→UyeModel (CASCADE, `related_name="borc_kontrol"`), `borc_kesinlesti` Bool (varsayılan False),
+   `son_kontrol_tarihi` DateField (null). Kimin ne zaman değiştirdiği BaseAbstract'taki `guncelleyen` /
+   `guncellenme_zamani` alanlarından ve auditlog'dan okunur. Satırı olmayan üye kesinleşmemiş ve hiç kontrol
+   edilmemiş sayılır.
+   - **Neden UyeModel'e alan eklenmiyor:** `api/auth/serializers.py` ve `api/etkinlik/serializers.py` UyeModel'i
+     `fields='__all__'` ile dışarı veriyor. Alan oraya eklenirse üyenin kendi profiline ve antrenöre giden
+     katılımcı verisine sızar.
+   - **Migration numarası çakışıyor:** canlı master'da `0096_uyeurun_aciklama` var (heroku/master `27f8140`,
+     2026-10-17), `ders-kayit-talebi` dalında da `0096_ders_kayit_talebi` duruyor; ikisi de `0095`'e bağlı. Dal
+     master'a alınırken 0097 olarak yeniden numaralanmalı. Bu işin migration'ı da o sırada en son olanın üstüne gelir.
+2. **Web** (`muhasebe_list` görünümü, `templates/calendarapp/muhasebe/uye_muhasebe/muhasebe_list.html`): üye
+   özetinin yanına küçük bir kart eklenir. Kartta "Borç kesinleşti" onay kutusu, "Son kontrol tarihi" tarih seçici
+   ve Kaydet düğmesi var; kayıt AJAX ile yeni `muhasebe/borc-kontrol-kaydet/` ucuna gider (`custom_login_required`).
+   Kartın altında "Son güncelleyen X · gg.aa.yyyy ss:dd" yazar. Tarih boş bırakılabilir (temizlemek için) ama
+   gelecek bir tarih olamaz; bu, sunucuda doğrulanır.
+3. **API** (`yoneticiUyeler`, `api/yonetici/metots.py` → `YoneticiUyelerApiView`): istek gövdesine `filtreler`
+   nesnesi ve `yon` gelir. Eski parametreler (`filtre`, `siralama`, `sadece_borclu`, `hepsi`) 3.12.0 ve öncesi
+   için **aynı anlamla kalır**. Filtreler VE ile birleşir; boş ya da eksik olan uygulanmaz:
+
+   | Anahtar | Değerler | Anlamı |
+   |---|---|---|
+   | `durum` | `aktif` / `pasif` | `aktif_mi` |
+   | `borc` | `borclu` / `borcsuz` / `fazla_odemis` | bakiye < 0 / = 0 / > 0 (API'de bakiye = ödeme − borç) |
+   | `borc_min`, `borc_max` | tutar | borç tutarı (= −bakiye), iki uç dahil |
+   | `kesinlesti` | `true` / `false` | `borc_kesinlesti`; satırı olmayan üye `false` sayılır |
+   | `kontrol_sonra`, `kontrol_once` | `YYYY-AA-GG` | son kontrol tarihi aralığı, iki uç dahil |
+   | `kontrol_yok` | `true` | hiç kontrol edilmemiş (`son_kontrol_tarihi` boş) |
+   | `odeme_sonra`, `odeme_once` | `YYYY-AA-GG` | son ödeme tarihi aralığı |
+   | `odeme_yok` | `true` | hiç ödeme yapmamış |
+   | `ders_once` | `YYYY-AA-GG` | son dersi bu günden önce ("X'ten beri derse gelmeyen") |
+   | `kayit_sonra` | `YYYY-AA-GG` | kayıt tarihi (bugünkü `yeni` filtresinin genel hali) |
+
+   Sıralama `siralama` + `yon` (`artan` / `azalan`) ile seçilir. `yon` gelmezse her alanın varsayılan yönü
+   uygulanır, böylece eski istemciler aynı sonucu alır. Her sıralamanın sonuna `id` eklenir (sayfalı listede
+   aynı üye iki sayfada görünmesin; mevcut kural):
+
+   | `siralama` | Varsayılan yön | Boş değer nerede |
+   |---|---|---|
+   | `ad` | A→Z | — |
+   | `uye_no` | yeni kayıt önce | — |
+   | `borc` (eski `bakiye` bunun azalan hali) | en borçlu önce | — |
+   | `son_kontrol` | en eski kontrol önce | "hiç kontrol edilmemiş" eskiden yeniye sırada en başta, yeniden eskiye sırada en sonda |
+   | `son_odeme` | en eski ödeme önce | "hiç ödememiş" aynı kuralla |
+   | `son_ders` | en yeni ders önce | sonda (bugünkü gibi) |
+
+   - **Annotation:** `son_odeme_tarihi`, yalnız `ODEME` türündeki son hareketin `tarih`'idir; web muhasebe
+     ekranındaki `_son_odeme_tarihleri` ile aynı tanım. **Tuzak:** `calendarapp/models/concrete/muhasebe.py`'deki
+     `ODEME_TURLERI` indirim, iade ve iptali de içeriyor, `muhasebe_views.ODEME_TURLERI` ise yalnız ödemeyi;
+     burada ikincisi kullanılmalı. `borc_kesinlesti` ve `son_kontrol_tarihi` `borc_kontrol` üzerinden gelir
+     (left join, `Coalesce(False)`).
+   - **Yanıt:** her satıra `borc_kesinlesti`, `son_kontrol_tarihi` ve `son_odeme_tarihi` eklenir. İlk sayfaya
+     ayrıca `filtre_ozeti: {uye_sayisi, toplam_borc}` gelir; bu, süzülen kümedeki borçların toplamıdır ve ekranda
+     "37 üye · 48.200 ₺ borç" diye görünür. `yoneticiUyeDetay` yanıtına da aynı iki alan eklenir.
+   - **Ofis sınırı:** `uye_listesi_qs` ofisle ortak. Yeni filtreler, sıralamalar ve annotation'lar **yalnız
+     yönetici yolunda** çalışır: ayrı bir `yonetici_uye_filtrele(qs, filtreler)` yardımcısıyla ya da ortak
+     fonksiyona yönetici bayrağı vererek. Ofis ucu (`api/ofis/metots.py`) bu parametreleri yok sayar ve para
+     alanı döndürmez.
+   - **Doğrulama:** bilinmeyen anahtar ya da değer yok sayılır, 400 dönülmez (eski ve yeni istemci kırılmasın).
+     Tarihler `%Y-%m-%d` biçiminde okunur, geçersiz tarih yok sayılır. `son_kontrol_tarihi` ve
+     `ParaHareketiModel.tarih` DateField olduğu için doğrudan karşılaştırılır. `kayit_sonra` ise
+     DateTime olan `olusturulma_zamani` üzerinde çalışır; bugünkü `yeni` filtresi gibi `gun_baslangici` ile.
+     Tutar Decimal'e çevrilir, negatif değer yok sayılır.
+   - **Testler:** her filtre tek başına ve birlikte; her sıralama iki yönde, boş değerler doğru yerde; sayfa
+     sınırında tekrar ya da eksik yok; eski parametrelerle eski davranış; ofis ucu etkilenmiyor; `filtre_ozeti` doğru.
+4. Bitince `history.md`'ye bir girdi, `MODEL_ILISKILERI.md`'ye de yeni model eklenir.
+
+**Mobil**
+1. **Model ve servis:** `UyeListeItem`'a `borcKesinlesti`, `sonKontrolTarihi`, `sonOdemeTarihi` eklenir
+   (`parseApiGun`). `lib/models/9_yonetici/`'ye iki yeni tip gelir: değişmez `UyeFiltreleri` (`copyWith`,
+   `toJson`, `aktifSayisi`, `bosMu`) ve `UyeSiralama` (alan + yön). `getUyeler`'e `filtreler:` ve `yon:` eklenir.
+2. **Üyeler ekranı** (`7_yonetici/uyeler/`):
+   - Arama kutusunun altında iki düğme durur: **Filtrele (n)** ve **Sırala: <seçili>**.
+   - **Filtre sayfası** tam boy bir alt sayfadır. Bölümleri: Durum · Borç (borçlu / borçsuz / fazla ödemiş ve
+     min–max tutar) · Kesinleşme (tümü / kesinleşti / kesinleşmedi) · Son kontrol (tarihten sonra / önce / hiç
+     kontrol edilmedi) · Son ödeme (tarihten sonra / önce / hiç ödeme yok) · Son ders · Kayıt tarihi. Tarih
+     alanlarında hızlı çipler ("son 30 gün", "son 3 ay") ve takvimden seçme var. Altta **"124 üyeyi göster"**
+     düğmesi ve "Temizle" bulunur. Düğmedeki sayı canlıdır: filtre değiştikçe, beklemeli (debounce) bir `sayfa: 1`
+     isteğinin `toplam_uye` değerinden gelir.
+   - **Sırala** radyo listeli küçük bir alt sayfadır.
+   - Listenin üstünde etkin filtreler çip olarak görünür (her birinde ×) ve "Tümünü temizle" düğmesi bulunur.
+     Altında `filtre_ozeti` yazar.
+   - **Sayılı kartlar** (Toplam / Aktif / Pasif / Borçlu / Yeni) kalır ve hızlı ön ayar olur: dokununca filtre
+     durumu o ön ayara geçer (Borçlu = `borc: borclu` + borç azalan). Kart yalnız filtre durumu tam o ön ayara
+     eşitken vurgulu görünür.
+   - **Satır:** kesinleşmiş üyede küçük bir "Kesin" işareti çıkar. Son kontrol ya da son ödeme sıralamasında
+     ikinci satır o tarihi gösterir (öneri, kodlarken netleşir).
+   - Seçimler sekme değişince korunur, uygulama yeniden açılınca sıfırlanır (cihazda saklanmaz).
+3. **Borçlu Üyeler sayfası kalkar:** `borclu_uyeler_page.dart` silinir. Dashboard kartı
+   (`yonetici_dashboard_page.dart`) ve drawer (`yonetici_drawer.dart`) Üyeler sekmesine geçip borçlu ön ayarını
+   uygular. Bunun için `YoneticiMainPage`'de sekmeyle birlikte bir ön ayar geçişi gerekir (ör.
+   `ValueNotifier<UyeFiltreleri?>`). Mobildeki `hepsi: true` çağrısı kalkar; sunucu parametreyi eski istemciler
+   için tutmaya devam eder.
+4. **Üye detay** (`uye_detay_page.dart`): bakiye kartına salt-okunur "Borç kesinleşti · son kontrol 12.10.2026" satırı eklenir.
+5. **Testler:** `UyeFiltreleri.toJson` ve ön ayar eşleşmesi için birim testleri. Filtre sayfası, sıralama sayfası
+   ve çip şeridi `tasma_ekranlar_test.dart`'a eklenir; kontrast ve gömülü renk testleri de geçmeli.
+
+**Sıra:** backend (model + web + API ve testleri) → deploy → mobil. Mobil sürüm backend canlı olmadan çıkmaz:
+eski backend `filtreler`'i yok sayar, ekranda süzülmemiş liste görünür.
+
+**Kapsam dışı (istenirse ayrı iş):** web muhasebe ana listesine (`muhasebe/index`) kesinleşme ve kontrol
+sütunları ya da filtreleri; mobilden kesinleşme işaretleme (yönetici kabuğu aksiyonsuz kalır).
+
 ### 11. Ders kayıt talebi + antrenörün tüm programı — kodlandı, push'landı, deploy/sürüm bekliyor (2026-10-17)
 - **Antrenör:** Takvim başlığındaki ikon → salt-okunur **Tüm Program** (`3_antrenor/program/`): ofisin
   ızgarasının aynısı (ortak `1_common/program/`), kendi dersleri vurgulu, derse dokununca yalnız bilgi.
@@ -57,7 +194,9 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 - **Kullanıcı kararları (2026-10-16):** antrenör diğer derslerde katılımcıların **tam adını** görür (misafir adı,
   iptal nedeni, onay/hakediş durumu gizli — `api/ders_kayit_talebi/metots.py` beyaz listesi); yeni talepte
   **ofise push** gider. Model (`DersKayitTalebiModel`) üye talebine hazır; üye ekranı ileride.
-- **Sıradaki:** backend deploy (migration `0096`) → sonra mobil sürüm. Web sayfası, sayfa yetkisi kısıtlı
+- **Sıradaki:** backend deploy → sonra mobil sürüm. **Migration çakışması (2026-10-18'de görüldü):** canlı
+  master'a başka bir oturumdan `0096_uyeurun_aciklama` girdi. Daldaki `0096_ders_kayit_talebi` master'a alınırken
+  0097 olarak yeniden numaralanmalı ve `0096_uyeurun_aciklama`'ya bağlanmalı. Web sayfası, sayfa yetkisi kısıtlı
   kullanıcılarda admin'deki SayfaYetki'ye `calendarapp:ders_kayit_talepleri` eklenince görünür.
 
 ### 10. 3.12.0 yayını — backend canlı (v323), `v3.12.0` tag'lendi (2026-10-16)
