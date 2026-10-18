@@ -84,8 +84,8 @@ seçildi (ön muhasebenin tercihi; kullanıcı onayı 2026-10-18), ekran duyarl�
 "IBAN ve Dekont Tasarımları". Dosya sınırı **5 MB**.
 
 **Kodlandı (2026-10-18):**
-- **Backend** (`C:\Django\tenis-dekont` worktree'si, dal **`dekont`**, migration **`0098_dekont`**; master'a alınmadı,
-  deploy yok): `BankaHesabiModel` (admin'den, karekod görseli yükleme), `DekontModel`, `ParaHareketiModel.dekont`
+- **Backend** (`C:\Django\tenis-dekont` worktree'si, dal **`dekont`**, migration **`0098_dekont`**; GitHub'da `origin/dekont`,
+  master'a alınmadı, deploy yok): `BankaHesabiModel` (admin'den, karekod görseli yükleme), `DekontModel`, `ParaHareketiModel.dekont`
   (1 dekont → N satır). Kurallar `calendarapp/services/dekont_service.py`; dosya Firebase'de **gizli** blob, yalnız
   yetkili uçlardan. Mobil uçlar `api/dekont/metots.py`: `uyeBankaHesaplari`, `uyeDekontlarim`, `uyeDekontYukle`
   (multipart `dosya`), `uyeDekontGeriCek`, `uyeDekontDosya`. Ofis push'u `OFIS_DEKONT_YUKLENDI` (tutarsız,
