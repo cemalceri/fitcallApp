@@ -2,6 +2,7 @@
 
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
+import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:fitcall/models/9_yonetici/uye_detay_models.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
 import 'package:fitcall/services/api_client.dart';
@@ -44,29 +45,51 @@ class YoneticiApiService {
 
   // ==================== ÜYELER ====================
 
-  /// Üye listesini getirir
+  /// Üye listesi (sayfalı, 20'şer). Filtreler VE ile birleşir, hepsi
+  /// sunucuda; sözleşme `uye_filtreleri.dart`'ta.
   static Future<ApiResult<UyelerData>> getUyeler({
     int sayfa = 1,
     String arama = '',
-    String filtre = 'tumu', // 'aktif' | 'pasif' | 'tumu'
-    String siralama = 'ad', // 'ad' | 'uye_no' | 'son_ders' | 'bakiye'
-    bool sadeceBorclu = false,
-    bool hepsi = false, // true: sayfalama yok, tüm liste (client-side arama)
+    UyeFiltreleri filtreler = UyeFiltreleri.bos,
+    UyeSiralama siralama = UyeSiralama.varsayilan,
   }) {
     return ApiClient.postParsed<UyelerData>(
       yoneticiUyeler,
-      {
-        'sayfa': sayfa,
-        'arama': arama,
-        'filtre': filtre,
-        'siralama': siralama,
-        'sadece_borclu': sadeceBorclu,
-        'hepsi': hepsi,
-      },
+      _uyeIstegi(arama, filtreler, siralama)..['sayfa'] = sayfa,
       (json) => UyelerData.fromJson(json as Map<String, dynamic>),
       auth: true,
     );
   }
+
+  /// Filtreye uyan üye sayısı (filtre sayfasındaki "124 üyeyi göster").
+  /// Sunucu yalnız sayar; liste ve istatistik hesaplanmaz.
+  static Future<int> getUyeSayisi({
+    String arama = '',
+    required UyeFiltreleri filtreler,
+  }) async {
+    final sonuc = await ApiClient.postParsed<int>(
+      yoneticiUyeler,
+      _uyeIstegi(arama, filtreler, UyeSiralama.varsayilan)
+        ..['sadece_sayi'] = true,
+      (json) => ((json as Map<String, dynamic>)['toplam_uye'] as num?)
+              ?.toInt() ??
+          0,
+      auth: true,
+    );
+    return sonuc.data ?? 0;
+  }
+
+  static Map<String, dynamic> _uyeIstegi(
+    String arama,
+    UyeFiltreleri filtreler,
+    UyeSiralama siralama,
+  ) =>
+      {
+        'arama': arama,
+        'filtreler': filtreler.toJson(),
+        'siralama': siralama.apiAlani,
+        'yon': siralama.apiYonu,
+      };
 
   /// Tek üye detayını getirir (profil + bakiye + para hareketleri + paketler + dersler)
   static Future<ApiResult<UyeDetayData>> getUyeDetay({

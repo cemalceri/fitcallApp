@@ -167,7 +167,7 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
           const SizedBox(height: 16),
           _hizliAksiyonlar(data.profil),
           const SizedBox(height: 16),
-          _bakiyeKarti(data.bakiye),
+          _bakiyeKarti(data),
           const SizedBox(height: 16),
           _iletisimBilgileri(data.profil),
           const SizedBox(height: 16),
@@ -230,7 +230,10 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
     );
   }
 
-  Widget _bakiyeKarti(double bakiye) {
+  Widget _bakiyeKarti(UyeDetayData data) {
+    final bakiye = data.bakiye;
+    final kontrolMetni = data.borcKontrolMetni;
+    final kesinlesti = data.borcKesinlesti == true;
     final colorScheme = Theme.of(context).colorScheme;
     final borclu = bakiye < 0;
     final renk = borclu ? context.renkler.hata : context.renkler.basari;
@@ -278,6 +281,21 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
                   style: TextStyle(
                       fontSize: 11, color: colorScheme.onSurfaceVariant),
                 ),
+                // Web'de ön muhasebenin girdiği kontrol; burada salt okunur.
+                if (kontrolMetni != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    kontrolMetni,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.metin.labelSmall?.copyWith(
+                      fontWeight: kesinlesti ? FontWeight.w700 : null,
+                      color: kesinlesti
+                          ? context.renkler.basari
+                          : colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

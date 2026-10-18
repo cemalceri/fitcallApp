@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
-import 'package:fitcall/screens/7_yonetici/uyeler/borclu_uyeler_page.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/dashboard_header.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/donem_kutusu.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -25,7 +24,16 @@ class YoneticiDashboardPage extends StatefulWidget {
   /// Header'daki hamburger; ana kabuğun drawer'ını açar. null ise gizlenir.
   final VoidCallback? onMenuTap;
 
-  const YoneticiDashboardPage({super.key, this.onTabChange, this.onMenuTap});
+  /// "Toplam Alacak" kartı: Üyeler sekmesi "borçlu + en borçlu önce" ön
+  /// ayarıyla açılır (ayrı Borçlu Üyeler sayfası kaldırıldı).
+  final VoidCallback? onBorcluUyeler;
+
+  const YoneticiDashboardPage({
+    super.key,
+    this.onTabChange,
+    this.onMenuTap,
+    this.onBorcluUyeler,
+  });
 
   @override
   State<YoneticiDashboardPage> createState() => _YoneticiDashboardPageState();
@@ -210,11 +218,7 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
               grup: PanoKartGrubu.anlik,
               onToplamAlacakTap: () {
                 HapticFeedback.lightImpact();
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const BorcluUyelerPage(),
-                  ),
-                );
+                widget.onBorcluUyeler?.call();
               },
             ),
             const SizedBox(height: 20),

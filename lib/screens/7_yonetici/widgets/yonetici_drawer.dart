@@ -2,7 +2,6 @@
 
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/1_common/widgets/yan_menu.dart';
-import 'package:fitcall/screens/7_yonetici/uyeler/borclu_uyeler_page.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,10 +24,14 @@ class YoneticiDrawer extends StatelessWidget {
   /// Aktif sekme — menüde işaretlenir.
   final int aktifSekme;
 
+  /// "Borçlu Üyeler": Üyeler sekmesine borçlu ön ayarıyla geçer.
+  final VoidCallback onBorcluUyeler;
+
   const YoneticiDrawer({
     super.key,
     required this.yoneticiAdi,
     required this.onTabSelected,
+    required this.onBorcluUyeler,
     this.aktifSekme = 0,
   });
 
@@ -47,9 +50,7 @@ class YoneticiDrawer extends StatelessWidget {
   void _borcluUyeler(BuildContext context) {
     HapticFeedback.lightImpact();
     Navigator.pop(context);
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const BorcluUyelerPage()),
-    );
+    onBorcluUyeler();
   }
 
   @override

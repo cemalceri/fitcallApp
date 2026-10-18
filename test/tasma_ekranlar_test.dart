@@ -28,6 +28,7 @@ import 'package:fitcall/models/5_etkinlik/misafir_model.dart';
 import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/models/1_common/degerlendirme_models.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
@@ -59,6 +60,8 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/4_auth/widgets/hesap_secim_listesi.dart';
 import 'package:fitcall/screens/4_auth/widgets/kayit_sihirbazi.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart';
+import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_filtre_sheet.dart';
+import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_siralama_sheet.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uyeler_gorunumu.dart';
 import 'package:fitcall/models/10_ofis/ofis_uye_models.dart';
 import 'package:fitcall/screens/8_ofis/uyeler/widgets/ofis_uyeler_gorunumu.dart';
@@ -349,6 +352,7 @@ UyeListeItem _uyeListeItem({
   int no = 1,
   double bakiye = -1850,
   bool aktif = true,
+  Map<String, dynamic> ek = const {},
 }) =>
     UyeListeItem.fromJson({
       'id': no,
@@ -364,6 +368,7 @@ UyeListeItem _uyeListeItem({
       'uye_turu': 'Öğrenci (indirimli)',
       'yas': 14,
       'bakiye': bakiye,
+      ...ek,
     });
 
 UyeIstatistik _uyeIstatistik() => UyeIstatistik.fromJson({
@@ -420,6 +425,20 @@ Widget _ofisUyelerGorunumu({
   );
 }
 
+/// Bütün filtreler dolu: çip şeridinin en kalabalık hali.
+final _tumFiltreler = UyeFiltreleri(
+  durum: UyeDurumFiltresi.pasif,
+  borc: BorcDurumFiltresi.fazlaOdemis,
+  borcMin: 125000,
+  borcMax: 9999999,
+  kesinlesti: false,
+  kontrolSonra: DateTime(2026, 1, 1),
+  kontrolOnce: DateTime(2026, 12, 31),
+  odemeSonra: DateTime(2025, 11, 30),
+  dersOnce: DateTime(2026, 9, 18),
+  kayitSonra: DateTime(2026, 10, 1),
+);
+
 /// [UyelerGorunumu] için ortak parametreler; testler yalnız farkı yazar.
 Widget _uyelerGorunumu({
   required List<UyeListeItem> uyeler,
@@ -427,7 +446,10 @@ Widget _uyelerGorunumu({
   bool yukleniyor = false,
   String? hata,
   String arama = '',
-  String filtre = 'tumu',
+  UyeFiltreleri filtreler = UyeFiltreleri.bos,
+  UyeSiralama siralama = UyeSiralama.varsayilan,
+  UyeOnAyari? seciliOnAyar = UyeOnAyari.tumu,
+  UyeFiltreOzeti? ozet,
   bool dahaYukleniyor = false,
   String? dahaHatasi,
 }) {
@@ -441,9 +463,15 @@ Widget _uyelerGorunumu({
     dahaHatasi: dahaHatasi,
     onDahaFazla: () {},
     onDahaTekrarDene: () {},
-    filtre: filtre,
+    filtreler: filtreler,
+    siralama: siralama,
+    seciliOnAyar: seciliOnAyar,
+    filtreOzeti: ozet,
     aramaDenetleyicisi: TextEditingController(text: arama),
-    onFiltre: (_) {},
+    onOnAyar: (_) {},
+    onFiltrele: () {},
+    onSirala: () {},
+    onFiltreDegistir: (_) {},
     onYenile: () async {},
     onYenidenDene: () {},
     onUyeSec: (_) {},
@@ -1174,25 +1202,104 @@ void main() {
       ),
     );
 
-    // Filtre artık başlıktaki sayılı kartlar; istatistik gelmeden ("–") ve
-    // "Yeni" seçiliyken de taşmamalı.
+    // Kartlar hızlı ön ayar; istatistik gelmeden ("–") ve "Yeni" seçiliyken
+    // de taşmamalı.
     tasmaTesti(
-      'UyelerGorunumu (Yeni filtresi, istatistik yok)',
+      'UyelerGorunumu (Yeni ön ayarı, istatistik yok)',
       () => _uyelerGorunumu(
-        filtre: 'yeni',
+        filtreler: UyeOnAyari.yeni.filtreler(DateTime(2026, 10, 18)),
+        siralama: UyeOnAyari.yeni.siralama,
+        seciliOnAyar: UyeOnAyari.yeni,
         uyeler: [_uyeListeItem(no: 1, bakiye: 0)],
       ),
     );
 
     tasmaTesti(
-      'UyelerGorunumu (Borçlular filtresi)',
+      'UyelerGorunumu (Borçlu ön ayarı, özetli)',
       () => _uyelerGorunumu(
         istatistik: _uyeIstatistik(),
-        filtre: 'borclu',
+        filtreler: const UyeFiltreleri(borc: BorcDurumFiltresi.borclu),
+        siralama: UyeOnAyari.borclu.siralama,
+        seciliOnAyar: UyeOnAyari.borclu,
+        ozet: const UyeFiltreOzeti(uyeSayisi: 1234, toplamBorc: 2148750),
         uyeler: [
           _uyeListeItem(no: 1, bakiye: -1850),
           _uyeListeItem(no: 2, bakiye: -320),
         ],
+      ),
+    );
+
+    // Bütün filtreler dolu: çipler alt alta sarmalı, "Tümünü temizle" ve
+    // özet sığmalı. Tarihe göre sıralamada ikinci satır tarihi gösterir;
+    // pasif + kesin iki rozet yan yana.
+    tasmaTesti(
+      'UyelerGorunumu (tüm filtreler, son ödeme sırası, iki rozet)',
+      () => _uyelerGorunumu(
+        istatistik: _uyeIstatistik(),
+        filtreler: _tumFiltreler,
+        siralama: const UyeSiralama(
+            UyeSiralamaAlani.sonOdeme, SiralamaYonu.azalan),
+        seciliOnAyar: null,
+        ozet: const UyeFiltreOzeti(uyeSayisi: 1234, toplamBorc: 12148750),
+        uyeler: [
+          _uyeListeItem(no: 1, bakiye: -1850, ek: {
+            'aktif_mi': false,
+            'borc_kesinlesti': true,
+            'son_odeme_tarihi': '2026-09-01',
+          }),
+          _uyeListeItem(no: 2, bakiye: -320),
+        ],
+      ),
+    );
+
+    tasmaTesti(
+      'UyelerGorunumu (tüm filtreler, yükleniyor)',
+      () => _uyelerGorunumu(
+        uyeler: const [],
+        yukleniyor: true,
+        filtreler: _tumFiltreler,
+        seciliOnAyar: null,
+      ),
+    );
+
+    tasmaTesti(
+      'UyelerGorunumu (filtreye uyan yok)',
+      () => _uyelerGorunumu(
+        uyeler: const [],
+        filtreler: _tumFiltreler,
+        seciliOnAyar: null,
+        ozet: const UyeFiltreOzeti(uyeSayisi: 0, toplamBorc: 0),
+      ),
+    );
+
+    // Filtre sayfası tam boy alt sayfa; burada en kalabalık hali (bütün
+    // tarih bölümleri "Tarihe göre" açık, aralık hatası görünür).
+    tasmaTesti(
+      'UyeFiltreSheet (boş)',
+      () => UyeFiltreSheet(
+        baslangic: UyeFiltreleri.bos,
+        sayac: (_) async => 1234,
+        bugun: DateTime(2026, 10, 18),
+      ),
+    );
+
+    tasmaTesti(
+      'UyeFiltreSheet (hepsi dolu, aralık hatası)',
+      () => UyeFiltreSheet(
+        baslangic: _tumFiltreler.copyWith(
+          borcMin: 9000,
+          borcMax: 100,
+          odemeOnce: DateTime(2026, 2, 1),
+        ),
+        sayac: (_) async => 0,
+        bugun: DateTime(2026, 10, 18),
+      ),
+    );
+
+    tasmaTesti(
+      'UyeSiralamaSheet',
+      () => const UyeSiralamaSheet(
+        secili: UyeSiralama(UyeSiralamaAlani.sonKontrol, SiralamaYonu.azalan),
       ),
     );
 
@@ -1756,6 +1863,7 @@ void main() {
       return YoneticiDrawer(
         yoneticiAdi: 'Mehmet Yılmazoğulları',
         onTabSelected: (_) {},
+        onBorcluUyeler: () {},
       );
     });
   });

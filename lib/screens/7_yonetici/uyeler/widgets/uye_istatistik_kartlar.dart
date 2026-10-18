@@ -2,20 +2,22 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
+import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Üye listesinin filtresi: sayılı kartlar (Toplam · Aktif · Pasif · Borçlu ·
-/// Yeni). Kart hem sayıyı gösterir hem dokununca listeyi süzer; seçili kart
-/// vurgulu. Önceden başlıkta ayrıca Tümü/Aktif/Pasif/Borçlular butonları
-/// vardı — aynı işi yapan iki yapı (kullanıcı kararı 2026-10-16).
+/// Üye listesinin hızlı ön ayarları: sayılı kartlar (Toplam · Aktif · Pasif ·
+/// Borçlu · Yeni). Kart hem sayıyı gösterir hem dokununca filtre ve sıralamayı
+/// o ön ayara geçirir (bkz. [UyeOnAyari]). Kart yalnız filtreler tam o ön
+/// ayara eşitken vurgulu; Filtrele sayfasında başka bir şey eklenince vurgu
+/// kalkar.
 class UyeIstatistikKartlar extends StatelessWidget {
   /// İlk sayfa gelene kadar null: kartlar "–" ile durur ama dokunulabilir.
   final UyeIstatistik? data;
 
-  /// 'tumu' | 'aktif' | 'pasif' | 'borclu' | 'yeni'
-  final String secili;
-  final ValueChanged<String> onSec;
+  /// Filtrelerin eşit olduğu ön ayar; hiçbiri değilse null.
+  final UyeOnAyari? secili;
+  final ValueChanged<UyeOnAyari> onSec;
 
   const UyeIstatistikKartlar({
     super.key,
@@ -44,12 +46,11 @@ class UyeIstatistikKartlar extends StatelessWidget {
     String sayi(int? n) => n?.toString() ?? '–';
     final d = data;
     final kartlar = [
-      ('tumu', 'Toplam', sayi(d?.toplamUye), ListeTonu.bilgi),
-      ('aktif', 'Aktif', sayi(d?.aktifUye), ListeTonu.basari),
-      ('pasif', 'Pasif', sayi(d?.pasifUye), ListeTonu.notr),
-      // Alanı göndermeyen eski sunucuda "–"; filtre yine çalışır.
-      ('borclu', 'Borçlu', sayi(d?.borcluUye), ListeTonu.hata),
-      ('yeni', 'Yeni', sayi(d?.buAyYeniKayit), ListeTonu.vurgu),
+      (UyeOnAyari.tumu, 'Toplam', sayi(d?.toplamUye), ListeTonu.bilgi),
+      (UyeOnAyari.aktif, 'Aktif', sayi(d?.aktifUye), ListeTonu.basari),
+      (UyeOnAyari.pasif, 'Pasif', sayi(d?.pasifUye), ListeTonu.notr),
+      (UyeOnAyari.borclu, 'Borçlu', sayi(d?.borcluUye), ListeTonu.hata),
+      (UyeOnAyari.yeni, 'Yeni', sayi(d?.buAyYeniKayit), ListeTonu.vurgu),
     ];
     return SizedBox(
       height: yukseklik(context),

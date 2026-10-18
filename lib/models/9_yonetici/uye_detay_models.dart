@@ -2,6 +2,7 @@
 
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 double _toDouble(dynamic v) => double.tryParse(v?.toString() ?? '0') ?? 0;
 
@@ -262,6 +263,11 @@ class UyeDetayData {
   final List<UyeDersItem> yaklasanDersler;
   final List<UyeDersItem> gecmisDersler;
 
+  /// Web'de elle girilen borç kontrolü. Alanı göndermeyen eski sunucuda null
+  /// (satır hiç gösterilmez).
+  final bool? borcKesinlesti;
+  final DateTime? sonKontrolTarihi;
+
   UyeDetayData({
     required this.profil,
     required this.bakiye,
@@ -270,7 +276,22 @@ class UyeDetayData {
     required this.paketler,
     required this.yaklasanDersler,
     required this.gecmisDersler,
+    this.borcKesinlesti,
+    this.sonKontrolTarihi,
   });
+
+  /// Bakiye kartındaki salt-okunur satır: "Borç kesinleşti · son kontrol
+  /// 12.10.2026". Bayrak ve tarih birbirinden bağımsız girilir.
+  String? get borcKontrolMetni {
+    final kesin = borcKesinlesti;
+    if (kesin == null) return null;
+    final tarih = sonKontrolTarihi;
+    final durum = kesin ? 'Borç kesinleşti' : 'Kesinleşmedi';
+    if (tarih != null) {
+      return '$durum · son kontrol ${DateFormat('dd.MM.yyyy').format(tarih)}';
+    }
+    return kesin ? durum : 'Borç henüz kontrol edilmedi';
+  }
 
   factory UyeDetayData.fromJson(Map<String, dynamic> json) {
     return UyeDetayData(
@@ -291,6 +312,8 @@ class UyeDetayData {
       gecmisDersler: (json['gecmis_dersler'] as List? ?? [])
           .map((e) => UyeDersItem.fromJson(e))
           .toList(),
+      borcKesinlesti: json['borc_kesinlesti'] as bool?,
+      sonKontrolTarihi: parseApiGun(json['son_kontrol_tarihi']),
     );
   }
 }

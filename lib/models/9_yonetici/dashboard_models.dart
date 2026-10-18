@@ -1,6 +1,7 @@
 // lib/models/9_yonetici/dashboard_models.dart
 
 import 'package:fitcall/common/tarih_util.dart';
+import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -580,6 +581,14 @@ class UyeListeItem {
   final DateTime? sonDersTarihi;
   final String? profilFotografi;
 
+  /// Web'de elle girilen borç kontrolü (yalnız yönetici ucu). Satırı olmayan
+  /// üye kesinleşmemiş ve hiç kontrol edilmemiş sayılır.
+  final bool borcKesinlesti;
+  final DateTime? sonKontrolTarihi;
+
+  /// Yalnız ÖDEME türündeki son hareketin günü.
+  final DateTime? sonOdemeTarihi;
+
   UyeListeItem({
     required this.id,
     required this.uyeNo,
@@ -597,6 +606,9 @@ class UyeListeItem {
     required this.bakiye,
     this.sonDersTarihi,
     this.profilFotografi,
+    this.borcKesinlesti = false,
+    this.sonKontrolTarihi,
+    this.sonOdemeTarihi,
   });
 
   factory UyeListeItem.fromJson(Map<String, dynamic> json) {
@@ -619,6 +631,9 @@ class UyeListeItem {
           ? parseApiTarih(json['son_ders_tarihi'])
           : null,
       profilFotografi: json['profil_fotografi'],
+      borcKesinlesti: json['borc_kesinlesti'] == true,
+      sonKontrolTarihi: parseApiGun(json['son_kontrol_tarihi']),
+      sonOdemeTarihi: parseApiGun(json['son_odeme_tarihi']),
     );
   }
 
@@ -641,12 +656,16 @@ class UyelerData {
   /// `toplamUye` ise filtreden bağımsız kulüp toplamıdır.
   final int toplamUye;
 
+  /// Süzülen kümenin borç toplamı; yalnız ilk sayfada gelir.
+  final UyeFiltreOzeti? filtreOzeti;
+
   UyelerData({
     required this.istatistikler,
     required this.uyeler,
     required this.toplamSayfa,
     required this.mevcutSayfa,
     this.toplamUye = 0,
+    this.filtreOzeti,
   });
 
   factory UyelerData.fromJson(Map<String, dynamic> json) {
@@ -659,6 +678,9 @@ class UyelerData {
       toplamSayfa: json['toplam_sayfa'] ?? 1,
       mevcutSayfa: json['mevcut_sayfa'] ?? 1,
       toplamUye: (json['toplam_uye'] as num?)?.toInt() ?? uyeler.length,
+      filtreOzeti: json['filtre_ozeti'] is Map<String, dynamic>
+          ? UyeFiltreOzeti.fromJson(json['filtre_ozeti'])
+          : null,
     );
   }
 }

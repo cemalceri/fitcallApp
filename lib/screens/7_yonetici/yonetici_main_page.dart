@@ -10,6 +10,7 @@
 import 'package:flutter/material.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/yonetici_dashboard_page.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/raporlar_page.dart';
+import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/uyeler_page.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/antrenorler_page.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/dersler_page.dart';
@@ -32,6 +33,9 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
   int _selectedIndex = 0;
   String _yoneticiAdi = '';
 
+  /// Üyeler sekmesine dışarıdan ön ayar (Dashboard kartı, menü).
+  final _uyeOnAyari = ValueNotifier<UyeOnAyarIstegi?>(null);
+
   late final List<Widget> _pages;
 
   @override
@@ -41,9 +45,10 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
       YoneticiDashboardPage(
         onTabChange: _goTab,
         onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+        onBorcluUyeler: _borcluUyeler,
       ),
       const RaporlarPage(),
-      const UyelerPage(),
+      UyelerPage(onAyarIstegi: _uyeOnAyari),
       const AntrenorlerPage(),
       const DerslerPage(),
     ];
@@ -61,8 +66,21 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
     setState(() => _yoneticiAdi = hesapGorunenAdi(profil.user));
   }
 
+  @override
+  void dispose() {
+    _uyeOnAyari.dispose();
+    super.dispose();
+  }
+
   void _goTab(int index) {
     setState(() => _selectedIndex = index);
+  }
+
+  /// Ayrı Borçlu Üyeler sayfası yerine: Üyeler sekmesi, "borçlu + en borçlu
+  /// önce" ön ayarı. Tek liste, tek filtre sistemi.
+  void _borcluUyeler() {
+    _uyeOnAyari.value = UyeOnAyarIstegi(UyeOnAyari.borclu);
+    _goTab(2);
   }
 
   @override
@@ -72,6 +90,7 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
       drawer: YoneticiDrawer(
         yoneticiAdi: _yoneticiAdi,
         onTabSelected: _goTab,
+        onBorcluUyeler: _borcluUyeler,
         aktifSekme: _selectedIndex,
       ),
       body: IndexedStack(

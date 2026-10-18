@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi, yönetici Dashboard (bugünün özeti üstte) / Raporlar (iki ayrı dönem seçici, haftalık ısı haritası) / Üyeler (sayılı kart filtreleri). **`v3.12.0` tag'lendi** (2026-10-16) → Codemagic: Play production + App Store incelemesi. Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
-| Testler | `flutter test` **3594 geçiyor** (2026-10-18, yerel 3.41.8), `flutter analyze` temiz; backend `dekont` dalında **1357 geçiyor**, kırık yok (2026-10-18) |
+| Testler | `flutter test` **3694 geçiyor** (2026-10-19, yerel 3.41.8), `flutter analyze` temiz; backend `uye-filtre` dalında (dekont + #12) **1408 geçiyor**, kırık yok (2026-10-19) |
 | Backend | Canlı: `7788ffa` (Heroku **v327**, 2026-10-18) — ders kayıt talebi + antrenörün salt-okunur tüm programı (`0097_ders_kayit_talebi`); öncesinde başka oturumdan paket hak düzelt/devret, paket notları (`0096_uyeurun_aciklama`), auditlog mobil aktörü. GitHub master canlıyla eşit. Deploy bekleyen yok |
 | Mağaza | **3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16; 3.11.0 App Store'da 2.3.3 ile döndü, gönderim iptal). 3.12.0'ın mağaza metni ve "Neler yeni?" notları kullanıcı isteğiyle **3.9.0 dahil** sonraki bütün sürümleri anlatıyor. **İkisi bağımsız:** mağaza metni elle yazılır, `surum_notlari.json`'dan beslenmez. Daha önce: 3.9.0 `v3.9.0` (2026-09-08), 3.8.1 |
 
@@ -110,7 +110,24 @@ seçildi (ön muhasebenin tercihi; kullanıcı onayı 2026-10-18), ekran duyarl�
 hesapları (IBAN + karekod görseli) girilmeli; web sayfası kısıtlı kullanıcılarda SayfaYetki'ye
 `calendarapp:dekontlar` eklenince görünür. #12 kendi migration'ını `0099` olarak almalı.
 
-### 12. Yönetici Üyeler: birlikte çalışan filtre + sıralama, web'de borç kesinleşmesi — planlandı, kodlanmadı (2026-10-18)
+### 12. Yönetici Üyeler: birlikte çalışan filtre + sıralama, web'de borç kesinleşmesi — kodlandı, deploy/sürüm bekliyor (2026-10-19)
+
+**Durum (2026-10-19):** aşağıdaki plan kodlandı.
+- **Backend:** dal **`uye-filtre`** (worktree `C:\Django\tenis-uye-filtre`, commit `c6d9270`), **`dekont` dalının üstünde**:
+  migration `0099_uye_borc_kontrol` `0098_dekont`'a bağlı, yani bu iş canlıya **dekont ile birlikte** (önce dekont)
+  çıkar. Push yok, master'a alınmadı. Süit 1408 geçti, 0 kırık. Yeni test: `tests/api/test_yonetici_uye_filtreleri.py`.
+- **Mobil:** `main`'de yerel commit (push yok), sürüm yok. `BorcluUyelerPage` silindi; Dashboard
+  "Toplam Alacak" kartı ve menüdeki "Borçlu Üyeler" Üyeler sekmesini borçlu ön ayarıyla açar
+  (`UyeOnAyarIstegi`). Yeni testler: `test/uye_filtreleri_test.dart`, `test/uye_istatistik_kartlar_test.dart`
+  (yeniden yazıldı), taşma matrisine filtre sayfası, sıralama sayfası ve çip şeridi.
+- **Plandan farklar / kodlarken netleşenler:** (1) `sadece_sayi: true` eklendi: filtre sayfasındaki canlı sayı
+  liste ve istatistik hesaplatmadan yalnız sayar. (2) `ders_once` hiç dersi olmayanı da getirir ("o günden beri
+  derse gelmeyen"). (3) Kart vurgusu yalnız filtrelere bakar; sıralama değişince vurgu kalır. (4) Tarihe göre
+  sıralamada ikinci satır o tarihi gösterir (son kontrol, son ödeme ve son ders). (5) Web kartı muhasebe üye
+  sayfasının en üstünde (tablo uzun olunca aşağıda kayboluyordu).
+- **Sıra:** backend `dekont` → `uye-filtre` → master → deploy (0098 + 0099) → mobil sürüm. Mobil backend'den önce
+  çıkmaz: eski sunucu `filtreler`'i yok sayar, liste süzülmez.
+
 **Amaç:** yönetici Üyeler sekmesinde, alışveriş sitesindeki ürün aramasında olduğu gibi birden çok filtre
 birlikte uygulanır ve üstüne bir sıralama seçilir. Hepsi sunucuda çalışır, liste sayfalı kalır (20'şer).
 İki yeni alan **web'de girilir**; mobil bu alanları yalnız okur ve onlarla süzer, çünkü yönetici kabuğu
