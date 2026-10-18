@@ -50,8 +50,9 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 yapan üye, dekontunu uygulamadan yükleyebilecek.
 
 **Bugünkü durum:** üyenin ödeme sayfası Muhasebe sekmesi (`lib/screens/6_muhasebe/muhasebe_page.dart`).
-Şu an yalnız Param POS ile kartla online ödeme var (`widgets/payment_summary_sheet.dart` → WebView). Mobilde
-ve backend'de IBAN ya da dekont yükleme yok. Havaleler bugün muhasebeye elle giriliyor: son 180 günde işletme 1'de
+Kartla online ödeme (Param POS, `widgets/payment_summary_sheet.dart` → WebView) kodda var ama **bağlı değil**: "Öde"
+butonu bugün `_OdemeBilgiSheet`'i ("Online Ödeme Yakında!" + WhatsApp) açıyor, `PaymentSummarySheet` hiçbir yerden
+çağrılmıyor. Havale, ödeme yolunun ilk gerçek içeriği olacak. Mobilde ve backend'de IBAN ya da dekont yükleme yok. Havaleler bugün muhasebeye elle giriliyor: son 180 günde işletme 1'de
 400 `Banka` ödemesi (~12,1 M₺, tahsilatın ~%45'i); Datça'da bu dönemde hiç ödeme yok. **Ad çakışmasına dikkat:**
 `PaymentOrderModel.dekont_id`, Param POS'un işlem numarası; üyenin yüklediği dekont dosyası değil. Dosya yükleme
 için örnek, profil fotoğrafı akışı (`uyeProfilFotografi`, Pillow).
@@ -74,9 +75,9 @@ için örnek, profil fotoğrafı akışı (`uyeProfilFotografi`, Pillow).
 - **Üyeye dönüş:** push **yok**. Muhasebe sayfasında "Dekontlarım" listesi: bekliyor / onaylandı / reddedildi.
   **Ret gerekçesi zorunlu**, listede görünür.
 
-**Kodlarken varsayılanlar (kullanıcıya sorulmadı, itiraz gelirse değişir):** dekont başına tek dosya; boyut sınırı
-~10 MB, fotoğraflar sunucuda küçültülür (profil fotoğrafı akışı gibi); bekleyen dekontu üye geri çekebilir, işlenmişi
-silemez. Üyelerin web'de ödeme sayfası yok, yalnız mobil. Ekran tasarımında kodlamadan önce maket gösterilecek.
+**Kodlarken varsayılanlar (kullanıcıya sorulmadı, itiraz gelirse değişir):** dekont başına tek dosya; boyut sınırı **5 MB** (kullanıcı kararı 2026-10-18),
+fotoğraflar sunucuda küçültülür (profil fotoğrafı akışı gibi); bekleyen dekontu üye geri çekebilir, işlenmişi
+silemez. Üyelerin web'de ödeme sayfası yok, yalnız mobil. Ekran tasarımı: ön muhasebe, UI/UX ve ürün yönetimi ajanlarının uzlaştığı 3 tasarım (Gelen kutusu / İnceleme masası / Defterin içinde) tasarım tuvalinde çizildi (2026-10-18), kullanıcının seçimi bekleniyor.
 
 **Sıra:** backend (model + migration — canlıdaki en son `0097`, #12 de `0098`'i isteyecek; hangisi önce biterse —,
 web Dekontlar sayfası, mobil uçları, ofis bildirimi) → deploy → mobil.
