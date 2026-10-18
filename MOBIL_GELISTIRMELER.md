@@ -45,24 +45,41 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 
 ## 🔴 Açık işler
 
-### 13. Ödeme sayfasına IBAN + karekod, havale yapanlar için dekont yükleme — not alındı, ayrı oturumda detaylanacak (2026-10-18)
+### 13. Ödeme sayfasına IBAN + karekod, havale yapanlar için dekont yükleme — kararlar alındı, kodlanmadı (2026-10-18)
 **Talep:** ödeme sayfasında kulübün IBAN bilgisi ve bu IBAN'ın karekodu gösterilecek. Havale/EFT ile ödeme
 yapan üye, dekontunu uygulamadan yükleyebilecek.
 
 **Bugünkü durum:** üyenin ödeme sayfası Muhasebe sekmesi (`lib/screens/6_muhasebe/muhasebe_page.dart`).
 Şu an yalnız Param POS ile kartla online ödeme var (`widgets/payment_summary_sheet.dart` → WebView). Mobilde
-ve backend'de IBAN ya da dekont yükleme yok. **Ad çakışmasına dikkat:** `PaymentOrderModel.dekont_id`, Param
-POS'un işlem numarası; üyenin yüklediği dekont dosyası değil. Dosya yükleme için örnek, profil fotoğrafı akışı
-(`uyeProfilFotografi`, Pillow).
+ve backend'de IBAN ya da dekont yükleme yok. Havaleler bugün muhasebeye elle giriliyor: son 180 günde işletme 1'de
+400 `Banka` ödemesi (~12,1 M₺, tahsilatın ~%45'i); Datça'da bu dönemde hiç ödeme yok. **Ad çakışmasına dikkat:**
+`PaymentOrderModel.dekont_id`, Param POS'un işlem numarası; üyenin yüklediği dekont dosyası değil. Dosya yükleme
+için örnek, profil fotoğrafı akışı (`uyeProfilFotografi`, Pillow).
 
-**Detaylandırılırken netleşecekler:**
-- IBAN ve alıcı adı nerede tutulacak? (işletme modeli mi, `mobil_uygulama_konfig` mi?) Karekod hangi biçimde
-  olacak: yalnız IBAN metni mi, banka uygulamalarının okuduğu bir biçim mi? Kopyala düğmesi de olacak mı?
-- Dekont: hangi dosya türleri (fotoğraf, PDF), boyut sınırı; tutar, tarih ve açıklama da istenecek mi?
-- Yüklenen dekontu kim, nerede görüp onaylayacak (web muhasebe, yönetici, ofis)? Ofis para göremez
-  (CLAUDE.md'deki sınır). Onaylanınca `ParaHareketiModel`'e ödeme satırı kendiliğinden mi düşecek, elle mi girilecek?
-- Üyeye geri bildirim: bekliyor / onaylandı / reddedildi durumu ve bildirim.
-- Web'deki ödeme sayfası da aynı şeyi gösterecek mi?
+**Kullanıcı kararları (2026-10-18):**
+- **Hesaplar:** işletme başına **birden çok** banka hesabı (örn. şirket / şahıs). Her hesapta IBAN, alıcı adı,
+  banka adı ve karekod görseli. `IsletmeModel`'de alan yok, `mobil_uygulama_konfig` platform başına satır tuttuğu
+  için uygun değil → ayrı model (işletmeye FK, sıra, aktif bayrağı), admin'den yönetilir.
+- **Karekod:** kulübün banka uygulamasının ürettiği para alma (FAST) karekodu **görsel olarak** yüklenir, uygulama
+  aynen gösterir; IBAN'dan biz üretmiyoruz. IBAN ve alıcı adının yanında kopyala düğmesi.
+- **Dekont formu:** yalnız **dosya zorunlu** (fotoğraf, ekran görüntüsü ya da **PDF**). **Tutar** ve **açıklama**
+  isteğe bağlı. Havale tarihi sorulmuyor. Üye **hesap seçmiyor**.
+- **Bildirim:** yeni dekontta **yalnız ofis** profillerine push: "X ödeme dekontu yükledi. Kontrol edip muhasebeye
+  işleyebilirsiniz." **Bildirimde tutar yok.** Yöneticiye gitmez.
+- **İşleme yeri: web.** Yeni web Dekontlar sayfası (SayfaYetki ile açılır). Onaylayan dekontu görür; **tutarı, hesabı ve
+  ödeme şeklini kendisi seçer** (`OdemeSekli`: Banka, Banka KDV, Şirket, Şahıs…). Onayla birlikte `ParaHareketiModel`'e
+  `ODEME` satırı **kendiliğinden** düşer ve dekont ona bağlanır. Bakiye yalnız onayla değişir.
+- **Ofis sınırı korunuyor:** ofis mobil uygulamada dekont, tutar ya da hesap görmez; yalnız bildirimdeki üye adı.
+  Dekont işini mobilde yapma ekranı **yok** (kullanıcı bu seçeneği reddetti).
+- **Üyeye dönüş:** push **yok**. Muhasebe sayfasında "Dekontlarım" listesi: bekliyor / onaylandı / reddedildi.
+  **Ret gerekçesi zorunlu**, listede görünür.
+
+**Kodlarken varsayılanlar (kullanıcıya sorulmadı, itiraz gelirse değişir):** dekont başına tek dosya; boyut sınırı
+~10 MB, fotoğraflar sunucuda küçültülür (profil fotoğrafı akışı gibi); bekleyen dekontu üye geri çekebilir, işlenmişi
+silemez. Üyelerin web'de ödeme sayfası yok, yalnız mobil. Ekran tasarımında kodlamadan önce maket gösterilecek.
+
+**Sıra:** backend (model + migration — canlıdaki en son `0097`, #12 de `0098`'i isteyecek; hangisi önce biterse —,
+web Dekontlar sayfası, mobil uçları, ofis bildirimi) → deploy → mobil.
 
 ### 12. Yönetici Üyeler: birlikte çalışan filtre + sıralama, web'de borç kesinleşmesi — planlandı, kodlanmadı (2026-10-18)
 **Amaç:** yönetici Üyeler sekmesinde, alışveriş sitesindeki ürün aramasında olduğu gibi birden çok filtre
