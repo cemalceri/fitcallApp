@@ -52,6 +52,8 @@
 	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>QR kod taratmak ve profil fotoğrafı çekmek için kamera erişimine ihtiyaç duyulmaktadır.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Havale karekodunu galeriye kaydedip banka uygulamanızda okutabilmeniz için gerekir.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Profil fotoğrafınızı galeriden seçebilmeniz için fotoğraflarınıza erişim gerekir.</string>
 	<key>NSUserNotificationsUsageDescription</key>

@@ -70,6 +70,16 @@ güncellendi. Kontrast, tema ve taşma testleri yeşil.
 yeniden üretilmeli mi, karar kullanıcının (`tool/magaza_gorselleri`).
 
 ### 13. Ödeme sayfasına IBAN + karekod, havale yapanlar için dekont yükleme — kodlandı, deploy/sürüm bekliyor (2026-10-18)
+**2026-10-19 düzeltmeleri:** Hesap Özeti'nde tek "Öde" yerine **EFT / Havale** + **Kredi kartı ile öde**
+(`OdemeButonlari`; kart "henüz hazır değil" deyip EFT / Havale'ye yönlendiriyor). Karekod artık
+`karekodBaytlari` ile indirilip `Image.memory` ile çiziliyor (yüklenirken gösterge, hata → tekrar dene);
+eski `CachedNetworkImage` yer tutucusu takılınca kutu beyaz kalıyordu. **İndir** (galeriye, `gal` paketi;
+iOS `NSPhotoLibraryAddUsageDescription`, Android ≤10 `WRITE_EXTERNAL_STORAGE`) + **Paylaş** yan yana.
+Dekont seçimi için ek izin gerekmiyor (`file_selector` / foto seçici sistem seçicisi; kamera ve galeri
+metinleri zaten vardı). **Açık:** emülatörde (emulator-5554) Dart HTTP isteği storage.googleapis.com'a
+20 sn'de zaman aşımına düşüyor; aynı adres emülatör Chrome'unda ve bilgisayarda Dart ile açılıyor →
+gerçek telefonda doğrulanmalı.
+
 **Talep:** ödeme sayfasında kulübün IBAN bilgisi ve bu IBAN'ın karekodu gösterilecek. Havale/EFT ile ödeme
 yapan üye, dekontunu uygulamadan yükleyebilecek.
 

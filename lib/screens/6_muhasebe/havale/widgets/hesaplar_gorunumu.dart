@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 class HesaplarGorunumu extends StatelessWidget {
   final List<BankaHesabiModel> hesaplar;
   final KarekodYapici karekodYapici;
+  final ValueChanged<BankaHesabiModel>? onKarekodIndir;
   final ValueChanged<BankaHesabiModel>? onKarekodPaylas;
   final VoidCallback? onIletisim;
   final Future<void> Function()? onYenile;
@@ -20,6 +21,7 @@ class HesaplarGorunumu extends StatelessWidget {
     super.key,
     required this.hesaplar,
     this.karekodYapici = varsayilanKarekodYapici,
+    this.onKarekodIndir,
     this.onKarekodPaylas,
     this.onIletisim,
     this.onYenile,
@@ -49,13 +51,15 @@ class HesaplarGorunumu extends StatelessWidget {
     } else {
       liste = ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.l, Bosluk.l, Bosluk.xl),
+        padding:
+            const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.l, Bosluk.l, Bosluk.xl),
         children: [
           for (final hesap in hesaplar) ...[
             BankaHesabiKarti(
               hesap: hesap,
               karekodAcikBaslasin: hesaplar.length == 1,
               karekodYapici: karekodYapici,
+              onKarekodIndir: onKarekodIndir,
               onKarekodPaylas: onKarekodPaylas,
             ),
             const SizedBox(height: Bosluk.m),

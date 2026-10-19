@@ -15,6 +15,7 @@ import 'dart:convert';
 import 'package:fitcall/models/6_muhasebe/banka_hesabi_model.dart';
 import 'package:fitcall/models/6_muhasebe/dekont_model.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/banka_hesabi_karti.dart';
+import 'package:fitcall/screens/6_muhasebe/widgets/odeme_butonlari.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_detay.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_listesi.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_yukle_govdesi.dart';
@@ -2699,15 +2700,23 @@ void main() {
       ),
     );
     tasmaTesti(
-      'BankaHesabiKarti (karekod açık, Paylaş)',
+      'BankaHesabiKarti (karekod açık, İndir + Paylaş)',
       () => SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: BankaHesabiKarti(
           hesap: hesap(uzun: true),
           karekodAcikBaslasin: true,
           karekodYapici: karekod,
+          onKarekodIndir: (_) {},
           onKarekodPaylas: (_) {},
         ),
+      ),
+    );
+    tasmaTesti(
+      'OdemeButonlari (EFT / Havale + kredi kartı)',
+      () => Padding(
+        padding: const EdgeInsets.all(36),
+        child: OdemeButonlari(onHavale: () {}, onKrediKarti: () {}),
       ),
     );
     tasmaTesti(

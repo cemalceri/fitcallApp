@@ -9,33 +9,134 @@
 //   okuyucuya da duyurulur.
 // - Karekod kapalıyken IBAN ve kopyala görünür kalır; açılınca yalnız
 //   karekod genişler. Üye banka uygulamasını aynı telefonda açtığı için kendi
-//   ekranındaki karekodu okutamaz: birincil eylem "Paylaş" (resmi kaydet →
-//   banka uygulamasında galeriden oku).
+//   ekranındaki karekodu okutamaz: birincil eylem "İndir" (galeriye kaydet →
+//   banka uygulamasında galeriden oku), yanında "Paylaş".
+// - Karekod görseli bir kez indirilip cihazda saklanır, baytlarıyla çizilir;
+//   aynı baytlar indirme ve paylaşmada kullanılır. Eskiden CachedNetworkImage'in boş yer
+//   tutucusu yükleme takılınca kutuyu bembeyaz bırakıyordu (2026-10-19);
+//   artık yüklenirken gösterge, hata olursa "tekrar dene" var.
 
 import 'dart:async';
+import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/6_muhasebe/banka_hesabi_model.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 /// Karekod görselini çizer. Testte ağ görseli yüklenemediği için yerine
 /// sade bir kutu verilir.
 typedef KarekodYapici = Widget Function(BuildContext context, String url);
 
 Widget varsayilanKarekodYapici(BuildContext context, String url) =>
-    CachedNetworkImage(
-      imageUrl: url,
-      fit: BoxFit.contain,
-      placeholder: (_, __) => const SizedBox.shrink(),
-      errorWidget: (c, __, ___) => Icon(
-        Icons.qr_code_2_rounded,
-        color: c.cs.onSurfaceVariant,
-        size: 40,
-      ),
+    KarekodGorseli(url: url);
+
+final Map<String, Future<Uint8List>> _karekodOnbellegi = {};
+
+/// Karekod görselinin baytları. Önce bellek, sonra cihazdaki kalıcı önbellek,
+/// en son ağ: karekod her açılışta kaynaktan çekilmez. Admin karekodu
+/// değiştirince adres de değişir (dosya adı yeni uuid), bu yüzden önbellekteki
+/// dosya hiç bayatlamaz. Başarısız indirme önbellekte kalmaz, sonraki çağrı
+/// yeniden dener.
+Future<Uint8List> karekodBaytlari(String url) {
+  return _karekodOnbellegi.putIfAbsent(url, () async {
+    try {
+      final dosya = await _karekodDosyasi(url);
+      if (dosya != null && await dosya.exists()) {
+        final baytlar = await dosya.readAsBytes();
+        if (baytlar.isNotEmpty) return baytlar;
+      }
+      final cevap =
+          await http.get(Uri.parse(url)).timeout(const Duration(seconds: 20));
+      if (cevap.statusCode != 200 || cevap.bodyBytes.isEmpty) {
+        throw Exception('Karekod indirilemedi (${cevap.statusCode})');
+      }
+      if (dosya != null) {
+        // Önbelleğe yazılamazsa (disk dolu vb.) görsel yine gösterilir.
+        try {
+          await dosya.parent.create(recursive: true);
+          await dosya.writeAsBytes(cevap.bodyBytes, flush: true);
+        } catch (_) {}
+      }
+      return cevap.bodyBytes;
+    } catch (_) {
+      _karekodOnbellegi.remove(url);
+      rethrow;
+    }
+  });
+}
+
+/// Adresin son parçası (uuid'li dosya adı) önbellek dosyasının adı olur.
+Future<File?> _karekodDosyasi(String url) async {
+  try {
+    final segmentler = Uri.parse(url).pathSegments;
+    final ad = (segmentler.isEmpty ? '' : segmentler.last)
+        .replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
+    if (ad.isEmpty) return null;
+    final dizin = await getApplicationSupportDirectory();
+    return File('${dizin.path}/karekod/$ad');
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Ağdaki karekod görseli: yüklenirken gösterge, hata olursa tekrar dene.
+class KarekodGorseli extends StatefulWidget {
+  final String url;
+
+  const KarekodGorseli({super.key, required this.url});
+
+  @override
+  State<KarekodGorseli> createState() => _KarekodGorseliState();
+}
+
+class _KarekodGorseliState extends State<KarekodGorseli> {
+  late Future<Uint8List> _baytlar = karekodBaytlari(widget.url);
+
+  @override
+  void didUpdateWidget(KarekodGorseli eski) {
+    super.didUpdateWidget(eski);
+    if (eski.url != widget.url) _baytlar = karekodBaytlari(widget.url);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Karekod kutusu her temada beyaz (Marka.logoZemini): renkler temadan
+    // değil, beyaz zemine göre sabit.
+    return FutureBuilder<Uint8List>(
+      future: _baytlar,
+      builder: (context, durum) {
+        if (durum.hasData) {
+          return Image.memory(
+            durum.data!,
+            fit: BoxFit.contain,
+            gaplessPlayback: true,
+            semanticLabel: 'Karekod',
+          );
+        }
+        if (durum.hasError) {
+          return Center(
+            child: IconButton(
+              tooltip: 'Karekod yüklenemedi, tekrar dene',
+              icon: Icon(Icons.refresh_rounded, color: context.cs.primary),
+              onPressed: () =>
+                  setState(() => _baytlar = karekodBaytlari(widget.url)),
+            ),
+          );
+        }
+        return const Center(
+          child: SizedBox.square(
+            dimension: 24,
+            child: CircularProgressIndicator(strokeWidth: 2.5),
+          ),
+        );
+      },
     );
+  }
+}
 
 class BankaHesabiKarti extends StatefulWidget {
   final BankaHesabiModel hesap;
@@ -43,6 +144,9 @@ class BankaHesabiKarti extends StatefulWidget {
   /// Karekod bölümü açık başlasın mı (tek hesap varsa açık gelir).
   final bool karekodAcikBaslasin;
   final KarekodYapici karekodYapici;
+
+  /// Karekodu galeriye kaydeder.
+  final ValueChanged<BankaHesabiModel>? onKarekodIndir;
   final ValueChanged<BankaHesabiModel>? onKarekodPaylas;
 
   const BankaHesabiKarti({
@@ -50,6 +154,7 @@ class BankaHesabiKarti extends StatefulWidget {
     required this.hesap,
     this.karekodAcikBaslasin = false,
     this.karekodYapici = varsayilanKarekodYapici,
+    this.onKarekodIndir,
     this.onKarekodPaylas,
   });
 
@@ -91,6 +196,12 @@ class _BankaHesabiKartiState extends State<BankaHesabiKarti> {
           appBar: AppBar(
             title: Text(hesap.etiket),
             actions: [
+              if (widget.onKarekodIndir != null)
+                IconButton(
+                  tooltip: 'İndir',
+                  icon: const Icon(Icons.download_rounded),
+                  onPressed: () => widget.onKarekodIndir!(hesap),
+                ),
               if (widget.onKarekodPaylas != null)
                 IconButton(
                   tooltip: 'Paylaş',
@@ -124,7 +235,8 @@ class _BankaHesabiKartiState extends State<BankaHesabiKarti> {
         color: cs.surface,
         borderRadius: BorderRadius.circular(Yaricap.l),
       ),
-      padding: const EdgeInsets.fromLTRB(Bosluk.m, Bosluk.m, Bosluk.s, Bosluk.s),
+      padding:
+          const EdgeInsets.fromLTRB(Bosluk.m, Bosluk.m, Bosluk.s, Bosluk.s),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -147,8 +259,8 @@ class _BankaHesabiKartiState extends State<BankaHesabiKarti> {
                     ),
                     Text(
                       '${hesap.bankaAdi} · ${hesap.aliciAdi}',
-                      style: metin.bodySmall
-                          ?.copyWith(color: cs.onSurfaceVariant),
+                      style:
+                          metin.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -158,7 +270,8 @@ class _BankaHesabiKartiState extends State<BankaHesabiKarti> {
               _KopyalaButonu(
                 ipucu: 'Alıcı adını kopyala',
                 kopyalandi: _kopyalanan == 'alici',
-                onTap: () => _kopyala('alici', hesap.aliciAdi, 'Alıcı adı kopyalandı'),
+                onTap: () =>
+                    _kopyala('alici', hesap.aliciAdi, 'Alıcı adı kopyalandı'),
               ),
             ],
           ),
@@ -223,53 +336,84 @@ class _BankaHesabiKartiState extends State<BankaHesabiKarti> {
       decoration: BoxDecoration(
         border: Border(top: BorderSide(color: cs.outlineVariant)),
       ),
-      // Dar ekranda (320 px) karekod ile açıklama yan yana sığmadığında alta iner.
-      child: Wrap(
-        spacing: Bosluk.m,
-        runSpacing: Bosluk.s,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Semantics(
-            label: '${hesap.etiket} karekodu, büyütmek için dokun',
-            button: true,
-            child: GestureDetector(
-              onTap: _karekoduBuyut,
-              child: Container(
-                width: 112,
-                height: 112,
-                padding: const EdgeInsets.all(Bosluk.xs),
-                decoration: BoxDecoration(
-                  color: Marka.logoZemini,
-                  borderRadius: BorderRadius.circular(Yaricap.s),
-                  border: Border.all(color: cs.outlineVariant),
+          // Dar ekranda (320 px) karekod ile açıklama yan yana sığmadığında
+          // açıklama alta iner.
+          Wrap(
+            spacing: Bosluk.m,
+            runSpacing: Bosluk.s,
+            children: [
+              Semantics(
+                label: '${hesap.etiket} karekodu, büyütmek için dokun',
+                button: true,
+                child: GestureDetector(
+                  onTap: _karekoduBuyut,
+                  child: Container(
+                    width: 112,
+                    height: 112,
+                    padding: const EdgeInsets.all(Bosluk.xs),
+                    decoration: BoxDecoration(
+                      color: Marka.logoZemini,
+                      borderRadius: BorderRadius.circular(Yaricap.s),
+                      border: Border.all(color: cs.outlineVariant),
+                    ),
+                    child: widget.karekodYapici(context, hesap.karekodUrl!),
+                  ),
                 ),
-                child: widget.karekodYapici(context, hesap.karekodUrl!),
+              ),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 200),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'İndir ile karekodu galeriye kaydet, sonra banka '
+                      'uygulamanda "galeriden karekod oku"yu seç. Paylaş ile '
+                      'başka bir uygulamaya gönderebilirsin.',
+                      style: context.metin.bodySmall
+                          ?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          // İndir ve Paylaş kartın tam genişliğinde yan yana.
+          if (widget.onKarekodIndir != null || widget.onKarekodPaylas != null)
+            Padding(
+              padding: const EdgeInsets.only(top: Bosluk.m),
+              child: Row(
+                children: [
+                  if (widget.onKarekodIndir != null)
+                    Expanded(
+                      child: FilledButton.tonalIcon(
+                        onPressed: () => widget.onKarekodIndir!(hesap),
+                        icon: const Icon(Icons.download_rounded, size: 18),
+                        label: const Text('İndir'),
+                      ),
+                    ),
+                  if (widget.onKarekodIndir != null &&
+                      widget.onKarekodPaylas != null)
+                    const SizedBox(width: Bosluk.s),
+                  if (widget.onKarekodPaylas != null)
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => widget.onKarekodPaylas!(hesap),
+                        icon: const Icon(Icons.ios_share_rounded, size: 18),
+                        label: const Text('Paylaş'),
+                      ),
+                    ),
+                ],
               ),
             ),
-          ),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 200),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (widget.onKarekodPaylas != null)
-                  OutlinedButton.icon(
-                    onPressed: () => widget.onKarekodPaylas!(hesap),
-                    icon: const Icon(Icons.ios_share_rounded, size: 18),
-                    label: const Text('Paylaş'),
-                  ),
-                const SizedBox(height: Bosluk.xs),
-                Text(
-                  'Resmi kaydet, sonra banka uygulamanda "galeriden karekod '
-                  'oku"yu seç.',
-                  style: context.metin.bodySmall
-                      ?.copyWith(color: cs.onSurfaceVariant),
-                ),
-                TextButton(
-                  onPressed: () => setState(() => _karekodAcik = false),
-                  child: const Text('Karekodu gizle'),
-                ),
-              ],
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: () => setState(() => _karekodAcik = false),
+              child: const Text('Karekodu gizle'),
             ),
           ),
         ],

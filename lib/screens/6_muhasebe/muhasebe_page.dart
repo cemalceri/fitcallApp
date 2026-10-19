@@ -14,6 +14,7 @@ import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
+import 'package:fitcall/screens/6_muhasebe/widgets/odeme_butonlari.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -361,23 +362,10 @@ class _MuhasebePageState extends State<MuhasebePage> {
             ),
             const SizedBox(height: 14),
             // Borç yokken de görünür: avans ödeme ve dekontlara erişim.
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: _odemeSayfasiniAc,
-                icon: const Icon(Icons.payment_rounded, size: 18),
-                label: Text(borcVar ? 'Öde' : 'Ödeme yap'),
-                // Kimlik yüzeyinin üstünde buton zemin renginde: ana renk
-                // yüzeyle aynı aileden olduğu için orada kaybolurdu.
-                style: FilledButton.styleFrom(
-                  backgroundColor: colorScheme.surface,
-                  foregroundColor: colorScheme.onSurface,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
+            OdemeButonlari(
+              onHavale: _odemeSayfasiniAc,
+              onKrediKarti: () => krediKartiYakindaGoster(context,
+                  onHavale: _odemeSayfasiniAc),
             ),
           ],
         ),

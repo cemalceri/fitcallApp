@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Havale karekodunu galeriye kaydetmek (gal): yalnız Android 10 ve altı ister. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29"/>
     <!-- Uygulama simgesi üzerindeki okunmamış bildirim rozeti (app_badge_plus).
          Her üretici kendi launcher sağlayıcısını kullandığı için ayrı ayrı
          gerekiyor; hiçbiri kullanıcıya sorulmaz (normal permission). -->
@@ -28,6 +30,7 @@
     <application
         android:label="Binay Akademi"
         android:name="${applicationName}"
+        android:requestLegacyExternalStorage="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

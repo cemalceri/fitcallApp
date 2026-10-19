@@ -2,9 +2,9 @@
 //
 // Havale / EFT ile ödeme ("İnceleme masası" tasarımının üye tarafı).
 //
-// Hesap Özeti'ndeki "Öde" (borç yoksa "Ödeme yap") bu sayfayı açar; borçtan
+// Hesap Özeti'ndeki "EFT / Havale" (kredi kartı uyarısından da) bu sayfayı açar; borçtan
 // bağımsız, her zaman ulaşılabilir. Başlıkta Hesaplar | Dekontlarım seçici:
-// - Hesaplar: kulübün banka hesapları (IBAN, alıcı, karekod + Paylaş).
+// - Hesaplar: kulübün banka hesapları (IBAN, alıcı, karekod + İndir / Paylaş).
 // - Dekontlarım: yüklenen dekontlar ve durumları; yüklemeden sonra bu sekmeye
 //   geçilir ve yeni satır vurgulanır.
 // Dekont işleme (onay/ret) web'de; üyeye durum için push gitmez, durumu
@@ -24,13 +24,14 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_detay.dart';
+import 'package:fitcall/screens/6_muhasebe/havale/widgets/banka_hesabi_karti.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_listesi.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/hesaplar_gorunumu.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/muhasebe/dekont_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
+import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -160,7 +161,8 @@ class _HavaleEftPageState extends State<HavaleEftPage> {
       final mesaj = await DekontService.geriCek(d.id);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(mesaj.isNotEmpty ? mesaj : 'Dekont geri çekildi.')),
+        SnackBar(
+            content: Text(mesaj.isNotEmpty ? mesaj : 'Dekont geri çekildi.')),
       );
       await _dekontlariYenile();
     } on ApiException catch (e) {
@@ -236,12 +238,11 @@ class _HavaleEftPageState extends State<HavaleEftPage> {
         ? kutu.localToGlobal(Offset.zero) & kutu.size
         : const Rect.fromLTWH(0, 0, 0, 0);
     try {
-      final cevap = await http.get(Uri.parse(url));
-      if (cevap.statusCode != 200) throw Exception('indirilemedi');
+      final baytlar = await karekodBaytlari(url);
       final dizin = await getTemporaryDirectory();
       final uzanti = url.toLowerCase().contains('.png') ? 'png' : 'jpg';
       final f = File('${dizin.path}/karekod_${hesap.id}.$uzanti');
-      await f.writeAsBytes(cevap.bodyBytes, flush: true);
+      await f.writeAsBytes(baytlar, flush: true);
       await SharePlus.instance.share(ShareParams(
         files: [XFile(f.path)],
         text: '${hesap.etiket} · ${hesap.aliciAdi}\n${hesap.ibanGruplu}',
@@ -249,6 +250,34 @@ class _HavaleEftPageState extends State<HavaleEftPage> {
       ));
     } catch (_) {
       if (mounted) ShowMessage.error(context, 'Karekod paylaşılamadı.');
+    }
+  }
+
+  /// Karekodu galeriye kaydeder: üye banka uygulamasında "galeriden oku" ile
+  /// açar. İzin yalnız ilk kayıtta sorulur (Android 10 ve altı, iOS).
+  Future<void> _karekodIndir(BankaHesabiModel hesap) async {
+    final url = hesap.karekodUrl;
+    if (url == null) return;
+    try {
+      final baytlar = await karekodBaytlari(url);
+      if (!await Gal.hasAccess() && !await Gal.requestAccess()) {
+        if (mounted) {
+          ShowMessage.error(context,
+              'Galeri izni verilmedi. Ayarlardan izin verip tekrar dene.');
+        }
+        return;
+      }
+      await Gal.putImageBytes(baytlar, name: 'binay_karekod_${hesap.id}');
+      if (mounted) ShowMessage.success(context, 'Karekod galeriye kaydedildi.');
+    } on GalException catch (e) {
+      if (!mounted) return;
+      ShowMessage.error(
+          context,
+          e.type == GalExceptionType.accessDenied
+              ? 'Galeri izni verilmedi. Ayarlardan izin verip tekrar dene.'
+              : 'Karekod galeriye kaydedilemedi.');
+    } catch (_) {
+      if (mounted) ShowMessage.error(context, 'Karekod indirilemedi.');
     }
   }
 
@@ -296,7 +325,8 @@ class _HavaleEftPageState extends State<HavaleEftPage> {
                               letterSpacing: -0.5,
                             ),
                           ),
-                          Text(_altBaslik, style: const TextStyle(fontSize: 13)),
+                          Text(_altBaslik,
+                              style: const TextStyle(fontSize: 13)),
                         ],
                       ),
                     ),
@@ -310,7 +340,9 @@ class _HavaleEftPageState extends State<HavaleEftPage> {
                       (_Sekme.hesaplar, 'Hesaplar'),
                       (
                         _Sekme.dekontlar,
-                        _bekleyen > 0 ? 'Dekontlarım · $_bekleyen' : 'Dekontlarım'
+                        _bekleyen > 0
+                            ? 'Dekontlarım · $_bekleyen'
+                            : 'Dekontlarım'
                       ),
                     ],
                     secili: _sekme,
@@ -326,6 +358,7 @@ class _HavaleEftPageState extends State<HavaleEftPage> {
                 : _sekme == _Sekme.hesaplar
                     ? HesaplarGorunumu(
                         hesaplar: _hesaplar,
+                        onKarekodIndir: _karekodIndir,
                         onKarekodPaylas: _karekodPaylas,
                         onIletisim: _iletisim,
                         onYenile: _yukle,
