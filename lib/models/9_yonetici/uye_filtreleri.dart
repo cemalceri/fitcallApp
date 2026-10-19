@@ -285,17 +285,22 @@ class UyeSiralama {
 
   /// Sırala sayfasındaki satır.
   String get etiket => switch (alan) {
-        UyeSiralamaAlani.ad => _artan ? 'Ad (A→Z)' : 'Ad (Z→A)',
-        UyeSiralamaAlani.uyeNo =>
-          _artan ? 'Üye no (eski kayıt önce)' : 'Üye no (yeni kayıt önce)',
-        UyeSiralamaAlani.borc =>
-          _artan ? 'Borç (en az borçlu önce)' : 'Borç (en borçlu önce)',
-        UyeSiralamaAlani.sonKontrol =>
-          _artan ? 'Son kontrol (en eski önce)' : 'Son kontrol (en yeni önce)',
-        UyeSiralamaAlani.sonOdeme =>
-          _artan ? 'Son ödeme (en eski önce)' : 'Son ödeme (en yeni önce)',
-        UyeSiralamaAlani.sonDers =>
-          _artan ? 'Son ders (en eski önce)' : 'Son ders (en yeni önce)',
+        UyeSiralamaAlani.ad => _artan ? 'Ada göre (A→Z)' : 'Ada göre (Z→A)',
+        UyeSiralamaAlani.uyeNo => _artan
+            ? 'Üye noya göre (eski kayıt önce)'
+            : 'Üye noya göre (yeni kayıt önce)',
+        UyeSiralamaAlani.borc => _artan
+            ? 'Borca göre (en az borçlu önce)'
+            : 'Borca göre (en borçlu önce)',
+        UyeSiralamaAlani.sonKontrol => _artan
+            ? 'Son kontrole göre (en eski önce)'
+            : 'Son kontrole göre (en yeni önce)',
+        UyeSiralamaAlani.sonOdeme => _artan
+            ? 'Son ödemeye göre (en eski önce)'
+            : 'Son ödemeye göre (en yeni önce)',
+        UyeSiralamaAlani.sonDers => _artan
+            ? 'Son derse göre (en eski önce)'
+            : 'Son derse göre (en yeni önce)',
       };
 
   /// "Sırala: …" düğmesindeki kısa hal.
@@ -361,7 +366,6 @@ class UyeFiltreOzeti {
 
   factory UyeFiltreOzeti.fromJson(Map<String, dynamic> json) => UyeFiltreOzeti(
         uyeSayisi: (json['uye_sayisi'] as num?)?.toInt() ?? 0,
-        toplamBorc:
-            double.tryParse(json['toplam_borc']?.toString() ?? '') ?? 0,
+        toplamBorc: double.tryParse(json['toplam_borc']?.toString() ?? '') ?? 0,
       );
 }

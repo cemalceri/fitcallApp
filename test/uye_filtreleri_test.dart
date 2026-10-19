@@ -344,10 +344,10 @@ void main() {
     await tester.pumpAndSettle();
 
     final secili = tester.widget<ListTile>(
-        find.widgetWithText(ListTile, 'Ad (A→Z)'));
+        find.widgetWithText(ListTile, 'Ada göre (A→Z)'));
     expect(secili.selected, isTrue);
 
-    await tester.tap(find.text('Son ödeme (en eski önce)'));
+    await tester.tap(find.text('Son ödemeye göre (en eski önce)'));
     await tester.pumpAndSettle();
     expect(sonuc,
         const UyeSiralama(UyeSiralamaAlani.sonOdeme, SiralamaYonu.artan));
