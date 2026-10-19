@@ -31,6 +31,13 @@ import 'cihazlar.dart';
 import 'ios_durum_cubugu.dart';
 import 'sahneler.dart';
 import 'sahte_api.dart';
+import 'yenilik_sahneleri.dart';
+
+// --dart-define=SAHNELER=yenilik → "Neler yeni" dokümanının sahneleri
+// (build/yenilikler/ altına); --dart-define=CIHAZ=<kod> → yalnız o cihaz.
+const _sahneSecimi = String.fromEnvironment('SAHNELER');
+const _cihazSecimi = String.fromEnvironment('CIHAZ');
+const _cikti = _sahneSecimi == 'yenilik' ? 'yenilikler' : 'magaza_gorselleri';
 
 final _kok = GlobalKey();
 const emojiAilesi = 'MagazaEmoji';
@@ -63,6 +70,10 @@ Future<void> _fontlariYukle() async {
   // Apple Color Emoji indirilemiyor; en yakın renkli emoji fontu (Windows).
   final emoji = File('C:/Windows/Fonts/seguiemj.ttf');
   if (emoji.existsSync()) await aile(emojiAilesi, [emoji]);
+  // 'monospace' (IBAN): iOS'ta Menlo; en yakın yerel eşi Consolas.
+  final mono = [for (final f in ['consola.ttf', 'consolab.ttf']) File('C:/Windows/Fonts/$f')]
+      .where((f) => f.existsSync());
+  if (mono.isNotEmpty) await aile('monospace', mono);
 
   final cupertino = _paketYolu('cupertino_icons');
   if (cupertino != null) {
@@ -143,7 +154,7 @@ Future<void> _kaydet(WidgetTester tester, MagazaCihazi cihaz, String ad) async {
   await tester.runAsync(() async {
     final img = await ro.toImage(pixelRatio: cihaz.pikselOrani);
     final veri = await img.toByteData(format: ui.ImageByteFormat.png);
-    final dosya = File('build/magaza_gorselleri/${cihaz.kod}/$ad.png');
+    final dosya = File('build/$_cikti/${cihaz.kod}/$ad.png');
     dosya.parent.createSync(recursive: true);
     dosya.writeAsBytesSync(veri!.buffer.asUint8List());
     img.dispose();
@@ -192,8 +203,10 @@ void main() {
     await initializeDateFormatting('tr', null);
   });
 
-  for (final cihaz in tumCihazlar) {
-    for (final (sira, sahne) in sahneler.indexed) {
+  final secilenler = _sahneSecimi == 'yenilik' ? yenilikSahneleri : sahneler;
+  for (final cihaz in tumCihazlar
+        .where((c) => _cihazSecimi.isEmpty || c.kod == _cihazSecimi)) {
+    for (final (sira, sahne) in secilenler.indexed) {
       testWidgets('${cihaz.kod} ${sahne.ad}', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
         tester.view.physicalSize = cihaz.piksel;
