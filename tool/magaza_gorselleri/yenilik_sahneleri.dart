@@ -5,7 +5,9 @@
 
 import 'dart:convert';
 
+import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:fitcall/screens/2_uye/uye_kabuk.dart';
+import 'package:fitcall/screens/7_yonetici/uyeler/uyeler_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -230,6 +232,107 @@ Map<String, Object?> antrenorProgrami() {
   };
 }
 
+Map<String, String> yoneticiOturumu() {
+  final d = uyeOturumu();
+  final profil = (jsonDecode(d['uye_profil']!) as Map<String, dynamic>)
+    ..['rol'] = 'yonetici'
+    ..['uye'] = null
+    ..['antrenor'] = null;
+  return {
+    ...d..remove('uye'),
+    'uye_profil': jsonEncode(profil),
+    'kullanici_profiller': jsonEncode([profil]),
+  };
+}
+
+Map<String, Object?> _listeUyesi(DemoKisi k, int no, num bakiye,
+    {bool kesin = false, int? kontrolGunOnce, int? odemeGunOnce, int dersGunOnce = 2}) {
+  String? gun(int? g) => g == null ? null : apiGun(bugun.subtract(Duration(days: g)));
+  return {
+    'id': k.id,
+    'uye_no': no,
+    'adi': k.adi,
+    'soyadi': k.soyadi,
+    'ad_soyad': k.adSoyad,
+    'telefon': '0532 000 00 ${no % 100}',
+    'seviye_rengi': 'Turuncu',
+    'seviye_rengi_hex': '#FE5000',
+    'aktif_mi': true,
+    'uye_tipi': 1,
+    'uye_turu': 'Standart',
+    'bakiye': bakiye,
+    'son_ders_tarihi': apiTarih(gunSaat(-dersGunOnce, 18)),
+    'borc_kesinlesti': kesin,
+    'son_kontrol_tarihi': gun(kontrolGunOnce),
+    'son_odeme_tarihi': gun(odemeGunOnce),
+  };
+}
+
+Map<String, Object?> yoneticiUyeListesi() => {
+      'istatistikler': {
+        'toplam_uye': 214,
+        'aktif_uye': 186,
+        'pasif_uye': 28,
+        'bu_ay_yeni_kayit': 9,
+        'borclu_uye': 37,
+      },
+      'uyeler': [
+        _listeUyesi(uyeler[4], 1051, -13500, kesin: true, kontrolGunOnce: 3, odemeGunOnce: 75),
+        _listeUyesi(uyeler[1], 1023, -9000, kesin: true, kontrolGunOnce: 3, odemeGunOnce: 40),
+        _listeUyesi(uyeler[6], 1078, -6750, odemeGunOnce: 36),
+        _listeUyesi(uye, 1042, -4500, kesin: true, kontrolGunOnce: 1, odemeGunOnce: 33),
+        _listeUyesi(uyeler[2], 1033, -4500, odemeGunOnce: 31),
+        _listeUyesi(uyeler[8], 1090, -3200, odemeGunOnce: 12),
+        _listeUyesi(uyeler[3], 1037, -2250, kontrolGunOnce: 10, odemeGunOnce: 8),
+        _listeUyesi(uyeler[9], 1101, -1500, odemeGunOnce: 5),
+      ],
+      'toplam_sayfa': 5,
+      'mevcut_sayfa': 1,
+      'toplam_uye': 37,
+      'filtre_ozeti': {'uye_sayisi': 37, 'toplam_borc': 48200},
+    };
+
+final Map<String, ApiYaniti> _yoneticiUyeApi = {
+  'yoneticiUyeler': (_, govde) => (govde is Map && govde['sadece_sayi'] == true)
+      ? {'toplam_uye': 37}
+      : yoneticiUyeListesi(),
+};
+
+Widget _yoneticiUyeler(BuildContext _) => Scaffold(
+      body: UyelerPage(
+        onAyarIstegi: ValueNotifier(UyeOnAyarIstegi(UyeOnAyari.borclu)),
+      ),
+    );
+
+final yoneticiSahneleri = <Sahne>[
+  Sahne(
+    ad: 'yonetici_uyeler',
+    depo: yoneticiOturumu,
+    kur: _yoneticiUyeler,
+    api: _yoneticiUyeApi,
+  ),
+  Sahne(
+    ad: 'yonetici_uye_filtre',
+    depo: yoneticiOturumu,
+    kur: _yoneticiUyeler,
+    api: _yoneticiUyeApi,
+    hazirla: (t, _) async {
+      await t.tap(find.textContaining('Filtrele').first);
+      await _bekle(t);
+    },
+  ),
+  Sahne(
+    ad: 'yonetici_uye_siralama',
+    depo: yoneticiOturumu,
+    kur: _yoneticiUyeler,
+    api: _yoneticiUyeApi,
+    hazirla: (t, _) async {
+      await t.tap(find.textContaining('Sırala').first);
+      await _bekle(t);
+    },
+  ),
+];
+
 final yenilikSahneleri = <Sahne>[
   Sahne(
     ad: 'hesap_ozeti',
@@ -277,4 +380,5 @@ final yenilikSahneleri = <Sahne>[
     api: {'antrenorHaftalikProgram': (_, __) => antrenorProgrami()},
     hazirla: (t, nav) => _rota(t, nav, '/antrenorTumProgram'),
   ),
+  ...yoneticiSahneleri,
 ];
