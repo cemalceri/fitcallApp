@@ -334,7 +334,7 @@ class _MuhasebePageState extends State<MuhasebePage> {
                             ? 'Ödeme bekliyor'
                             : fazlaVar
                                 ? 'Alacaklısınız'
-                                : 'Hesap kapalı',
+                                : 'Borcunuz yok. Teşekkürler!',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -364,8 +364,8 @@ class _MuhasebePageState extends State<MuhasebePage> {
             // Borç yokken de görünür: avans ödeme ve dekontlara erişim.
             OdemeButonlari(
               onHavale: _odemeSayfasiniAc,
-              onKrediKarti: () => krediKartiYakindaGoster(context,
-                  onHavale: _odemeSayfasiniAc),
+              onKrediKarti: () =>
+                  krediKartiYakindaGoster(context, onHavale: _odemeSayfasiniAc),
             ),
           ],
         ),
