@@ -28,7 +28,7 @@ class RenkTemasiSecici extends StatelessWidget {
     final parlaklik = Theme.of(context).brightness;
     return LayoutBuilder(
       builder: (context, kisit) {
-        // Üç sütun ancak her karo alt etiketi ("Trabzonspor renkleri")
+        // Üç sütun ancak her karo alt etiketi ("Pantone 801C")
         // kesmeden taşıyacak kadar genişse; yazı büyütülünce eşik de büyür.
         // Çoğu telefonda iki sütun.
         const aralik = Bosluk.s;

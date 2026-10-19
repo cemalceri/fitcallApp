@@ -728,7 +728,7 @@ void main() {
     );
     tasmaTesti(
       'RenkTemasiSecici',
-      () => RenkTemasiSecici(secili: TakimTemasi.sariKirmizi, onSec: (_) {}),
+      () => RenkTemasiSecici(secili: TakimTemasi.mavi, onSec: (_) {}),
       sar: (w) => SingleChildScrollView(
           child: Padding(padding: const EdgeInsets.all(16), child: w)),
     );

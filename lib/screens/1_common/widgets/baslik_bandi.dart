@@ -34,7 +34,7 @@ class BaslikBandi extends StatelessWidget {
   Widget build(BuildContext context) {
     final g = context.gecis;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: baslikDurumCubugu(g.baslik),
+      value: baslikDurumCubugu(g.baslik, g.onBaslik),
       child: Material(
         color: g.baslik,
         child: SafeArea(
@@ -171,7 +171,7 @@ class RenkliDurumCubugu extends StatelessWidget {
     final g = context.gecis;
     final ust = MediaQuery.paddingOf(context).top;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: baslikDurumCubugu(g.baslik),
+      value: baslikDurumCubugu(g.baslik, g.onBaslik),
       child: Column(
         children: [
           SizedBox(

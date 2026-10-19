@@ -20,13 +20,13 @@ const List<Size> kEkranBoyutlari = [
   Size(412, 915), // Pixel sınıfı
 ];
 
-/// Takım temalarından uç örnekler: koyu lacivert/sarı (açık), tersine çevrilmiş
-/// siyah-beyaz (koyu) ve antrasit butonlu Ay-Yıldız (açık). Bileşen bunlarda da
-/// hatasız çizilmeli (tema token'ı eksikliği, renk varsayımı).
+/// Kurumsal temalardan uç örnekler: koyu ikonlu QR'lı mavi (açık), tersine
+/// çevrilmiş siyah (koyu) ve yeşil (açık). Bileşen bunlarda da hatasız
+/// çizilmeli (tema token'ı eksikliği, renk varsayımı).
 const List<(TakimTemasi, Brightness)> kUcTemalar = [
-  (TakimTemasi.sariLacivert, Brightness.light),
-  (TakimTemasi.siyahBeyaz, Brightness.dark),
-  (TakimTemasi.ayYildiz, Brightness.light),
+  (TakimTemasi.mavi, Brightness.light),
+  (TakimTemasi.siyah, Brightness.dark),
+  (TakimTemasi.yesil, Brightness.light),
 ];
 
 /// Yazı ölçekleri. Üst sınır uygulamanın gerçek clamp'iyle (kMaksYaziOlcegi)

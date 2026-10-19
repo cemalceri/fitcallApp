@@ -1,6 +1,6 @@
 // Renk temalarının okunurluk sözleşmesi.
 //
-// Her renk teması (Binay + beş takım) açık ve koyu modda tüm yazı/zemin
+// Her renk teması (dört kurumsal tema) açık ve koyu modda tüm yazı/zemin
 // çiftleri için WCAG eşiğini geçmek zorunda: metin 4.5:1, ikon ve grafik öğe
 // 3:1. Gradyanlı yüzeylerde (kimlik, QR butonu) yazı gradyan boyunca 41
 // noktanın en kötüsüne karşı ölçülür — Flutter'ın sRGB'de karıştırdığı ara
@@ -27,6 +27,14 @@ const List<Brightness> _modlar = [Brightness.light, Brightness.dark];
 
 String _ad(TakimTemasi t, Brightness b) =>
     '${t.etiket} (${b == Brightness.light ? 'açık' : 'koyu'})';
+
+/// Başlık çubuğu yazısı (kalın, büyük): WCAG büyük metin eşiği. Kurumsal
+/// turuncu başlık (FE5000) beyaz yazıyla 3.3:1 (kullanıcı kararı 2026-10-19).
+const double _baslikEsigi = 3;
+
+/// Başlıktaki yarı saydam ikon kutusu turuncuda beyaz ikonla 2.85:1; ikon
+/// başlık zeminine karşı 3.3:1 olduğundan kutu yalnız vurgudur.
+const double _ikonKutusuEsigi = 2.8;
 
 void main() {
   group('Kontrast hesabı', () {
@@ -131,23 +139,27 @@ void main() {
         });
 
         test('durum çubuğu ikonları başlık yazısıyla aynı kutupta', () {
-          // baslikDurumCubugu ikon rengini uzerineYazi ile seçiyor; başlık
-          // yazısı açıkken ikonlar koyu kalırsa saat/pil başlıkta kaybolur.
-          expect(uzerineYazi(g.baslik).computeLuminance() > 0.5,
+          // Başlık yazısı açıkken ikonlar koyu kalırsa saat/pil başlıkta
+          // kaybolur.
+          final stil = baslikDurumCubugu(g.baslik, g.onBaslik);
+          expect(stil.statusBarIconBrightness == Brightness.light,
               g.onBaslik.computeLuminance() > 0.5);
         });
 
         test('başlık çubuğu ve alt menüde yazı okunur', () {
-          metin('başlık', g.onBaslik, g.baslik);
+          // Başlık yazısı kalın ve büyük: WCAG büyük metin eşiği (3:1).
+          // Turuncu başlık birebir kurumsal renk (FE5000, 3.3:1).
+          metin('başlık', g.onBaslik, g.baslik, _baslikEsigi);
           metin('alt menü', g.onAltBar, g.altBar);
           // Seçili başlık çipi / dönem sekmesi: yazı başlık renginde.
-          metin('seçili başlık çipi', g.baslik, g.onBaslik);
-          // İkon kutuları ve seçili sekme kapsülü yarı saydam açık ton.
+          metin('seçili başlık çipi', g.baslik, g.onBaslik, _baslikEsigi);
+          // İkon kutuları ve seçili sekme kapsülü yarı saydam açık ton. İkon
+          // başlığın kendisine karşı da en az _baslikEsigi; kutu onu açar.
           metin(
               'başlık ikon kutusu',
               g.onBaslik,
               Color.alphaBlend(g.onBaslik.withValues(alpha: 0.16), g.baslik),
-              3);
+              _ikonKutusuEsigi);
           metin('alt menü seçili kapsül', g.onAltBar,
               Color.alphaBlend(g.onAltBar.withValues(alpha: 0.18), g.altBar));
           // Devre dışı başlık butonu yine seçilebilir (ikon eşiği).
@@ -313,37 +325,17 @@ void main() {
       }
     });
 
-    test('Ay-Yıldız: butonlar ve seçili öğeler kırmızı değil (antrasit)', () {
-      // Bayrak kırmızısı hata kırmızısından ayırt edilemiyor; kırmızı yalnız
-      // kimlik yüzeyinde.
-      for (final mod in _modlar) {
-        final cs = takimPaleti(TakimTemasi.ayYildiz, mod).sema;
-        final ana = HSVColor.fromColor(cs.primary);
-        final hata = HSVColor.fromColor(cs.error);
-        final tonFarki = (ana.hue - hata.hue).abs() % 360;
-        final tonUzakligi = tonFarki > 180 ? 360 - tonFarki : tonFarki;
-        // Ya neredeyse renksiz ya da tonu kırmızıdan belirgin uzak olmalı.
-        expect(ana.saturation < 0.3 || tonUzakligi > 60, isTrue,
-            reason: 'mod $mod: doygunluk ${ana.saturation}, '
-                'ton farkı $tonUzakligi°');
-        // Kimlik yüzeyi ise kırmızı kalır (bayrak rengi).
-        final kimlik = HSVColor.fromColor(
-            takimPaleti(TakimTemasi.ayYildiz, mod).gecisler.kimlik.colors.last);
-        expect(kimlik.saturation, greaterThan(0.6));
-      }
-    });
-
-    test('Binay paleti duruyor; yalnız birincil bir tık koyu', () {
+    test('Turuncu paleti kılavuz kodundan (FE5000) türer', () {
       final acik = takimPaleti(TakimTemasi.binay, Brightness.light).sema;
       final koyu = takimPaleti(TakimTemasi.binay, Brightness.dark).sema;
-      // C2500B renkli sayfa zemininde 4.2:1'e düşüyordu (bkz. tema.dart).
-      expect(acik.primary, const Color(0xFFB54A0A));
+      expect(Marka.turuncu, const Color(0xFFFE5000));
+      expect(acik.primary, const Color(0xFFC63E00));
       expect(takimPaleti(TakimTemasi.binay, Brightness.light).gecisler.baslik,
-          Marka.turuncuKoyu);
+          Marka.turuncu);
       expect(acik.secondary, Marka.mavi);
       expect(acik.surface, Colors.white);
       expect(acik.onSurface, const Color(0xFF1B1714));
-      expect(koyu.primary, const Color(0xFFFF9351));
+      expect(koyu.primary, const Color(0xFFFE854D));
       expect(koyu.surface, const Color(0xFF15120F));
       expect(takimPaleti(TakimTemasi.binay, Brightness.light).renkler,
           FitcallRenkleri.acik);

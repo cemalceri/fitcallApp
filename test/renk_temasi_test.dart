@@ -23,7 +23,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'support/gradyan.dart';
 
 Widget _uygulama(Widget govde,
-    {TakimTemasi takim = TakimTemasi.sariKirmizi,
+    {TakimTemasi takim = TakimTemasi.mavi,
     Brightness mod = Brightness.light}) {
   return MaterialApp(
     theme: FitcallTema.temasi(takim, mod),
@@ -46,17 +46,16 @@ void main() {
       expect(TakimTemasi.cozumle('bilinmeyen'), TakimTemasi.binay);
     });
 
-    test('ana etiket renk adı, kulüp adı yalnız alt etikette', () {
-      const kulupler = ['Galatasaray', 'Fenerbahçe', 'Trabzonspor', 'Beşiktaş'];
+    test('dört kurumsal tema; kaldırılan takım temaları varsayılana düşer', () {
+      expect(TakimTemasi.values.length, 4);
       for (final t in TakimTemasi.values) {
         expect(t.etiket, isNotEmpty);
         expect(t.altEtiket, isNotEmpty);
-        for (final k in kulupler) {
-          expect(t.etiket.contains(k), isFalse, reason: t.etiket);
-        }
       }
-      expect(TakimTemasi.sariKirmizi.altEtiket, 'Galatasaray renkleri');
-      expect(TakimTemasi.ayYildiz.altEtiket, 'Türkiye renkleri');
+      for (final eski in ['sari_kirmizi', 'sari_lacivert', 'bordo_mavi', 'ay_yildiz']) {
+        expect(TakimTemasi.cozumle(eski), TakimTemasi.binay);
+      }
+      expect(TakimTemasi.cozumle('siyah_beyaz'), TakimTemasi.siyah);
     });
   });
 
@@ -76,8 +75,8 @@ void main() {
 
     test('tema önbelleklenir; acik/koyu Binay temasıdır', () {
       expect(
-          identical(FitcallTema.temasi(TakimTemasi.bordoMavi, Brightness.dark),
-              FitcallTema.temasi(TakimTemasi.bordoMavi, Brightness.dark)),
+          identical(FitcallTema.temasi(TakimTemasi.mavi, Brightness.dark),
+              FitcallTema.temasi(TakimTemasi.mavi, Brightness.dark)),
           isTrue);
       expect(
           identical(FitcallTema.acik,
@@ -103,7 +102,7 @@ void main() {
     });
 
     test(
-        'durum çubuğu şeffaf, ikonlar başlık rengine göre, gezinme '
+        'durum çubuğu şeffaf, ikonlar başlık yazısıyla aynı kutupta, gezinme '
         'çubuğuna dokunulmaz', () {
       for (final t in TakimTemasi.values) {
         for (final mod in Brightness.values) {
@@ -112,7 +111,7 @@ void main() {
           final stil = tema.appBarTheme.systemOverlayStyle!;
           // Verilmezse Android 14 ve altı başlığın üstüne gri örtü koyar.
           expect(stil.statusBarColor, Colors.transparent);
-          final beyazIkon = uzerineYazi(g.baslik) == Colors.white;
+          final beyazIkon = g.onBaslik.computeLuminance() > 0.5;
           expect(stil.statusBarIconBrightness,
               beyazIkon ? Brightness.light : Brightness.dark,
               reason: '${t.kod} $mod');
@@ -124,7 +123,7 @@ void main() {
 
     test('TemaGecisleri lerp uçlarda kaynak/hedefi verir', () {
       final a = takimPaleti(TakimTemasi.binay, Brightness.light).gecisler;
-      final b = takimPaleti(TakimTemasi.sariKirmizi, Brightness.light).gecisler;
+      final b = takimPaleti(TakimTemasi.mavi, Brightness.light).gecisler;
       // Durak sayıları farklı olabilir; görüntü örnek noktalarda aynı olmalı.
       expect(gradyanlarAyni(a.lerp(b, 0).kimlik, a.kimlik), isTrue);
       expect(gradyanlarAyni(a.lerp(b, 1).kimlik, b.kimlik), isTrue);
@@ -140,7 +139,7 @@ void main() {
       await tester.pumpWidget(_uygulama(const Text('icerik')));
       expect(find.byType(SayfaZemini), findsOneWidget);
       final gecis =
-          takimPaleti(TakimTemasi.sariKirmizi, Brightness.light).gecisler;
+          takimPaleti(TakimTemasi.mavi, Brightness.light).gecisler;
       final zemin = tester.widget<ColoredBox>(find
           .descendant(
               of: find.byType(SayfaZemini), matching: find.byType(ColoredBox))
@@ -154,7 +153,7 @@ void main() {
       final anahtar = GlobalKey<NavigatorState>();
       await tester.pumpWidget(MaterialApp(
         navigatorKey: anahtar,
-        theme: FitcallTema.temasi(TakimTemasi.siyahBeyaz, Brightness.dark),
+        theme: FitcallTema.temasi(TakimTemasi.siyah, Brightness.dark),
         home: const Scaffold(body: Text('bir')),
       ));
       anahtar.currentState!.push(
@@ -173,7 +172,7 @@ void main() {
       final anahtar = GlobalKey<NavigatorState>();
       await tester.pumpWidget(MaterialApp(
         navigatorKey: anahtar,
-        theme: FitcallTema.temasi(TakimTemasi.bordoMavi, Brightness.light),
+        theme: FitcallTema.temasi(TakimTemasi.mavi, Brightness.light),
         home: const Scaffold(body: Text('bir')),
       ));
       anahtar.currentState!.push(
@@ -201,21 +200,21 @@ void main() {
     });
 
     test('takım seçimi saklanır ve yeniden açılışta okunur', () async {
-      await TemaKontrol.takimAyarla(TakimTemasi.bordoMavi);
-      expect(TemaKontrol.takim.value, TakimTemasi.bordoMavi);
+      await TemaKontrol.takimAyarla(TakimTemasi.mavi);
+      expect(TemaKontrol.takim.value, TakimTemasi.mavi);
       expect(await SecureStorageService.getValue<String>('tema_takim'),
-          'bordo_mavi');
+          'mavi');
 
       TemaKontrol.takim.value = TakimTemasi.binay;
       await TemaKontrol.yukle();
-      expect(TemaKontrol.takim.value, TakimTemasi.bordoMavi);
+      expect(TemaKontrol.takim.value, TakimTemasi.mavi);
     });
 
     test('mod ve takım birbirinden bağımsız', () async {
-      await TemaKontrol.takimAyarla(TakimTemasi.sariLacivert);
+      await TemaKontrol.takimAyarla(TakimTemasi.yesil);
       await TemaKontrol.ayarla(ThemeMode.dark);
       await TemaKontrol.yukle();
-      expect(TemaKontrol.takim.value, TakimTemasi.sariLacivert);
+      expect(TemaKontrol.takim.value, TakimTemasi.yesil);
       expect(TemaKontrol.modu.value, ThemeMode.dark);
     });
 
@@ -237,10 +236,10 @@ void main() {
     testWidgets('renk vermeyen yazı kimlik yazı rengini alır', (tester) async {
       await tester.pumpWidget(_uygulama(
         const KimlikYuzeyi(child: Text('Sonraki ders')),
-        takim: TakimTemasi.sariLacivert,
+        takim: TakimTemasi.yesil,
       ));
       final gecis =
-          takimPaleti(TakimTemasi.sariLacivert, Brightness.light).gecisler;
+          takimPaleti(TakimTemasi.yesil, Brightness.light).gecisler;
       final stil = tester
           .widget<RichText>(find.descendant(
               of: find.byType(KimlikYuzeyi), matching: find.byType(RichText)))
@@ -252,11 +251,11 @@ void main() {
     testWidgets('gradyan ve geçiş şeridi temadan', (tester) async {
       await tester.pumpWidget(_uygulama(
         const KimlikYuzeyi(child: SizedBox(height: 40)),
-        takim: TakimTemasi.bordoMavi,
+        takim: TakimTemasi.mavi,
         mod: Brightness.dark,
       ));
       final gecis =
-          takimPaleti(TakimTemasi.bordoMavi, Brightness.dark).gecisler;
+          takimPaleti(TakimTemasi.mavi, Brightness.dark).gecisler;
       final gradyanlar = tester
           .widgetList<Container>(find.descendant(
               of: find.byType(KimlikYuzeyi), matching: find.byType(Container)))
@@ -321,7 +320,7 @@ void main() {
       await tester
           .pumpWidget(_uygulama(YikiciButon(etiket: 'Sil', onPressed: () {})));
       final buton = tester.widget<OutlinedButton>(find.byType(OutlinedButton));
-      final cs = FitcallTema.temasi(TakimTemasi.sariKirmizi, Brightness.light)
+      final cs = FitcallTema.temasi(TakimTemasi.mavi, Brightness.light)
           .colorScheme;
       expect(buton.style!.foregroundColor!.resolve({}), cs.error);
       expect(buton.style!.side!.resolve({})!.color, cs.error);
@@ -353,21 +352,21 @@ void main() {
           child: const SizedBox(
               width: 20, height: 20, child: ButonYukleniyorGostergesi()),
         ),
-        takim: TakimTemasi.sariLacivert,
+        takim: TakimTemasi.yesil,
         mod: Brightness.dark,
       ));
-      final cs = FitcallTema.temasi(TakimTemasi.sariLacivert, Brightness.dark)
+      final cs = FitcallTema.temasi(TakimTemasi.yesil, Brightness.dark)
           .colorScheme;
       final gosterge = tester.widget<CircularProgressIndicator>(
           find.byType(CircularProgressIndicator));
-      // Koyu Sarı-Lacivert'te buton sarı: gösterge beyaz değil lacivert.
+      // Koyu Yeşil'de buton açık yeşil: gösterge beyaz değil koyu yeşil.
       expect(gosterge.color, cs.onPrimary);
       expect(gosterge.color, isNot(Colors.white));
     });
   });
 
   group('RenkTemasiSecici', () {
-    testWidgets('altı tema listelenir, dokununca seçilir', (tester) async {
+    testWidgets('dört tema listelenir, dokununca seçilir', (tester) async {
       TakimTemasi? secilen;
       await tester.pumpWidget(_uygulama(
         SingleChildScrollView(
@@ -384,11 +383,11 @@ void main() {
       // Seçili karoda onay işareti tek tane.
       expect(find.byIcon(Icons.check_rounded), findsOneWidget);
 
-      await tester.tap(find.text('Bordo-Mavi'));
-      expect(secilen, TakimTemasi.bordoMavi);
+      await tester.tap(find.text('Mavi'));
+      expect(secilen, TakimTemasi.mavi);
     });
 
-    // Üç sütunda karo ~110 dp kalıyor ve "Trabzonspor renkleri" kesiliyordu.
+    // Üç sütunda karo ~110 dp kalıyor ve uzun alt etiket kesiliyordu.
     Future<double> ikinciSatirX(WidgetTester tester, double genislik) async {
       await tester.pumpWidget(_uygulama(
         Center(
@@ -398,10 +397,10 @@ void main() {
           ),
         ),
       ));
-      // Wrap soldan sağa dizer: 2 sütunda 3. karo (Sarı-Lacivert), 3 sütunda
-      // 4. karo (Bordo-Mavi) ikinci satırın başına, ilk karonun hizasına düşer.
-      final ilk = tester.getTopLeft(find.text('Binay Akademi')).dx;
-      return (tester.getTopLeft(find.text('Sarı-Lacivert')).dx - ilk).abs();
+      // Wrap soldan sağa dizer: 2 sütunda 3. karo (Yeşil) ikinci satırın
+      // başına, ilk karonun hizasına düşer; 3 sütunda ilk satırda kalır.
+      final ilk = tester.getTopLeft(find.text('Turuncu')).dx;
+      return (tester.getTopLeft(find.text('Yeşil')).dx - ilk).abs();
     }
 
     testWidgets('telefon genişliğinde iki sütun', (tester) async {
@@ -436,7 +435,7 @@ void main() {
           .widget<CustomPaint>(find.byWidgetPredicate(
               (w) => w is CustomPaint && w.painter is IptalTaramaBoyaci))
           .painter as IptalTaramaBoyaci;
-      final hata = FitcallTema.temasi(TakimTemasi.sariKirmizi, Brightness.light)
+      final hata = FitcallTema.temasi(TakimTemasi.mavi, Brightness.light)
           .extension<FitcallRenkleri>()!
           .hata;
       expect(boya.renk.r, closeTo(hata.r, 0.001));
@@ -447,7 +446,7 @@ void main() {
   group('KabukAltBar QR butonu', () {
     testWidgets('QR gradyanı ve ikon rengi temadan', (tester) async {
       await tester.pumpWidget(MaterialApp(
-        theme: FitcallTema.temasi(TakimTemasi.sariLacivert, Brightness.dark),
+        theme: FitcallTema.temasi(TakimTemasi.yesil, Brightness.dark),
         home: Scaffold(
           bottomNavigationBar: KabukAltBar(
             aktifIndeks: 0,
@@ -475,7 +474,7 @@ void main() {
         ),
       ));
       final gecis =
-          takimPaleti(TakimTemasi.sariLacivert, Brightness.dark).gecisler;
+          takimPaleti(TakimTemasi.yesil, Brightness.dark).gecisler;
       final ikon = tester.widget<Icon>(find.byIcon(Icons.qr_code_rounded));
       expect(ikon.color, gecis.onQr);
       final inkler = tester

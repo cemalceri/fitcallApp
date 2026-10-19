@@ -13,7 +13,7 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 | | |
 |---|---|
 | Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi, yönetici Dashboard (bugünün özeti üstte) / Raporlar (iki ayrı dönem seçici, haftalık ısı haritası) / Üyeler (sayılı kart filtreleri). **`v3.12.0` tag'lendi** (2026-10-16) → Codemagic: Play production + App Store incelemesi. Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
-| Testler | `flutter test` **3694 geçiyor** (2026-10-19, yerel 3.41.8), `flutter analyze` temiz; backend `uye-filtre` dalında (dekont + #12) **1408 geçiyor**, kırık yok (2026-10-19) |
+| Testler | `flutter test` **3621 geçiyor** (2026-10-19, kurumsal temalardan sonra — takım temaları kalkınca tema matrisi küçüldü; yerel 3.41.8), `flutter analyze` temiz; backend `uye-filtre` dalında (dekont + #12) **1408 geçiyor**, kırık yok (2026-10-19) |
 | Backend | Canlı: `7788ffa` (Heroku **v327**, 2026-10-18) — ders kayıt talebi + antrenörün salt-okunur tüm programı (`0097_ders_kayit_talebi`); öncesinde başka oturumdan paket hak düzelt/devret, paket notları (`0096_uyeurun_aciklama`), auditlog mobil aktörü. GitHub master canlıyla eşit. Deploy bekleyen yok |
 | Mağaza | **3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16; 3.11.0 App Store'da 2.3.3 ile döndü, gönderim iptal). 3.12.0'ın mağaza metni ve "Neler yeni?" notları kullanıcı isteğiyle **3.9.0 dahil** sonraki bütün sürümleri anlatıyor. **İkisi bağımsız:** mağaza metni elle yazılır, `surum_notlari.json`'dan beslenmez. Daha önce: 3.9.0 `v3.9.0` (2026-09-08), 3.8.1 |
 
@@ -44,6 +44,30 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 ---
 
 ## 🔴 Açık işler
+
+### 14. Takım temaları kalktı, yerine 4 kurumsal tema — kodlandı, sürüm bekliyor (2026-10-19)
+**Talep:** takım renk temaları (GS/FB/TS/BJK/Ay-Yıldız) kaldırılsın; marka kılavuzundaki renklerle
+5 kurumsal tema olsun, varsayılan turuncu. Kullanıcı sonra beyazı iptal etti → **4 tema**: Turuncu
+`FE5000` (Pantone Orange 021C), Mavi `00A9E0` (801C), Yeşil `43B02A` (802C), Siyah `000000`.
+
+**Kullanıcı kararları:** mevcut tema yapısı **aynen** kalır, yalnız renkler kılavuz kodlarına uyar.
+Başlık ve alt menü marka renginin koyu tonu, yazı beyaz. Bu ton, beyaz yazıyı 4.5:1 tutturan en
+açık ton: turuncuda `D34200`, mavide `007EA7`, yeşilde `338520`. Birebir marka kodu QR butonunda
+duruyor. Mavi ve yeşil QR'da beyaz ikon okunmuyor (2.7–2.8:1), bu yüzden ikon koyu (kullanıcı onayı).
+**Sonra (aynı gün):** turuncu kahveye kayıyordu → kullanıcı "B" seçeneğini seçti: turuncu başlık
+**birebir `FE5000`** (iki modda), beyaz yazı 3.3:1. Bunun için başlık testi eşiği 4.5'ten **3:1**'e
+indi (WCAG büyük/kalın metin), seçili başlık çipi de 3:1. Yarı saydam ikon kutusu 2.85:1 (eşik 2.8;
+ikon başlığa karşı 3.3). Alt menü `A33400` (koyu modda `9A3100`), kimlik `B83A00→D34200`. Durum
+çubuğu ikonları artık zemine göre değil, `onBaslik`'e göre seçiliyor (`baslikDurumCubugu(baslik, yazi)`).
+Bir UI/UX ajanı "birebir marka rengi başlık + koyu yazı" önerdi; kullanıcı mevcut yapıyı seçti.
+
+**Kod:** `TakimTemasi` = `binay` (Turuncu; kod `binay` korunduğu için seçim kaybolmaz), `mavi`,
+`yesil`, `siyah`. Kaldırılan kodlar cihazda varsayılana düşüyor; eski `siyah_beyaz` → Siyah.
+`Marka.turuncu` artık `FE5000` (koyu `D34200`, açık `FE854D`), Binay şeması ve geçişleri buna göre
+güncellendi. Kontrast, tema ve taşma testleri yeşil.
+
+**Kalan:** sürüm notu ve mağaza görselleri. Görseller turuncu temayla çekiliyor, renk değiştiği için
+yeniden üretilmeli mi, karar kullanıcının (`tool/magaza_gorselleri`).
 
 ### 13. Ödeme sayfasına IBAN + karekod, havale yapanlar için dekont yükleme — kodlandı, deploy/sürüm bekliyor (2026-10-18)
 **Talep:** ödeme sayfasında kulübün IBAN bilgisi ve bu IBAN'ın karekodu gösterilecek. Havale/EFT ile ödeme
