@@ -8,14 +8,14 @@ burada sadece **durum** tutulur, geçmiş anlatılmaz.
 
 ---
 
-## 📌 Şu anki durum (2026-10-18)
+## 📌 Şu anki durum (2026-10-20)
 
 | | |
 |---|---|
-| Mobil | `pubspec` sürümü **3.12.0+45** — "Neler yeni?" popup'ı, yönetici antrenör değerlendirmeleri, başlık bantları, ofis çıkış düğmesi, yönetici Dashboard (bugünün özeti üstte) / Raporlar (iki ayrı dönem seçici, haftalık ısı haritası) / Üyeler (sayılı kart filtreleri). **`v3.12.0` tag'lendi** (2026-10-16) → Codemagic: Play production + App Store incelemesi. Önceki: 3.11.0+44 `v3.11.0` (2026-10-13) |
-| Testler | `flutter test` **3621 geçiyor** (2026-10-19, kurumsal temalardan sonra — takım temaları kalkınca tema matrisi küçüldü; yerel 3.41.8), `flutter analyze` temiz; backend `uye-filtre` dalında (dekont + #12) **1408 geçiyor**, kırık yok (2026-10-19) |
-| Backend | Canlı: `7788ffa` (Heroku **v327**, 2026-10-18) — ders kayıt talebi + antrenörün salt-okunur tüm programı (`0097_ders_kayit_talebi`); öncesinde başka oturumdan paket hak düzelt/devret, paket notları (`0096_uyeurun_aciklama`), auditlog mobil aktörü. GitHub master canlıyla eşit. Deploy bekleyen yok |
-| Mağaza | **3.10.0 ve 3.11.0 mağazaya çıkmadı** (kullanıcı 2026-10-16; 3.11.0 App Store'da 2.3.3 ile döndü, gönderim iptal). 3.12.0'ın mağaza metni ve "Neler yeni?" notları kullanıcı isteğiyle **3.9.0 dahil** sonraki bütün sürümleri anlatıyor. **İkisi bağımsız:** mağaza metni elle yazılır, `surum_notlari.json`'dan beslenmez. Daha önce: 3.9.0 `v3.9.0` (2026-09-08), 3.8.1 |
+| Mobil | `pubspec` sürümü **3.13.0+46** — Havale / EFT + dekont yükleme (#13), ders kayıt talebi + antrenör Tüm Program, yönetici Üyeler filtre + sıralama (#12), 4 kurumsal renk teması (#14). **`v3.13.0` tag'lendi** (2026-10-20) → Codemagic: Play production + App Store incelemesi. Önceki: 3.12.0+45 `v3.12.0` (2026-10-16, iki mağazada yayında) |
+| Testler | `flutter test` **3634 geçiyor** (2026-10-20, 3.13.0 öncesi; yerel 3.41.8), `flutter analyze` temiz; backend master **1413 geçiyor**, kırık yok (2026-10-20) |
+| Backend | Canlı: dekont (`0098_dekont`) + yönetici üye filtreleri (`0099_uye_borc_kontrol`) + ders kayıt talebi (`0097`), 2026-10-20 deploy'unda kırık şablon/URL düzeltmeleri ve 3.13.0 "Neler yeni?" notları. Canlıda bir banka hesabı girili (işletme 1). GitHub master canlıyla eşit |
+| Mağaza | 3.12.0 App Store ve Play'de yayında. 3.13.0 mağaza metni yalnız ondan sonraki üye yenilikleri; mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20, turuncu tonu değişti — 2.3.3 riski kabul). **Mağaza metni ve "Neler yeni?" bağımsız.** |
 
 **3.8.1 yayını (2026-08-18).** "Kayıt ve şifremi unuttum native oldu" turu sürüme alındı; bağlı
 olduğu uçlar (`kayitFormVerileri`, `uyeBasvuru`, `sifremiUnuttum`, `sifreSifirlamaGonder`) canlıda
@@ -45,7 +45,7 @@ son build'den otomatik alır (`codemagic.yaml`). Yani yayın için **sadece `ver
 
 ## 🔴 Açık işler
 
-### 14. Takım temaları kalktı, yerine 4 kurumsal tema — kodlandı, sürüm bekliyor (2026-10-19)
+### 14. Takım temaları kalktı, yerine 4 kurumsal tema — 3.13.0 ile yayında (2026-10-19)
 **Talep:** takım renk temaları (GS/FB/TS/BJK/Ay-Yıldız) kaldırılsın; marka kılavuzundaki renklerle
 5 kurumsal tema olsun, varsayılan turuncu. Kullanıcı sonra beyazı iptal etti → **4 tema**: Turuncu
 `FE5000` (Pantone Orange 021C), Mavi `00A9E0` (801C), Yeşil `43B02A` (802C), Siyah `000000`.
@@ -69,7 +69,7 @@ güncellendi. Kontrast, tema ve taşma testleri yeşil.
 **Kalan:** sürüm notu ve mağaza görselleri. Görseller turuncu temayla çekiliyor, renk değiştiği için
 yeniden üretilmeli mi, karar kullanıcının (`tool/magaza_gorselleri`).
 
-### 13. Ödeme sayfasına IBAN + karekod, havale yapanlar için dekont yükleme — kodlandı, deploy/sürüm bekliyor (2026-10-18)
+### 13. Ödeme sayfasına IBAN + karekod, havale yapanlar için dekont yükleme — 3.13.0 ile yayında (2026-10-18)
 **2026-10-19 düzeltmeleri:** Hesap Özeti'nde tek "Öde" yerine **EFT / Havale** + **Kredi kartı ile öde**
 (`OdemeButonlari`; kart "henüz hazır değil" deyip EFT / Havale'ye yönlendiriyor). Karekod artık
 `karekodBaytlari` ile indirilip `Image.memory` ile çiziliyor (yüklenirken gösterge, hata → tekrar dene);
@@ -144,7 +144,7 @@ seçildi (ön muhasebenin tercihi; kullanıcı onayı 2026-10-18), ekran duyarl�
 hesapları (IBAN + karekod görseli) girilmeli; web sayfası kısıtlı kullanıcılarda SayfaYetki'ye
 `calendarapp:dekontlar` eklenince görünür. #12 kendi migration'ını `0099` olarak almalı.
 
-### 12. Yönetici Üyeler: birlikte çalışan filtre + sıralama, web'de borç kesinleşmesi — kodlandı, deploy/sürüm bekliyor (2026-10-19)
+### 12. Yönetici Üyeler: birlikte çalışan filtre + sıralama, web'de borç kesinleşmesi — 3.13.0 ile yayında (2026-10-19)
 
 **Durum (2026-10-19):** aşağıdaki plan kodlandı.
 - **Backend:** dal **`uye-filtre`** (worktree `C:\Django\tenis-uye-filtre`, commit `c6d9270`), **`dekont` dalının üstünde**:

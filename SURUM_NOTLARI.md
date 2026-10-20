@@ -44,6 +44,41 @@ görüyor (tam ekran popup; kalıcı erişim Ayarlar › "Neler yeni").
    popup işe yaramıyor demektir; kararı tek sürüme değil birkaç sürüme bakarak
    ver.
 
+## 3.13.0 — 2026-10-20
+
+### Mağaza metni (tr-TR)
+
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (349 karakter). 3.12.0 iki mağazada da yayında,
+yani yalnız ondan sonraki üye yenilikleri.
+
+- Havale / EFT: kulübün IBAN'ı ve karekodu Muhasebe sekmesinde. IBAN'ı kopyalayın, karekodu indirip banka uygulamanızla okutun.
+- Havale dekontunuzu fotoğraf ya da PDF olarak uygulamadan gönderin; durumunu Dekontlarım'da izleyin.
+- Yeni renk temaları: Turuncu, Mavi, Yeşil ve Siyah (Ayarlar › Görünüm).
+- Çeşitli iyileştirmeler ve hata düzeltmeleri.
+
+### "Neler yeni?" popup'ı
+
+Backend `surum_notlari.json`'da 3.13.0 bloğu: üye 3, antrenör 2, ofis 3, yönetici 3 madde (kurumsal
+renk temaları dört profilde ortak). 3.12.0'daki karar gibi `yayinda` açık; popup yalnız 3.13.0 kurulu
+cihazda çıkar. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20; turuncu tonu değişti).
+
+### Teknik
+
+- **Havale / EFT (üye, #13).** Hesap Özeti'nde **EFT / Havale** + **Kredi kartı ile öde** (kart henüz
+  yok, EFT / Havale'ye yönlendirir). `6_muhasebe/havale/`: banka hesapları (gruplu IBAN, kopyala,
+  karekod — indirilip cihazda saklanır, İndir + Paylaş), tam ekran Dekont yükle (Kamera / Galeri / PDF,
+  5 MB), Dekontlarım (durum, ret gerekçesi, bekleyeni geri çekme). Borç yokken "Borcunuz yok.
+  Teşekkürler!". Ofise `OFIS_DEKONT_YUKLENDI` bildirimi, ofis üye detayını açar. Backend `0098_dekont`.
+- **Ders kayıt talebi (antrenör + ofis).** Antrenör Takvim başlığından salt-okunur Tüm Program
+  (`antrenorHaftalikProgram`), tek eylem "+ Ders kayıt talebi". Ofis Ana Sayfa'da "Ders kayıt
+  talepleri (n)", kayıt `EtkinlikFormSheet` ile `talepId`'li. Izgara `1_common/program/`'a taşındı.
+  Backend `0097_ders_kayit_talebi`.
+- **Yönetici Üyeler (#12).** Birlikte çalışan filtre + 12 seçenekli sıralama (sunucuda, `filtreler` +
+  `yon`), etkin filtre çipleri, "Kesin" rozeti; ayrı Borçlu Üyeler sayfası kalktı, Dashboard kartı ve
+  menü Üyeler'i borçlu ön ayarıyla açar. Backend `0099_uye_borc_kontrol`.
+- **Kurumsal temalar (#14).** Takım temaları kalktı; Turuncu `FE5000` (varsayılan, kod `binay`), Mavi
+  `00A9E0`, Yeşil `43B02A`, Siyah. Kaldırılan kodlar varsayılana, `siyah_beyaz` Siyah'a düşer.
+
 ## 3.12.0 — 2026-10-16
 
 ### Mağaza metni (tr-TR)
