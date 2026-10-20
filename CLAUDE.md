@@ -1,102 +1,33 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+"fitcall": Binay Akademi spor akademisinin Flutter mobil uygulaması. Roller üye, antrenör, ofis (ön büro), yönetici; backend REST `https://www.binay.fit/api`. Kod, yorum ve arayüz metni **Türkçe**; yeni kod da öyle. Baş kurallar kullanıcı düzeyindeki `~/.claude/CLAUDE.md`'de.
 
-## Project Overview
+## Dokümanlar (gerektiğinde oku, hepsini birden değil)
 
-"fitcall" is the Binay Akademi mobile app (Flutter) for a sports academy. It serves three user roles — üye (member), antrenör (trainer), and yönetici (manager) — against a REST backend at `https://www.binay.fit/api`. The entire codebase (identifiers, comments, UI text) is in Turkish; follow that convention in new code.
-
-## Documentation map
-
-Read by need, not all at once — only `CLAUDE.md` is loaded automatically.
-
-| File | Read it when |
+| Dosya | Ne zaman |
 |---|---|
-| [MOBIL_GELISTIRMELER.md](MOBIL_GELISTIRMELER.md) | **Start of any feature or planning session.** The single status doc: current state (version, test count, what's deployed), open items, the next-phase backlog, and an archive of solved critical bugs. Update it when a round of work lands or an item is closed — do not create a second "pending work" file. |
-| [SURUM_NOTLARI.md](SURUM_NOTLARI.md) | Cutting a release. Store "what's new" text (**tr-TR only** — an en-US listing would oblige us to supply English screenshots and metadata to Apple) plus a technical summary, newest first. Add a section whenever `version:` in `pubspec.yaml` is bumped. Every release must also rewrite `release_notes.json` at the repo root — that file (not `codemagic.yaml`) is what Codemagic sends to the stores: `tr-TR` → Play, max 500 chars; `tr` → App Store Connect; no `<`/`>`. Never ship a version with the previous release's text. |
-| [CODEMAGIC_KURULUM.md](CODEMAGIC_KURULUM.md) | Touching `codemagic.yaml` or the release pipeline. One-time setup of Play/App Store credentials, keystore, webhook. |
+| [MIMARI.md](MIMARI.md) | Koda dokunmadan önce ilgili bölümü: API katmanı, auth/rota, bildirim, tarih, ofis/yönetici ayrımı, renk/tema, taşma, ekran kalıpları. |
+| [MOBIL_GELISTIRMELER.md](MOBIL_GELISTIRMELER.md) | Özellik/planlama başında. Tek durum dosyası: sürüm, her sürümde yapılacaklar, açık işler, backlog. Biten iş oradan silinir, backend `history.md`'ye yazılır; ikinci "bekleyen iş" dosyası açma. |
+| [SURUM_NOTLARI.md](SURUM_NOTLARI.md) | Sürüm çıkarırken. Yalnız tr-TR; her `version:` bump'ında bölüm ekle ve `release_notes.json`'ı baştan yaz (Play `tr-TR` ≤500 karakter, App Store `tr`, `<`/`>` yok). |
+| [CODEMAGIC_KURULUM.md](CODEMAGIC_KURULUM.md) | `codemagic.yaml` / yayın hattı. |
 
-`README.md` is unmodified Flutter boilerplate — ignore it.
+Backend: `C:\Django\tenis` (branch `master`, Heroku). `history.md` iki repoyu kapsayan tarihli kayıt (önemli değişiklikten sonra kısa girdi ekle); `MODEL_ILISKILERI.md` model/FK/akışlar. `AGENTS.md` yalnız buraya yönlendirir.
 
-### Backend repo
-
-The Django backend lives at `C:\Django\tenis` (branch `master`, deployed to Heroku). Two of its docs matter for mobile work:
-
-- `history.md` — dated changelog (problem → solution, newest first) covering **both** repos. Read it for historical context instead of digging through git log; append a short entry there after a significant cross-cutting change.
-- `MODEL_ILISKILERI.md` — every model, its FKs, unique constraints, and key flows. Read before any task that reasons about backend data relationships.
-
-## Commands
+## Komutlar
 
 ```powershell
-flutter pub get          # install dependencies
-flutter analyze          # lint (flutter_lints, default ruleset)
-flutter test             # run tests
-flutter test test/widget_test.dart   # run a single test file
-flutter run              # run the app (needs a device/emulator)
-flutter build apk        # Android release build
+flutter pub get; flutter analyze; flutter test   # test/<dosya>_test.dart ile tek dosya
 ```
 
-Release builds are done on Codemagic. Bump `version:` in [pubspec.yaml](pubspec.yaml) for releases.
+Yayın Codemagic'te, tag ile. `lib/common/api_urls.dart`'ta `baseUrl` **her zaman `baseUrlProd`** commit edilir (local `10.0.2.2:8000` yalnız denerken).
 
-## Backend Configuration
+## Değişmez kurallar (ayrıntı MIMARI.md'de)
 
-All API endpoint URLs live in [lib/common/api_urls.dart](lib/common/api_urls.dart), grouped by domain. `baseUrl` is switched manually between prod (`https://www.binay.fit/api`) and local (`http://10.0.2.2:8000/api` — Android emulator loopback) by commenting/uncommenting at the top of that file. New endpoints are added there as top-level string variables.
-
-## Architecture
-
-`lib/` is organized into four layers, with `models/`, `screens/`, and `services/` each subdivided by domain. Models and screens use numbered domain folders, and the two numberings differ: **models** are `1_common`, `2_uye`, `3_antrenor`, `4_auth`, `5_etkinlik` (lessons/events), `6_muhasebe` (accounting), `7_kort` (courts), `8_urun` (products), `9_yonetici`, `10_ofis`; **screens** are `1_common`, `2_uye`, `3_antrenor`, `4_auth`, `5_etkinlik`, `6_muhasebe`, `7_yonetici`, `8_ofis`. Services use unnumbered domain folders plus `services/core/` for cross-cutting concerns (auth, secure storage, FCM, app update).
-
-### API layer
-
-- [lib/services/api_client.dart](lib/services/api_client.dart) — static `ApiClient`. New code should use `postParsed<T>`/`getParsed<T>`, which take a `fromJson` callback and return `ApiResult<T>` (`{mesaj, data}`). Pass `auth: true` to attach the Bearer token from secure storage. Errors are thrown as `ApiException(code, message, statusCode)`; the backend's own `message`/`detail` field is preferred for display. `postJson`/`getJson` are legacy low-level variants.
-- Services are classes with static methods (e.g. `AuthService`) that call `ApiClient` with URLs from `api_urls.dart` and parse into models via `ApiParsing.parseObject`/`parseList` ([lib/services/api_result.dart](lib/services/api_result.dart)).
-- Models are hand-written `fromJson`/`toJson` classes (no codegen).
-
-### Auth, roles, and routing
-
-- Roles are the `Roller` enum in [lib/common/constants.dart](lib/common/constants.dart): `yonetici`, `uye`, `antrenor`, `cafe`.
-- Login flow: `AuthService.fetchMyMembers` returns the user's profiles (one account can have multiple member/trainer profiles); the user picks one in `profil_sec.dart`, then `AuthService.loginUser` requests a role-scoped token (`createToken`) and stores everything in `flutter_secure_storage` via `StorageService`/`SecureStorageService` ([lib/services/core/storage_service.dart](lib/services/core/storage_service.dart)).
-- All navigation is named-route based through [lib/common/routes.dart](lib/common/routes.dart): the `SayfaAdi` enum maps to route strings (`routeEnums`), which map to widget builders (`routes`). `myRouteGenerator` (wired as `onGenerateRoute` in `main.dart`) is the auth guard: routes not in `publicRoutes` check token validity (`StorageService.tokenGecerliMi`) and redirect to login, and routes marked `AccessRule.anaHesapOnly` in `accessPolicies` additionally require the active profile to be the "ana hesap" (primary account). To add a screen: add a `SayfaAdi` value, a route string, a builder, and an access policy entry if it needs the ana-hesap guard.
-
-### Notifications
-
-Firebase Cloud Messaging. `main.dart` initializes Firebase + `NotificationFCMService` and exposes a global `navigatorKey` so notification taps can navigate (deep-link pages live in `lib/screens/1_common/1_notification/pages/`). FCM token registration/refresh is handled by `initFCMTokenListener` in [lib/services/core/fcm_service.dart](lib/services/core/fcm_service.dart).
-
-### Date/time contract
-
-[lib/common/tarih_util.dart](lib/common/tarih_util.dart) is the single entry point for API date handling; backend counterpart is `calendarapp/utils/tarih_util.py`.
-
-- **Reading:** always `parseApiTarih(...)` (or `parseApiTarihOrNow` / `parseApiGun`), never raw `DateTime.parse`. The server sends local time with an offset (`"2026-07-23T10:00:00+03:00"`); Dart's `DateTime.parse` converts that to a UTC `DateTime`, so `.hour` and `DateFormat` would read 3 hours early. The helper applies `.toLocal()`.
-- **Writing:** always `formatApiTarih(...)` → offset-less local ISO (`"2026-07-23T10:00:00"`), which the backend interprets as Istanbul. Never send `.toUtc()`/`Z`.
-
-### Yönetici ve ofis: aksiyon / raporlama ayrımı
-
-Two manager-side shells, split by what they are *for*:
-
-- **`lib/screens/8_ofis/` (ofis, front desk)** holds every mutating action: the weekly programme (create / edit / cancel / un-cancel / permanently delete) and QR verification. `program/` is the mobile counterpart of the web `/etkinlik-pilot` screen — day strip plus a horizontally scrollable court × hour grid — talking to `yoneticiHaftalikProgram` / `yoneticiEtkinlik*` through [yonetici_etkinlik_service.dart](lib/services/yonetici/yonetici_etkinlik_service.dart) (name follows the backend module; only ofis uses it). Save and cancel run through shared backend services, so rules match the web exactly — validate there, not here.
-- **Shared grid, read-only by structure:** the court × hour grid lives in `lib/screens/1_common/program/` (`ProgramGorunumu`, `ProgramIzgara`). Ofis wires the empty-slot tap and lesson actions; the antrenör **Tüm Program** (`3_antrenor/program/`, from the Takvim header icon) passes no slot callback, highlights its own lessons via `vurgulaAntrenorId` and reads `antrenorHaftalikProgram`, whose lesson fields are a server-side whitelist (no cancel reason, approval state, guest names). Its only action is a **ders kayıt talebi**; ofis turns it into a lesson in `8_ofis/ders_kayit_talepleri/` by opening the same `EtkinlikFormSheet` prefilled and saving with `talepId` (backend closes the request in the same transaction).
-- **`lib/screens/7_yonetici/`** keeps reporting and overview only: dashboard, reports, members with balances (server-side filters + sort in `uyeler/`; debtors are the "Borçlu" preset there, no separate page), trainers, hakediş. No action screen. Borç kesinleşmesi / son kontrol are entered on the web and only read here.
-- Ofis tabs are Ana Sayfa (pending work: approvals, plan-dışı decisions, unanswered attendance) · Program · Dersler · Üyeler. Ofis "Dersler" (`lib/screens/8_ofis/dersler/`) is the mobile web Ders Yönetimi: approve done/not-done, hakediş, package deduction, manual attendance and reminders, plus "approve all the trainer marked done"; plan-dışı decisions in `8_ofis/plan_disi/`. Endpoints in `api/ofis/ders_yonetimi.py`; rules shared with the web in `ders_yonetimi_service` / `plan_disi_karar_service`.
-- `lib/screens/1_common/ders_listesi/` (daily read-only lesson list) is used by the yönetici shell. So is `lib/screens/1_common/duyurular/` (announcements + who saw them, read-only; editing stays on the web): one page, two routes (`yoneticiDuyurular` / `ofisDuyurular`) that differ only in which member-detail page a row opens — the shared screen never checks the role.
-
-**Ofis never sees money or private member data** — the one deliberate exception (user decision 2026-10-12) is the amount typed when a plan-dışı decision is "borç yaz". The `ofisUyeler` / `ofisUyeDetay` endpoints (`api/ofis/metots.py`) whitelist their fields — no balance, no ledger, no address / occupation / parent / emergency-contact / school — and the Dart models in `lib/models/10_ofis/` don't declare those fields either. This is a server-side boundary, not a hidden widget: never "fix" a missing field by widening the whitelist without asking. If an ofis employee needs that data, they get a yönetici profile instead.
-
-The role lives in `Roller` ([lib/common/constants.dart](lib/common/constants.dart)) mirroring the backend `RolEnum`; backend endpoints shared with yönetici are opened with `@rol_gerekli("yonetici", "ofis")`.
-
-### Colors and color themes
-
-The user picks a color theme per device (`TakimTemasi` in [lib/common/tema.dart](lib/common/tema.dart): four corporate themes from the brand guide — Turuncu `FE5000` (default, enum value `binay`), Mavi `00A9E0`, Yeşil `43B02A`, Siyah; team themes were removed 2026-10-19) independently of light/dark mode; `TemaKontrol.takim` stores it. Screens never hard-code colors: read `context.cs`, `context.renkler` (semantic/status colors, identical in every theme) and `context.gecis` (`TemaGecisleri`: the theme's page tint, header/bottom-bar colors and gradients).
-
-- **Design rules:** the team color is on every page (2026-10-12): the page background is the theme's light tint (`gecis.sayfaRengi`, drawn by the theme — page transitions wrap every route in `SayfaZemini`, so Scaffold is transparent; a screen that wants a plain background sets its own Scaffold color), every page's header bar is solid `gecis.baslik` and shell bottom bars are solid `gecis.altBar`; text/icons on them are `onBaslik` / `onAltBar`, fully opaque. AppBars get this from the theme; hand-drawn headers use `BaslikBandi` (with `RenkliDurumCubugu` when the header scrolls with content) from `lib/screens/1_common/widgets/baslik_bandi.dart` — inside it use `baslikYazi(...)`, `BaslikIkonButonu`, `BaslikCipi`; explicitly colored widgets inside an AppBar must read `context.gecis.onBaslik`. Cards, sheets and dialogs stay `surface` and stand out from the tint. At most one identity surface in the page content (`KimlikYuzeyi` / `KimlikBaslik` in `lib/screens/1_common/widgets/kimlik_yuzeyi.dart`; text on it is `onKimlik`, fully opaque). Buttons, selected states, lists, calendars and charts stay flat; destructive actions use `YikiciButon` (outlined); cancelled lessons use `IptalTaramasi`; text on a variable background uses `uzerineYazi(zemin)`; in-button spinners use `ButonYukleniyorGostergesi`. Context-free code (models) returns a `ListeTonu`, not a `Color`.
-- **Tests guard it:** [test/tema_kontrast_test.dart](test/tema_kontrast_test.dart) checks every text/background pair in every theme × mode (gradients sampled at 41 points); [test/gomulu_renk_mandal_test.dart](test/gomulu_renk_mandal_test.dart) fails if the count of hard-coded `Color(0x…)` / `Colors.x` in `lib/` grows or the removed off-theme palette returns. A new palette or token must pass both.
-
-### Layout / overflow discipline
-
-App-wide text scale is clamped to `[1.0, 1.3]` ([lib/common/ui_scale.dart](lib/common/ui_scale.dart), wired via `MaterialApp.builder` in `main.dart`) so accessibility "huge font" (up to 2.0x) can't blow up dense layouts. New screens must not overflow within that range. [test/support/tasma_yardimcisi.dart](test/support/tasma_yardimcisi.dart) provides `tasmaTesti(...)` which renders a widget across a screen-size × text-scale matrix (plus once in dark mode and in three edge team themes) and fails on any RenderFlex overflow or render error; [test/tasma_ekranlar_test.dart](test/tasma_ekranlar_test.dart) covers the yönetici/ofis/antrenör/üye components. Add every new presentational widget there. Because pages call APIs in `initState` they can't be pumped directly — extract the visual body into a data-fed widget (as `1_common/program/program_gorunumu.dart` does for the program page) so it's testable.
-
-### Screens
-
-Page widgets live at the domain folder root; their subcomponents go in a sibling `widgets/` folder. Shared UI helpers (snackbar/message display, spinners, KVKK text) are in `lib/screens/1_common/widgets/`. Two of them are mandatory conventions for new screens:
-
-- **Lists** use [liste_satiri.dart](lib/screens/1_common/widgets/liste_satiri.dart) — `ListeSatiri` (flat row: circular avatar — `ListeAvatari(fotoUrl:)` shows a member photo —, two text lines, one right-hand value, hairline `ListeAyraci`), `ListeGrupBasligi` for sticky group headers, `ListeEylemi` for swipe actions. Don't wrap list rows in cards; cards are for real summary objects. Long server lists page in 20s with [sayfali_liste.dart](lib/common/sayfali_liste.dart) (`SayfaliListe`, search on the server) and `sayfali_liste_parcalari.dart` (load-more trigger, footer, letter groups).
-- **Loading** uses [iskelet.dart](lib/screens/1_common/widgets/iskelet.dart) — `IskeletListe` / `IskeletKart` / `IskeletTakvim` / `IskeletDashboard`, all delayed 300 ms via `IskeletGecikmeli`. `CircularProgressIndicator` is only for in-button progress, the auth/route-guard flow, and determinate image loading; never for page or section loading. Pull-to-refresh shows the existing list, not a skeleton. The üye and antrenör calendars (`takvim/`) are parallel implementations with their own `timeline_view`, `lesson_block`, and `position_calculator` widgets — changes to one calendar often need mirroring in the other.
+- **API:** yeni kod `ApiClient.postParsed/getParsed<T>` + `auth: true`; uçlar `api_urls.dart`'ta; modeller elle `fromJson`.
+- **Rota:** ekran ekle = `SayfaAdi` + route string + builder (+ gerekirse `anaHesapOnly` politikası), `lib/common/routes.dart`.
+- **Tarih:** okurken `parseApiTarih`, yazarken `formatApiTarih` (`lib/common/tarih_util.dart`); asla `DateTime.parse` / `.toUtc()`.
+- **Ofis para ve özel üye verisi görmez** (tek istisna plan-dışı "borç yaz" tutarı). Sınır sunucudaki beyaz listede; eksik alanı listeyi genişleterek "düzeltme", sor. Aksiyonlar ofiste (`8_ofis/`), yönetici (`7_yonetici/`) yalnız raporlama.
+- **Renk:** ekranda sabit renk yazma; `context.cs` / `context.renkler` / `context.gecis`. Başlıklar `gecis.baslik`, elle çizilen başlık `BaslikBandi`. `tema_kontrast_test` ve `gomulu_renk_mandal_test` geçmeli.
+- **Taşma:** yazı ölçeği 1.0–1.3; her yeni görsel widget `test/tasma_ekranlar_test.dart`'a (`tasmaTesti`). API çağıran sayfanın görünümünü veriyle beslenen ayrı widget'a çıkar.
+- **Listeler** `ListeSatiri` (kart yok), uzun listeler `SayfaliListe` (20'şer). **Yükleme** `Iskelet*`; `CircularProgressIndicator` yalnız buton içi / auth akışı.
+- Takvim çizelgesi ortak (`1_common/takvim/`), ders bloğu (`lesson_block`, `position_calculator`) üye ve antrenörde ayrı; birindeki değişiklik çoğu zaman ötekinde de gerekir.

@@ -1,15 +1,14 @@
 # Codemagic Uçtan Uca Yayın Kurulumu
 
-Amaç: `git tag v3.6.0 && git push origin v3.6.0` komutundan sonra hem Google Play
-hem App Store'da yeni sürümün incelemeye gitmesi. Market konsollarında işlem yok.
+Tag push'u (`git tag v3.x.y && git push origin v3.x.y`) Codemagic'te testleri koşar, AAB + IPA üretir,
+Play production'a ve App Store incelemesine gönderir. Kurulum (bölüm 1–6) yapıldı; yeniden kurmak
+gerekirse diye duruyor.
 
 Yapılandırma dosyası: [codemagic.yaml](codemagic.yaml)
 
 ---
 
 ## 1. Google Play servis hesabı (tek seferlik)
-
-Şu an eksik olan tek büyük parça bu.
 
 1. **Play Console** → *Setup* → *API access* → Google Cloud projesini bağla.
 2. Google Cloud Console → *IAM & Admin* → *Service Accounts* → yeni servis hesabı
@@ -34,22 +33,18 @@ Codemagic → uygulama → *Environment variables*:
 
 ## 3. Android keystore
 
-Şu an AAB'yi local'de ürettiğin için keystore Codemagic'te yok.
-
 Codemagic → *Teams* → *Code signing identities* → *Android keystores* → keystore
 dosyasını, şifreleri ve alias'ı yükle. **Reference name: `binay_keystore`**
 (başka bir isim verirsen `codemagic.yaml` içindeki `android_signing` değerini
 güncelle).
 
-> Play App Signing kullanıldığı için yüklenen keystore, mevcut sürümleri
-> imzalayan **upload key** ile aynı olmak zorunda. `android/key.properties`
-> içindeki dosya ve şifreler kullanılacak.
+Play App Signing kullanıldığı için yüklenen keystore, mevcut sürümleri imzalayan
+**upload key** ile aynı olmak zorunda (`android/key.properties`'teki dosya ve şifreler).
 
 ## 4. App Store Connect
 
-- `codemagic.yaml` içindeki `integrations.app_store_connect` değerini, Codemagic
-  → *Teams* → *Integrations* → *App Store Connect* altında **zaten ekli olan**
-  API key'in adıyla değiştir.
+- `codemagic.yaml` içindeki `integrations.app_store_connect`, Codemagic → *Teams* →
+  *Integrations* → *App Store Connect* altındaki API key'in adıdır.
 - API key'in yetkisi **App Manager** (veya Admin) olmalı ve *Certificates,
   Identifiers & Profiles* erişimi bulunmalı — sertifika/profil build sırasında
   otomatik çekiliyor (`ios_signing.distribution_type: app_store`).
@@ -72,9 +67,9 @@ ayarlarına elle eklemek gerekir. Webhook yoksa tag push'u build tetiklemez.
 
 ## Sürüm çıkarma akışı
 
-1. `pubspec.yaml` içindeki `version:` satırında **sadece sürüm adını** güncelle
-   (örn. `3.5.0+36` → `3.6.0+36`). Build numarası artık önemsiz; Codemagic her
-   iki mağazadaki en yüksek değeri okuyup +1 veriyor.
+1. `lib/common/api_urls.dart`'ta `baseUrl = baseUrlProd` olduğunu kontrol et.
+   `pubspec.yaml` içindeki `version:` satırında **sadece sürüm adını** güncelle;
+   build numarasını Codemagic iki mağazadaki en yüksek değerin +1'i olarak verir.
 2. **`release_notes.json` dosyasını bu sürüm için baştan yaz.** Codemagic bu
    dosyayı repo kökünde kendisi arar — `codemagic.yaml`'da referansı yoktur, yani
    dosya güncellenmezse mağazalara **bir önceki sürümün metni** gider. Kural:
@@ -85,7 +80,7 @@ ayarlarına elle eklemek gerekir. Webhook yoksa tag push'u build tetiklemez.
    - `tr` girdisi → App Store Connect (TestFlight "What to Test" + inceleme
      gönderiminde "What's New"). Sınır 4000 karakter. App Store'da yayında olan
      sürüm Play'dekinden geride kalabiliyor; o zaman bu metin **daha eski bir
-     sürümden bu yana** gelen her şeyi kapsar (3.8.1'de olduğu gibi).
+     sürümden bu yana** gelen her şeyi kapsar.
    - Apple `<` ve `>` karakterlerini kabul etmiyor (API `409` döner). Metinde
      "Ayarlar > Tema" gibi bir yol yazılacaksa düz cümleye çevir.
    - Uzun anlatım ve teknik özet `SURUM_NOTLARI.md`'ye yazılır; bu dosya sadece
@@ -93,27 +88,12 @@ ayarlarına elle eklemek gerekir. Webhook yoksa tag push'u build tetiklemez.
 3. Commit + push.
 4. Tag at:
    ```bash
-   git tag v3.6.0 && git push origin v3.6.0
+   git tag v3.x.y && git push origin v3.x.y
    ```
 5. Codemagic: test → AAB + IPA → Play production (inceleme) + App Store
    (inceleme, onay sonrası otomatik yayın). Sonuç e-posta ile gelir.
 
 ---
-
-## İlk çalıştırmada kontrol edilecekler
-
-- **Release notes dili:** `release_notes.json` kullanılıyor; Codemagic sadece
-  ilgili mağazanın tanıdığı dil kodunu alır, tanımadığını atlar. Play `tr-TR`,
-  App Store Connect `tr` bekler — bu yüzden dosyada iki girdi var ve ikisi aynı
-  metin olmak zorunda değildir.
-- **Android versionCode:** Build log'unda "Android: 3.6.0+37" satırının doğru
-  olduğunu doğrula.
-- **Flutter sürümü:** `flutter: stable` kullanılıyor. Flutter'ın yeni bir
-  sürümünün build'i bozma ihtimaline karşı, ilk başarılı build'in log'undaki
-  sürümü `codemagic.yaml`'a sabitlemek (`flutter: 3.x.y`) daha güvenli.
-- **İlk deneme:** Riski azaltmak için ilk tag'de `GOOGLE_PLAY_TRACK` değerini
-  `internal` yapıp, App Store tarafında `submit_to_app_store: false` ile
-  deneyip, her şey yolundaysa `production` / `true` yapmak mantıklı.
 
 ## Bilinen kırılma noktası: Flutter stable ↔ Android araç zinciri
 

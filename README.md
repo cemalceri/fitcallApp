@@ -1,16 +1,7 @@
-# fitcall
+# fitcall — Binay Akademi mobil uygulaması
 
-A new Flutter project.
+Flutter uygulaması; üye, antrenör, ofis ve yönetici profilleri `https://www.binay.fit/api` ile çalışır.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Geliştirme kuralları ve mimari: [CLAUDE.md](CLAUDE.md)
+- Güncel durum ve açık işler: [MOBIL_GELISTIRMELER.md](MOBIL_GELISTIRMELER.md)
+- Sürüm notları: [SURUM_NOTLARI.md](SURUM_NOTLARI.md) · Yayın hattı: [CODEMAGIC_KURULUM.md](CODEMAGIC_KURULUM.md)
