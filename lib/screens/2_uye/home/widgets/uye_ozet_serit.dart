@@ -21,6 +21,8 @@ class UyeOzetSerit extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    // Ana hesap olmayan profilde sunucu bakiyeyi göndermez: kutu gizlenir.
+    final bakiyeGoster = isLoading || ozet?.bakiye != null;
     final bakiye = ozet?.bakiye ?? 0.0;
     // Borç/alacak her temada aynı durum renginde; diğer kutular ana renkte.
     final bakiyeRenk = bakiye < 0
@@ -32,17 +34,19 @@ class UyeOzetSerit extends StatelessWidget {
 
     return Row(
       children: [
-        Expanded(
-          child: _OzetKart(
-            isLoading: isLoading,
-            icon: Icons.account_balance_wallet_outlined,
-            color: bakiyeRenk,
-            etiket: bakiye < 0 ? 'Borç' : 'Bakiye',
-            deger: '${tutarFmt.format(bakiye.abs())} ₺',
-            route: routeEnums[SayfaAdi.muhasebe]!,
+        if (bakiyeGoster) ...[
+          Expanded(
+            child: _OzetKart(
+              isLoading: isLoading,
+              icon: Icons.account_balance_wallet_outlined,
+              color: bakiyeRenk,
+              etiket: bakiye < 0 ? 'Borç' : 'Bakiye',
+              deger: '${tutarFmt.format(bakiye.abs())} ₺',
+              route: routeEnums[SayfaAdi.muhasebe]!,
+            ),
           ),
-        ),
-        const SizedBox(width: 10),
+          const SizedBox(width: 10),
+        ],
         Expanded(
           child: _OzetKart(
             isLoading: isLoading,

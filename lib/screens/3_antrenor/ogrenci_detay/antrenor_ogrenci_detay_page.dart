@@ -217,9 +217,9 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
   /// kapsüldeki etiket: renkli yüzeyin üstüne ikinci bir renk konmaz.
   Widget _profilKarti(ColorScheme colorScheme) {
     final p = _detay!.profil;
-    final yasFmt = p.dogumTarihi != null
-        ? '${(simdiKulup().difference(p.dogumTarihi!).inDays / 365.25).floor()} yaş'
-        : null;
+    // Sunucu yalnız doğum yılını veriyor; yaş yıl farkıyla (en çok 1 sapar)
+    final yasFmt =
+        p.dogumYili != null ? '${simdiKulup().year - p.dogumYili!} yaş' : null;
 
     return KimlikBaslik(
       baslik: p.adSoyad.isNotEmpty ? p.adSoyad : '—',

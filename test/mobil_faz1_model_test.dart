@@ -49,7 +49,8 @@ void main() {
 
     test('eksik/boş veri varsayılanlara düşer', () {
       final model = UyeHomeOzetModel.fromJson(const {});
-      expect(model.ozet.bakiye, 0.0);
+      // Bakiye yoksa null: ana hesap olmayan profilde sunucu göndermez, şerit gizler
+      expect(model.ozet.bakiye, isNull);
       expect(model.ozet.kalanPaketHak, isNull);
       expect(model.ozet.aktifTelafi, 0);
       expect(model.kartlar, isEmpty);
@@ -207,7 +208,7 @@ void main() {
           'uye_no': 361,
           'telefon': '5457608257',
           'email': 'a@b.com',
-          'dogum_tarihi': '2003-09-25',
+          'dogum_yili': 2003,
           'cinsiyet': 'Kadın',
           'seviye_rengi': 'Yetiskin',
           'program_tercihi': 'Özel Ders',
@@ -262,6 +263,7 @@ void main() {
 
       final model = OgrenciDetayModel.fromJson(json);
       expect(model.profil.adSoyad, 'Nergis TAĞI');
+      expect(model.profil.dogumYili, 2003);
       expect(model.profil.sorumluHocasiMiyim, false);
       expect(model.veli.bosMu, false);
       expect(model.istatistik.katilimYuzdesi, isNull,

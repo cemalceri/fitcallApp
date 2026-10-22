@@ -20,6 +20,32 @@ class ApiClient {
   /// Uygulama ömrü boyunca yaşadığı için kapatılmaz.
   static final http.Client _client = http.Client();
 
+  /// Token'lı bir istek oturum hatası aldığında çağrılır (main.dart bağlar);
+  /// parametre o istekte gönderilen token (yoksa null).
+  ///
+  /// Sunucu token'ı süre dolmadan da reddedebiliyor: parola değişince, hesap
+  /// kapanınca ya da imza anahtarı yenilenince. Eskiden kullanıcı süre
+  /// dolana kadar her ekranda hata görüyordu; artık girişe yönlendirilir.
+  static void Function(String? reddedilenToken)? oturumDustu;
+
+  /// Yalnız bu kodlar oturumu düşürür: QR doğrulama gibi uçlar geçersiz kod
+  /// için de 401 dönüyor, onlar kullanıcıyı oturumdan atmamalı.
+  static const _oturumHataKodlari = {'AUTH_ERROR', 'AUTH_REQUIRED'};
+
+  static void _yetkiHatasiniBildir(
+      int status, String text, bool auth, String? gonderilenToken) {
+    if (!auth || status != 401) return;
+    final (code, _) = hataGovdesiniCoz(status, text);
+    if (_oturumHataKodlari.contains(code)) oturumDustu?.call(gonderilenToken);
+  }
+
+  static String? _gonderilenToken(Map<String, String> basliklar) {
+    final deger = basliklar['Authorization'];
+    return deger != null && deger.startsWith('Bearer ')
+        ? deger.substring(7)
+        : null;
+  }
+
   static Future<Map<String, String>> _buildHeaders({
     Map<String, String>? headers,
     bool auth = false,
@@ -258,6 +284,7 @@ class ApiClient {
       if (status == 200) {
         return _okResult<T>(text, parser);
       }
+      _yetkiHatasiniBildir(status, text, auth, _gonderilenToken(effHeaders));
       _throwWithBody(status, text);
     } on TimeoutException {
       throw ApiException('TIMEOUT', 'Sunucuya şu an ulaşılamıyor.');
@@ -283,13 +310,16 @@ class ApiClient {
     Duration timeout = const Duration(seconds: 60),
     bool auth = true,
   }) async {
+    String? gonderilenToken;
     Future<http.Response> gonder() async {
       final istek = http.MultipartRequest('POST', Uri.parse(url));
       // Content-Type'ı MultipartRequest sınır (boundary) ile kendisi koyar;
       // _buildHeaders'ın JSON başlığı burada kullanılmaz.
       if (auth) {
-        final token = await StorageService.getToken();
-        if (token != null) istek.headers['Authorization'] = 'Bearer $token';
+        gonderilenToken = await StorageService.getToken();
+        if (gonderilenToken != null) {
+          istek.headers['Authorization'] = 'Bearer $gonderilenToken';
+        }
       }
       istek.fields.addAll(alanlar);
       istek.files.add(http.MultipartFile.fromBytes(
@@ -309,6 +339,7 @@ class ApiClient {
       if (status == 200) {
         return _okResult<T>(text, parser);
       }
+      _yetkiHatasiniBildir(status, text, auth, gonderilenToken);
       _throwWithBody(status, text);
     } on TimeoutException {
       throw ApiException('TIMEOUT', 'Sunucuya şu an ulaşılamıyor.');
@@ -336,6 +367,7 @@ class ApiClient {
       if (status >= 200 && status < 300) {
         return _okResult<T>(text, parser);
       }
+      _yetkiHatasiniBildir(status, text, auth, _gonderilenToken(effHeaders));
       _throwWithBody(status, text);
     } on TimeoutException {
       throw ApiException('TIMEOUT', 'Sunucuya şu an ulaşılamıyor.');

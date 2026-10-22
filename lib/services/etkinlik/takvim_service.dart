@@ -219,18 +219,6 @@ class TakvimService {
     );
   }
 
-  static Future<ApiResult<Map<String, dynamic>>> antrenorDersYapildiBilgisi({
-    required int dersId,
-    required bool tamamlandi,
-    required String aciklama,
-  }) {
-    return ApiClient.postParsed<Map<String, dynamic>>(
-      setDersOnayBilgisiUrl,
-      {'ders_id': dersId, 'aciklama': aciklama, 'tamamlandi': tamamlandi},
-      (json) => (json as Map).cast<String, dynamic>(),
-    );
-  }
-
   // ==================== KATILIM ====================
 
   /// Bir dersin katılım durumunu getirir

@@ -20,6 +20,40 @@ class AuthService {
   /// Profil değiştirme ekranını besleyen yerel önbellek anahtarı.
   static const _kKullaniciProfiller = 'kullanici_profiller';
 
+  /// Parola doğrulanınca sunucunun verdiği kısa ömürlü (10 dk) bilet.
+  /// `createToken` bunu ya da geçerli token'ı ister; yalnız bellekte durur.
+  static String? _girisBileti;
+
+  static DateTime? _sonOturumDusmesi;
+
+  /// Sunucu token'ı reddetti (401): token silinir, giriş ekranına dönülür.
+  /// "Beni hatırla" açıksa giriş ekranı sessizce yeniden giriş yapar. Ana
+  /// sayfa aynı anda birkaç istek attığı için art arda tetiklenmeler tek
+  /// yönlendirmeye indirgenir; 10 sn içinde ikinci kez tetiklenirse yok sayılır.
+  /// Reddedilen token artık kayıtlı token değilse (yeniden girişten sonra geç
+  /// dönen eski istek) hiçbir şey yapılmaz — yeni token silinmesin.
+  static Future<void> oturumDustu(
+    GlobalKey<NavigatorState> navigatorKey, {
+    String? reddedilenToken,
+  }) async {
+    if (reddedilenToken != null) {
+      final mevcut = await StorageService.getToken();
+      if (mevcut != null && mevcut != reddedilenToken) return;
+    }
+    final simdi = DateTime.now();
+    final son = _sonOturumDusmesi;
+    if (son != null && simdi.difference(son) < const Duration(seconds: 10)) {
+      return;
+    }
+    _sonOturumDusmesi = simdi;
+    _girisBileti = null;
+    await StorageService.tokenuSil();
+    navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      routeEnums[SayfaAdi.login]!,
+      (_) => false,
+    );
+  }
+
   /// Profilleri güvenli depoya yazar. Uygulama içi "profil değiştir" akışı
   /// (header butonları) API'yi tekrar çağıramadığı için buradan okur; bu yüzden
   /// her profil çekiminde tazelenmesi gerekir. Aksi halde önbellek, alanların
@@ -71,6 +105,7 @@ class AuthService {
     }
 
     if (data is Map<String, dynamic>) {
+      _girisBileti = data['giris_bileti'] as String?;
       UserModel? user;
       final userMap = data['user'];
       if (userMap is Map<String, dynamic>) {
@@ -106,11 +141,14 @@ class AuthService {
       uyeProfil: jsonEncode(kp.toJson()),
     );
 
-    // 2) Token isteği (yeni payload)
+    // 2) Token isteği. Kimlik kanıtı: girişteki bilet; uygulama içi profil
+    // değiştirmede (bilet süresi dolmuş olabilir) mevcut token — `auth: true`
+    // onu Bearer olarak ekler. İkisi de yoksa sunucu 401 döner.
     final payload = <String, dynamic>{
       'user_id': kp.user.id,
       'rol': kp.rol,
       'profil_id': kp.id, // SistemKullaniciModel.id
+      if (_girisBileti != null) 'giris_bileti': _girisBileti,
     };
     if (kp.rol == Roller.uye.name) {
       payload['uye_id'] = kp.uye?.id;
@@ -122,7 +160,7 @@ class AuthService {
       createToken,
       payload,
       (j) => TokenModel.fromMap(j),
-      auth: false,
+      auth: true,
     );
 
     final token = res.data;
@@ -158,6 +196,7 @@ class AuthService {
     // tersine dönerse simgede eski sayı asılı kalır.
     NotificationService.unreadCount.value = 0;
     await AppBadgeService.temizle();
+    _girisBileti = null;
     await StorageService.clearAll();
     disposeFCMTokenListener();
     if (context.mounted) {

@@ -6,12 +6,12 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ---
 
-## 📌 Şu anki durum (2026-10-20)
+## 📌 Şu anki durum (2026-10-23)
 
 | | |
 |---|---|
-| Mobil | **3.13.0+46**, `v3.13.0` tag'lendi (2026-10-20) → Codemagic: Play production + App Store incelemesi. İçerik: Havale/EFT + dekont, ders kayıt talebi + antrenör Tüm Program, yönetici Üyeler filtre + sıralama, 4 kurumsal tema. Önceki 3.12.0 iki mağazada yayında. |
-| Testler | `flutter test` **3634 geçiyor**, `flutter analyze` temiz (yerel Flutter 3.41.8); backend master **1413 geçiyor** (2026-10-20). |
+| Mobil | **3.13.1+47** güvenlik güncellemesi branch `guvenlik-guncellemeleri`'nde hazır, tag'lenmedi (2026-10-23). 3.13.0 (2026-10-20) Play production + App Store incelemesine gitmişti. |
+| Testler | `flutter test` **3634 geçiyor**, `flutter analyze` temiz; backend `guvenlik-guncellemeleri` **1565 geçiyor** (yerel Postgres, 2026-10-23). |
 | Backend | Canlı, GitHub master canlıyla eşit. Son migration'lar `0097_ders_kayit_talebi`, `0098_dekont`, `0099_uye_borc_kontrol`. Canlıda bir banka hesabı girili (işletme 1). |
 | Mağaza | 3.13.0 mağaza metni yalnız 3.12.0'dan sonraki üye yenilikleri. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20, turuncu tonu değişti — 2.3.3 riski kabul). |
 
@@ -38,9 +38,25 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
   onayda yazılıyor) — faturalama konusu.
 - **`UyeModel.profil_fotografi` (ImageField) düşürülsün mü:** 2026-10-13'ten beri kimse yazmıyor, fotoğraf
   `profil_fotografi_url` üzerinden. Düşürmek geri dönüşü olmayan veri kaybı.
-- **Repodaki sırlar (2026-09-29, "şimdilik bekliyor"):** `tenis/eventcalendar/settings.py`'de prod DB, SMS,
-  e-posta, Param şifreleri ve `eventcalendar/keys/serviceAccountKey.json`. Heroku config var'a taşıma +
-  anahtar yenileme.
+
+### Güvenlik (2026-10-22 incelemesi)
+- **Güvenlik güncellemesi yayını (3.13.1, yapılacak):** kod iki repoda `guvenlik-guncellemeleri`
+  branch'inde (backend: `C:\Django\tenis-guvenlik` worktree'si; master'da başka oturum çalışıyor,
+  birleştirirken `auths` göç numarası çakışmasına bak). İki ajan doğruladı. Backend eski sürümlerle
+  UYUMSUZ: kanıtsız `createToken` reddediliyor, `pv`'siz token'lar düşüyor. Sıra:
+  1. Mobil 3.13.1 iki mağazaya, **elle yayın** seçeneğiyle; ikisi de onaylanınca
+  2. backend'i yayına al (`auths.0013` göçü release'te koşar),
+  3. hemen mobili yayınla ve `mobil_uygulama_konfig`'ten 3.13.1 için zorunlu güncelleme aç,
+  4. aynı gün anahtar yenileme (aşağıda) — herkes zaten bir kez yeniden giriş yapacak.
+  Kapsam dışı bırakılanlar: web'in kendi şifre sıfırlama/giriş sayfaları hesabın varlığını hâlâ ele
+  veriyor; Django sürüm yükseltmesinde parola yeniden hash'lenince diğer cihazlardaki oturumlar bir
+  kez düşer (`pv` hash'ten türüyor).
+- **Repodaki sırlar — anahtar yenileme (yapılacak):** prod'da `SECRET_KEY` config var'ı yok; JWT imzası
+  git'teki yedek değerle atılıyor, yani repoyu gören biri istediği kullanıcı adına token üretebilir.
+  `settings.py`'de ayrıca Gmail, VatanSMS, Param yedek değerleri; git'te
+  `eventcalendar/keys/serviceAccountKey.json`. Sıra: anahtarları yenile → Heroku config var'a koy → yedek
+  değerleri sil (env yoksa uygulama açılmasın) → anahtar dosyasını git'ten çıkar. `SECRET_KEY` değişince
+  tüm oturumlar düşer ve kart QR'ları (`signing`, aynı anahtar) geçersizleşir: kartlar yeniden üretilmeli.
 
 ### Doğrulanacaklar
 - **Karekod indirme gerçek telefonda:** emülatörde Dart HTTP isteği storage.googleapis.com'a 20 sn'de zaman

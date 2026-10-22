@@ -7,7 +7,6 @@
 
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/models/4_auth/kayit_secenekleri_model.dart';
-import 'package:fitcall/models/4_auth/sifre_sifirlama_model.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
@@ -57,28 +56,18 @@ class KayitService {
     );
   }
 
-  /// Kullanıcı adı ya da cep telefonuyla sıfırlama akışını başlatır.
-  static Future<SifreSifirlamaSonucu> sifremiUnuttum(String identifier) async {
-    final res = await ApiClient.postParsed<SifreSifirlamaSonucu>(
+  /// Kullanıcı adı ya da cep telefonuyla sıfırlama bağlantısı ister.
+  ///
+  /// Sunucu hesabın var olup olmadığını söylemez: her durumda aynı mesajı
+  /// döner, eşleşen hesapların e-postasına bağlantı gider (2026-10-22'den önce
+  /// hesap seçimi ve maskeli e-posta dönüyordu). Dönen değer o mesaj.
+  static Future<String> sifremiUnuttum(String identifier) async {
+    final res = await ApiClient.postParsed<dynamic>(
       sifremiUnuttumUrl,
       {'identifier': identifier},
-      (json) => ApiParsing.parseObject(json, SifreSifirlamaSonucu.fromJson),
+      (json) => json,
       auth: false,
     );
-    return res.data!;
-  }
-
-  /// Numaraya bağlı birden çok hesap varken seçilen hesaba link gönderir.
-  static Future<SifreSifirlamaSonucu> secilenHesabaGonder({
-    required String identifier,
-    required int userId,
-  }) async {
-    final res = await ApiClient.postParsed<SifreSifirlamaSonucu>(
-      sifreSifirlamaGonderUrl,
-      {'identifier': identifier, 'user_id': userId},
-      (json) => ApiParsing.parseObject(json, SifreSifirlamaSonucu.fromJson),
-      auth: false,
-    );
-    return res.data!;
+    return res.mesaj;
   }
 }

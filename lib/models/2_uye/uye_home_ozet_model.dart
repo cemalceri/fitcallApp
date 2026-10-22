@@ -4,8 +4,9 @@ import 'package:fitcall/models/3_antrenor/home_card_model.dart';
 
 /// getUyeHomeOzet cevabındaki özet şeridi verileri
 class UyeOzetModel {
-  /// Genel bakiye (ödeme - borç). Negatif = borç.
-  final double bakiye;
+  /// Genel bakiye (ödeme - borç). Negatif = borç. Ana hesap olmayan profilde
+  /// sunucu göndermez (null) — muhasebe o profile kapalı.
+  final double? bakiye;
 
   /// Aktif paketlerin kalan hak toplamı. Hak takipli paket yoksa null.
   final double? kalanPaketHak;
@@ -21,7 +22,7 @@ class UyeOzetModel {
 
   factory UyeOzetModel.fromJson(Map<String, dynamic> json) {
     return UyeOzetModel(
-      bakiye: (json['bakiye'] as num?)?.toDouble() ?? 0.0,
+      bakiye: (json['bakiye'] as num?)?.toDouble(),
       kalanPaketHak: (json['kalan_paket_hak'] as num?)?.toDouble(),
       aktifTelafi: (json['aktif_telafi'] as num?)?.toInt() ?? 0,
     );

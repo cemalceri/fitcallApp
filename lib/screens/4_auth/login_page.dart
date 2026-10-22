@@ -135,7 +135,12 @@ class _LoginPageState extends State<LoginPage> {
         context,
         MaterialPageRoute(builder: (_) => ProfilSecPage(profiller)),
       );
-    } catch (_) {
+    } catch (e) {
+      // Kayıtlı parola artık geçmiyor (ör. başka cihazda değişti): her
+      // açılışta sessizce denenip hatalı giriş sayacını doldurmasın.
+      if (e is ApiException && e.code == 'INVALID_CREDENTIALS') {
+        await SecureStorageService.remove(_kRememberPass);
+      }
       // oto login sessiz düşsün; formu aç, kullanıcı manuel giriş yapabilir
       if (mounted) {
         setState(() {

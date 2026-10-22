@@ -42,6 +42,49 @@ görüyor (tam ekran popup; kalıcı erişim Ayarlar › "Neler yeni").
    popup işe yaramıyor demektir; kararı tek sürüme değil birkaç sürüme bakarak
    ver.
 
+## 3.13.1 — 2026-10-23 (güvenlik güncellemesi)
+
+### Mağaza metni (tr-TR)
+
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (393 karakter). Yalnız 3.13.0'dan sonraki üye
+değişiklikleri; 3.13.0 bir mağazada henüz yayında değilse o mağazanın metnine 3.13.0 maddeleri eklenmeli.
+
+- Hesap güvenliği güçlendirildi: hatalı şifre girişinde kalan deneme hakkınız gösteriliyor, çok sayıda hatalı denemede giriş 15 dakika kilitleniyor.
+- Şifremi unuttum: sıfırlama bağlantısı, kullanıcı adınıza ya da telefonunuza bağlı hesapların e-posta adresine gönderiliyor.
+- Oturumunuz sona erdiğinde uygulama sizi giriş ekranına yönlendiriyor.
+- Çeşitli iyileştirmeler ve hata düzeltmeleri.
+
+### "Neler yeni?" popup'ı
+
+Yazılmadı: güvenlik sürümü, ekranda madde olacak kadar fark yok; hiçbir profil popup görmez.
+
+### Yayın sırası (bu sürüme özel)
+
+Backend değişikliği eski sürümlerle uyumsuz (`createToken` kanıt istiyor, eski token'lar düşüyor).
+Mobil önce iki mağazada onaylanır (elle yayın), sonra backend `guvenlik-guncellemeleri` yayına alınır,
+hemen ardından mobil yayınlanır ve admin'den 3.13.1 için zorunlu güncelleme açılır. Ayrıntı:
+[MOBIL_GELISTIRMELER.md](MOBIL_GELISTIRMELER.md) › Güvenlik.
+
+### Teknik
+
+- **Token alma.** `getMyMembers` parolayı doğrulayınca 10 dk'lık imzalı `giris_bileti` döner;
+  `createToken` bileti ya da aynı kullanıcının geçerli token'ını (profil değiştirme) ister. Mobil bileti
+  bellekte tutar, `createToken`'ı `auth: true` ile çağırır.
+- **Oturum düşmesi.** Token'da parola izi (`pv`): parola değişince ya da hesap kapanınca token düşer.
+  Mobil 401 + `AUTH_ERROR`/`AUTH_REQUIRED` alınca token'ı siler ve girişe döner ("beni hatırla"
+  varsa sessizce yeniden girer); geç dönen eski istek yeni token'ı silmez.
+- **Hız sınırı + hesap gizleme.** Giriş: hesaba 15 dk'da 10, IP'ye 100 hatalı deneme, mesajda kalan
+  hak; kayıtlı olmayan adda aynı yanıt. Şifre sıfırlama tek tip yanıt, hesap seçimi kalktı (eşleşen her
+  hesaba bağlantı gider). Sayaç veritabanında (`auths.0013`), IP `X-Forwarded-For`'un son değeri.
+- **Yetki.** Teyit/onay/değerlendirme yalnız kendi (veli: çocuklarının) ve kayıtlı olunan ders için;
+  iptal talebi yalnız antrenör, kendi dersi; `getAktifUyeListesi` yalnız antrenör; antrenöre öğrenci
+  için yalnız ad, doğum yılı, fotoğraf, seviye; ana hesap olmayan profile muhasebe/ödeme/dekont ve
+  ana sayfada bakiye yok; üye ders programında başkasının iletişim bilgisi, ücret, katsayı yok.
+- **Diğer.** Duyuru kitlesi rolden; aynı cihaza yeni giriş öncekinin bildirim kaydını kapatır; ödeme
+  sonuç sayfasında XSS kaçışı, callback sonuçlanmış siparişi bozmaz; etkinlik misafir QR'ını yalnız
+  oluşturan (ya da ofis/yönetici) siler; giriş yanıtında parola hash'i yok; teyit bildirimi bildirimin
+  üyesine yazılır; antrenörün `ANTRENOR_IPTAL` talebi artık reddedilmiyor.
+
 ## 3.13.0 — 2026-10-20
 
 ### Mağaza metni (tr-TR)
@@ -76,78 +119,3 @@ cihazda çıkar. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20
   menü Üyeler'i borçlu ön ayarıyla açar. Backend `0099_uye_borc_kontrol`.
 - **Kurumsal temalar (#14).** Takım temaları kalktı; Turuncu `FE5000` (varsayılan, kod `binay`), Mavi
   `00A9E0`, Yeşil `43B02A`, Siyah. Kaldırılan kodlar varsayılana, `siyah_beyaz` Siyah'a düşer.
-
-## 3.12.0 — 2026-10-16
-
-### Mağaza metni (tr-TR)
-
-`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (Play sınırı 500 karakter, metin 494).
-Kullanıcı isteğiyle (2026-10-16) **3.9.0 dahil** sonraki bütün sürümlerin üye yeniliklerini anlatıyor
-(3.10.0 ve 3.11.0 mağazaya çıkmadı). Kulüp adı geçmiyor, yalnız renk adları. Her zamanki gibi elle, son
-kullanıcı için kısa maddelerle yazılır; "Neler yeni?" notlarından (`surum_notlari.json`) **bağımsızdır**,
-ondan beslenmez ve onun metnini kopyalamaz (kullanıcı kararı 2026-10-16).
-
-- Renk temaları: Sarı-Kırmızı, Sarı-Lacivert, Bordo-Mavi, Siyah-Beyaz ve Ay-Yıldız (Ayarlar › Görünüm).
-- Ekranlar sadeleşti; koyu temada yazılar daha okunaklı.
-- Profil fotoğrafı: kameradan çekin ya da galeriden seçin.
-- Ödemeniz alınınca, paketiniz tanımlanınca ya da bitince bildirim gelir.
-- Doğum gününüzde kutlama, önemli duyurular açılışta.
-- Ödül sayacında "Nasıl kazanılır?" bilgisi.
-- Yardım & SSS yenilendi.
-- Yenilikleri artık uygulamada görebilirsiniz.
-- Çeşitli hata düzeltmeleri.
-
-### "Neler yeni?" popup'ı
-
-İlk sürüm notu popup'ı bu sürümle çıkıyor. Notlar backend `surum_notlari.json`'da: **3.9.0'dan 3.12.0'a**
-kadar her şey rol başına tek 3.12.0 bloğunda (üye 8, antrenör 6, ofis 10, yönetici 9 madde; popup ilk 4'ü
-gösterir, gerisi "Tümünü gör"). Sıra önem sırası: her rolün ilk dört maddesi o profilin en büyük
-yenilikleri. "Yol" satırları ekrandaki menü adlarıyla (yönetici: Dashboard / Raporlar / Üyeler).
-Kullanıcı kararı (2026-10-16): güncelleyen kullanıcı popup'ı **otomatik görsün** — notlar mağaza onayını
-beklemeden yayında (`yayinda_mi` açık). Popup yalnız 3.12.0 kurulu cihazda çıktığı için eski
-sürümdekilere etkisi yok.
-
-### Teknik
-
-- **"Neler yeni?" (tüm profiller).** Tam ekran sürüm notu popup'ı ve Ayarlar › "Neler yeni" arşivi
-  (`b807f8d`). Ofis ve yönetici kabukları da açılış popup sırasına girdi.
-- **Antrenör değerlendirmeleri (yönetici).** Antrenörler satırı iki dokunma alanı: sol taraf (ad, ok)
-  hakediş saatlerine, sağdaki puan hücresi ("★ 4.8 (23)" / "Yorumlar ›") değerlendirmeler listesine
-  gider. Önceki iki seçenekli alt sayfa kaldırıldı. Liste ve detay `lib/screens/1_common/degerlendirmeler/`;
-  uç `degerlendirmeListesi` yalnız yönetici. Yorum sayısı `degerlendirme_sayisi` alanından; alanı
-  göndermeyen sunucuda yalnız ortalama görünür.
-- **Başlık bantları (yönetici).** Raporlar / Antrenörler / Üyeler başlığında dönem seçimi tam genişlik,
-  seçili dönemin tarih aralığı sağda (`DonemFiltresi.aralik`, sunucudaki `get_tarih_araligi` ile aynı).
-- **Pano dönem kutusu (yönetici, kullanıcı kararı "A").** Bugün / Bu Hafta / Bu Ay seçimi başlıktan
-  içeriğe, yalnız ona bağlı kartlarla (ciro, tahsilat, ders, iptal) aynı çerçeveye taşındı (`DonemKutusu`);
-  aktif üye ve toplam alacak "Şu an", haftalık grafik "Bu haftanın günleri", hızlı erişim "Bugün" altında.
-  Dönem değişince yalnız kutu iskelete döner; yenilemede pano yerinde kalır. **Bugünün özeti en üstte**
-  ve "Yeni Üye · Ders · Doluluk" (eski "Yeni Kayıt" bugün açılan üye kaydıydı, adı netleşti; "Bekleyen
-  Telafi" yerine bugünün iptal edilmemiş ders sayısı — hızlı erişimdeki `toplam_ders`, backend değişmedi).
-- **Raporlar (yönetici).** Seçici panodaki gibi içerikte; iki kutu, **ikisinin de kendi seçicisi var**:
-  "Ciro ve tahsilat" (özet kartlar + ciro + tahsilat) ve "Kort ve antrenör" (kort doluluğu + antrenörler)
-  ([rapor_gruplari.dart](lib/screens/7_yonetici/raporlar/widgets/rapor_gruplari.dart)). Her kutu
-  `yoneticiRaporlar`'ı kendi `bolum`'üyle ister (`donem` / `kort_antrenor`), ciro günleri iki kez
-  hesaplanmaz; alanı tanımayan eski sunucu hepsini döndürür. **Isı haritası en altta, seçiciden bağımsız**:
-  ızgara hep haftanın günleri olduğu için bu haftanın tamamı (Pzt–Paz, planlı dersler dahil, sunucuda
-  `bu_hafta_tamami`; eski sunucu bu değeri tanımaz, yalnız bugünü döndürür). Uzun listeler (aylık günler, kortlar, antrenörler) kartın içinde kayıyor (`RaporKaydirmaliListe`, 186 px).
-  Aktif üye kartı Raporlar'dan kaldırıldı (dönemden bağımsız; panoda "Şu an"). Özet kartlar ve bölüm
-  başlıkları dar ekranda / büyük yazıda taşıyordu; bölümler taşma matrisine eklendi.
-- **Üyeler (yönetici).** Tümü / Aktif / Pasif / Borçlular butonları kalktı; filtre başlıktaki sayılı
-  kartlar (Toplam · Aktif · Pasif · Borçlu · Yeni, `UyeIstatistikKartlar`), seçili kart vurgulu, liste
-  boşken de seçilebilir. "Borçlu" en borçlu önce, "Yeni" bu ay kaydolanlar en yeni üye önce. Borçlu
-  sayısı yalnız yönetici ucunda (`borclu_uye`); alanı göndermeyen sunucuda "–". "Yeni" filtresi backend
-  `f2b4872` ister — eski sunucu filtreyi yok sayıp tüm üyeleri listeler (sıra yine önce backend).
-- **Ofis.** Ana Sayfa başlığına çıkış düğmesi; ofis ekranlarındaki başlık görünümü düzeltildi.
-- **Üye.** Sonraki ders kartı kort adını önekle yazıyordu ("Kort Merkez Kort"); bildirim satırı
-  `RichText` yerine `Text.rich` (temanın yazı ailesi ve yazı boyutu ayarı).
-- **Yardım (yönetim).** Dashboard, Raporlar ve Üyeler cevapları yeni düzene göre yeniden yazıldı.
-- **Backend (önce deploy edildi, Heroku v317–v318):** `setDersDegerlendirme` / `getDersDegerlendirme`
-  değerlendireni ve rolü token'dan alıyor (istekteki `user_id` yok sayılıyor);
-  `getDersTumDegerlendirmeler` yalnız yönetici.
-- **Backend (bu sürümden önce deploy):** yönetici üye listesi `yeni` filtresi + `borclu_uye`; raporlar
-  `bolum`; ısı haritası `bu_hafta_tamami`; iptal talebi / ders onay / `getDersKatilimlari` uçlarında
-  kimlik token'dan ve ders sahipliği kontrolü.
-- **Mağaza görselleri.** App Store 2.3.3 reddi (eski ekran görüntüleri) için `tool/magaza_gorselleri/`:
-  gerçek sayfalar iOS modunda, SF Pro ve sahte API ile 4 boyutta çiziliyor (bkz. oradaki README).
-

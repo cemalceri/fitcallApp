@@ -53,12 +53,10 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_approval_dialog.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/models/4_auth/kayit_secenekleri_model.dart';
-import 'package:fitcall/models/4_auth/sifre_sifirlama_model.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
 import 'package:fitcall/screens/1_common/widgets/qr_kod_gorseli.dart';
 import 'package:fitcall/screens/1_common/widgets/qr_sonuc_gorunumu.dart';
 import 'package:fitcall/services/api_exception.dart';
-import 'package:fitcall/screens/4_auth/widgets/hesap_secim_listesi.dart';
 import 'package:fitcall/screens/4_auth/widgets/kayit_sihirbazi.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_filtre_sheet.dart';
@@ -2197,6 +2195,16 @@ void main() {
 
     tasmaTesti(
         'UyeOzetSerit (yükleniyor)', () => const UyeOzetSerit(isLoading: true));
+    // Ana hesap olmayan profil: sunucu bakiye göndermez, iki kutu kalır
+    tasmaTesti(
+      'UyeOzetSerit (bakiyesiz)',
+      () => UyeOzetSerit(
+        ozet: UyeOzetModel.fromJson(const {
+          'kalan_paket_hak': 12,
+          'aktif_telafi': 2,
+        }),
+      ),
+    );
 
     tasmaTesti('UyeOdulSayaci (sayıyor)',
         () => UyeOdulSayaci(durum: _odul(sayac: 14)));
@@ -2325,29 +2333,6 @@ void main() {
         secenekler: _kayitSecenekleri(),
         gonderiliyor: true,
         onGonder: (_) async {},
-      ),
-      sar: (w) => SingleChildScrollView(child: w),
-    );
-
-    tasmaTesti(
-      'HesapSecimListesi (iki hesap)',
-      () => HesapSecimListesi(
-        hesaplar: const [
-          SifirlamaHesabi(
-            userId: 1,
-            maskeliAd: 'Me**** Ka*********',
-            maskeliEposta: 'me***@example.com',
-            epostaVarMi: true,
-          ),
-          SifirlamaHesabi(
-            userId: 2,
-            maskeliAd: 'El** Ka*********',
-            maskeliEposta: '',
-            epostaVarMi: false,
-          ),
-        ],
-        onSec: (_) {},
-        onVazgec: () {},
       ),
       sar: (w) => SingleChildScrollView(child: w),
     );

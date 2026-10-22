@@ -110,7 +110,14 @@ class _DersTeyitBildirimPageState extends State<DersTeyitBildirimPage> {
 
       _oturumGecerli = await StorageService.tokenGecerliMi();
       if (_oturumGecerli) {
-        _uyeId = (await StorageService.uyeBilgileriniGetir())?.id.toString();
+        // Teyit, bildirimin ait olduğu üye adına verilir. Eskiden açık profil
+        // kullanılıyordu: velinin açık profili B çocuğuyken A'nın bildirimine
+        // verilen cevap B adına yazılıyordu. Bildirimde üye yoksa (eski kayıt)
+        // açık profile düşülür.
+        final bildirimUyesi =
+            displayData['uye_id'] ?? notif.actionParams?['uye_id'];
+        _uyeId = bildirimUyesi?.toString() ??
+            (await StorageService.uyeBilgileriniGetir())?.id.toString();
       }
 
       if (etkinlikId != null && _uyeId != null) {

@@ -19,6 +19,13 @@ class StorageService {
   static Future<String?> getToken() =>
       SecureStorageService.getValue<String>('token');
 
+  /// Yalnız token'ı siler (sunucu oturumu düşürdüğünde). "Beni hatırla"
+  /// bilgileri kalır; giriş ekranı onlarla sessizce yeniden giriş yapar.
+  static Future<void> tokenuSil() async {
+    await SecureStorageService.remove('token');
+    await SecureStorageService.remove('token_exp');
+  }
+
   /// Oturum verilerini siler. Tema tercihi, izin sorma damgaları ve açılış
   /// popup'larının "gösterildi" kayıtları oturuma bağlı değil — çıkışta
   /// sıfırlanmamaları için okunup geri yazılır. (Damga silinirse daha önce

@@ -83,16 +83,10 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
     });
   }
 
-  int _calculateAge(DateTime? birthDate) {
-    if (birthDate == null) return 0;
-    final now = simdiKulup();
-    int age = now.year - birthDate.year;
-    if (now.month < birthDate.month ||
-        (now.month == birthDate.month && now.day < birthDate.day)) {
-      age--;
-    }
-    return age;
-  }
+  /// Sunucu antrenöre tam doğum tarihi değil yalnız yılı gönderiyor;
+  /// yaş yıl farkıdır (doğum günü henüz gelmediyse bir fazla görünür).
+  int _yas(int? dogumYili) =>
+      dogumYili == null ? 0 : simdiKulup().year - dogumYili;
 
   Color _getSeviyeColor(String seviye) {
     return seviyeRenkleri[seviye] ??
@@ -449,7 +443,7 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
         itemCount: filteredStudents.length,
         itemBuilder: (context, index) {
           final ogrenci = filteredStudents[index];
-          final yas = _calculateAge(ogrenci.dogumTarihi);
+          final yas = _yas(ogrenci.dogumYili);
           final adSoyad = '${ogrenci.adi} ${ogrenci.soyadi}';
 
           return Column(

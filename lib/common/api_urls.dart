@@ -14,7 +14,6 @@ String getMyMembers = "$baseUrl/getMyMembers";
 String kayitFormVerileriUrl = "$baseUrl/kayitFormVerileri";
 String uyeBasvuruUrl = "$baseUrl/uyeBasvuru";
 String sifremiUnuttumUrl = "$baseUrl/sifremiUnuttum";
-String sifreSifirlamaGonderUrl = "$baseUrl/sifreSifirlamaGonder";
 String uyeSifreDegistir = "$baseUrl/uyeSifreDegistir";
 String uyeKullaniciSil = "$baseUrl/uyeKullaniciSil";
 
@@ -34,7 +33,6 @@ const String uyeProfilFotografiSilUrl = "$baseUrl/uyeProfilFotografiSil";
 String getAntrenorGunlukEtkinlikler = "$baseUrl/getAntrenorGunlukEtkinlikler";
 String getAntrenorHaftalikEtkinlikler =
     "$baseUrl/getAntrenorHaftalikEtkinlikler";
-String antrenorDersYapildiBilgisi = "$baseUrl/antrenorDersYapildiBilgisi";
 String getAntrenorOgrenciler = "$baseUrl/getAntrenorOgrenciler";
 String getAntrenorHomeCardsUrl = "$baseUrl/getAntrenorHomeCards";
 String dismissAntrenorHomeCardUrl = "$baseUrl/dismissAntrenorHomeCard";

@@ -1,3 +1,5 @@
+import 'package:fitcall/services/api_client.dart';
+import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_fcm_service.dart';
@@ -26,6 +28,9 @@ void main() async {
   ]);
   await NotificationFCMService.instance.initialize();
   initFCMTokenListener();
+  // Sunucu token'ı reddedince (401) giriş ekranına dön
+  ApiClient.oturumDustu = (token) =>
+      AuthService.oturumDustu(navigatorKey, reddedilenToken: token);
   runApp(const MyApp());
 }
 

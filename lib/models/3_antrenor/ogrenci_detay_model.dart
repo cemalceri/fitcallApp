@@ -10,7 +10,8 @@ class OgrenciProfil {
   final int uyeNo;
   final String? telefon;
   final String? email;
-  final DateTime? dogumTarihi;
+  /// Tam doğum tarihi antrenöre gelmez; sunucu yalnız yılı gönderir.
+  final int? dogumYili;
   final String? cinsiyet;
   final String seviyeRengi;
   final String? programTercihi;
@@ -24,7 +25,7 @@ class OgrenciProfil {
     required this.uyeNo,
     this.telefon,
     this.email,
-    this.dogumTarihi,
+    this.dogumYili,
     this.cinsiyet,
     required this.seviyeRengi,
     this.programTercihi,
@@ -42,7 +43,9 @@ class OgrenciProfil {
       uyeNo: (json['uye_no'] as num?)?.toInt() ?? 0,
       telefon: json['telefon'],
       email: json['email'],
-      dogumTarihi: parseApiTarih(json['dogum_tarihi'] ?? ''),
+      // Eski sunucu tam tarihi gönderiyordu; yayın arası için ondan da okunur
+      dogumYili: (json['dogum_yili'] as num?)?.toInt() ??
+          parseApiTarih(json['dogum_tarihi'] ?? '')?.year,
       cinsiyet: json['cinsiyet'],
       seviyeRengi: json['seviye_rengi'] ?? '',
       programTercihi: json['program_tercihi'],

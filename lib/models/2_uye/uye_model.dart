@@ -15,6 +15,9 @@ class UyeModel {
   final String? telefon;
   final String? email;
   final DateTime? dogumTarihi;
+
+  /// Antrenörün öğrenci listesinde tam tarih yerine yalnız yıl gelir.
+  final int? dogumYili;
   final String? dogumYeri;
   final String adres;
   final int uyeNo;
@@ -60,6 +63,7 @@ class UyeModel {
     this.telefon,
     this.email,
     this.dogumTarihi,
+    this.dogumYili,
     this.dogumYeri,
     required this.adres,
     required this.uyeNo,
@@ -115,6 +119,10 @@ class UyeModel {
       dogumTarihi: json['dogum_tarihi'] != null
           ? parseApiTarih(json['dogum_tarihi'])
           : null,
+      dogumYili: (json['dogum_yili'] as num?)?.toInt() ??
+          (json['dogum_tarihi'] != null
+              ? parseApiTarih(json['dogum_tarihi'])?.year
+              : null),
       dogumYeri: json['dogum_yeri'],
       adres: json['adres'] ?? '',
       uyeNo: json['uye_no'] ?? 0,

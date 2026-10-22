@@ -2,22 +2,16 @@
 //
 // Şifremi unuttum — native ekran.
 //
-// Eskiden web sayfasını tarayıcıda açan bir ara duraktı. Akış web'le aynı ve
-// kural tek yerde (backend `auths/sifre_sifirlama_service.py`):
-//
-//   kullanıcı adı  → doğrudan link
-//   10 haneli tel  → tek hesap varsa link, BİRDEN ÇOKSA hesap seçimi
-//
-// Seçim adımı şart: aynı cep numarası birden çok hesaba bağlanabiliyor (veli
-// kendi numarasını çocuğunun kaydına da yazıyor). Hesaplar maskeli listelenir —
-// bu ekran kimlik doğrulamasından önce geliyor.
+// Kullanıcı adı ya da kayıtlı cep telefonu girilir; eşleşen hesapların
+// e-postasına sıfırlama bağlantısı gider (backend
+// `api/auth/kayit_metots.py`). Yanıt her durumda aynı mesajdır: ekran bir
+// numaranın kulüpte kayıtlı olup olmadığını ele vermez (2026-10-22'den önce
+// hesap seçimi ve maskeli e-posta gösteriliyordu).
 //
 // Şifrenin kendisi e-postadaki tek kullanımlık bağlantıda değiştirilir; mobil
 // bu adımı devralmıyor.
 
 import 'package:fitcall/common/tema.dart';
-import 'package:fitcall/models/4_auth/sifre_sifirlama_model.dart';
-import 'package:fitcall/screens/4_auth/widgets/hesap_secim_listesi.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/kayit_service.dart';
 import 'package:flutter/material.dart';
@@ -35,11 +29,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   bool _yukleniyor = false;
 
-  /// Girilen değer — seçim adımında ikinci isteğe aynen gönderilir.
-  String _kimlik = '';
-
-  /// Sonuç: null ise form gösterilir.
-  SifreSifirlamaSonucu? _sonuc;
+  /// Sunucunun mesajı; null ise form gösterilir.
+  String? _mesaj;
 
   @override
   void dispose() {
@@ -51,32 +42,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     FocusScope.of(context).unfocus();
 
-    final kimlik = _kimlikCtrl.text.trim();
-    setState(() {
-      _yukleniyor = true;
-      _kimlik = kimlik;
-    });
-
-    await _cagir(() => KayitService.sifremiUnuttum(kimlik));
-  }
-
-  Future<void> _hesapSec(SifirlamaHesabi hesap) async {
     setState(() => _yukleniyor = true);
-    await _cagir(
-      () => KayitService.secilenHesabaGonder(
-        identifier: _kimlik,
-        userId: hesap.userId,
-      ),
-    );
-  }
-
-  /// İki uç da aynı sonucu döndürüyor; hata gösterimi de ortak.
-  Future<void> _cagir(Future<SifreSifirlamaSonucu> Function() istek) async {
     try {
-      final sonuc = await istek();
+      final mesaj = await KayitService.sifremiUnuttum(_kimlikCtrl.text.trim());
       if (!mounted) return;
       setState(() {
-        _sonuc = sonuc;
+        _mesaj = mesaj;
         _yukleniyor = false;
       });
     } on ApiException catch (e) {
@@ -100,17 +71,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       ));
   }
 
-  void _bastanBasla() {
-    setState(() {
-      _sonuc = null;
-      _kimlik = '';
-      _kimlikCtrl.clear();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final sonuc = _sonuc;
+    final mesaj = _mesaj;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Şifremi Unuttum')),
@@ -120,35 +83,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
-              child: switch (sonuc?.durum) {
-                null => _form(),
-                SifirlamaDurumu.secimGerekli => HesapSecimListesi(
-                    hesaplar: sonuc!.hesaplar,
-                    yukleniyor: _yukleniyor,
-                    onSec: _hesapSec,
-                    onVazgec: _bastanBasla,
-                  ),
-                SifirlamaDurumu.gonderildi => _SonucGorunumu(
-                    ikon: Icons.mark_email_read_outlined,
-                    baslik: 'Bağlantı gönderildi',
-                    aciklama:
-                        'Şifre sıfırlama bağlantısını ${sonuc!.maskeliEposta ?? 'e-posta adresinize'} '
-                        'gönderdik. Bağlantı 48 saat geçerli; gelen kutunuzda '
-                        'yoksa spam klasörüne de bakın.',
-                    eylemEtiketi: 'Giriş ekranına dön',
-                    onEylem: () => Navigator.pop(context),
-                  ),
-                SifirlamaDurumu.epostasiz => _SonucGorunumu(
-                    ikon: Icons.mail_lock_outlined,
-                    baslik: 'Kayıtlı e-posta yok',
-                    aciklama: sonuc!.hesaplar.isEmpty
-                        ? 'Hesabınızda kayıtlı bir e-posta adresi bulunmuyor. '
-                            'Şifrenizi sıfırlamak için kulüple iletişime geçin.'
-                        : '',
-                    eylemEtiketi: 'Tekrar dene',
-                    onEylem: _bastanBasla,
-                  ),
-              },
+              child: mesaj == null
+                  ? _form()
+                  : _SonucGorunumu(
+                      ikon: Icons.mark_email_read_outlined,
+                      baslik: 'İsteğiniz alındı',
+                      aciklama: '$mesaj Bağlantı 48 saat geçerli; gelen '
+                          'kutunuzda yoksa spam klasörüne de bakın.',
+                      eylemEtiketi: 'Giriş ekranına dön',
+                      onEylem: () => Navigator.pop(context),
+                    ),
             ),
           ),
         ),

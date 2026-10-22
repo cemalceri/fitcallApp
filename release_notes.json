@@ -1,10 +1,10 @@
 [
     {
         "language": "tr",
-        "text": "- Havale / EFT: kulübün IBAN'ı ve karekodu Muhasebe sekmesinde. IBAN'ı kopyalayın, karekodu indirip banka uygulamanızla okutun.\n- Havale dekontunuzu fotoğraf ya da PDF olarak uygulamadan gönderin; durumunu Dekontlarım'da izleyin.\n- Yeni renk temaları: Turuncu, Mavi, Yeşil ve Siyah (Ayarlar › Görünüm).\n- Çeşitli iyileştirmeler ve hata düzeltmeleri."
+        "text": "- Hesap güvenliği güçlendirildi: hatalı şifre girişinde kalan deneme hakkınız gösteriliyor, çok sayıda hatalı denemede giriş 15 dakika kilitleniyor.\n- Şifremi unuttum: sıfırlama bağlantısı, kullanıcı adınıza ya da telefonunuza bağlı hesapların e-posta adresine gönderiliyor.\n- Oturumunuz sona erdiğinde uygulama sizi giriş ekranına yönlendiriyor.\n- Çeşitli iyileştirmeler ve hata düzeltmeleri."
     },
     {
         "language": "tr-TR",
-        "text": "- Havale / EFT: kulübün IBAN'ı ve karekodu Muhasebe sekmesinde. IBAN'ı kopyalayın, karekodu indirip banka uygulamanızla okutun.\n- Havale dekontunuzu fotoğraf ya da PDF olarak uygulamadan gönderin; durumunu Dekontlarım'da izleyin.\n- Yeni renk temaları: Turuncu, Mavi, Yeşil ve Siyah (Ayarlar › Görünüm).\n- Çeşitli iyileştirmeler ve hata düzeltmeleri."
+        "text": "- Hesap güvenliği güçlendirildi: hatalı şifre girişinde kalan deneme hakkınız gösteriliyor, çok sayıda hatalı denemede giriş 15 dakika kilitleniyor.\n- Şifremi unuttum: sıfırlama bağlantısı, kullanıcı adınıza ya da telefonunuza bağlı hesapların e-posta adresine gönderiliyor.\n- Oturumunuz sona erdiğinde uygulama sizi giriş ekranına yönlendiriyor.\n- Çeşitli iyileştirmeler ve hata düzeltmeleri."
     }
 ]
