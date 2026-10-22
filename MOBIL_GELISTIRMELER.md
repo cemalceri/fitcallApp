@@ -11,7 +11,7 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 | | |
 |---|---|
 | Mobil | **3.13.1+47** güvenlik güncellemesi branch `guvenlik-guncellemeleri`'nde hazır, tag'lenmedi (2026-10-23). 3.13.0 (2026-10-20) Play production + App Store incelemesine gitmişti. |
-| Testler | `flutter test` **3634 geçiyor**, `flutter analyze` temiz; backend `guvenlik-guncellemeleri` **1565 geçiyor** (yerel Postgres, 2026-10-23). |
+| Testler | `flutter test` **3634 geçiyor**, `flutter analyze` temiz; backend `guvenlik-guncellemeleri` **1572 geçiyor** (yerel Postgres, 2026-10-23). |
 | Backend | Canlı, GitHub master canlıyla eşit. Son migration'lar `0097_ders_kayit_talebi`, `0098_dekont`, `0099_uye_borc_kontrol`. Canlıda bir banka hesabı girili (işletme 1). |
 | Mağaza | 3.13.0 mağaza metni yalnız 3.12.0'dan sonraki üye yenilikleri. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20, turuncu tonu değişti — 2.3.3 riski kabul). |
 
@@ -48,9 +48,9 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
   2. backend'i yayına al (`auths.0013` göçü release'te koşar),
   3. hemen mobili yayınla ve `mobil_uygulama_konfig`'ten 3.13.1 için zorunlu güncelleme aç,
   4. aynı gün anahtar yenileme (aşağıda) — herkes zaten bir kez yeniden giriş yapacak.
-  Kapsam dışı bırakılanlar: web'in kendi şifre sıfırlama/giriş sayfaları hesabın varlığını hâlâ ele
-  veriyor; Django sürüm yükseltmesinde parola yeniden hash'lenince diğer cihazlardaki oturumlar bir
-  kez düşer (`pv` hash'ten türüyor).
+  Web'in şifre sıfırlama ve giriş sayfaları da aynı kurala bağlandı (ortak sayaç, tek tip yanıt).
+  Not: Django sürüm yükseltmesinde parola yeniden hash'lenince diğer cihazlardaki oturumlar bir kez
+  düşer (`pv` hash'ten türüyor).
 - **Repodaki sırlar — anahtar yenileme (yapılacak):** prod'da `SECRET_KEY` config var'ı yok; JWT imzası
   git'teki yedek değerle atılıyor, yani repoyu gören biri istediği kullanıcı adına token üretebilir.
   `settings.py`'de ayrıca Gmail, VatanSMS, Param yedek değerleri; git'te
