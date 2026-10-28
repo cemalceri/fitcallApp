@@ -50,6 +50,11 @@ Play App Signing kullanıldığı için yüklenen keystore, mevcut sürümleri i
   otomatik çekiliyor (`ios_signing.distribution_type: app_store`).
 - `APP_STORE_APPLE_ID` değişkenine App Store Connect → uygulama →
   *App Information* → *Apple ID* alanındaki sayısal değeri yaz.
+- **App Attest (2026-10-28):** `Runner.entitlements`'ta
+  `com.apple.developer.devicecheck.appattest-environment` var (Firebase App
+  Check). Apple Developer → *Identifiers* → `com.ceri.fitcall` → **App Attest**
+  capability'si açık olmalı; kapalıysa Codemagic'in çektiği profilde bu yetki
+  olmaz ve iOS derlemesi imzada kırılır.
 
 ## 5. Codemagic'i yaml moduna al
 

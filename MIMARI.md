@@ -8,6 +8,7 @@
 - [lib/services/api_client.dart](lib/services/api_client.dart) — static `ApiClient`. New code should use `postParsed<T>`/`getParsed<T>`, which take a `fromJson` callback and return `ApiResult<T>` (`{mesaj, data}`). Pass `auth: true` to attach the Bearer token from secure storage. Errors are thrown as `ApiException(code, message, statusCode)`; the backend's own `message`/`detail` field is preferred for display. `postJson`/`getJson` are legacy low-level variants.
 - Services are classes with static methods (e.g. `AuthService`) that call `ApiClient` with URLs from `api_urls.dart` and parse into models via `ApiParsing.parseObject`/`parseList` ([lib/services/api_result.dart](lib/services/api_result.dart)).
 - Models are hand-written `fromJson`/`toJson` classes (no codegen).
+- **App Check (2026-10-28):** every request (login included) carries `X-Firebase-AppCheck` (Play Integrity / App Attest token from [app_check_service.dart](lib/services/core/app_check_service.dart)) plus `X-Platform` and `X-Uygulama-Surumu`, added in `ApiClient.ortakBasliklar`. Any new raw HTTP call to our API must go through `ApiClient`, or it will be rejected once the server switches to enforce mode. Server side: `api/core/app_check.py` (modes `log` / `zorunlu` / `kapali`).
 
 ## Auth, roles, and routing
 

@@ -37,13 +37,18 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
   `eventcalendar/keys/serviceAccountKey.json`. Sıra: anahtarları yenile → Heroku config var'a koy → yedek
   değerleri sil (env yoksa uygulama açılmasın) → anahtar dosyasını git'ten çıkar. `SECRET_KEY` değişince
   tüm oturumlar düşer ve kart QR'ları (`signing`, aynı anahtar) geçersizleşir: kartlar yeniden üretilmeli.
-- **Firebase App Check (yapılacak, karar 2026-10-23):** API'ye yalnız mağazadan kurulan orijinal
-  uygulama istek atabilsin (Postman/script engeli). Mobil: `firebase_app_check` (Android Play Integrity,
-  iOS App Attest), `ApiClient` her isteğe `X-Firebase-AppCheck` başlığı ekler. Backend: ara katmanda
-  `firebase_admin.app_check.verify_token`. Kademeli: önce yalnız logla, zorunlu güncellemeyle eski
-  sürümler bitince reddet. Emülatör/test için debug provider; GMS'siz (Huawei) cihazlar ve Play Integrity
-  günlük 10.000 kotası için politika belirle. Önce yukarıdaki anahtar yenileme bitmeli (servis hesabı
-  anahtarı). Elenen alternatifler: gömülü anahtar/sertifika gizleme, mTLS, Approov, AppiCrypt (ücretli);
+- **Firebase App Check (kod hazır 2026-10-28, "log" modunda):** mobil her isteğe `X-Firebase-AppCheck`
+  (Android Play Integrity, iOS App Attest; debug derlemede debug sağlayıcı) + `X-Platform` +
+  `X-Uygulama-Surumu` ekler (`app_check_service.dart`). Backend `api/core/app_check.py`: `APP_CHECK_MODU`
+  `log` (varsayılan, reddetmez) / `zorunlu` / `kapali`; sonuçlar admin → "App Check Sayaçları"nda gün ×
+  sonuç × platform × sürüm. `gate` (turnike) ve `getMobilConfigs` muaf. Kalan sıra:
+  1. **Elle (yayından önce):** Firebase konsolu → App Check → Android'e Play Integrity (Play Console'daki
+     uygulama imzalama SHA-256'sı Firebase'de kayıtlı olmalı), iOS'a App Attest; zorunlu kılma KAPALI kalsın.
+     Apple Developer'da App ID'ye **App Attest** capability'si (yoksa iOS derlemesi kırılır,
+     bkz. CODEMAGIC_KURULUM.md). Emülatör için logdaki debug token'ı konsola ekle.
+  2. Backend deploy (`auths.0014` göçü) → App Check'li sürüm yayını.
+  3. Sayaçlarda güncel sürümde `yok`/`gecersiz` kalmadığında (GMS'siz Huawei, Play Integrity günlük
+     10.000 kotası burada görünür) zorunlu güncelleme aç, sonra Heroku'da `APP_CHECK_MODU=zorunlu`.
   root/Frida tespiti için ücretsiz freeRASP sonra eklenebilir.
 
 ### Doğrulanacaklar

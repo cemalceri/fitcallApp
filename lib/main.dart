@@ -1,4 +1,5 @@
 import 'package:fitcall/services/api_client.dart';
+import 'package:fitcall/services/core/app_check_service.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
@@ -25,7 +26,12 @@ void main() async {
     // Tema tercihi ilk kareden önce okunmalı; yoksa uygulama açık temada
     // açılıp anında koyuya geçer (göz yoran bir çakma).
     TemaKontrol.yukle(),
+    AppCheckServisi.istemciBasliklari()
+        .then((b) => ApiClient.istemciBasliklari = b),
   ]);
+  // App Check token'ı her API isteğine eklenir (bkz. app_check_service.dart).
+  await AppCheckServisi.baslat();
+  ApiClient.appCheckTokeni = AppCheckServisi.token;
   await NotificationFCMService.instance.initialize();
   initFCMTokenListener();
   // Sunucu token'ı reddedince (401) giriş ekranına dön

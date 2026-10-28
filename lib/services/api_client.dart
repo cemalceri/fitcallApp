@@ -46,11 +46,35 @@ class ApiClient {
         : null;
   }
 
+  /// Her isteğe eklenen istemci başlıkları (sürüm, platform); main.dart
+  /// açılışta doldurur (bkz. `AppCheckServisi.istemciBasliklari`).
+  static Map<String, String> istemciBasliklari = const {};
+
+  /// Firebase App Check token'ı (main.dart `AppCheckServisi.token`'ı bağlar).
+  /// Null dönerse başlık konmaz; sunucu "log" modundayken istek yine geçer.
+  static Future<String?> Function()? appCheckTokeni;
+
+  /// Giriş dahil (token'sız uçlar da) her isteğin ortak başlıkları.
+  @visibleForTesting
+  static Future<Map<String, String>> ortakBasliklar() async {
+    final basliklar = <String, String>{...istemciBasliklari};
+    try {
+      final token = await appCheckTokeni?.call();
+      if (token != null) basliklar['X-Firebase-AppCheck'] = token;
+    } catch (_) {
+      // Token alınamadı: istek başlıksız gider.
+    }
+    return basliklar;
+  }
+
   static Future<Map<String, String>> _buildHeaders({
     Map<String, String>? headers,
     bool auth = false,
   }) async {
-    final base = <String, String>{'Content-Type': 'application/json'};
+    final base = <String, String>{
+      'Content-Type': 'application/json',
+      ...await ortakBasliklar(),
+    };
     if (auth) {
       final token = await StorageService.getToken();
       if (token != null) {
@@ -76,6 +100,7 @@ class ApiClient {
             Uri.parse(url),
             headers: {
               'Content-Type': 'application/json',
+              ...await ortakBasliklar(),
               if (headers != null) ...headers,
             },
             body: jsonEncode(body),
@@ -121,7 +146,8 @@ class ApiClient {
   }) async {
     try {
       final res = await _client
-          .get(Uri.parse(url), headers: headers)
+          .get(Uri.parse(url),
+              headers: {...await ortakBasliklar(), if (headers != null) ...headers})
           .timeout(timeout ?? _defaultTimeout);
       final status = res.statusCode;
       final text = utf8.decode(res.bodyBytes);
@@ -315,6 +341,7 @@ class ApiClient {
       final istek = http.MultipartRequest('POST', Uri.parse(url));
       // Content-Type'ı MultipartRequest sınır (boundary) ile kendisi koyar;
       // _buildHeaders'ın JSON başlığı burada kullanılmaz.
+      istek.headers.addAll(await ortakBasliklar());
       if (auth) {
         gonderilenToken = await StorageService.getToken();
         if (gonderilenToken != null) {
