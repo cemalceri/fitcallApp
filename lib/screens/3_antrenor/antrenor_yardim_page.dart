@@ -119,6 +119,15 @@ const _bolumler = <SssBolum>[
             ' görünmeye devam eder. Daha önemlisi, yönetici karar veremediği için o ders'
             ' hakediş ekranınızda "Bekliyor" grubunda takılı kalır.',
       ),
+      SssSoru(
+        ikon: Icons.notifications_active_outlined,
+        soru: 'Ders bitince gelen "yoklama" bildirimi nedir?',
+        cevap:
+            'Dersiniz bittikten sonraki bir saat içinde yoklamayı hâlâ girmediyseniz,'
+            ' ana antrenör olarak size bir kez hatırlatma bildirimi gelir. Yoklamayı'
+            ' girdiyseniz ya da ders iptal edildiyse bildirim gelmez. Bildirime'
+            ' dokunduğunuzda ilgili dersin yoklamasına gidebilirsiniz.',
+      ),
     ],
   ),
   SssBolum(
@@ -564,6 +573,15 @@ const _bolumler = <SssBolum>[
             'Hayır. Uygulama tüm ders saatlerini kulübün saatine göre gösterir; telefonunuzun'
             ' saat dilimi ne olursa olsun ekranda gördüğünüz saat kulüpteki gerçek ders'
             ' saatidir.',
+      ),
+      SssSoru(
+        ikon: Icons.view_carousel_outlined,
+        soru: 'Ana sayfadaki bilgi kartları neyi gösteriyor?',
+        cevap:
+            'Onay bekleyen dersleriniz, bu hafta tamamlanan ve iptal edilen dersler,'
+            ' aktif öğrenci sayınız ve bugün kalan dersleriniz gibi özetlerdir. Kartlar'
+            ' gün içinde düzenli aralıklarla kendiliğinden güncellenir. Kapatılabilen'
+            ' kartların köşesinde çarpı işareti bulunur.',
       ),
     ],
   ),

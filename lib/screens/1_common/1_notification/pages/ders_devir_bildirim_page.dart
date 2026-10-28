@@ -3,6 +3,7 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/3_antrenor/ders_devir_talebi_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
+import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/takvim_constants.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -539,22 +540,16 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
     return Row(
       children: [
         Expanded(
-          child: FilledButton.icon(
+          child: YikiciButon(
+            etiket: 'Reddet',
+            ikon: Icons.close_rounded,
+            padding: const EdgeInsets.symmetric(vertical: 14),
             onPressed: _saving
                 ? null
                 : () {
                     HapticFeedback.selectionClick();
                     setState(() => _showRedForm = true);
                   },
-            icon: const Icon(Icons.close_rounded, size: 18),
-            label: const Text('Reddet',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-            style: FilledButton.styleFrom(
-              backgroundColor: context.bildirimRenk.hataKirmizi,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -631,22 +626,12 @@ class _DersDevirBildirimPageState extends State<DersDevirBildirimPage> {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _saving ? null : _reddet,
-              icon: _saving
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: ButonYukleniyorGostergesi(kalinlik: 2))
-                  : const Icon(Icons.send_rounded, size: 18),
-              label: const Text('Reddi Gönder',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
-              style: FilledButton.styleFrom(
-                backgroundColor: context.bildirimRenk.hataKirmizi,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
+            child: YikiciButon(
+              etiket: 'Reddi Gönder',
+              ikon: Icons.send_rounded,
+              yukleniyor: _saving,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              onPressed: _reddet,
             ),
           ),
         ],

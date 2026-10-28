@@ -6,11 +6,11 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ---
 
-## 📌 Şu anki durum (2026-10-23)
+## 📌 Şu anki durum (2026-10-28)
 
 | | |
 |---|---|
-| Mobil | **3.13.1+47** güvenlik güncellemesi, `v3.13.1` branch `guvenlik-guncellemeleri`'nden tag'lendi (2026-10-23) → Codemagic: Play production + App Store incelemesi; main'e henüz birleşmedi. 3.13.0 (2026-10-20) Play production + App Store incelemesine gitmişti. |
+| Mobil | **3.13.1+47** güvenlik güncellemesi iki mağazada yayında, backend'i de canlıda (2026-10-28 itibarıyla). Branch `guvenlik-guncellemeleri` main'e henüz birleşmedi. |
 | Testler | `flutter test` **3634 geçiyor**, `flutter analyze` temiz; backend `guvenlik-guncellemeleri` **1572 geçiyor** (yerel Postgres, 2026-10-23). |
 | Backend | Canlı, GitHub master canlıyla eşit. Son migration'lar `0097_ders_kayit_talebi`, `0098_dekont`, `0099_uye_borc_kontrol`. Canlıda bir banka hesabı girili (işletme 1). |
 | Mağaza | 3.13.0 mağaza metni yalnız 3.12.0'dan sonraki üye yenilikleri. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20, turuncu tonu değişti — 2.3.3 riski kabul). |
@@ -30,51 +30,31 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ## 🔴 Açık işler
 
-### Kullanıcı kararı bekleyenler
-- **Ciro hesabı (2026-09-25'ten beri bilinçli olarak dokunulmadı):** ciro yalnız yönetici onaylı dersleri
-  sayıyor ve `urun.toplam_ucret` üzerinden hesaplanıyor; borç ise `ucret` + fiyat geçmişi + katılımcı
-  sayısıyla yazılıyor. Onaylar biriktiği için ciro kartı gerçeğin çok altında; geç iptal edilip "yapıldı"
-  sayılan dersler de ciroya girmiyor. Onay birikimi tek seferlik derslerin borcunu da bekletiyor (borç
-  onayda yazılıyor) — faturalama konusu.
-- **`UyeModel.profil_fotografi` (ImageField) düşürülsün mü:** 2026-10-13'ten beri kimse yazmıyor, fotoğraf
-  `profil_fotografi_url` üzerinden. Düşürmek geri dönüşü olmayan veri kaybı.
-
 ### Güvenlik (2026-10-22 incelemesi)
-- **Güvenlik güncellemesi yayını (3.13.1, yapılacak):** kod iki repoda `guvenlik-guncellemeleri`
-  branch'inde (backend: `C:\Django\tenis-guvenlik` worktree'si; master'da başka oturum çalışıyor,
-  birleştirirken `auths` göç numarası çakışmasına bak). İki ajan doğruladı. Backend eski sürümlerle
-  UYUMSUZ: kanıtsız `createToken` reddediliyor, `pv`'siz token'lar düşüyor. Sıra:
-  1. Mobil 3.13.1 iki mağazaya, **elle yayın** seçeneğiyle; ikisi de onaylanınca
-  2. backend'i yayına al (`auths.0013` göçü release'te koşar),
-  3. hemen mobili yayınla ve `mobil_uygulama_konfig`'ten 3.13.1 için zorunlu güncelleme aç,
-  4. aynı gün anahtar yenileme (aşağıda) — herkes zaten bir kez yeniden giriş yapacak.
-  Web'in şifre sıfırlama ve giriş sayfaları da aynı kurala bağlandı (ortak sayaç, tek tip yanıt).
-  Not: Django sürüm yükseltmesinde parola yeniden hash'lenince diğer cihazlardaki oturumlar bir kez
-  düşer (`pv` hash'ten türüyor).
 - **Repodaki sırlar — anahtar yenileme (yapılacak):** prod'da `SECRET_KEY` config var'ı yok; JWT imzası
   git'teki yedek değerle atılıyor, yani repoyu gören biri istediği kullanıcı adına token üretebilir.
   `settings.py`'de ayrıca Gmail, VatanSMS, Param yedek değerleri; git'te
   `eventcalendar/keys/serviceAccountKey.json`. Sıra: anahtarları yenile → Heroku config var'a koy → yedek
   değerleri sil (env yoksa uygulama açılmasın) → anahtar dosyasını git'ten çıkar. `SECRET_KEY` değişince
   tüm oturumlar düşer ve kart QR'ları (`signing`, aynı anahtar) geçersizleşir: kartlar yeniden üretilmeli.
+- **Firebase App Check (yapılacak, karar 2026-10-23):** API'ye yalnız mağazadan kurulan orijinal
+  uygulama istek atabilsin (Postman/script engeli). Mobil: `firebase_app_check` (Android Play Integrity,
+  iOS App Attest), `ApiClient` her isteğe `X-Firebase-AppCheck` başlığı ekler. Backend: ara katmanda
+  `firebase_admin.app_check.verify_token`. Kademeli: önce yalnız logla, zorunlu güncellemeyle eski
+  sürümler bitince reddet. Emülatör/test için debug provider; GMS'siz (Huawei) cihazlar ve Play Integrity
+  günlük 10.000 kotası için politika belirle. Önce yukarıdaki anahtar yenileme bitmeli (servis hesabı
+  anahtarı). Elenen alternatifler: gömülü anahtar/sertifika gizleme, mTLS, Approov, AppiCrypt (ücretli);
+  root/Frida tespiti için ücretsiz freeRASP sonra eklenebilir.
 
 ### Doğrulanacaklar
-- **Karekod indirme gerçek telefonda:** emülatörde Dart HTTP isteği storage.googleapis.com'a 20 sn'de zaman
-  aşımına düşüyordu (aynı adres emülatör Chrome'unda açılıyor).
 - **İptal signal'ları:** 2026-09-29'dan beri çalışıyor; veri kontrolü için
   `heroku run python manage.py veri_tutarlilik_kontrol --ders-basi 2026-07-23 --kategori paket,tekders,telafi,onay,ekstra`.
 
 ### Küçük işler
-- Antrenör SSS'ine yoklama hatırlatma bildirimi ve bilgi kartları hakkında soru (Scheduler çalışıyor,
-  özellik canlı; soru "çalışmıyor" sanıldığı için konmamıştı).
 - 3.10.0 ekran denetiminden ertelenenler (hâlâ geçerli mi bakılmalı): yönetici rapor bölümleri çok renkli,
   açık modda bazı ikon/yazılar düşük kontrastlı; antrenör profil başlığı kısa içerikte tam kapanmıyor;
   takvim bloğu 1.3 yazı ölçeğinde bir saatlik dersi kompakt moda düşürüyor; ders iptal sayfasında ikinci
-  tutamaç (`showDragHandle`); devir bildirimindeki "Reddet" butonları dolu kırmızı.
-- Akademiye not: popup duyurusu yalnız aksiyon gerektiren duyurular için, aynı anda tek popup, alt başlık
-  popup'ta özet (~120 karakter), kare görsel önerilir.
-- Canlı ortam: SayfaYetki'si kısıtlı web kullanıcılarına `calendarapp:dekontlar` ve
-  `calendarapp:ders_kayit_talepleri` eklenince sayfalar görünür.
+  tutamaç (`showDragHandle`).
 
 ---
 
