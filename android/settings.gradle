@@ -19,13 +19,13 @@ pluginManagement {
 
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-    // Codemagic'teki Flutter "stable" AGP 8.11.1'den düşüğünü reddediyor
-    // (2026-08-17 build hatası). Gradle wrapper 8.14.1 bu sürümü karşılıyor;
-    // AGP 9'a geçilmiyor, orada yeni DSL Flutter eklentisini kırıyor.
-    id "com.android.application" version "8.11.1" apply false
+    // AGP/Gradle/Kotlin sürümleri stable Flutter 3.47 şablonuyla aynı (AGP 9.1.0,
+    // Gradle 9.3.1, KGP 2.4.0). AGP 9 en az Flutter 3.44 ister; yeni DSL ve
+    // gömülü Kotlin gradle.properties'te kapalı, Flutter eklentisi henüz desteklemiyor.
+    // Play "R8 optimizasyonu" önerisi AGP 9 istiyor (2026-10-30).
+    id "com.android.application" version "9.1.0" apply false
     id "com.google.gms.google-services" version "4.3.15" apply false
-    // Aynı doğrulamanın Kotlin ayağı: stable Flutter en az 2.2.20 istiyor.
-    id "org.jetbrains.kotlin.android" version "2.2.20" apply false
+    id "org.jetbrains.kotlin.android" version "2.4.0" apply false
 }
 
 include ":app"
