@@ -123,16 +123,19 @@ kaybedilebilir: önce AGP kırar, düzeltilince sıra Kotlin'e gelir. (2026-08-1
 **Çözüm:** hatanın istediği sürümü `android/settings.gradle`'ın `plugins`
 bloğunda yükselt, sonra dördünü birden gözden geçir:
 
-| Bağımlılık | Nerede | 2026-08 değeri |
+| Bağımlılık | Nerede | 2026-10 değeri |
 |---|---|---|
-| AGP (`com.android.application`) | `android/settings.gradle` | 8.11.1 |
-| Kotlin (`org.jetbrains.kotlin.android`) | `android/settings.gradle` | 2.2.20 |
-| Gradle wrapper | `android/gradle/wrapper/gradle-wrapper.properties` | 8.14.1 (AGP 8.11–8.13 en az 8.13 istiyor) |
-| JDK | `codemagic.yaml` → `java: 17` | 17 (AGP 8.11+ için en az 17) |
+| AGP (`com.android.application`) | `android/settings.gradle` | 9.1.0 (en az Flutter 3.44) |
+| Kotlin (`org.jetbrains.kotlin.android`) | `android/settings.gradle` | 2.4.0 (yalnız derleyici sürümü, `apply false`) |
+| Gradle wrapper | `android/gradle/wrapper/gradle-wrapper.properties` | 9.3.1 |
+| JDK | `codemagic.yaml` → `java: 17` | 17 |
 
-**AGP 9'a geçmeyin.** Flutter'ın kendi uyarısı da bunu söylüyor: AGP 9 yalnız
-yeni DSL'i okuyor ve Flutter gradle eklentisi `app/build.gradle`'a
-uygulanırken kırılıyor. "AGP 9.0.1'e çıkın" satırı uyarıdır, build'i durdurmaz.
+**Kotlin gömülü (2026-10-30):** `gradle.properties`'te `android.builtInKotlin=true`,
+`app/build.gradle`'da `kotlin-android` yok, `jvmTarget` `kotlin { compilerOptions }`
+bloğunda (en az Flutter 3.47). `android.newDsl=false` kalır; Flutter eklentisi yeni
+DSL'i henüz desteklemiyor. Derlemedeki "plugins that apply KGP: app_badge_plus"
+uyarısı yanlış alarm: paket KGP'yi yalnız gömülü Kotlin kapalıyken uyguluyor,
+Flutter ise dosyayı metin olarak tarıyor.
 
 Bu tekrar yaşanmasın isteniyorsa `flutter: stable` yerine son başarılı build'in
 sürümü (`flutter: 3.x.y`) sabitlenmeli — o zaman alt sınırlar da sabit kalır.
