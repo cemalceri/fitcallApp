@@ -1,14 +1,28 @@
 package com.ceri.fitcall
 
+import android.os.Bundle
 import android.view.WindowManager
-import io.flutter.embedding.android.FlutterActivity
+import androidx.activity.enableEdgeToEdge
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-class MainActivity : FlutterActivity() {
+// FlutterFragmentActivity: enableEdgeToEdge() ComponentActivity ister,
+// düz FlutterActivity'de yok.
+class MainActivity : FlutterFragmentActivity() {
 
     companion object {
         private const val PARLAKLIK_KANALI = "fitcall/ekran_parlaklik"
+    }
+
+    /**
+     * Play Console "uçtan uca ekran" önerisi: Android 15+ zaten uçtan uca;
+     * bu çağrı eski sürümleri de aynı düzene alır (sistem çubuklarının
+     * altına çizim, boşluğu Flutter'daki SafeArea/Scaffold verir).
+     */
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
