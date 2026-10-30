@@ -10,7 +10,7 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 | | |
 |---|---|
-| Mobil | **3.13.1+47** güvenlik güncellemesi iki mağazada yayında, backend'i de canlıda (2026-10-28 itibarıyla). Branch `guvenlik-guncellemeleri` main'e henüz birleşmedi. |
+| Mobil | **3.13.1+47** iki mağazada yayında. **3.14.0+48 hazır** (2026-10-30; menü, geçmiş ders etiketleri, App Check, AGP 9): tag atılmadı, önce backend deploy. Sıra: [SURUM_NOTLARI.md](SURUM_NOTLARI.md) › 3.14.0. |
 | Testler | `flutter test` **3634 geçiyor**, `flutter analyze` temiz; backend `guvenlik-guncellemeleri` **1572 geçiyor** (yerel Postgres, 2026-10-23). |
 | Backend | Canlı, GitHub master canlıyla eşit. Son migration'lar `0097_ders_kayit_talebi`, `0098_dekont`, `0099_uye_borc_kontrol`. Canlıda bir banka hesabı girili (işletme 1). |
 | Mağaza | 3.13.0 mağaza metni yalnız 3.12.0'dan sonraki üye yenilikleri. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20, turuncu tonu değişti — 2.3.3 riski kabul). |

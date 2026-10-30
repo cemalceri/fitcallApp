@@ -126,6 +126,8 @@ const Map<String, IconData> surumNotuIkonlari = {
   'auto_awesome_rounded': Icons.auto_awesome_rounded,
   'help_rounded': Icons.help_rounded,
   'filter_list_rounded': Icons.filter_list_rounded,
+  'menu_rounded': Icons.menu_rounded,
+  'home_rounded': Icons.home_rounded,
 };
 
 const IconData surumNotuVarsayilanIkon = Icons.auto_awesome_rounded;

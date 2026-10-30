@@ -1,10 +1,10 @@
 [
     {
         "language": "tr",
-        "text": "- Hesap güvenliği güçlendirildi: hatalı şifre girişinde kalan deneme hakkınız gösteriliyor, çok sayıda hatalı denemede giriş 15 dakika kilitleniyor.\n- Şifremi unuttum: sıfırlama bağlantısı, kullanıcı adınıza ya da telefonunuza bağlı hesapların e-posta adresine gönderiliyor.\n- Oturumunuz sona erdiğinde uygulama sizi giriş ekranına yönlendiriyor.\n- Çeşitli iyileştirmeler ve hata düzeltmeleri."
+        "text": "- Menü artık her sayfada: sol üstteki menü simgesi alt bardaki tüm sekmelerde; ekranın sol kenarından kaydırarak da açabilirsiniz.\n- Geçmiş Dersler: dersin durumu ve sizin yoklamanız ayrı etiketlerle gösteriliyor; iptal edilen ya da yapılmayan dersler artık katılmadığınız ders gibi görünmüyor.\n- Uygulama güvenliği güçlendirildi.\n- Çeşitli iyileştirmeler ve hata düzeltmeleri."
     },
     {
         "language": "tr-TR",
-        "text": "- Hesap güvenliği güçlendirildi: hatalı şifre girişinde kalan deneme hakkınız gösteriliyor, çok sayıda hatalı denemede giriş 15 dakika kilitleniyor.\n- Şifremi unuttum: sıfırlama bağlantısı, kullanıcı adınıza ya da telefonunuza bağlı hesapların e-posta adresine gönderiliyor.\n- Oturumunuz sona erdiğinde uygulama sizi giriş ekranına yönlendiriyor.\n- Çeşitli iyileştirmeler ve hata düzeltmeleri."
+        "text": "- Menü artık her sayfada: sol üstteki menü simgesi alt bardaki tüm sekmelerde; ekranın sol kenarından kaydırarak da açabilirsiniz.\n- Geçmiş Dersler: dersin durumu ve sizin yoklamanız ayrı etiketlerle gösteriliyor; iptal edilen ya da yapılmayan dersler artık katılmadığınız ders gibi görünmüyor.\n- Uygulama güvenliği güçlendirildi.\n- Çeşitli iyileştirmeler ve hata düzeltmeleri."
     }
 ]

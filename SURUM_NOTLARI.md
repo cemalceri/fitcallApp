@@ -42,6 +42,47 @@ görüyor (tam ekran popup; kalıcı erişim Ayarlar › "Neler yeni").
    popup işe yaramıyor demektir; kararı tek sürüme değil birkaç sürüme bakarak
    ver.
 
+## 3.14.0 — 2026-10-30
+
+### Mağaza metni (tr-TR)
+
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (377 karakter). 3.13.1 iki mağazada da yayında,
+yani yalnız ondan sonraki üye yenilikleri.
+
+- Menü artık her sayfada: sol üstteki menü simgesi alt bardaki tüm sekmelerde; ekranın sol kenarından kaydırarak da açabilirsiniz.
+- Geçmiş Dersler: dersin durumu ve sizin yoklamanız ayrı etiketlerle gösteriliyor; iptal edilen ya da yapılmayan dersler artık katılmadığınız ders gibi görünmüyor.
+- Uygulama güvenliği güçlendirildi.
+- Çeşitli iyileştirmeler ve hata düzeltmeleri.
+
+### "Neler yeni?" popup'ı
+
+Backend `surum_notlari.json`'da 3.14.0 bloğu, `yayinda` kapalı: dört profilde ortak "Menü artık her
+sekmede"; üyede Geçmiş Dersler'de Ders / Yoklama etiketleri; yöneticide Dashboard'un adı Ana Sayfa.
+Antrenör ve ofis yalnız menü maddesini görür. Yeni ikonlar (`menu_rounded`, `home_rounded`) beyaz
+listede.
+
+### Yayın sırası (bu sürüme özel)
+
+1. Backend deploy: App Check ara katmanı "log" modunda gelir (`auths.0014`), hiçbir isteği reddetmez;
+   eski sürümler etkilenmez. Sürüm notu `yayinda=False` gelir.
+2. Android AGP 9 + edge-to-edge (`FlutterFragmentActivity`) bu sürümde ilk kez çıkıyor: önce dahili
+   test kanalında güncelleme sonrası oturumun korunduğunu dene, sonra üretime al.
+3. Mağazada canlı görülünce admin'den 3.14.0 sürüm notunun `yayinda`'sını aç.
+
+### Teknik
+
+- **Sol menü her sekmede.** Drawer kabukta (`UyeKabuk`, `AntrenorKabuk`, yönetici/ofis kabukları);
+  `KabukMenusu` menü açma işlevini sekmelere indirir, sekme başlıklarında `KabukMenuButonu` /
+  `kabukMenuLeading`. İtilen sayfalarda geri oku kalır. Yöneticide "Dashboard" → "Ana Sayfa".
+- **Geçmiş dersler.** "Ders" ve "Yoklama" etiketleri ayrı; katılım yalnız antrenör yoklamasından,
+  yapılmamış/iptal derste otomatik `katildi=False` "Katılmadı" gösterilmez.
+- **Firebase App Check.** Her isteğe `X-Firebase-AppCheck` (Play Integrity / App Attest), `X-Platform`,
+  `X-Uygulama-Surumu`. Sunucu `APP_CHECK_MODU=log`: doğrular ve sayar (admin › App Check Sayaçları).
+  Konsol ayarları yapıldı (2026-10-30); zorunlu moda geçiş [MOBIL_GELISTIRMELER.md](MOBIL_GELISTIRMELER.md)'de.
+- **Android.** AGP 9.1, Gradle 9.3.1, Kotlin 2.4.0, `add_2_calendar` 3.1.1; edge-to-edge. En az
+  Flutter 3.44.
+- **Diğer.** Devir bildiriminde "Reddet" çerçeveli; antrenör SSS'ine iki soru.
+
 ## 3.13.1 — 2026-10-23 (güvenlik güncellemesi)
 
 ### Mağaza metni (tr-TR)
@@ -85,37 +126,3 @@ hemen ardından mobil yayınlanır ve admin'den 3.13.1 için zorunlu güncelleme
   oluşturan (ya da ofis/yönetici) siler; giriş yanıtında parola hash'i yok; teyit bildirimi bildirimin
   üyesine yazılır; antrenörün `ANTRENOR_IPTAL` talebi artık reddedilmiyor.
 
-## 3.13.0 — 2026-10-20
-
-### Mağaza metni (tr-TR)
-
-`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (349 karakter). 3.12.0 iki mağazada da yayında,
-yani yalnız ondan sonraki üye yenilikleri.
-
-- Havale / EFT: kulübün IBAN'ı ve karekodu Muhasebe sekmesinde. IBAN'ı kopyalayın, karekodu indirip banka uygulamanızla okutun.
-- Havale dekontunuzu fotoğraf ya da PDF olarak uygulamadan gönderin; durumunu Dekontlarım'da izleyin.
-- Yeni renk temaları: Turuncu, Mavi, Yeşil ve Siyah (Ayarlar › Görünüm).
-- Çeşitli iyileştirmeler ve hata düzeltmeleri.
-
-### "Neler yeni?" popup'ı
-
-Backend `surum_notlari.json`'da 3.13.0 bloğu: üye 3, antrenör 2, ofis 3, yönetici 3 madde (kurumsal
-renk temaları dört profilde ortak). 3.12.0'daki karar gibi `yayinda` açık; popup yalnız 3.13.0 kurulu
-cihazda çıkar. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20; turuncu tonu değişti).
-
-### Teknik
-
-- **Havale / EFT (üye, #13).** Hesap Özeti'nde **EFT / Havale** + **Kredi kartı ile öde** (kart henüz
-  yok, EFT / Havale'ye yönlendirir). `6_muhasebe/havale/`: banka hesapları (gruplu IBAN, kopyala,
-  karekod — indirilip cihazda saklanır, İndir + Paylaş), tam ekran Dekont yükle (Kamera / Galeri / PDF,
-  5 MB), Dekontlarım (durum, ret gerekçesi, bekleyeni geri çekme). Borç yokken "Borcunuz yok.
-  Teşekkürler!". Ofise `OFIS_DEKONT_YUKLENDI` bildirimi, ofis üye detayını açar. Backend `0098_dekont`.
-- **Ders kayıt talebi (antrenör + ofis).** Antrenör Takvim başlığından salt-okunur Tüm Program
-  (`antrenorHaftalikProgram`), tek eylem "+ Ders kayıt talebi". Ofis Ana Sayfa'da "Ders kayıt
-  talepleri (n)", kayıt `EtkinlikFormSheet` ile `talepId`'li. Izgara `1_common/program/`'a taşındı.
-  Backend `0097_ders_kayit_talebi`.
-- **Yönetici Üyeler (#12).** Birlikte çalışan filtre + 12 seçenekli sıralama (sunucuda, `filtreler` +
-  `yon`), etkin filtre çipleri, "Kesin" rozeti; ayrı Borçlu Üyeler sayfası kalktı, Dashboard kartı ve
-  menü Üyeler'i borçlu ön ayarıyla açar. Backend `0099_uye_borc_kontrol`.
-- **Kurumsal temalar (#14).** Takım temaları kalktı; Turuncu `FE5000` (varsayılan, kod `binay`), Mavi
-  `00A9E0`, Yeşil `43B02A`, Siyah. Kaldırılan kodlar varsayılana, `siyah_beyaz` Siyah'a düşer.
