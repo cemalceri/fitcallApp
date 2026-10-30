@@ -44,10 +44,10 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
   `X-Uygulama-Surumu` ekler (`app_check_service.dart`). Backend `api/core/app_check.py`: `APP_CHECK_MODU`
   `log` (varsayılan, reddetmez) / `zorunlu` / `kapali`; sonuçlar admin → "App Check Sayaçları"nda gün ×
   sonuç × platform × sürüm. `gate` (turnike) ve `getMobilConfigs` muaf. Kalan sıra:
-  1. **Elle (yayından önce):** Firebase konsolu → App Check → Android'e Play Integrity (Play Console'daki
-     uygulama imzalama SHA-256'sı Firebase'de kayıtlı olmalı), iOS'a App Attest; zorunlu kılma KAPALI kalsın.
-     Apple Developer'da App ID'ye **App Attest** capability'si (yoksa iOS derlemesi kırılır,
-     bkz. CODEMAGIC_KURULUM.md). Emülatör için logdaki debug token'ı konsola ekle.
+  1. ~~Elle~~ **yapıldı (2026-10-30):** Firebase App Check'te Android Play Integrity (uygulama imzalama
+     SHA-256'sı) ve iOS App Attest kayıtlı, zorunlu kılma KAPALI; Play Console'da Play Integrity API
+     `fitcallapp` Cloud projesine bağlı (günlük 10.000); Apple Developer'da App ID'de **App Attest** açık.
+     Emülatörde denerken logdaki debug token'ı konsola eklemek gerekir.
   2. Backend deploy (`auths.0014` göçü) → App Check'li sürüm yayını.
   3. Sayaçlarda güncel sürümde `yok`/`gecersiz` kalmadığında (GMS'siz Huawei, Play Integrity günlük
      10.000 kotası burada görünür) zorunlu güncelleme aç, sonra (anahtar yenileme bittiyse) Heroku'da
