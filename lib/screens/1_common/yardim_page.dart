@@ -231,9 +231,11 @@ const _bolumler = <SssBolum>[
         soru: 'Geçmiş derslerimi nereden görürüm?',
         cevap:
             '☰ menüdeki "Geçmiş Dersler" sayfasında tamamlanan dersleriniz aya göre'
-            ' gruplanmış olarak listelenir. Durumlar renk ve etikete göre ayrılır:'
-            ' katıldığınız/yapılan dersler, iptaller, kulüp onayında bekleyenler,'
-            ' yöneticinin "yapılmadı" dediği dersler ve katılmadığınız dersler.',
+            ' gruplanmış olarak listelenir. Her derste iki etiket görürsünüz:'
+            ' "Ders" dersin kendisini (yapıldı, yapılmadı, onay bekliyor ya da'
+            ' iptal), "Yoklama" ise antrenörün yoklamasına göre sizin'
+            ' katılımınızı gösterir. Grup derslerinde ders yapılmış olsa da'
+            ' katılımınız ayrıca yoklamadan okunur.',
       ),
       SssSoru(
         ikon: Icons.star_outline_rounded,

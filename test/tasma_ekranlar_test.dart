@@ -3005,9 +3005,10 @@ List<GecmisDersModel> _gecmisDersler() => [
         'iptal_mi': false,
         'katilim': {
           'katildi': true,
-          'plan_disi_mi': false,
+          'plan_disi_mi': true,
           'not_metni': 'İyi bir ders oldu, forehand çalışıldı.'
         },
+        'ders_yapildi': true,
         'puanim': {'puan': 4, 'yorum': 'Teşekkürler'},
       }),
       GecmisDersModel.fromJson(const {
@@ -3020,6 +3021,29 @@ List<GecmisDersModel> _gecmisDersler() => [
         'seviye': 'Mavi',
         'iptal_mi': false,
         'katilim': {'katildi': false, 'plan_disi_mi': false},
+        'ders_yapildi': true,
+      }),
+      // Yoklaması girilmemiş yapılmış ders + onay bekleyen ders.
+      GecmisDersModel.fromJson(const {
+        'id': 3,
+        'baslangic_tarih_saat': '2026-06-11T13:00:00+03:00',
+        'bitis_tarih_saat': '2026-06-11T14:00:00+03:00',
+        'kort_adi': 'Açık Kort 3',
+        'antrenor_adi': 'Mehmet Demir',
+        'urun_adi': 'Grup Dersi Paketi',
+        'seviye': 'Mavi',
+        'iptal_mi': false,
+        'ders_yapildi': true,
+      }),
+      GecmisDersModel.fromJson(const {
+        'id': 4,
+        'baslangic_tarih_saat': '2026-06-04T13:00:00+03:00',
+        'bitis_tarih_saat': '2026-06-04T14:00:00+03:00',
+        'kort_adi': 'Açık Kort 3',
+        'antrenor_adi': 'Mehmet Demir',
+        'urun_adi': 'Grup Dersi Paketi',
+        'seviye': 'Mavi',
+        'iptal_mi': false,
       }),
     ];
 

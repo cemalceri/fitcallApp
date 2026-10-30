@@ -82,27 +82,45 @@ class _DersSatiri extends StatelessWidget {
 
   const _DersSatiri({required this.ders, required this.onDegerlendir});
 
+  /// Dersin kendisi (antrenör onayı): yapıldı / yapılmadı / onay bekliyor.
+  ///
   /// Durum rengi doğrudan temadan gelir: eski sabit hex'ler koyu temada
   /// zeminle yeterince ayrışmıyordu. İptal ile "katılmadı" aynı tonda ama
   /// etiketleri farklı — ayrımı renk değil metin taşır (renk körlüğü).
-  _DersDurum get _durum {
+  _DersDurum get _dersDurumu {
     if (ders.iptalMi) return const _DersDurum('İptal', ListeTonu.hata);
-    if (ders.katilim != null) {
-      if (ders.katilim!.katildi) {
-        return _DersDurum(
-          ders.katilim!.planDisiMi ? 'Katıldı (plan dışı)' : 'Katıldı',
-          ListeTonu.basari,
-        );
-      }
-      return const _DersDurum('Katılmadı', ListeTonu.hata);
-    }
     if (ders.dersYapildi == true) {
-      return const _DersDurum('Ders yapıldı', ListeTonu.basari);
+      return const _DersDurum('Ders: Yapıldı', ListeTonu.basari);
     }
     if (ders.dersYapildi == false) {
-      return const _DersDurum('Ders yapılmadı', ListeTonu.notr);
+      return const _DersDurum('Ders: Yapılmadı', ListeTonu.notr);
     }
-    return const _DersDurum('Kulüp onayında', ListeTonu.uyari);
+    return const _DersDurum('Ders: Onay bekliyor', ListeTonu.uyari);
+  }
+
+  /// Üyenin kendi katılımı — yalnız antrenörün yoklamasından gelir.
+  ///
+  /// Grup dersinde "ders yapıldı" üyenin katıldığı anlamına gelmez; bu yüzden
+  /// ders onayından katılım türetilmez. İptal ya da yapılmamış derste pin
+  /// yok: "yapılmadı"da sunucu planlı herkese otomatik katildi=False yazıyor,
+  /// onu "Katılmadı" diye göstermek üyeyi haksız yere devamsız gösterirdi.
+  _DersDurum? get _yoklamaDurumu {
+    if (ders.iptalMi || ders.dersYapildi == false) return null;
+    final katilim = ders.katilim;
+    if (katilim == null) {
+      // Onay bekleyen derste yoklama da onayla birlikte gelir; ayrıca
+      // "girilmedi" demek tekrar olur.
+      return ders.dersYapildi == true
+          ? const _DersDurum('Yoklama: Girilmedi', ListeTonu.notr)
+          : null;
+    }
+    if (katilim.katildi) {
+      return _DersDurum(
+        katilim.planDisiMi ? 'Yoklama: Katıldı (plan dışı)' : 'Yoklama: Katıldı',
+        ListeTonu.basari,
+      );
+    }
+    return const _DersDurum('Yoklama: Katılmadı', ListeTonu.hata);
   }
 
   @override
@@ -110,7 +128,8 @@ class _DersSatiri extends StatelessWidget {
     final cs = context.cs;
     final saatFmt = DateFormat('HH:mm');
     final gunFmt = DateFormat('EEE', 'tr');
-    final durum = _durum;
+    final dersDurumu = _dersDurumu;
+    final yoklamaDurumu = _yoklamaDurumu;
     final notMetni = ders.katilim?.notMetni;
 
     return Padding(
@@ -124,7 +143,9 @@ class _DersSatiri extends StatelessWidget {
           _GunRozeti(
             gun: '${ders.baslangicTarihSaat.day}',
             kisaGun: gunFmt.format(ders.baslangicTarihSaat),
-            ton: durum.ton,
+            // Rozet rengi üyenin kendisini ilgilendireni öne alır: yoklama
+            // varsa onun tonu, yoksa dersin.
+            ton: (yoklamaDurumu ?? dersDurumu).ton,
           ),
           const SizedBox(width: Bosluk.m),
           Expanded(
@@ -132,20 +153,12 @@ class _DersSatiri extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '${saatFmt.format(ders.baslangicTarihSaat)}'
-                        ' - ${saatFmt.format(ders.bitisTarihSaat)}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.metin.titleSmall,
-                      ),
-                    ),
-                    const SizedBox(width: Bosluk.s),
-                    _DurumRozeti(durum: durum),
-                  ],
+                Text(
+                  '${saatFmt.format(ders.baslangicTarihSaat)}'
+                  ' - ${saatFmt.format(ders.bitisTarihSaat)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.metin.titleSmall,
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -157,6 +170,18 @@ class _DersSatiri extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: context.metin.bodySmall,
+                ),
+                // İki pin saat satırına sığmıyor (yazı ölçeği 1.3); kendi
+                // satırında Wrap ile alt alta inebilir.
+                const SizedBox(height: Bosluk.xs),
+                Wrap(
+                  spacing: Bosluk.xs,
+                  runSpacing: Bosluk.xs,
+                  children: [
+                    _DurumRozeti(durum: dersDurumu),
+                    if (yoklamaDurumu != null)
+                      _DurumRozeti(durum: yoklamaDurumu),
+                  ],
                 ),
                 if (notMetni != null && notMetni.isNotEmpty) ...[
                   const SizedBox(height: Bosluk.s),
