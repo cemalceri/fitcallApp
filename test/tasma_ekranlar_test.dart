@@ -68,6 +68,7 @@ import 'package:fitcall/screens/8_ofis/widgets/ofis_bottom_bar.dart';
 import 'package:fitcall/screens/8_ofis/widgets/ofis_drawer.dart';
 import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_odul_sayaci.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_ozet_serit.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_next_lesson_card.dart';
@@ -692,6 +693,15 @@ void main() {
           onSec: (_) {},
         ),
       ),
+    );
+    // Kabuk sekmesindeyken solda menü butonu.
+    tasmaTesti(
+      'SekmeBasligi (kabuk menüsüyle)',
+      () => const SekmeBasligi(
+        baslik: 'Antrenörler',
+        sag: BaslikKapsulu('128 antrenör'),
+      ),
+      sar: (w) => KabukMenusu(menuyuAc: () {}, child: w),
     );
     tasmaTesti(
       'BaslikSecici (dört dilim)',

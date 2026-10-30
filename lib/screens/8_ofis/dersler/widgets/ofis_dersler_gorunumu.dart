@@ -12,6 +12,7 @@ import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -110,8 +111,10 @@ class OfisDerslerGorunumu extends StatelessWidget {
       backgroundColor: kontrolZemini,
       foregroundColor: g.onBaslik,
     );
+    // Sekmeyken geri oku yerine kabuğun menüsü.
+    final menuVar = !geriVar && KabukMenusu.of(context) != null;
     return BaslikBandi(
-      padding: EdgeInsets.fromLTRB(geriVar ? 4 : 16, 6, 16, 12),
+      padding: EdgeInsets.fromLTRB(geriVar ? 4 : (menuVar ? 8 : 16), 6, 16, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -123,6 +126,7 @@ class OfisDerslerGorunumu extends StatelessWidget {
                   onPressed: () => Navigator.maybePop(context),
                   icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
                 ),
+              if (menuVar) const KabukMenuButonu(),
               const Expanded(
                 child: Text(
                   'Dersler',

@@ -100,7 +100,7 @@ const _tumBolumler = <_KapsamliBolum>[
               'İkisi ayrı kabuk, yetkileri de ayrı. Ofis (ön büro) profili işi'
               ' YAPAN taraftır: haftalık programda ders açar, düzenler, iptal eder,'
               ' QR doğrular, üye listesine bakar. Yönetici profili ise RAPORLAYAN'
-              ' taraftır: dashboard, raporlar, bakiyeli üye listesi, antrenörler,'
+              ' taraftır: ana sayfa, raporlar, bakiyeli üye listesi, antrenörler,'
               ' hakediş saatleri ve borçlu üyeler. Yönetici kabuğunda ders açma ya da'
               ' iptal etme ekranı bilerek yoktur; o işler ofiste toplanmıştır.',
         ),
@@ -114,7 +114,7 @@ const _tumBolumler = <_KapsamliBolum>[
               'Ayarlar sayfasındaki "Profil değiştir" ile profil seçim ekranına'
               ' dönersiniz; oradan diğer profilinizi seçtiğinizde uygulama o rolün'
               ' kabuğuyla açılır. Aynı yere ana ekranın üst köşesindeki çift oklu'
-              ' (⇄) butonla da gidebilirsiniz: yöneticide dashboard başlığında, ofiste'
+              ' (⇄) butonla da gidebilirsiniz: yöneticide ana sayfanın başlığında, ofiste'
               ' haftalık programın başlığında, "Bugün"ün yanında. Her profil kendi'
               ' oturum anahtarıyla çalışır, yani yönetici olarak gördüğünüz veri ofis'
               ' profiline taşınmaz.',
@@ -504,8 +504,8 @@ const _tumBolumler = <_KapsamliBolum>[
       _KapsamliSoru(
         _Kapsam.yonetici,
         SssSoru(
-          ikon: Icons.dashboard_outlined,
-          soru: 'Dashboard neyi gösteriyor?',
+          ikon: Icons.home_outlined,
+          soru: 'Ana sayfa neyi gösteriyor?',
           cevap:
               'En üstte bugünün özeti (yeni üye, ders, doluluk). Bugün / Bu Hafta / Bu Ay'
               ' seçimi yalnız ona bağlı kartlarla (ciro, tahsilat, ders, iptal) aynı'

@@ -16,6 +16,7 @@ import 'package:fitcall/screens/7_yonetici/antrenorler/antrenorler_page.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/dersler_page.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_bottom_bar.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
 import 'package:fitcall/services/core/storage_service.dart';
@@ -33,7 +34,7 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
   int _selectedIndex = 0;
   String _yoneticiAdi = '';
 
-  /// Üyeler sekmesine dışarıdan ön ayar (Dashboard kartı, menü).
+  /// Üyeler sekmesine dışarıdan ön ayar (Ana Sayfa kartı, menü).
   final _uyeOnAyari = ValueNotifier<UyeOnAyarIstegi?>(null);
 
   late final List<Widget> _pages;
@@ -93,9 +94,13 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
         onBorcluUyeler: _borcluUyeler,
         aktifSekme: _selectedIndex,
       ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
+      // Menü her sekmenin başlığından açılır (KabukMenuButonu).
+      body: KabukMenusu(
+        menuyuAc: () => _scaffoldKey.currentState?.openDrawer(),
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,
+        ),
       ),
       bottomNavigationBar: YoneticiBottomBar(
         selectedIndex: _selectedIndex,

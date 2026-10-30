@@ -10,6 +10,7 @@ import 'package:fitcall/services/muhasebe/dekont_service.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/havale_bilgi_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
@@ -231,11 +232,13 @@ class _MuhasebePageState extends State<MuhasebePage> {
     // bırakıyordu. Profil sayfasıyla aynı kalıp — ok yalnız gerçekten
     // dönülecek bir sayfa varken çıkar.
     final geriVar = Navigator.of(context).canPop();
+    // Sekmeyken geri oku yerine kabuğun menüsü.
+    final menuVar = !geriVar && KabukMenusu.of(context) != null;
 
     // Takım renginde başlık bandı; bakiye kartı (kimlik yüzeyi) altında
     // sayfa zemininde.
     return BaslikBandi(
-      padding: EdgeInsets.fromLTRB(geriVar ? 4 : 16, 6, 8, 12),
+      padding: EdgeInsets.fromLTRB(geriVar ? 4 : (menuVar ? 8 : 16), 6, 8, 12),
       child: Row(
         children: [
           if (geriVar) ...[
@@ -246,6 +249,7 @@ class _MuhasebePageState extends State<MuhasebePage> {
             ),
             const SizedBox(width: 4),
           ],
+          if (menuVar) const KabukMenuButonu(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

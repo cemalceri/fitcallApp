@@ -5,6 +5,7 @@ import 'package:fitcall/models/10_ofis/ofis_uye_models.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/sayfali_liste_parcalari.dart';
 import 'package:flutter/material.dart';
@@ -108,6 +109,7 @@ class OfisUyelerGorunumu extends StatelessWidget {
       floating: true,
       snap: true,
       automaticallyImplyLeading: false,
+      leading: kabukMenuLeading(context),
       title: const Text('Üyeler'),
       actions: [
         if (!yukleniyor && hata == null)

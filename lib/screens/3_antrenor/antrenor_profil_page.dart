@@ -9,6 +9,7 @@ import 'package:fitcall/screens/3_antrenor/calisma_saatleri/calisma_saatleri_pag
 import 'package:fitcall/screens/4_auth/login_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
@@ -99,6 +100,8 @@ class _AntrenorProfilContent extends StatelessWidget {
             expandedHeight: 224,
             pinned: true,
             automaticallyImplyLeading: geriVar,
+            // Sekmeyken geri oku yerine kabuğun menüsü.
+            leading: geriVar ? null : kabukMenuLeading(context),
             // Ad açıkken genişleyen alanda yazıyor; çubukta yalnız kapanınca.
             title: KapaninciBaslik(child: Text('${antrenor.adi} ${antrenor.soyadi}')),
             // iOS'ta aşağı çekince başlık esner, üstünde zemin boşluğu açılmaz.

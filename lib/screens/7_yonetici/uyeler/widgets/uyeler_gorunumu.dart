@@ -6,6 +6,7 @@ import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/sayfali_liste_parcalari.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_filtre_seridi.dart';
@@ -131,6 +132,7 @@ class UyelerGorunumu extends StatelessWidget {
       floating: true,
       snap: true,
       automaticallyImplyLeading: false,
+      leading: kabukMenuLeading(context),
       title: const Text('Üyeler'),
       actions: [
         if (!yukleniyor && hata == null)

@@ -8,19 +8,17 @@ import 'package:fitcall/models/2_uye/uye_odul_model.dart';
 import 'package:fitcall/models/3_antrenor/home_card_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
-import 'package:fitcall/models/1_common/event/event_model.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/duyuru_carousel.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_header.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/flutter_uye_next_lesson_card.dart';
-import 'package:fitcall/screens/2_uye/home/widgets/uye_drawer.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_odul_sayaci.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_ozet_serit.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/info_cards_carousel.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/duyuru_api_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
-import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:fitcall/services/etkinlik/etkinlik_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
@@ -38,8 +36,6 @@ class UyeHomePage extends StatefulWidget {
 }
 
 class _UyeHomePageState extends State<UyeHomePage> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   // Haftalık ders verileri
   bool _loadingWeek = true;
   EtkinlikModel? _nextLesson;
@@ -47,10 +43,6 @@ class _UyeHomePageState extends State<UyeHomePage> {
   // Profil ve kullanıcı
   bool _hasMultipleProfiles = false;
   String _uyeAdi = "";
-  int? _userId;
-
-  // Event/Davet
-  EventModel? _aktifEvent;
 
   // Duyurular
   List<DuyuruModel> _duyurular = [];
@@ -75,7 +67,6 @@ class _UyeHomePageState extends State<UyeHomePage> {
     await Future.wait([
       _loadUyeAdi(),
       _checkProfiles(),
-      _checkAktifEvent(),
       _fetchWeek(),
       _fetchDuyurular(),
       _fetchHomeOzet(),
@@ -157,22 +148,6 @@ class _UyeHomePageState extends State<UyeHomePage> {
     }
   }
 
-  Future<void> _checkAktifEvent() async {
-    try {
-      final userId = await StorageService.getUserId();
-      if (userId == null || userId <= 0) return;
-
-      _userId = userId;
-
-      final result = await QrCodeApiService.getirEventAktifApi(userId: userId);
-      if (mounted && result.data != null) {
-        setState(() => _aktifEvent = result.data);
-      }
-    } catch (_) {
-      // Sessizce başarısız ol
-    }
-  }
-
   Future<void> _fetchWeek() async {
     try {
       final result = await EtkinlikService.getirHaftalikDersBilgilerim();
@@ -222,7 +197,6 @@ class _UyeHomePageState extends State<UyeHomePage> {
     await Future.wait([
       _fetchWeek(),
       _fetchDuyurular(),
-      _checkAktifEvent(),
       _fetchHomeOzet(),
       _fetchOdulDurumu(),
     ]);
@@ -232,14 +206,8 @@ class _UyeHomePageState extends State<UyeHomePage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    // Sol menü kabukta (UyeKabuk); her sekmeden açılır.
     return Scaffold(
-      key: _scaffoldKey,
-      drawer: UyeDrawer(
-        uyeAdi: _uyeAdi,
-        aktifEvent: _aktifEvent,
-        userId: _userId,
-        onEventReturn: _checkAktifEvent,
-      ),
       // Başlık bandı içerikle kayar; durum çubuğunun arkası başlık renginde
       // sabit kalır (RenkliDurumCubugu).
       body: RenkliDurumCubugu(
@@ -259,7 +227,7 @@ class _UyeHomePageState extends State<UyeHomePage> {
                   child: UyeHeader(
                     uyeAdi: _uyeAdi,
                     hasMultipleProfiles: _hasMultipleProfiles,
-                    onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                    onMenuTap: KabukMenusu.of(context),
                   ),
                 ),
               ),

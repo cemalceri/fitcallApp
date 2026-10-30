@@ -37,9 +37,9 @@ class YoneticiBottomBar extends StatelessWidget {
       merkezEtiket: 'QR Oluştur',
       sekmeler: const [
         KabukSekmesi(
-          ikon: Icons.dashboard_outlined,
-          seciliIkon: Icons.dashboard_rounded,
-          etiket: 'Dashboard',
+          ikon: Icons.home_outlined,
+          seciliIkon: Icons.home_rounded,
+          etiket: 'Ana Sayfa',
         ),
         KabukSekmesi(
           ikon: Icons.bar_chart_outlined,

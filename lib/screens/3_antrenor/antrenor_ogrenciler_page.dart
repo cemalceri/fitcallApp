@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/3_antrenor/ogrenci_detay/antrenor_ogrenci_detay_page.dart';
@@ -143,11 +144,14 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
     // Kabuk sekmesi olarak açıldığında geri okunun gideceği yer yok; pop
     // kabuğun rotasını kapatıp siyah ekran bırakır (bkz. MuhasebePage).
     final geriVar = Navigator.of(context).canPop();
+    // Sekmeyken geri oku yerine kabuğun menüsü.
+    final menuVar = !geriVar && KabukMenusu.of(context) != null;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(geriVar ? 8 : 16, 8, 16, 8),
+      padding: EdgeInsets.fromLTRB(geriVar || menuVar ? 8 : 16, 8, 16, 8),
       child: Row(
         children: [
+          if (menuVar) const KabukMenuButonu(),
           if (geriVar) ...[
             IconButton(
               tooltip: 'Geri',

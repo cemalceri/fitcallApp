@@ -6,6 +6,7 @@
 // çizilen başlıklarda bu bant.
 
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -249,10 +250,10 @@ class BaslikCipi extends StatelessWidget {
   }
 }
 
-/// Kabuk sekmelerinin (Raporlar, Antrenörler…) başlık bandı: solda sayfa
-/// adı, sağda bağlam bilgisi ([BaslikKapsulu]), altında tam genişlik
-/// [BaslikSecici]. Açıklama satırı bilerek yok: sekme adı ve alt bardaki
-/// simge yeterli, bant kısa kalsın.
+/// Kabuk sekmelerinin (Raporlar, Antrenörler…) başlık bandı: solda menü
+/// butonu ([KabukMenuButonu]) ve sayfa adı, sağda bağlam bilgisi
+/// ([BaslikKapsulu]), altında tam genişlik [BaslikSecici]. Açıklama satırı
+/// bilerek yok: sekme adı ve alt bardaki simge yeterli, bant kısa kalsın.
 class SekmeBasligi extends StatelessWidget {
   final String baslik;
   final Widget? sag;
@@ -267,16 +268,19 @@ class SekmeBasligi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final menuVar = KabukMenusu.of(context) != null;
     return BaslikBandi(
-      padding: const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.s, Bosluk.l, 14),
+      padding: EdgeInsets.fromLTRB(
+          menuVar ? Bosluk.s : Bosluk.l, Bosluk.s, Bosluk.l, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ConstrainedBox(
-            // Dashboard'daki 44'lük ikon butonlarıyla aynı satır yüksekliği.
+            // Ana sayfadaki 44'lük ikon butonlarıyla aynı satır yüksekliği.
             constraints: const BoxConstraints(minHeight: 44),
             child: Row(
               children: [
+                const KabukMenuButonu(),
                 Expanded(
                   child: Text(
                     baslik,

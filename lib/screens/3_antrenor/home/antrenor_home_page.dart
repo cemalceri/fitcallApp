@@ -10,11 +10,11 @@ import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:flutter/material.dart';
 
 // Widgets
 import 'package:fitcall/models/3_antrenor/gunluk_ozet_model.dart';
-import 'widgets/antrenor_drawer.dart';
 import 'widgets/home_header.dart';
 import 'widgets/gunluk_kokpit_card.dart';
 import 'widgets/next_lesson_card.dart';
@@ -29,8 +29,6 @@ class AntrenorHomePage extends StatefulWidget {
 }
 
 class _AntrenorHomePageState extends State<AntrenorHomePage> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   // State
   bool _isLoading = true;
   bool _hasMultipleProfiles = false;
@@ -184,9 +182,8 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Sol menü kabukta (AntrenorKabuk); her sekmeden açılır.
     return Scaffold(
-      key: _scaffoldKey,
-      drawer: AntrenorDrawer(antrenorAdi: _antrenorAdi),
       // Başlık bandı içerikle kayar; durum çubuğunun arkası başlık renginde
       // sabit kalır (RenkliDurumCubugu).
       body: RenkliDurumCubugu(
@@ -206,7 +203,7 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
                   child: HomeHeader(
                     antrenorAdi: _antrenorAdi,
                     hasMultipleProfiles: _hasMultipleProfiles,
-                    onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                    onMenuTap: KabukMenusu.of(context),
                   ),
                 ),
               ),

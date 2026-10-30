@@ -77,8 +77,8 @@ class YoneticiDrawer extends StatelessWidget {
                   ),
                   const YanMenuBolumu('Panolar'),
                   YanMenuOgesi(
-                    ikon: Icons.dashboard_rounded,
-                    baslik: 'Dashboard',
+                    ikon: Icons.home_rounded,
+                    baslik: 'Ana Sayfa',
                     aktif: aktifSekme == 0,
                     onTap: () => _sekme(context, 0),
                   ),

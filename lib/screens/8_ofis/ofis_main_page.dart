@@ -18,6 +18,7 @@
 
 import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/8_ofis/ana_sayfa/ofis_ana_sayfa_page.dart';
 import 'package:fitcall/screens/8_ofis/dersler/ofis_dersler_page.dart';
 import 'package:fitcall/screens/8_ofis/program/ofis_program_page.dart';
@@ -127,9 +128,13 @@ class _OfisMainPageState extends State<OfisMainPage>
           onTabSelected: _goTab,
           aktifSekme: _selectedIndex,
         ),
-        body: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
+        // Menü her sekmenin başlığından açılır (KabukMenuButonu).
+        body: KabukMenusu(
+          menuyuAc: () => _scaffoldKey.currentState?.openDrawer(),
+          child: IndexedStack(
+            index: _selectedIndex,
+            children: _pages,
+          ),
         ),
         bottomNavigationBar: OfisBottomBar(
           selectedIndex: _selectedIndex,

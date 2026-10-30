@@ -3,6 +3,7 @@
 
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/screens/2_uye/takvim/widgets/ders_degerlendirme_popup.dart';
@@ -249,6 +250,8 @@ class _DersListesiPageState extends State<DersListesiPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // Sekmeyken kabuğun menüsü; itilmiş sayfada AppBar geri okunu koyar.
+        leading: kabukMenuLeading(context),
         title: const Text('Derslerim'),
         actions: [
           // Ajanda / Hafta anahtarı — ajanda "ne zaman", ızgara "günüm nasıl"

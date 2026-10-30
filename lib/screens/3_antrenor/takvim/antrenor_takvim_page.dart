@@ -4,6 +4,7 @@ import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/cancelled_lesson_info_dialog.dart';
@@ -327,6 +328,8 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
 
     return Scaffold(
       appBar: AppBar(
+        // Sekmeyken kabuğun menüsü; itilmiş sayfada AppBar geri okunu koyar.
+        leading: kabukMenuLeading(context),
         title: const Text('Antrenör Takvimi'),
         actions: [
           // Tüm antrenörlerin salt-okunur programı; seçili gün taşınır.

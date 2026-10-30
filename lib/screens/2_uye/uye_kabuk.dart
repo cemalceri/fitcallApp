@@ -1,14 +1,18 @@
 // lib/screens/2_uye/uye_kabuk.dart
 
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/models/1_common/event/event_model.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
 import 'package:fitcall/screens/1_common/widgets/erisim_kisitli.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/2_uye/home/uye_home_page.dart';
+import 'package:fitcall/screens/2_uye/home/widgets/uye_drawer.dart';
 import 'package:fitcall/screens/2_uye/profil/profil_page.dart';
 import 'package:fitcall/screens/2_uye/takvim/uye_takvim_page.dart';
 import 'package:fitcall/screens/6_muhasebe/muhasebe_page.dart';
+import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 
@@ -21,6 +25,9 @@ import 'package:flutter/material.dart';
 /// Ana hesap zorunluluğu: rota guard'ı (`myRouteGenerator`) yalnız
 /// `Navigator` üzerinden geçen açılışlarda çalışır; sekme geçişi Navigator
 /// kullanmadığı için Hareketler/Hesabım sekmelerinin kontrolü burada yapılır.
+///
+/// Sol menü de kabukta: her sekmenin başlığından ([KabukMenuButonu]) ve
+/// kenardan kaydırarak açılır; yalnız ana sayfaya bağlı değil.
 class UyeKabuk extends StatefulWidget {
   /// Açılışta seçili sekme (bildirim yönlendirmeleri için).
   final int baslangicSekmesi;
@@ -32,7 +39,14 @@ class UyeKabuk extends StatefulWidget {
 }
 
 class _UyeKabukState extends State<UyeKabuk> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   late int _aktif = widget.baslangicSekmesi;
+
+  // Sol menünün bilgileri.
+  String _uyeAdi = '';
+  int? _userId;
+  EventModel? _aktifEvent;
 
   /// Ana hesap mı — cihazdaki profilden asenkron okunuyor, bilinene kadar
   /// null. Varsayılan `true` olduğunda alt profil ilk karelerde Hareketler /
@@ -49,10 +63,31 @@ class _UyeKabukState extends State<UyeKabuk> {
     super.initState();
     _acilanlar.add(_aktif);
     _anaHesapKontrol();
+    _menuBilgileriniYukle();
     // Doğum günü / popup duyurusu — açılış başına en fazla bir tane.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) AcilisPopuplari.calistir(context);
     });
+  }
+
+  Future<void> _menuBilgileriniYukle() async {
+    final uye = await StorageService.uyeBilgileriniGetir();
+    if (uye != null && mounted) setState(() => _uyeAdi = uye.adi);
+    await _aktifEventKontrol();
+  }
+
+  /// Menüdeki "Event / Davet" satırı. Menü her açıldığında tazelenir; event
+  /// sayfasından dönünce de.
+  Future<void> _aktifEventKontrol() async {
+    try {
+      final userId = _userId ?? await StorageService.getUserId();
+      if (userId == null || userId <= 0) return;
+      _userId = userId;
+      final result = await QrCodeApiService.getirEventAktifApi(userId: userId);
+      if (mounted) setState(() => _aktifEvent = result.data);
+    } catch (_) {
+      // Sessizce başarısız ol; satır görünmez.
+    }
   }
 
   Future<void> _anaHesapKontrol() async {
@@ -97,9 +132,22 @@ class _UyeKabukState extends State<UyeKabuk> {
         if (!didPop) setState(() => _aktif = 0);
       },
       child: Scaffold(
-        body: IndexedStack(
-          index: _aktif,
-          children: List.generate(4, _sayfa),
+        key: _scaffoldKey,
+        drawer: UyeDrawer(
+          uyeAdi: _uyeAdi,
+          aktifEvent: _aktifEvent,
+          userId: _userId,
+          onEventReturn: _aktifEventKontrol,
+        ),
+        onDrawerChanged: (acik) {
+          if (acik) _aktifEventKontrol();
+        },
+        body: KabukMenusu(
+          menuyuAc: () => _scaffoldKey.currentState?.openDrawer(),
+          child: IndexedStack(
+            index: _aktif,
+            children: List.generate(4, _sayfa),
+          ),
         ),
         bottomNavigationBar: KabukAltBar(
           aktifIndeks: _aktif,

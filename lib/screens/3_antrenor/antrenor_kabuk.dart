@@ -3,16 +3,20 @@
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_ogrenciler_page.dart';
 import 'package:fitcall/screens/3_antrenor/antrenor_profil_page.dart';
 import 'package:fitcall/screens/3_antrenor/home/antrenor_home_page.dart';
+import 'package:fitcall/screens/3_antrenor/home/widgets/antrenor_drawer.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/antrenor_takvim_page.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 
 /// Antrenörün kalıcı sekme kabuğu — üye kabuğuyla aynı yapı (bkz. `UyeKabuk`).
 ///
 /// Bara sığmayan sayfalar (Eksik Yoklamalar, Çalışma Saatleri, Hakediş)
-/// sol menüde; ana sayfa kartlarından da açılıyorlar.
+/// sol menüde; ana sayfa kartlarından da açılıyorlar. Menü kabukta, her
+/// sekmenin başlığından açılır.
 class AntrenorKabuk extends StatefulWidget {
   final int baslangicSekmesi;
 
@@ -23,17 +27,28 @@ class AntrenorKabuk extends StatefulWidget {
 }
 
 class _AntrenorKabukState extends State<AntrenorKabuk> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   late int _aktif = widget.baslangicSekmesi;
   final Set<int> _acilanlar = {};
+  String _antrenorAdi = '';
 
   @override
   void initState() {
     super.initState();
     _acilanlar.add(_aktif);
+    _adYukle();
     // Doğum günü / popup duyurusu — açılış başına en fazla bir tane.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) AcilisPopuplari.calistir(context);
     });
+  }
+
+  Future<void> _adYukle() async {
+    final antrenor = await StorageService.antrenorBilgileriniGetir();
+    if (antrenor != null && mounted) {
+      setState(() => _antrenorAdi = antrenor.adi);
+    }
   }
 
   Widget _sayfa(int indeks) {
@@ -54,9 +69,14 @@ class _AntrenorKabukState extends State<AntrenorKabuk> {
         if (!didPop) setState(() => _aktif = 0);
       },
       child: Scaffold(
-        body: IndexedStack(
-          index: _aktif,
-          children: List.generate(4, _sayfa),
+        key: _scaffoldKey,
+        drawer: AntrenorDrawer(antrenorAdi: _antrenorAdi),
+        body: KabukMenusu(
+          menuyuAc: () => _scaffoldKey.currentState?.openDrawer(),
+          child: IndexedStack(
+            index: _aktif,
+            children: List.generate(4, _sayfa),
+          ),
         ),
         bottomNavigationBar: KabukAltBar(
           aktifIndeks: _aktif,

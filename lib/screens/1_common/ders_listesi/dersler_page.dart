@@ -9,6 +9,7 @@ import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_liste_item.da
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:intl/intl.dart';
 import 'package:fitcall/common/tarih_util.dart';
@@ -125,17 +126,27 @@ class _DerslerPageState extends State<DerslerPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             BaslikBandi(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+              padding: EdgeInsets.fromLTRB(
+                  KabukMenusu.of(context) != null ? 8 : 16, 12, 16, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Dersler',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: g.onBaslik,
-                    ),
+                  Row(
+                    children: [
+                      const KabukMenuButonu(),
+                      Expanded(
+                        child: Text(
+                          'Dersler',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: g.onBaslik,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 14),
                   // Tarih seçici
