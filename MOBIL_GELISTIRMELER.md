@@ -31,13 +31,15 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 ## 🔴 Açık işler
 
 ### Güvenlik (2026-10-22 incelemesi)
-- **Repodaki sırlar — anahtar yenileme (yapılacak):** prod'da `SECRET_KEY` config var'ı yok; JWT imzası
-  git'teki yedek değerle atılıyor, yani repoyu gören biri istediği kullanıcı adına token üretebilir.
-  `settings.py`'de ayrıca Gmail, VatanSMS, Param yedek değerleri; git'te
-  `eventcalendar/keys/serviceAccountKey.json`. Sıra: anahtarları yenile → Heroku config var'a koy → yedek
-  değerleri sil (env yoksa uygulama açılmasın) → anahtar dosyasını git'ten çıkar. `SECRET_KEY` değişince
+- **Repodaki sırlar — anahtar yenileme (yapılacak):** 2026-10-28'de `SECRET_KEY`, VatanSMS ve Firebase
+  servis hesabı anahtarı Heroku config var'ına taşındı, `settings.py` yedekleri silindi, anahtar dosyası
+  repodan çıktı. Değerler AYNI kaldı ve git geçmişinde duruyor: repoyu gören biri hâlâ JWT üretebilir.
+  Kalan: `SECRET_KEY` ve Firebase anahtarını yenile → config var'ları güncelle. `SECRET_KEY` değişince
   tüm oturumlar düşer ve kart QR'ları (`signing`, aynı anahtar) geçersizleşir: kartlar yeniden üretilmeli.
-- **Firebase App Check (kod hazır 2026-10-28, "log" modunda):** mobil her isteğe `X-Firebase-AppCheck`
+  Eski Firebase anahtarıyla geçerli App Check token'ı da basılabildiği için App Check zorunlu moda bundan
+  önce geçmez.
+- **Firebase App Check (kod hazır 2026-10-28, "log" modunda; branch `app-check` iki repoda, 2026-10-30'da
+  main/master'ın üstüne alındı, AGP 9 ile Android debug derlemesi geçti):** mobil her isteğe `X-Firebase-AppCheck`
   (Android Play Integrity, iOS App Attest; debug derlemede debug sağlayıcı) + `X-Platform` +
   `X-Uygulama-Surumu` ekler (`app_check_service.dart`). Backend `api/core/app_check.py`: `APP_CHECK_MODU`
   `log` (varsayılan, reddetmez) / `zorunlu` / `kapali`; sonuçlar admin → "App Check Sayaçları"nda gün ×
@@ -48,7 +50,8 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
      bkz. CODEMAGIC_KURULUM.md). Emülatör için logdaki debug token'ı konsola ekle.
   2. Backend deploy (`auths.0014` göçü) → App Check'li sürüm yayını.
   3. Sayaçlarda güncel sürümde `yok`/`gecersiz` kalmadığında (GMS'siz Huawei, Play Integrity günlük
-     10.000 kotası burada görünür) zorunlu güncelleme aç, sonra Heroku'da `APP_CHECK_MODU=zorunlu`.
+     10.000 kotası burada görünür) zorunlu güncelleme aç, sonra (anahtar yenileme bittiyse) Heroku'da
+     `APP_CHECK_MODU=zorunlu`.
   root/Frida tespiti için ücretsiz freeRASP sonra eklenebilir.
 
 ### Doğrulanacaklar
