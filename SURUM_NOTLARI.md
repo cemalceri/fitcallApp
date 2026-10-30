@@ -63,10 +63,11 @@ listede.
 
 ### Yayın sırası (bu sürüme özel)
 
-1. Backend deploy: App Check ara katmanı "log" modunda gelir (`auths.0014`), hiçbir isteği reddetmez;
-   eski sürümler etkilenmez. Sürüm notu `yayinda=False` gelir.
-2. Android AGP 9 + edge-to-edge (`FlutterFragmentActivity`) bu sürümde ilk kez çıkıyor: önce dahili
-   test kanalında güncelleme sonrası oturumun korunduğunu dene, sonra üretime al.
+1. Backend deploy (yapıldı 2026-10-30, Heroku v350): App Check ara katmanı "log" modunda
+   (`auths.0014`), hiçbir isteği reddetmez; eski sürümler etkilenmez. Sürüm notu `yayinda=False`.
+2. Tag → doğrudan üretim (kullanıcı kararı: dahili test yok, zorunlu güncelleme yok). Android AGP 9 +
+   edge-to-edge (`FlutterFragmentActivity`) bu sürümde ilk kez çıkıyor; güncelleme sonrası oturum
+   düşerse ilk işaret kullanıcıların yeniden giriş yapması olur.
 3. Mağazada canlı görülünce admin'den 3.14.0 sürüm notunun `yayinda`'sını aç.
 
 ### Teknik
