@@ -62,6 +62,13 @@ class UyeDrawer extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
                   const YanMenuBolumu('Üyeliğim'),
+                  // Talepler listesi; yeni talep sağ alttaki düğmeden.
+                  YanMenuOgesi(
+                    ikon: Icons.add_task_rounded,
+                    baslik: 'Ders Talebi ve Kort Kiralama',
+                    onTap: () =>
+                        _git(context, routeEnums[SayfaAdi.uyeTaleplerim]!),
+                  ),
                   YanMenuOgesi(
                     ikon: Icons.card_membership_rounded,
                     baslik: 'Üyelik & Paket Bilgilerim',

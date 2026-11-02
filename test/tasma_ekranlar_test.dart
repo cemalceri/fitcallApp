@@ -12,6 +12,15 @@
 
 import 'dart:convert';
 
+import 'package:fitcall/models/10_ofis/ofis_uye_talep_models.dart';
+import 'package:fitcall/models/2_uye/uye_talep_models.dart';
+import 'package:fitcall/screens/2_uye/talep/widgets/talep_adimlari.dart';
+import 'package:fitcall/screens/2_uye/talep/widgets/taleplerim_gorunumu.dart';
+import 'package:fitcall/screens/3_antrenor/talep_sorulari/antrenor_talep_sorulari_page.dart';
+import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/widgets/ofis_talepler_gorunumu.dart';
+import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/widgets/oneri_formu.dart';
+import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/widgets/uye_talep_detay_gorunumu.dart';
+
 import 'package:fitcall/models/6_muhasebe/banka_hesabi_model.dart';
 import 'package:fitcall/models/6_muhasebe/dekont_model.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/banka_hesabi_karti.dart';
@@ -530,7 +539,384 @@ DersListeItem _dersListeItem(
       'aciklama': 'Açıklama',
     });
 
+// ---------------------------------------------------------------- üye talebi
+TalepBaslangic _talepBaslangic({bool kiminIcin = true}) =>
+    TalepBaslangic.fromJson({
+      'acik_mi': true,
+      'kimin_icin': kiminIcin
+          ? [
+              {'uye_id': 1, 'ad': 'Zeynep Kaya'},
+              {'uye_id': 2, 'ad': 'Can Kaya Arslanoğulları'},
+            ]
+          : [],
+      'uye_id': 1,
+      'uye_adi': 'Zeynep Kaya',
+      'secenekler': [
+        {
+          'tur': 'TELAFI',
+          'baslik': 'Telafi dersi',
+          'uygun': true,
+          'aciklama': '60 dk · son gün 12.11.2026',
+          'sabit_sure_dk': 60
+        },
+        {
+          'tur': 'PAKET',
+          'baslik': 'Paketim',
+          'uygun': true,
+          'aciklama': 'Yetişkin-paket-8li · 4 ders kaldı · son gün 30.12.2026'
+        },
+        {
+          'tur': 'TEK_DERS',
+          'baslik': 'Tek seferlik ders',
+          'uygun': true,
+          'aciklama': 'Paket olmadan, yalnız bu dersi ödersin'
+        },
+        {
+          'tur': 'KORT',
+          'baslik': 'Kort kiralama',
+          'uygun': false,
+          'aciklama': 'Şu an kapalı'
+        },
+      ],
+      'hocalar': [
+        {'id': 1, 'ad': 'Mamadou Diallo Uzunsoyadlı'},
+        {'id': 2, 'ad': 'Burak Aktaş'},
+      ],
+      'sureler_dk': [60, 90, 120],
+      'max_kisi': 4,
+      'esneme_saat': 1,
+      'acik_talep_sayisi': 1,
+      'max_acik': 3,
+      'mesai_notu': "Ofis şu an kapalı, yarın 09:00'da bakacak.",
+      'iptal_kurali':
+          'Onaylanan ders normal bir derstir; iptal ve erteleme bugünkü ders kurallarıyla yapılır.',
+    });
+
+TalepHarita _talepHarita() => TalepHarita.fromJson({
+      'hafta_baslangic': '2026-11-02',
+      'onceki_hafta': false,
+      'sonraki_hafta': true,
+      'sure_dk': 60,
+      'gunler': [
+        for (var g = 0; g < 7; g++)
+          {
+            'tarih': '2026-11-0${g + 2}',
+            'gun_adi': 'Gün',
+            'saatler': [
+              for (var s = 8; s < 22; s++) ...[
+                {
+                  'saat': '${s.toString().padLeft(2, '0')}:00',
+                  'durum': const ['uygun', 'dolu', 'benim', 'kapali'][(s + g) % 4]
+                },
+                {'saat': '${s.toString().padLeft(2, '0')}:30', 'durum': 'uygun'},
+              ],
+            ],
+          },
+      ],
+    });
+
+TalepSecenekleri _talepSecenekleri() => TalepSecenekleri.fromJson({
+      'baslangic_tarih_saat': '2026-11-05T17:00:00+03:00',
+      'bitis_tarih_saat': '2026-11-05T18:30:00+03:00',
+      'sure_dk': 90,
+      'ders_tanimi': '5 Kasım Perşembe 17:00-18:30',
+      'hocalar': [
+        {
+          'id': 1,
+          'ad': 'Mamadou Diallo Uzunsoyadlı',
+          'tahmin': {
+            'metin': 'Paketinden 1,5 ders düşer.',
+            'paket_yetmiyor': true,
+            'uyari':
+                'Paketinde 1 ders kaldı, bu ders 1,5 ders. Eksik 0,5 ders için yeni paket açılır, paket ücreti hesabına yazılır.'
+          }
+        },
+      ],
+      'kortlar': [
+        {'id': 3, 'adi': 'İkili Kapalı Kort A'},
+      ],
+      'fark_etmez_tahmin': {'metin': 'Paketinden 1,5 ders düşer.'},
+      'uye_bos': true,
+    });
+
+UyeTalep _uyeTalep({String durum = 'CEVAP_BEKLIYOR'}) => UyeTalep.fromJson({
+      'id': 7,
+      'tur': 'PAKET',
+      'tur_adi': 'Paketim',
+      'durum': durum == 'CEVAP_BEKLIYOR' ? 'UYEDE' : 'REDDEDILDI',
+      'uye_durum': durum,
+      'durum_metni':
+          durum == 'CEVAP_BEKLIYOR' ? 'Cevabını bekliyor' : 'Ofis reddetti',
+      'uye_id': 1,
+      'uye_adi': 'Can Kaya Arslanoğulları',
+      'antrenor_id': 1,
+      'antrenor_adi': 'Mamadou Diallo Uzunsoyadlı',
+      'kort_adi': 'Fark etmez',
+      'baslangic_tarih_saat': '2026-11-05T17:00:00+03:00',
+      'bitis_tarih_saat': '2026-11-05T18:30:00+03:00',
+      'sure_dk': 90,
+      'ders_tanimi': '5 Kasım Perşembe 17:00-18:30',
+      'esneme': true,
+      'aciklama': 'Forehand ve servis çalışmak istiyorum, mümkünse kapalı kort.',
+      'ozet': 'Paketinden 1,5 ders düşer.',
+      'red_nedeni': durum == 'KAPANDI' ? 'O gün kortlar turnuvada.' : '',
+      'oneri': durum == 'CEVAP_BEKLIYOR'
+          ? {
+              'baslangic_tarih_saat': '2026-11-05T18:00:00+03:00',
+              'bitis_tarih_saat': '2026-11-05T19:30:00+03:00',
+              'sure_dk': 90,
+              'ders_tanimi':
+                  '5 Kasım Perşembe 18:00-19:30 · Tekli Kapalı · Burak Aktaş',
+              'notu': '17:00 dolu, 18:00 olur mu?',
+              'son_cevap_metni': 'yarın 09:00',
+              'ekstra_ucret_metni': 'Ekstra ücret: 200 ₺',
+              'ozet': 'Paketinden 1,5 ders düşer.',
+            }
+          : null,
+      'geri_cekilebilir': durum == 'CEVAP_BEKLIYOR',
+      'duzenlenebilir': false,
+    });
+
+OfisUyeTalep _ofisTalep({String sekme = 'bende'}) => OfisUyeTalep.fromJson({
+      'id': 7,
+      'tur': 'KORT',
+      'tur_adi': 'Kort kiralama',
+      'durum': sekme == 'bende' ? 'BEKLIYOR' : 'UYEDE',
+      'sekme': sekme,
+      'etiket_metni': sekme == 'bende' ? 'Hoca cevap vermedi' : 'Üyede',
+      'uye_adi': 'Deniz Ayşegül Arslanoğulları',
+      'antrenor_adi': 'Antrenörsüz',
+      'kort_adi': 'Fark etmez',
+      'kort_fark_etmez': true,
+      'baslangic_tarih_saat': '2026-11-05T17:00:00+03:00',
+      'bitis_tarih_saat': '2026-11-05T18:30:00+03:00',
+      'sure_dk': 90,
+      'ders_tanimi': '5 Kasım Perşembe 17:00-18:30',
+      'esneme': true,
+      'kisi_sayisi': 4,
+      'aciklama': 'Arkadaşlarla çiftler oynayacağız.',
+      'hak_durumu': '4 kişi · hesap: Deniz Ayşegül Arslanoğulları',
+      'hak_uygun': true,
+      'acil': true,
+      'bekleme_dk': 190,
+      'ayni_saate': 2,
+      'inceleyen_adi': 'Selin Ofis',
+      'cakisma': 'Bu saatte boş kort kalmadı.',
+      'oneri': sekme == 'beklemede'
+          ? {
+              'baslangic_tarih_saat': '2026-11-05T18:00:00+03:00',
+              'ders_tanimi': '5 Kasım 18:00-19:30 · Tekli Kapalı',
+              'son_cevap_metni': 'yarın 09:00',
+              'notu': 'Olur mu?'
+            }
+          : null,
+      'eylemler': {
+        'hocaya_sor': false,
+        'telefon_onay': false,
+        'kaydet': true,
+        'oneri': true,
+        'reddet': true,
+        'oneri_geri_cek': sekme == 'beklemede'
+      },
+    });
+
+OfisTalepDetay _ofisDetay() {
+  final t = _ofisTalep();
+  return OfisTalepDetay(
+    talep: t,
+    secimBaslangic: t.baslangic,
+    secimSureDk: 90,
+    hocalar: const [OfisSecimOgesi(id: 1, ad: 'Mamadou Diallo', bos: true)],
+    kortlar: const [
+      OfisSecimOgesi(id: 3, ad: 'İkili Kapalı Kort A', bos: true),
+      OfisSecimOgesi(id: 4, ad: 'Ek Kort', bos: false),
+    ],
+    surelerDk: const [60, 90, 120],
+  );
+}
+
+void _uyeTalebiTestleri() {
+  group('Üye ders / kort kiralama talebi', () {
+    tasmaTesti(
+      'TalepAdim1Gorunumu',
+      () => TalepAdim1Gorunumu(
+        veri: _talepBaslangic(),
+        seciliTur: 'PAKET',
+        seciliUyeId: 1,
+        onUyeSec: (_) {},
+        onTurSec: (_) {},
+        onDevam: () {},
+        onTaleplerim: () {},
+      ),
+    );
+    tasmaTesti(
+      'TalepAdim2Gorunumu (harita)',
+      () => TalepAdim2Gorunumu(
+        tur: 'PAKET',
+        veri: _talepBaslangic(),
+        sureDk: 90,
+        antrenorId: 1,
+        harita: _talepHarita(),
+        secili: DateTime(2026, 11, 3, 8, 30),
+        onSure: (_) {},
+        onHoca: (_) {},
+        onHafta: (_) {},
+        onSaatSec: (_) {},
+        onYenidenDene: () {},
+        onDevam: () {},
+      ),
+    );
+    tasmaTesti(
+      'TalepAdim3Gorunumu (paket yetmiyor)',
+      () => TalepAdim3Gorunumu(
+        tur: 'PAKET',
+        veri: _talepBaslangic(),
+        secenekler: _talepSecenekleri(),
+        antrenorId: 1,
+        kortId: 3,
+        esneme: true,
+        kisiSayisi: 1,
+        aciklama: TextEditingController(text: 'Forehand çalışmak istiyorum'),
+        gonderiliyor: false,
+        onHoca: (_) {},
+        onKort: (_) {},
+        onEsneme: (_) {},
+        onKisi: (_) {},
+        onYenidenDene: () {},
+        onGonder: () {},
+      ),
+    );
+    tasmaTesti(
+      'TalepAdim3Gorunumu (kort)',
+      () => TalepAdim3Gorunumu(
+        tur: 'KORT',
+        veri: _talepBaslangic(kiminIcin: false),
+        secenekler: _talepSecenekleri(),
+        antrenorId: null,
+        kortId: null,
+        esneme: false,
+        kisiSayisi: 4,
+        aciklama: TextEditingController(),
+        gonderiliyor: true,
+        onHoca: (_) {},
+        onKort: (_) {},
+        onEsneme: (_) {},
+        onKisi: (_) {},
+        onYenidenDene: () {},
+        onGonder: () {},
+      ),
+    );
+    tasmaTesti(
+      'TaleplerimGorunumu',
+      () => TaleplerimGorunumu(
+        talepler: [_uyeTalep(), _uyeTalep(durum: 'KAPANDI')],
+        onYenile: () async {},
+        onYenidenDene: () {},
+        onAc: (_) {},
+        onYeni: () {},
+      ),
+    );
+    tasmaTesti(
+      'TalepDetayGorunumu (öneri)',
+      () => TalepDetayGorunumu(
+        talep: _uyeTalep(),
+        isleniyor: false,
+        onKabul: () {},
+        onReddet: () {},
+        onGeriCek: () {},
+        onDuzenle: () {},
+        onBenzeri: () {},
+      ),
+    );
+    tasmaTesti(
+      'OfisTaleplerGorunumu (bende)',
+      () => OfisTaleplerGorunumu(
+        sekme: 'bende',
+        liste: OfisTalepListesi(
+            talepler: [_ofisTalep()],
+            antrenorTalepleri: [ornekTalep()],
+            bendeSayisi: 12,
+            beklemedeSayisi: 3),
+        onSekme: (_) {},
+        onYenile: () async {},
+        onYenidenDene: () {},
+        onUyeTalepAc: (_) {},
+        onAra: (_) {},
+        onKayitOlustur: (_) {},
+        onReddet: (_) {},
+        onProgramdaGoster: (_) {},
+        onGeri: () {},
+      ),
+    );
+    tasmaTesti(
+      'OfisTaleplerGorunumu (kapanan, arama)',
+      () => OfisTaleplerGorunumu(
+        sekme: 'kapanan',
+        liste: OfisTalepListesi(talepler: [_ofisTalep(sekme: 'beklemede')]),
+        aramaKontrol: TextEditingController(text: 'Deniz'),
+        onSekme: (_) {},
+        onYenile: () async {},
+        onYenidenDene: () {},
+        onUyeTalepAc: (_) {},
+        onAra: (_) {},
+        onKayitOlustur: (_) {},
+        onReddet: (_) {},
+        onProgramdaGoster: (_) {},
+      ),
+    );
+    tasmaTesti(
+      'OfisUyeTalepDetayGorunumu',
+      () => OfisUyeTalepDetayGorunumu(
+        detay: _ofisDetay(),
+        isleniyor: false,
+        onHocayaSor: () {},
+        onTelefonOnay: () {},
+        onKaydet: () {},
+        onOneri: () {},
+        onReddet: () {},
+        onOneriGeriCek: () {},
+      ),
+    );
+    tasmaTesti(
+      'OneriFormuSheet',
+      () => Material(
+        child: OneriFormuSheet(
+            detay: _ofisDetay(), bosListeGetir: (_, __) async => _ofisDetay()),
+      ),
+    );
+    tasmaTesti('KayitSecimSheet',
+        () => Material(child: KayitSecimSheet(detay: _ofisDetay())));
+    tasmaTesti(
+      'HocaSorulariGorunumu',
+      () => HocaSorulariGorunumu(
+        sorular: [
+          HocaTalepSorusu(
+            id: 1,
+            turAdi: 'Paketim',
+            uyeAdi: 'Deniz Ayşegül Arslanoğulları',
+            baslangic: DateTime(2026, 11, 5, 17),
+            dersTanimi: '5 Kasım Perşembe 17:00-18:30 · İkili Kapalı Kort A',
+            aciklama: 'Servis çalışmak istiyorum.',
+            sonCevapMetni: 'bugün 19:00',
+          ),
+          HocaTalepSorusu(
+              id: 2,
+              baslangic: DateTime(2026, 11, 6, 9),
+              dersTanimi: '6 Kasım 09:00-10:00',
+              bekliyor: false,
+              cevap: 'HAYIR',
+              hocaNotu: 'O saatte turnuvadayım'),
+        ],
+        onYenile: () async {},
+        onEvet: (_) {},
+        onHayir: (_) {},
+      ),
+    );
+  });
+}
+
 void main() {
+  _uyeTalebiTestleri();
   // Renk temaları: kimlik yüzeyleri ve yeni ortak bileşenler. tasmaTesti her
   // bileşeni ayrıca uç takım temalarında da çizer (bkz. kUcTemalar).
   group('Renk temaları ve kimlik yüzeyleri', () {

@@ -91,6 +91,32 @@ class NotificationRouter {
       return;
     }
 
+    // 4b) Üye ders / kort kiralama talebi: üyeye Taleplerim, hocaya soruları
+    if (notification.actionScreen == 'uye_taleplerim') {
+      nav.pushNamed(routeEnums[SayfaAdi.uyeTaleplerim]!);
+      NotificationFCMService.instance.notifyDismissed();
+      return;
+    }
+    if (notification.actionScreen == 'antrenor_talep_sorulari') {
+      // "Yeni ders" (talep derse dönüştü): soruları değil takvimde o günü aç.
+      final params = notification.actionParams;
+      if (notification.displayData?['olay'] == 'ders_eklendi' &&
+          params?['tarih'] != null) {
+        nav.pushNamed(
+          routeEnums[SayfaAdi.antrenorDersler]!,
+          arguments: {
+            'tarih': params!['tarih'],
+            if (params['ders_id'] != null) 'ders_id': params['ders_id'],
+          },
+        );
+        NotificationFCMService.instance.notifyDismissed();
+        return;
+      }
+      nav.pushNamed(routeEnums[SayfaAdi.antrenorTalepSorulari]!);
+      NotificationFCMService.instance.notifyDismissed();
+      return;
+    }
+
     // 5) Ofise dekont bildirimi: üye detayını aç (ofis para görmez; dekont
     // web'deki Dekontlar sayfasında işlenir, mobilde ekranı yok).
     final dekontUyeId = ofisDekontUyeId(notification);

@@ -11,7 +11,7 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 | | |
 |---|---|
 | Mobil | **3.13.1+47** iki mağazada yayında. **3.14.0+48 tag'lendi** (2026-10-30; menü, geçmiş ders etiketleri, App Check, AGP 9): doğrudan üretim, zorunlu güncelleme yok; backend Heroku v350'de canlı. Mağazada görülünce admin'den sürüm notu `yayinda`. |
-| Testler | `flutter test` **3634 geçiyor**, `flutter analyze` temiz; backend `guvenlik-guncellemeleri` **1572 geçiyor** (yerel Postgres, 2026-10-23). |
+| Testler | `flutter test` **3831 geçiyor** (2026-10-31, dal `uye-ders-talebi`; main'de 3634), `flutter analyze` temiz; backend `guvenlik-guncellemeleri` **1572 geçiyor** (yerel Postgres, 2026-10-23). |
 | Backend | Canlı, GitHub master canlıyla eşit. Son migration'lar `0097_ders_kayit_talebi`, `0098_dekont`, `0099_uye_borc_kontrol`. Canlıda bir banka hesabı girili (işletme 1). |
 | Mağaza | 3.13.0 mağaza metni yalnız 3.12.0'dan sonraki üye yenilikleri. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20, turuncu tonu değişti — 2.3.3 riski kabul). |
 
@@ -29,6 +29,26 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 ---
 
 ## 🔴 Açık işler
+
+### Üye ders / kort kiralama talebi (2026-10-31; backend CANLI Heroku v351, mobil dal `uye-ders-talebi` commit'siz)
+- Kod tamam: üye sihirbazı + Taleplerim (`2_uye/talep/`; giriş yan menüde "Ders Talebi ve Kort Kiralama", ana sayfada yok), ofis sekmeli Talepler + detay/öneri
+  (`8_ofis/ders_kayit_talepleri/`), hoca "Ofis Soruyor" (`3_antrenor/talep_sorulari/`), web aynı sayfada.
+  Kurallar backend `parametre` tablosunda (`uye_talep_*`). Kullanım kılavuzu: `kilavuz/` (PDF, commit'siz).
+- Hoca katsayısı antrenör kaydında (`ozel_ders_katsayisi`, backend 0104, master `75e77da`, push/deploy yok):
+  yalnız talepte kullanılır; ilk değer geçmiş paket/tek ders derslerinden (Onur Binay 2, diğerleri 1).
+- Tek seferlik ders ürünü şimdilik her üyede "Yetişkin-tekders-tekli" (seviyeye göre seçim istenmedi);
+  kort kiralama "KortKira-1Saat".
+- Mobil `uye-ders-talebi` dalında commit'li, push yok (`kilavuz/` PDF'i commit'siz). Backend telafi bildirimi düzeltmesi
+  (talepten gelen telafili derste ayrı "Telafi kullanıldı" gitmez) master `0b08a70`, GitHub'da, Heroku'da
+  DEĞİL; kullanıcı: sonraki kurulumla gider.
+- Yayından önce (kullanıcı): prod admin'de `uye_talep_hoca_idleri`, `uye_talep_kort_idleri` ve
+  `uye_talep_tek_ders_urun_idleri` doldurulmalı (boş = tümü; salonlar, branş hocaları, pilates ürünleri de
+  çıkar), `uye_talep_ofis_calisma_saatleri` kontrol, Heroku Scheduler'a 10 dakikada bir
+  `python manage.py uye_talep_zamanlayici`. Prod parametre değerleri doğrulanmadı (`heroku run` bu
+  makineden zaman aşımı).
+- 2026-10-31 üye/ofis/antrenör rol ajanlarıyla prod kopyasında denendi; bulunan hatalar düzeltildi.
+  Bilinçli kararlar: öneri saati hocaya uygulamadan sorulmaz (ofis "hocayla konuştum" işaretler), talep
+  detayında zaman çizgisi yok, profile bağlı tüm kullanıcılara bildirim gider.
 
 ### Güvenlik (2026-10-22 incelemesi)
 - **Repodaki sırlar — anahtar yenileme (yapılacak):** 2026-10-28'de `SECRET_KEY`, VatanSMS ve Firebase

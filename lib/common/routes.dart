@@ -44,6 +44,9 @@ import 'package:fitcall/screens/1_common/1_notification/notification_page.dart';
 import 'package:fitcall/screens/1_common/ayarlar/ayarlar_page.dart';
 import 'package:fitcall/screens/3_antrenor/program/antrenor_program_page.dart';
 import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/ofis_ders_kayit_talepleri_page.dart';
+import 'package:fitcall/screens/2_uye/talep/taleplerim_page.dart';
+import 'package:fitcall/screens/2_uye/talep/uye_talep_page.dart';
+import 'package:fitcall/screens/3_antrenor/talep_sorulari/antrenor_talep_sorulari_page.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 
 /// Uygulama genelinde kullanacağımız sayfaların enum değerleri
@@ -80,6 +83,9 @@ enum SayfaAdi {
   ofisProgram,
   ofisDersKayitTalepleri,
   ofisUyeler,
+  uyeTalepOlustur,
+  uyeTaleplerim,
+  antrenorTalepSorulari,
   yoneticiDuyurular,
   ofisDuyurular,
   dersTeyit,
@@ -122,6 +128,9 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.ofisProgram: '/ofisProgram',
   SayfaAdi.ofisDersKayitTalepleri: '/ofisDersKayitTalepleri',
   SayfaAdi.ofisUyeler: '/ofisUyeler',
+  SayfaAdi.uyeTalepOlustur: '/uyeTalep',
+  SayfaAdi.uyeTaleplerim: '/uyeTaleplerim',
+  SayfaAdi.antrenorTalepSorulari: '/antrenorTalepSorulari',
   SayfaAdi.yoneticiDuyurular: '/yoneticiDuyurular',
   SayfaAdi.ofisDuyurular: '/ofisDuyurular',
   SayfaAdi.dersTeyit: '/dersTeyit',
@@ -168,6 +177,11 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.ofisDersKayitTalepleri]!: (c) =>
       const OfisDersKayitTalepleriPage(),
   routeEnums[SayfaAdi.ofisUyeler]!: (c) => const OfisUyelerPage(),
+  // Düzenle / Benzerini aç: taslak route argümanıyla gelir (UyeTalepPage okur).
+  routeEnums[SayfaAdi.uyeTalepOlustur]!: (c) => const UyeTalepPage(),
+  routeEnums[SayfaAdi.uyeTaleplerim]!: (c) => const TaleplerimPage(),
+  routeEnums[SayfaAdi.antrenorTalepSorulari]!: (c) =>
+      const AntrenorTalepSorulariPage(),
   // Aynı ekran; kabuklar yalnız üye satırının açtığı detay sayfasında ayrılır.
   routeEnums[SayfaAdi.yoneticiDuyurular]!: (c) => DuyuruYonetimPage(
         uyeDetayAc: (ctx, p) => Navigator.of(ctx).push(MaterialPageRoute(
