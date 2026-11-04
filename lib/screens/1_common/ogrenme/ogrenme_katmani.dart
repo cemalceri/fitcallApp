@@ -81,7 +81,9 @@ class _OgrenmeKatmaniState extends State<OgrenmeKatmani>
     _klavye = MediaQuery.viewInsetsOf(context).bottom;
     final delik = _modu.delik?.inflate(_pay);
     final adim = _modu.adim;
-    final bitis = _modu.durum == RehberDurumu.bitis;
+    final durum = _modu.durum;
+    final bitis = durum == RehberDurumu.bitis;
+    final donus = durum == RehberDurumu.donus;
     return Stack(
       key: _katman,
       fit: StackFit.expand,
@@ -90,13 +92,16 @@ class _OgrenmeKatmaniState extends State<OgrenmeKatmani>
           key: _uygulama,
           child: Listener(onPointerUp: _uygulamayaDokunus, child: widget.child),
         ),
-        if (bitis || (adim != null && delik != null))
+        if (bitis || donus || (adim != null && delik != null))
           AnimatedBuilder(
             animation: _nabiz,
             builder: (context, _) => _Perde(
-              delik: bitis ? null : delik,
+              delik: bitis || donus ? null : delik,
               gecir: adim != null && !adim.kalici,
-              renk: context.cs.scrim.withValues(alpha: 0.55),
+              // Dönüşte ekran görünür ama dokunuş, kapı kalkana kadar yutulur.
+              renk: donus
+                  ? Colors.transparent
+                  : context.cs.scrim.withValues(alpha: 0.55),
               halka: context.cs.primary,
               nabiz: Curves.easeOut.transform(_nabiz.value),
               onDokunus: (delikte) => delikte && adim != null && adim.kalici
@@ -104,7 +109,7 @@ class _OgrenmeKatmaniState extends State<OgrenmeKatmani>
                   : _modu.yanlisDokunus(),
             ),
           ),
-        if (_modu.acik) _panelYeri(context, delik),
+        if (adim != null || bitis) _panelYeri(context, delik),
       ],
     );
   }
@@ -124,9 +129,8 @@ class _OgrenmeKatmaniState extends State<OgrenmeKatmani>
             ? RehberBitisKarti(
                 kural: _modu.gorev!.kural,
                 denendi: _modu.denendi,
-                simdiYap: _modu.gorev!.adimlar.last.kalici,
-                onSimdiYap: _modu.kapat,
-                onKapat: () => _modu.kapat(geriDon: true),
+                donusEtiketi: _modu.gorev!.sayfa.donusEtiketi,
+                onDon: () => _modu.kapat(geriDon: true),
               )
             : RehberAdimPaneli(
                 adim: _modu.adim!,
@@ -252,25 +256,25 @@ class RehberAdimPaneli extends StatelessWidget {
   }
 }
 
-/// Bitiş kartı: kural ve iki seçenek.
+/// Bitiş kartı: kural ve tek çıkış. Denemeden gerçeğe aynı ekranda
+/// geçilmez; kullanıcı rehberin başladığı sayfaya döner, ne yapacaksa orada
+/// kendisi başlatır.
 class RehberBitisKarti extends StatelessWidget {
   final String? kural;
 
   /// Son butona dokunuldu.
   final bool denendi;
 
-  /// Son adım gerçek bir buton mu ("Şimdi yap" gösterilsin mi)?
-  final bool simdiYap;
-  final VoidCallback onSimdiYap;
-  final VoidCallback onKapat;
+  /// Dönüş butonunun adı ("Takvime dön").
+  final String donusEtiketi;
+  final VoidCallback onDon;
 
   const RehberBitisKarti({
     super.key,
     required this.kural,
     required this.denendi,
-    required this.simdiYap,
-    required this.onSimdiYap,
-    required this.onKapat,
+    required this.donusEtiketi,
+    required this.onDon,
   });
 
   @override
@@ -301,20 +305,9 @@ class RehberBitisKarti extends StatelessWidget {
               Text(kural!, style: metin.bodyMedium),
             ],
             const SizedBox(height: Bosluk.l),
-            Wrap(
-              alignment: WrapAlignment.end,
-              spacing: Bosluk.s,
-              runSpacing: Bosluk.s,
-              children: [
-                if (simdiYap)
-                  FilledButton(
-                    // Rehber kapanır, ekran olduğu gibi kalır; gerçek buton
-                    // artık çalışır.
-                    onPressed: onSimdiYap,
-                    child: const Text('Şimdi yap'),
-                  ),
-                OutlinedButton(onPressed: onKapat, child: const Text('Kapat')),
-              ],
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton(onPressed: onDon, child: Text(donusEtiketi)),
             ),
           ],
         ),

@@ -706,6 +706,9 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
               'Zamanında bildirilmeyen dersler sistem tarafından "gerçekleşti" olarak işaretlenmektedir.'),
           const SizedBox(height: 6),
           _buildBilgiMaddesi(
+              'Grup derslerinde diğer katılımcılar geliyorsa ders iptal edilmez.'),
+          const SizedBox(height: 6),
+          _buildBilgiMaddesi(
               'İstisnai hallerde, kort ve antrenör uygunluğu doğrultusunda telafi dersi planlanması için gerekli hassasiyet gösterilecektir; ancak telafi garantisi sunulamamaktadır.'),
           const SizedBox(height: 6),
           _buildBilgiMaddesi(

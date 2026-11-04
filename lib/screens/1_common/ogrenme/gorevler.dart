@@ -40,8 +40,9 @@ const List<OgrenmeGorevi> ogrenmeGorevleri = [
         sonuc: 'ofise ve hocana haber gider',
       ),
     ],
-    kural: 'Dersten en az 24 saat önce bildirirsen hakkın korunur. '
-        'Daha geç bildirirsen ders yapılmış sayılır.',
+    kural: 'Dersten en az 24 saat önce bildirirsen ders hakkın yanmaz. '
+        'Daha geç bildirirsen ders hakkın yanar. '
+        'Grup dersinde diğerleri geliyorsa ders iptal olmaz.',
   ),
 ];
 

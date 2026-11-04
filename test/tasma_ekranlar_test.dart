@@ -2879,9 +2879,8 @@ void main() {
       () => RehberBitisKarti(
         kural: gorev.kural,
         denendi: true,
-        simdiYap: true,
-        onSimdiYap: () {},
-        onKapat: () {},
+        donusEtiketi: gorev.sayfa.donusEtiketi,
+        onDon: () {},
       ),
     );
   });

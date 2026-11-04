@@ -5,6 +5,8 @@
 // yere dokunur, sonraki adımın hedefi açık sayfada belirince adım geçer.
 // Kullanıcı geri dönerse (alt sayfayı kapatırsa) ekranda duran önceki adıma
 // iner. Her giriş baştan başlar; rehber açıkken yazma istekleri ağa çıkmaz.
+// Bitince ya da "Kapat" denince rehber sırasında açılan her şey kapanır,
+// "?"ye dokunulan sayfaya dönülür; kapı ancak dönüş bitince kalkar.
 
 import 'dart:async';
 
@@ -13,7 +15,8 @@ import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/services/ogrenme/ogrenme_kapisi.dart';
 import 'package:flutter/material.dart';
 
-enum RehberDurumu { kapali, adim, bitis }
+/// [donus]: başlangıç sayfasına dönülüyor; dokunuşlar yutulur, kapı açık.
+enum RehberDurumu { kapali, adim, bitis, donus }
 
 class OgrenmeModu extends ChangeNotifier {
   OgrenmeModu._();
@@ -35,6 +38,7 @@ class OgrenmeModu extends ChangeNotifier {
   bool _yanlis = false;
   bool _denendi = false;
   bool _hedefYok = false;
+  bool _bitisteUstteSayfa = false;
   int _kayip = 0;
   int _gorunmez = 0;
   NavigatorState? _navigator;
@@ -80,27 +84,47 @@ class OgrenmeModu extends ChangeNotifier {
     izle();
   }
 
-  /// Rehberi kapatır. [geriDon] ise rehber sırasında açılan sayfa ve alt
-  /// sayfalar kapanır, başlangıç sayfasına dönülür.
-  void kapat({bool geriDon = false}) {
-    if (!acik) return;
+  /// Rehberi kapatır. [geriDon] ise rehber sırasında açılan sayfa, alt
+  /// sayfa ve diyaloglar kapanır, başlangıç sayfasına dönülür; kapı, kapanan
+  /// sayfaların animasyonu bitince kalkar (kapanırken attıkları istek de
+  /// engellensin). Başlangıç sayfası artık yoksa yalnız kapatılır.
+  Future<void> kapat({bool geriDon = false}) async {
+    if (!acik || _durum == RehberDurumu.donus) return;
     final navigator = _navigator;
     final baslangic = _baslangic;
-    _temizle();
-    notifyListeners();
-    if (geriDon &&
-        navigator != null &&
-        navigator.mounted &&
-        baslangic != null &&
-        baslangic.isActive) {
-      navigator.popUntil((r) => r == baslangic);
-      // Kapanan sayfaların kapanırken attığı istekler de engellensin.
-      Future.delayed(const Duration(milliseconds: 400), () {
-        if (!acik) OgrenmeKapisi.acik = false;
-      });
-    } else {
+    if (!geriDon ||
+        navigator == null ||
+        !navigator.mounted ||
+        baslangic == null ||
+        !baslangic.isActive ||
+        baslangic.isCurrent) {
+      _temizle();
       OgrenmeKapisi.acik = false;
+      notifyListeners();
+      return;
     }
+    _saat?.cancel();
+    _yanlisSaati?.cancel();
+    _durum = RehberDurumu.donus;
+    _delik = null;
+    notifyListeners();
+    FocusManager.instance.primaryFocus?.unfocus();
+    final kapananlar = <TransitionRoute<dynamic>>[];
+    navigator.popUntil((r) {
+      if (r == baslangic) return true;
+      if (r is TransitionRoute) kapananlar.add(r);
+      return false;
+    });
+    // Engellenen isteklerin hata mesajları başlangıç sayfasında kalmasın.
+    ScaffoldMessenger.maybeOf(navigator.context)?.clearSnackBars();
+    await Future.wait([for (final r in kapananlar) r.completed])
+        .timeout(const Duration(seconds: 2), onTimeout: () => const []);
+    await WidgetsBinding.instance.endOfFrame;
+    // Bu arada yeni bir rehber başladıysa ona dokunma.
+    if (_durum != RehberDurumu.donus) return;
+    _temizle();
+    OgrenmeKapisi.acik = false;
+    notifyListeners();
   }
 
   void _temizle() {
@@ -115,6 +139,7 @@ class OgrenmeModu extends ChangeNotifier {
     _yanlis = false;
     _denendi = false;
     _hedefYok = false;
+    _bitisteUstteSayfa = false;
     _kayip = 0;
     _gorunmez = 0;
     _navigator = null;
@@ -124,6 +149,7 @@ class OgrenmeModu extends ChangeNotifier {
   /// Bir tur: ekrana bakıp adımı ilerletir, geri alır ya da deliği izler.
   @visibleForTesting
   void izle() {
+    if (_durum == RehberDurumu.bitis) return _bitisiIzle();
     final gorev = _gorev;
     final b = bulucu;
     if (gorev == null || b == null || _durum != RehberDurumu.adim) return;
@@ -232,11 +258,21 @@ class OgrenmeModu extends ChangeNotifier {
   }
 
   void _bitir() {
-    _saat?.cancel();
-    _saat = null;
     _durum = RehberDurumu.bitis;
+    _bitisteUstteSayfa = !(_baslangic?.isCurrent ?? true);
     _delik = null;
     _yanlis = false;
     notifyListeners();
+  }
+
+  /// Bitişte geri tuşu: üstteki alt sayfa geri tuşuyla kapandıysa dönüş
+  /// butonu gibi davranılır; başlangıç sayfası kapandıysa rehber kapanır.
+  void _bitisiIzle() {
+    final baslangic = _baslangic;
+    if (baslangic == null || !baslangic.isActive) {
+      kapat();
+    } else if (_bitisteUstteSayfa && baslangic.isCurrent) {
+      kapat(geriDon: true);
+    }
   }
 }

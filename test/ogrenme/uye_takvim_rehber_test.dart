@@ -96,6 +96,19 @@ void main() {
     await bekle(tester, 6);
   }
 
+  /// Rehberi açıp son butona kadar yürür.
+  Future<void> bitiseYuru(WidgetTester tester) async {
+    await rehberiAc(tester);
+    await tester.tap(find.text('Derse gelemeyeceğimi nasıl bildiririm?'));
+    await bekle(tester, 8);
+    await deligeDokun(tester);
+    await deligeDokun(tester);
+    await tester.tap(find.text('Anladım'));
+    await bekle(tester, 8);
+    await deligeDokun(tester);
+    expect(modu.durum, RehberDurumu.bitis);
+  }
+
   Future<void> kapatVeTemizle(WidgetTester tester) async {
     modu.kapat();
     await bekle(tester, 6);
@@ -116,6 +129,7 @@ void main() {
       // Ajandada ders zaten görünüyor: "güne dokun" adımı atlanır.
       expect(modu.durum, RehberDurumu.adim);
       expect(modu.adimNo, 1);
+      final dersMerkezi = modu.delik!.center;
 
       // Parlayan yer dışına dokunuş durdurulur.
       await tester.tapAt(const Offset(20, 400));
@@ -141,16 +155,21 @@ void main() {
       expect(modu.durum, RehberDurumu.bitis);
       expect(find.text('Denemeydi, bir şey olmadı.'), findsOneWidget);
       expect(find.text('Hepsi bu kadar'), findsOneWidget);
-      expect(find.text('Şimdi yap'), findsOneWidget);
+      expect(find.text('Şimdi yap'), findsNothing);
+      expect(find.textContaining('Grup dersinde'), findsOneWidget);
 
       expect(OgrenmeKapisi.engellenenler, isEmpty);
       expect(istekler.where((u) => !okumaUclari.contains(u)), isEmpty,
           reason: 'Rehber sırasında yalnız okuma isteği gider: $istekler');
 
-      // Kapat: açılan alt sayfa kapanır, kapı kısa süre sonra kalkar.
-      await tester.tap(find.descendant(
-          of: find.byType(RehberBitisKarti), matching: find.text('Kapat')));
-      await bekle(tester, 6);
+      // "Takvime dön": açılan alt sayfa kapanır; dönüş bitene kadar dokunuş
+      // yutulur, kapı sonra kalkar.
+      await tester.tap(find.text('Takvime dön'));
+      await tester.pump();
+      expect(modu.durum, RehberDurumu.donus);
+      expect(OgrenmeKapisi.acik, isTrue);
+      await tester.tapAt(dersMerkezi);
+      await bekle(tester, 8);
       expect(modu.acik, isFalse);
       expect(find.byType(DersDetayPopup), findsNothing);
       expect(OgrenmeKapisi.acik, isFalse);
@@ -172,6 +191,42 @@ void main() {
       await bekle(tester, 10);
       expect(modu.adimNo, 1);
       expect(modu.delik, isNotNull);
+      await kapatVeTemizle(tester);
+    }, () => istemci);
+  });
+
+  testWidgets('paneldeki Kapat da başlangıç sayfasına döner', (tester) async {
+    dersler = [_surenDers()];
+    await http.runWithClient(() async {
+      await kur(tester);
+      await rehberiAc(tester);
+      await tester.tap(find.text('Derse gelemeyeceğimi nasıl bildiririm?'));
+      await bekle(tester, 8);
+      await deligeDokun(tester);
+      expect(find.byType(DersDetayPopup), findsOneWidget);
+
+      await tester.tap(find.descendant(
+          of: find.byType(RehberAdimPaneli), matching: find.text('Kapat')));
+      await bekle(tester, 8);
+      expect(modu.acik, isFalse);
+      expect(find.byType(DersDetayPopup), findsNothing);
+      expect(OgrenmeKapisi.acik, isFalse);
+      await kapatVeTemizle(tester);
+    }, () => istemci);
+  });
+
+  testWidgets('bitişte geri tuşu da başlangıç sayfasına döndürür',
+      (tester) async {
+    dersler = [_surenDers()];
+    await http.runWithClient(() async {
+      await kur(tester);
+      await bitiseYuru(tester);
+      await tester.binding.handlePopRoute();
+      await bekle(tester, 8);
+      expect(modu.acik, isFalse);
+      expect(find.byType(DersDetayPopup), findsNothing);
+      expect(find.byType(DersListesiPage), findsOneWidget);
+      expect(OgrenmeKapisi.acik, isFalse);
       await kapatVeTemizle(tester);
     }, () => istemci);
   });

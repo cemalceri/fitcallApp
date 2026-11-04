@@ -6,7 +6,15 @@
 // [OgrenmeHedefi] kimliğiyle ([Secici.hedef]) bulunur.
 
 /// Rehberi olan sayfalar. "?" butonu hangi listeyi açacağını buradan bilir.
-enum OgrenmeSayfasi { uyeTakvim }
+enum OgrenmeSayfasi {
+  uyeTakvim('Takvime dön');
+
+  /// Bitişte rehberin başladığı sayfaya dönen butonun adı. Yönelme eki
+  /// sayfa adından güvenle üretilemediği için elle yazılır.
+  final String donusEtiketi;
+
+  const OgrenmeSayfasi(this.donusEtiketi);
+}
 
 /// Adımın ekrandaki hedefi.
 sealed class Secici {
@@ -75,8 +83,8 @@ class OgrenmeGorevi {
 
   final List<OgrenmeAdimi> adimlar;
 
-  /// Bitişte gösterilen kural, en çok 2 kısa cümle; Sık sorulanlar'daki
-  /// cevapla aynı olmalı.
+  /// Bitişte gösterilen kural, en çok 3 kısa cümle; Sık sorulanlar'daki
+  /// cevapla ve ekrandaki bilgi notuyla çelişmemeli.
   final String? kural;
 
   const OgrenmeGorevi({

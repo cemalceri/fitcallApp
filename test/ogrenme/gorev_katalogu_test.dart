@@ -53,7 +53,7 @@ void main() {
           expect(a.kalici && a.bilgi, isFalse, reason: a.metin);
         }
         if (g.kural != null) {
-          expect('.'.allMatches(g.kural!).length, lessThanOrEqualTo(2));
+          expect('.'.allMatches(g.kural!).length, lessThanOrEqualTo(3));
         }
       });
 
