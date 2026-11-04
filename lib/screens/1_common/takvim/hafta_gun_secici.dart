@@ -8,6 +8,7 @@
 
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_renkleri.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_zaman.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,10 @@ class HaftaGunSecici extends StatefulWidget {
   final ValueChanged<DateTime> onDaySelected;
   final ValueChanged<DateTime> onPageChanged;
 
+  /// Günün "?" rehberindeki hedef kimliği (bkz. ogrenme/hedefler.dart); rol
+  /// bazında verilir, null dönen gün hedef olmaz.
+  final String? Function(DateTime gun)? ogrenmeHedefi;
+
   const HaftaGunSecici({
     super.key,
     required this.selectedDay,
@@ -29,6 +34,7 @@ class HaftaGunSecici extends StatefulWidget {
     required this.lessonCounts,
     required this.onDaySelected,
     required this.onPageChanged,
+    this.ogrenmeHedefi,
   });
 
   @override
@@ -126,6 +132,8 @@ class _HaftaGunSeciciState extends State<HaftaGunSecici> {
                         HapticFeedback.selectionClick();
                         widget.onDaySelected(hafta.add(Duration(days: i)));
                       },
+                      ogrenmeHedefi: widget.ogrenmeHedefi
+                          ?.call(hafta.add(Duration(days: i))),
                     ),
                   ),
                 );
@@ -282,12 +290,14 @@ class _GunHucresi extends StatelessWidget {
   final DateTime selectedDay;
   final int dersSayisi;
   final VoidCallback onTap;
+  final String? ogrenmeHedefi;
 
   const _GunHucresi({
     required this.gun,
     required this.selectedDay,
     required this.dersSayisi,
     required this.onTap,
+    this.ogrenmeHedefi,
   });
 
   @override
@@ -297,80 +307,83 @@ class _GunHucresi extends StatelessWidget {
     final bugun = TimeUtils.isSameDay(gun, simdiKulup());
 
     return Expanded(
-      child: Semantics(
-        button: true,
-        selected: secili,
-        label: '${TimeUtils.formatDateFull(gun)}, $dersSayisi ders',
-        child: GestureDetector(
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOutCubic,
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(
-              color: secili
-                  ? t.primary
-                  : bugun
-                      ? t.primaryLight
-                      : Colors.transparent,
-              borderRadius: BorderRadius.circular(TakvimSizes.dayItemRadius),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  TimeUtils.shortDayName(gun.weekday),
-                  maxLines: 1,
-                  overflow: TextOverflow.clip,
-                  softWrap: false,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: secili
-                        ? context.cs.onPrimary.withValues(alpha: 0.85)
-                        : t.textSecondary,
+      child: ogrenmeHedefiSar(
+        ogrenmeHedefi,
+        Semantics(
+          button: true,
+          selected: secili,
+          label: '${TimeUtils.formatDateFull(gun)}, $dersSayisi ders',
+          child: GestureDetector(
+            onTap: onTap,
+            behavior: HitTestBehavior.opaque,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: secili
+                    ? t.primary
+                    : bugun
+                        ? t.primaryLight
+                        : Colors.transparent,
+                borderRadius: BorderRadius.circular(TakvimSizes.dayItemRadius),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    TimeUtils.shortDayName(gun.weekday),
+                    maxLines: 1,
+                    overflow: TextOverflow.clip,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: secili
+                          ? context.cs.onPrimary.withValues(alpha: 0.85)
+                          : t.textSecondary,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  '${gun.day}',
-                  maxLines: 1,
-                  overflow: TextOverflow.clip,
-                  softWrap: false,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: secili
-                        ? context.cs.onPrimary
-                        : bugun
-                            ? t.primary
-                            : t.textPrimary,
+                  const SizedBox(height: 3),
+                  Text(
+                    '${gun.day}',
+                    maxLines: 1,
+                    overflow: TextOverflow.clip,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: secili
+                          ? context.cs.onPrimary
+                          : bugun
+                              ? t.primary
+                              : t.textPrimary,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 5),
-                SizedBox(
-                  height: 5,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      dersSayisi.clamp(0, 4),
-                      (i) => Container(
-                        width: 4,
-                        height: 4,
-                        margin: const EdgeInsets.symmetric(horizontal: 1),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: secili
-                              ? context.cs.onPrimary.withValues(alpha: 0.85)
-                              : t.pending,
+                  const SizedBox(height: 5),
+                  SizedBox(
+                    height: 5,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        dersSayisi.clamp(0, 4),
+                        (i) => Container(
+                          width: 4,
+                          height: 4,
+                          margin: const EdgeInsets.symmetric(horizontal: 1),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: secili
+                                ? context.cs.onPrimary.withValues(alpha: 0.85)
+                                : t.pending,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

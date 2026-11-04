@@ -6,6 +6,8 @@ import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
@@ -594,33 +596,36 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
             ],
           ),
           const SizedBox(height: 16),
-          TextField(
-            controller: _aciklamaController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: 'Açıklama (isteğe bağlı)',
-              hintStyle: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outlineVariant),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outlineVariant),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: context.takvim.notAttending,
-                  width: 1.5,
+          OgrenmeHedefi(
+            id: Hedef.takvimAciklama,
+            child: TextField(
+              controller: _aciklamaController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Açıklama (isteğe bağlı)',
+                hintStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant),
                 ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: context.takvim.notAttending,
+                    width: 1.5,
+                  ),
+                ),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
+                contentPadding: const EdgeInsets.all(14),
               ),
-              filled: true,
-              fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
-              contentPadding: const EdgeInsets.all(14),
             ),
           ),
           const SizedBox(height: 16),

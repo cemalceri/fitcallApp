@@ -3,6 +3,11 @@
 
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
@@ -216,6 +221,21 @@ class _DersListesiPageState extends State<DersListesiPage>
     }
   }
 
+  /// "?" rehberinin gösterebileceği ders: detayında "Katılamayacağım" çıkan,
+  /// bitmemiş, iptal edilmemiş, katılım cevabı verilmemiş ders.
+  bool _rehberDersi(EtkinlikModel ders) {
+    final uye = _currentUye;
+    return uye != null &&
+        !ders.iptalMi &&
+        ders.bitisTarihSaat.isAfter(simdiKulup()) &&
+        ders.getTeyitBilgisi(uye.id)?.katilacakMi == null;
+  }
+
+  String? _rehberGunu(DateTime gun) => _haftaDersleri.any((d) =>
+          TimeUtils.isSameDay(d.baslangicTarihSaat, gun) && _rehberDersi(d))
+      ? Hedef.takvimDersliGun
+      : null;
+
   void _onLessonTap(EtkinlikModel ders) {
     // İPTAL EDİLDİ KONTROLÜ KALDIRILDI - Artık iptal edilen derslere de tıklanabilir
     // İptal durumu popup içinde gösterilecek
@@ -263,6 +283,10 @@ class _DersListesiPageState extends State<DersListesiPage>
                 ? Icons.calendar_view_day_rounded
                 : Icons.view_agenda_rounded),
           ),
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.uyeTakvim,
+            sssRotasi: routeEnums[SayfaAdi.yardim]!,
+          ),
           const SizedBox(width: 4),
         ],
       ),
@@ -278,6 +302,7 @@ class _DersListesiPageState extends State<DersListesiPage>
                     lessonCounts: _gunlukDersSayilari,
                     onDaySelected: _onDaySelected,
                     onPageChanged: _onPageChanged,
+                    ogrenmeHedefi: _rehberGunu,
                   ),
                   if (!_ajandaGorunumu) _buildDayHeader(Theme.of(context)),
                   Expanded(
@@ -286,13 +311,17 @@ class _DersListesiPageState extends State<DersListesiPage>
                             dersler: _haftaDersleri,
                             secilenGun: _selectedDay,
                             onLessonTap: _onLessonTap,
+                            ogrenmeHedefi: (d) =>
+                                _rehberDersi(d) ? Hedef.takvimDers : null,
                           )
                         : TakvimZamanCizelgesi(
                             dersler: _selectedDayDersler,
                             selectedDay: _selectedDay,
                             onLessonTap: _onLessonTap,
-                            blokYapici: (ders, onTap) =>
-                                LessonBlock(ders: ders, onTap: onTap),
+                            blokYapici: (ders, onTap) => ogrenmeHedefiSar(
+                              _rehberDersi(ders) ? Hedef.takvimDers : null,
+                              LessonBlock(ders: ders, onTap: onTap),
+                            ),
                           ),
                   ),
                 ],

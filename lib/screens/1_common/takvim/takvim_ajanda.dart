@@ -23,6 +23,7 @@ import 'dart:collection';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_renkleri.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_zaman.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
@@ -62,6 +63,10 @@ class TakvimAjanda extends StatefulWidget {
   /// katılımcıları görmek ister, o yüzden rol bazında besleniyor.
   final String Function(EtkinlikModel ders)? altSatir;
 
+  /// Dersin "?" rehberindeki hedef kimliği (bkz. ogrenme/hedefler.dart); rol
+  /// bazında verilir, null dönen ders hedef olmaz.
+  final String? Function(EtkinlikModel ders)? ogrenmeHedefi;
+
   const TakvimAjanda({
     super.key,
     required this.dersler,
@@ -71,6 +76,7 @@ class TakvimAjanda extends StatefulWidget {
     this.durumEtiketi,
     this.durumRengi,
     this.altSatir,
+    this.ogrenmeHedefi,
   });
 
   @override
@@ -218,17 +224,20 @@ class _TakvimAjandaState extends State<TakvimAjanda> {
                   separatorBuilder: (_, __) => const SizedBox(height: Bosluk.s),
                   itemBuilder: (context, i) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Bosluk.l),
-                    child: _AjandaSatiri(
-                      ders: giris.value[i],
-                      yukseklik: satir,
-                      onTap: () => widget.onLessonTap(giris.value[i]),
-                      onLongPress: widget.onLessonLongPress == null
-                          ? null
-                          : () => widget.onLessonLongPress!(giris.value[i]),
-                      etiket: widget.durumEtiketi?.call(giris.value[i]),
-                      renk: widget.durumRengi?.call(context, giris.value[i]),
-                      altSatir: widget.altSatir?.call(giris.value[i]) ??
-                          (giris.value[i].antrenorAdi ?? ''),
+                    child: ogrenmeHedefiSar(
+                      widget.ogrenmeHedefi?.call(giris.value[i]),
+                      _AjandaSatiri(
+                        ders: giris.value[i],
+                        yukseklik: satir,
+                        onTap: () => widget.onLessonTap(giris.value[i]),
+                        onLongPress: widget.onLessonLongPress == null
+                            ? null
+                            : () => widget.onLessonLongPress!(giris.value[i]),
+                        etiket: widget.durumEtiketi?.call(giris.value[i]),
+                        renk: widget.durumRengi?.call(context, giris.value[i]),
+                        altSatir: widget.altSatir?.call(giris.value[i]) ??
+                            (giris.value[i].antrenorAdi ?? ''),
+                      ),
                     ),
                   ),
                 ),

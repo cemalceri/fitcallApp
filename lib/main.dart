@@ -1,3 +1,5 @@
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_katmani.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_modu.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/core/app_check_service.dart';
 import 'package:fitcall/services/core/auth_service.dart';
@@ -35,8 +37,10 @@ void main() async {
   await NotificationFCMService.instance.initialize();
   initFCMTokenListener();
   // Sunucu token'ı reddedince (401) giriş ekranına dön
-  ApiClient.oturumDustu = (token) =>
-      AuthService.oturumDustu(navigatorKey, reddedilenToken: token);
+  ApiClient.oturumDustu = (token) {
+    OgrenmeModu.ornek.kapat();
+    AuthService.oturumDustu(navigatorKey, reddedilenToken: token);
+  };
   runApp(const MyApp());
 }
 
@@ -104,8 +108,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        // Yazı ölçeğini uygulama genelinde makul üst sınıra çek (bkz. ui_scale.dart)
-        builder: yaziOlceginiSinirla,
+        // Yazı ölçeğini uygulama genelinde makul üst sınıra çek (bkz. ui_scale.dart);
+        // "?" rehberi Navigator'un üstünde, sayfa ve alt sayfaları birlikte örter.
+        builder: (context, child) =>
+            yaziOlceginiSinirla(context, OgrenmeKatmani(child: child!)),
       ),
     );
   }

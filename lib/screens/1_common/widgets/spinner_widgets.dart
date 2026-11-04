@@ -1,3 +1,5 @@
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 class LoadingSpinner {
@@ -42,6 +44,11 @@ class LoadingSpinnerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Rehber, sayfa yüklenirken "?" listesinde "Yükleniyor…" der.
+    return OgrenmeHedefi(id: Hedef.yukleniyor, child: _icerik(context));
+  }
+
+  Widget _icerik(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(

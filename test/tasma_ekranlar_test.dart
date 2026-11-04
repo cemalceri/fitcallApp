@@ -13,6 +13,9 @@
 import 'dart:convert';
 
 import 'package:fitcall/models/6_muhasebe/banka_hesabi_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/gorevler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_katmani.dart';
 import 'package:fitcall/models/6_muhasebe/dekont_model.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/banka_hesabi_karti.dart';
 import 'package:fitcall/screens/6_muhasebe/widgets/odeme_butonlari.dart';
@@ -1246,8 +1249,8 @@ void main() {
       () => _uyelerGorunumu(
         istatistik: _uyeIstatistik(),
         filtreler: _tumFiltreler,
-        siralama: const UyeSiralama(
-            UyeSiralamaAlani.sonOdeme, SiralamaYonu.azalan),
+        siralama:
+            const UyeSiralama(UyeSiralamaAlani.sonOdeme, SiralamaYonu.azalan),
         seciliOnAyar: null,
         ozet: const UyeFiltreOzeti(uyeSayisi: 1234, toplamBorc: 12148750),
         uyeler: [
@@ -2646,8 +2649,11 @@ void main() {
     BankaHesabiModel hesap({bool karekodlu = true, bool uzun = false}) =>
         BankaHesabiModel(
           id: 1,
-          etiket: uzun ? 'Şirket hesabı (fatura kesilen, KDV dahil)' : 'Şirket hesabı',
-          bankaAdi: uzun ? 'Türkiye Cumhuriyeti Ziraat Bankası A.Ş.' : 'Örnek Bank',
+          etiket: uzun
+              ? 'Şirket hesabı (fatura kesilen, KDV dahil)'
+              : 'Şirket hesabı',
+          bankaAdi:
+              uzun ? 'Türkiye Cumhuriyeti Ziraat Bankası A.Ş.' : 'Örnek Bank',
           aliciAdi: uzun
               ? 'Binay Spor Eğitim Danışmanlık Sanayi ve Ticaret Limited Şirketi'
               : 'Binay Spor',
@@ -2811,14 +2817,71 @@ void main() {
     );
     tasmaTesti(
       'DosyaKaynagiSecenekleri',
-      () => SingleChildScrollView(
-          child: DosyaKaynagiSecenekleri(onSec: (_) {})),
+      () =>
+          SingleChildScrollView(child: DosyaKaynagiSecenekleri(onSec: (_) {})),
     );
     tasmaTesti(
       'HavaleBilgiSatiri (çok dekont)',
       () => Padding(
         padding: const EdgeInsets.all(12),
         child: HavaleBilgiSatiri(bekleyenSayisi: 12, onTap: () {}),
+      ),
+    );
+  });
+
+  // "?" rehberi: liste, okuma görünümü, adım paneli ve bitiş kartı. Panel
+  // yazı ölçeği 1.3'te de kısa kalmalı (metin kuralı: en çok 3 satır).
+  group('Öğrenme rehberi', () {
+    final gorev = ogrenmeGorevleri.first;
+    tasmaTesti(
+      'OgrenmeListesi (hazır)',
+      () => OgrenmeListesi(
+        gorevler: ogrenmeGorevleri,
+        hazir: {gorev.id},
+        yukleniyor: false,
+        onSss: () {},
+      ),
+    );
+    tasmaTesti(
+      'OgrenmeListesi (veri yok)',
+      () => OgrenmeListesi(
+        gorevler: ogrenmeGorevleri,
+        hazir: const {},
+        yukleniyor: false,
+        onSss: () {},
+      ),
+    );
+    tasmaTesti('OgrenmeOkuma', () => OgrenmeOkuma(gorev: gorev));
+    tasmaTesti(
+      'RehberAdimPaneli (son adım, yanlış dokunuş)',
+      () => RehberAdimPaneli(
+        adim: gorev.adimlar.last,
+        no: gorev.adimlar.length,
+        toplam: gorev.adimlar.length,
+        yanlis: true,
+        onKapat: () {},
+        onAnladim: () {},
+      ),
+    );
+    tasmaTesti(
+      'RehberAdimPaneli (okuma adımı, hedef yok)',
+      () => RehberAdimPaneli(
+        adim: gorev.adimlar.firstWhere((a) => a.bilgi),
+        no: 4,
+        toplam: gorev.adimlar.length,
+        hedefYok: true,
+        onKapat: () {},
+        onAnladim: () {},
+      ),
+    );
+    tasmaTesti(
+      'RehberBitisKarti',
+      () => RehberBitisKarti(
+        kural: gorev.kural,
+        denendi: true,
+        simdiYap: true,
+        onSimdiYap: () {},
+        onKapat: () {},
       ),
     );
   });

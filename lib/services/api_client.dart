@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/services/ogrenme/ogrenme_kapisi.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
@@ -94,6 +95,7 @@ class ApiClient {
     Map<String, String>? headers,
     Duration? timeout,
   }) async {
+    OgrenmeKapisi.denetle(url);
     try {
       final res = await _client
           .post(
@@ -144,6 +146,7 @@ class ApiClient {
     Map<String, String>? headers,
     Duration? timeout,
   }) async {
+    OgrenmeKapisi.denetle(url);
     try {
       final res = await _client
           .get(Uri.parse(url),
@@ -295,6 +298,8 @@ class ApiClient {
     Duration? timeout,
     bool auth = true,
   }) async {
+    // Rehber (öğrenme modu) açıkken yazma ağa çıkmaz; bkz. ogrenme_kapisi.dart.
+    OgrenmeKapisi.denetle(url);
     try {
       final effHeaders = await _buildHeaders(headers: headers, auth: auth);
       final res = await _client
@@ -336,6 +341,7 @@ class ApiClient {
     Duration timeout = const Duration(seconds: 60),
     bool auth = true,
   }) async {
+    OgrenmeKapisi.denetle(url, dosya: true);
     String? gonderilenToken;
     Future<http.Response> gonder() async {
       final istek = http.MultipartRequest('POST', Uri.parse(url));
@@ -384,6 +390,7 @@ class ApiClient {
     Duration? timeout,
     bool auth = false,
   }) async {
+    OgrenmeKapisi.denetle(url);
     try {
       final effHeaders = await _buildHeaders(headers: headers, auth: auth);
       final res = await _client
