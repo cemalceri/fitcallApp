@@ -36,6 +36,12 @@ class NotificationType {
   /// Talebi açana gider: ofis kaydı oluşturdu / gerekçeyle reddetti.
   static const dersKayitTalebiOnaylandi = 'DERS_KAYIT_TALEBI_ONAYLANDI';
   static const dersKayitTalebiReddedildi = 'DERS_KAYIT_TALEBI_REDDEDILDI';
+
+  /// Üye ders / kort kiralama talebi: ofise, üyeye ve hocaya giden olaylar
+  /// (yeni talep, öneri, hatırlatma, onay, ret…). Metin sunucuda kurulur.
+  static const ofisUyeTalebi = 'OFIS_UYE_TALEBI';
+  static const uyeTalebi = 'UYE_TALEBI';
+  static const antrenorUyeTalebi = 'ANTRENOR_UYE_TALEBI';
 }
 
 class ActionType {

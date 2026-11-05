@@ -30,6 +30,26 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ## 🔴 Açık işler
 
+### Üye ders / kort kiralama talebi (2026-10-31; backend CANLI Heroku v351, mobil 2026-11-05'te main'e alındı, push yok)
+- Kod tamam: üye sihirbazı + Taleplerim (`2_uye/talep/`; giriş yan menüde "Ders Talebi ve Kort Kiralama", ana sayfada yok), ofis sekmeli Talepler + detay/öneri
+  (`8_ofis/ders_kayit_talepleri/`), hoca "Ofis Soruyor" (`3_antrenor/talep_sorulari/`), web aynı sayfada.
+  Kurallar backend `parametre` tablosunda (`uye_talep_*`). Kullanım kılavuzu: `kilavuz/` (PDF, commit'siz).
+- Hoca katsayısı antrenör kaydında (`ozel_ders_katsayisi`, backend 0104, master `75e77da`, push/deploy yok):
+  yalnız talepte kullanılır; ilk değer geçmiş paket/tek ders derslerinden (Onur Binay 2, diğerleri 1).
+- Tek seferlik ders ürünü şimdilik her üyede "Yetişkin-tekders-tekli" (seviyeye göre seçim istenmedi);
+  kort kiralama "KortKira-1Saat".
+- Mobil main'e birleşti (2026-11-05), push yok (`kilavuz/` PDF'i commit'siz). Backend telafi bildirimi düzeltmesi
+  (talepten gelen telafili derste ayrı "Telafi kullanıldı" gitmez) master `0b08a70`, GitHub'da, Heroku'da
+  DEĞİL; kullanıcı: sonraki kurulumla gider.
+- Yayından önce (kullanıcı): prod admin'de `uye_talep_hoca_idleri`, `uye_talep_kort_idleri` ve
+  `uye_talep_tek_ders_urun_idleri` doldurulmalı (boş = tümü; salonlar, branş hocaları, pilates ürünleri de
+  çıkar), `uye_talep_ofis_calisma_saatleri` kontrol, Heroku Scheduler'a 10 dakikada bir
+  `python manage.py uye_talep_zamanlayici`. Prod parametre değerleri doğrulanmadı (`heroku run` bu
+  makineden zaman aşımı).
+- 2026-10-31 üye/ofis/antrenör rol ajanlarıyla prod kopyasında denendi; bulunan hatalar düzeltildi.
+  Bilinçli kararlar: öneri saati hocaya uygulamadan sorulmaz (ofis "hocayla konuştum" işaretler), talep
+  detayında zaman çizgisi yok, profile bağlı tüm kullanıcılara bildirim gider.
+
 ### Güvenlik (2026-10-22 incelemesi)
 - **Repodaki sırlar — anahtar yenileme (yapılacak):** 2026-10-28'de `SECRET_KEY`, VatanSMS ve Firebase
   servis hesabı anahtarı Heroku config var'ına taşındı, `settings.py` yedekleri silindi, anahtar dosyası
@@ -59,8 +79,8 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
   `heroku run python manage.py veri_tutarlilik_kontrol --ders-basi 2026-07-23 --kategori paket,tekders,telafi,onay,ekstra`.
 
 - **"?" öğrenme rehberi (2026-11-05, main'de, push edildi):** 143 rehber dört profilde. Sahip telefonda
-  gözden geçiriyor, hata gördükçe ekran adını söyler; kontrol kuralı CLAUDE.md'de. Ders talebi dalıyla gelecek:
-  üye Taleplerim ×3, ofis talep ×2 rehberi ve ofis menüsünde «Ders kayıt talepleri».
+  gözden geçiriyor, hata gördükçe ekran adını söyler; kontrol kuralı CLAUDE.md'de. Ders talebi rehberleri
+  eklendi (üye Taleplerim, ofis talepler).
 
 ### Küçük işler
 - 3.10.0 ekran denetiminden ertelenenler (hâlâ geçerli mi bakılmalı): yönetici rapor bölümleri çok renkli,
@@ -78,7 +98,6 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 ### Üye
 - **Sizden Gelenler** (2026-10-12, "şimdilik dursun"): üyelerin ders/turnuva fotoğrafı-videosu paylaşımı.
   Tasarlanırken moderasyon, çocuk üyeler için veli izni / KVKK, depolama ve görünürlük netleşmeli.
-- **Ders kayıt talebi üye ekranı:** `DersKayitTalebiModel` üye talebine hazır.
 - Gelişim/istatistik ekranı — aylık ders sayısı, katılım %, seviye ilerlemesi, rozet.
 - Antrenör karnesi — ders sonrası not/puanın üyeye açılması (değerlendirmeler 2026-10-16'dan beri yalnız
   yöneticiye açık; görüşme notu 2026-08-10'da kaldırıldı).

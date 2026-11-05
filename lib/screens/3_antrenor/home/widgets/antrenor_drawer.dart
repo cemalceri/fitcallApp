@@ -54,6 +54,12 @@ class AntrenorDrawer extends StatelessWidget {
                         context, routeEnums[SayfaAdi.antrenorEksikYoklama]!),
                   ),
                   YanMenuOgesi(
+                    ikon: Icons.contact_support_outlined,
+                    baslik: 'Ofis Soruyor',
+                    onTap: () => _git(
+                        context, routeEnums[SayfaAdi.antrenorTalepSorulari]!),
+                  ),
+                  YanMenuOgesi(
                     ikon: Icons.schedule_rounded,
                     baslik: 'Çalışma Saatlerim',
                     onTap: () => _calismaSaatleri(context),

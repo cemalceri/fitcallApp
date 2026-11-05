@@ -57,6 +57,15 @@ const String antrenorHakedisDerslerUrl = "$baseUrl/antrenorHakedisDersler";
 const String antrenorHaftalikProgramUrl = "$baseUrl/antrenorHaftalikProgram";
 const String dersKayitTalebiOlusturUrl = "$baseUrl/dersKayitTalebiOlustur";
 const String dersKayitTalebiGeriCekUrl = "$baseUrl/dersKayitTalebiGeriCek";
+// Üye ders / kort kiralama talebi. Geri çekme dersKayitTalebiGeriCek ile.
+const String uyeTalepBaslangicUrl = "$baseUrl/uyeTalepBaslangic";
+const String uyeTalepHaritaUrl = "$baseUrl/uyeTalepHarita";
+const String uyeTalepSecenekleriUrl = "$baseUrl/uyeTalepSecenekleri";
+const String uyeTalepOlusturUrl = "$baseUrl/uyeTalepOlustur";
+const String uyeTaleplerimUrl = "$baseUrl/uyeTaleplerim";
+const String uyeTalepOneriCevapUrl = "$baseUrl/uyeTalepOneriCevap";
+const String antrenorTalepSorulariUrl = "$baseUrl/antrenorTalepSorulari";
+const String antrenorTalepCevapUrl = "$baseUrl/antrenorTalepCevap";
 
 // =================== ETKİNLİK ===================
 String setDersTeyit = "$baseUrl/setDersTeyit";
@@ -161,6 +170,14 @@ const String ofisPlanDisiKararUrl = "$baseUrl/ofisPlanDisiKarar";
 const String ofisDersKayitTalepleriUrl = "$baseUrl/ofisDersKayitTalepleri";
 const String ofisDersKayitTalebiReddetUrl =
     "$baseUrl/ofisDersKayitTalebiReddet";
+// Üye ders / kort kiralama talebi (ofis tarafı). Ret ofisDersKayitTalebiReddet ile.
+const String ofisTaleplerUrl = "$baseUrl/ofisTalepler";
+const String ofisUyeTalepDetayUrl = "$baseUrl/ofisUyeTalepDetay";
+const String ofisUyeTalepHocayaSorUrl = "$baseUrl/ofisUyeTalepHocayaSor";
+const String ofisUyeTalepTelefonOnayUrl = "$baseUrl/ofisUyeTalepTelefonOnay";
+const String ofisUyeTalepKaydetUrl = "$baseUrl/ofisUyeTalepKaydet";
+const String ofisUyeTalepOneriUrl = "$baseUrl/ofisUyeTalepOneri";
+const String ofisUyeTalepOneriGeriCekUrl = "$baseUrl/ofisUyeTalepOneriGeriCek";
 
 // =================== YÖNETİCİ ===================
 const String yoneticiDashboard = "$baseUrl/yoneticiDashboard";
