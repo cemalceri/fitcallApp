@@ -30,7 +30,7 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ## 🔴 Açık işler
 
-### Üye ders / kort kiralama talebi (2026-10-31; backend CANLI Heroku v351, mobil 2026-11-05'te main'e alındı, push yok)
+### Üye ders / kort kiralama talebi (2026-10-31; backend CANLI Heroku v351, mobil 2026-11-05'te main'e alındı ve push edildi)
 - Kod tamam: üye sihirbazı + Taleplerim (`2_uye/talep/`; giriş yan menüde "Ders Talebi ve Kort Kiralama", ana sayfada yok), ofis sekmeli Talepler + detay/öneri
   (`8_ofis/ders_kayit_talepleri/`), hoca "Ofis Soruyor" (`3_antrenor/talep_sorulari/`), web aynı sayfada.
   Kurallar backend `parametre` tablosunda (`uye_talep_*`). Kullanım kılavuzu: `kilavuz/` (PDF, commit'siz).
@@ -38,7 +38,7 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
   yalnız talepte kullanılır; ilk değer geçmiş paket/tek ders derslerinden (Onur Binay 2, diğerleri 1).
 - Tek seferlik ders ürünü şimdilik her üyede "Yetişkin-tekders-tekli" (seviyeye göre seçim istenmedi);
   kort kiralama "KortKira-1Saat".
-- Mobil main'e birleşti (2026-11-05), push yok (`kilavuz/` PDF'i commit'siz). Backend telafi bildirimi düzeltmesi
+- Mobil main'e birleşti ve push edildi (2026-11-05, ab3d70e) (`kilavuz/` PDF'i commit'siz). Backend telafi bildirimi düzeltmesi
   (talepten gelen telafili derste ayrı "Telafi kullanıldı" gitmez) master `0b08a70`, GitHub'da, Heroku'da
   DEĞİL; kullanıcı: sonraki kurulumla gider.
 - Yayından önce (kullanıcı): prod admin'de `uye_talep_hoca_idleri`, `uye_talep_kort_idleri` ve
@@ -78,7 +78,7 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 - **İptal signal'ları:** 2026-09-29'dan beri çalışıyor; veri kontrolü için
   `heroku run python manage.py veri_tutarlilik_kontrol --ders-basi 2026-07-23 --kategori paket,tekders,telafi,onay,ekstra`.
 
-- **"?" öğrenme rehberi (2026-11-05, main'de; ders talebi rehberleri push bekliyor):** 148 rehber dört profilde. Sahip telefonda
+- **"?" öğrenme rehberi (2026-11-05, main'de, push edildi ab3d70e):** 148 rehber dört profilde. Sahip telefonda
   gözden geçiriyor, hata gördükçe ekran adını söyler; kontrol kuralı CLAUDE.md'de. Ders talebi rehberleri
   eklendi (üye Taleplerim, ofis talepler).
 
