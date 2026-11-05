@@ -28,6 +28,11 @@ class AppCheckServisi {
   static Duration beklemeSuresi = const Duration(seconds: 2);
   static const _denemeArasi = Duration(minutes: 1);
 
+  /// Platform kanalı hiç dönmezse `_suren` boşalmıyor ve o süre boyunca HER
+  /// istek [beklemeSuresi] kadar bekliyordu; alma işlemi en çok bu kadar sürer.
+  @visibleForTesting
+  static Duration almaSiniri = const Duration(seconds: 10);
+
   /// Süresi dolmaya bu kadar kala yenisi istenir.
   static const _yenilemePayi = Duration(minutes: 5);
 
@@ -86,7 +91,7 @@ class AppCheckServisi {
 
   static Future<String?> _al() async {
     try {
-      final t = await tokenAl();
+      final t = await tokenAl().timeout(almaSiniri);
       if (t == null || t.isEmpty) {
         _denemeYasagiBitis = simdi().add(_denemeArasi);
         return null;

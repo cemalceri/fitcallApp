@@ -9,6 +9,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/core/izin_durumu.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -64,6 +65,10 @@ Future<void> sendFCMDevice() async {
 
   try {
     log.adimEkle('FCM cihaz kaydı başlatıldı');
+    // Kayıt girişten sonra arkada sürüyor (iOS'ta APNs beklemesi 18 sn'yi
+    // bulabilir). Bu arada çıkış ya da başka hesapla giriş olduysa istek
+    // gitmemeli: tokensız giden istek 401 alıp yeni oturumu düşürüyordu.
+    final oturumTokeni = await StorageService.getToken();
     final messaging = FirebaseMessaging.instance;
 
     // ═══════════════════════════════════════════════════════════
@@ -152,6 +157,12 @@ Future<void> sendFCMDevice() async {
     log.bilgiEkle('os_version', deviceInfo['os_version']);
     log.bilgiEkle('app_version', deviceInfo['app_version']);
     log.bilgiEkle('bildirim_izni', deviceInfo['bildirim_izni']);
+
+    final simdikiToken = await StorageService.getToken();
+    if (simdikiToken == null || simdikiToken != oturumTokeni) {
+      await log.basariliGonder('İşlem durduruldu: oturum bu arada değişti');
+      return;
+    }
 
     log.adimEkle('Backend API çağrısı yapılıyor');
     final bodyData = {

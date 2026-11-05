@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
+import 'dart:async';
 import 'dart:convert';
 import 'package:fitcall/models/4_auth/user_model.dart';
 import 'package:fitcall/models/dtos/kullanici_profilleri_result_dto.dart';
@@ -179,7 +180,11 @@ class AuthService {
       expireDate: token.expireDate,
     );
 
-    await sendFCMDevice();
+    // Cihaz kaydı (iOS izni, APNs/FCM token, cihazKaydetGuncelle) ana ekranı
+    // bekletmez: canlıda ~0,5 sn, iOS'ta APNs gecikirse 18 sn'ye kadar
+    // sürüyordu. Hatalarını kendi yakalayıp logluyor; token yukarıda
+    // saklandığı için arkadaki istek doğru kullanıcıyla gider.
+    unawaited(sendFCMDevice());
 
     // 4) Rol belirle (tekil rol)
     final r = kp.rol;

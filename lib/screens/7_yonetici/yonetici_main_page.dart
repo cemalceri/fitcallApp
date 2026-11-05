@@ -37,22 +37,30 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
   /// Üyeler sekmesine dışarıdan ön ayar (Ana Sayfa kartı, menü).
   final _uyeOnAyari = ValueNotifier<UyeOnAyarIstegi?>(null);
 
-  late final List<Widget> _pages;
+  /// Sekmeler ilk açıldığında kurulur (üye/antrenör kabuğu gibi). Hepsi
+  /// açılışta kurulunca ~10 istek aynı anda gidiyor, pano sunucuda bu
+  /// kuyruğu bekliyordu.
+  final Set<int> _acilanlar = {0};
+  static const _sekmeSayisi = 5;
+
+  Widget _sayfa(int indeks) {
+    if (!_acilanlar.contains(indeks)) return const SizedBox.shrink();
+    return switch (indeks) {
+      0 => YoneticiDashboardPage(
+          onTabChange: _goTab,
+          onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+          onBorcluUyeler: _borcluUyeler,
+        ),
+      1 => const RaporlarPage(),
+      2 => UyelerPage(onAyarIstegi: _uyeOnAyari),
+      3 => const AntrenorlerPage(),
+      _ => const DerslerPage(),
+    };
+  }
 
   @override
   void initState() {
     super.initState();
-    _pages = [
-      YoneticiDashboardPage(
-        onTabChange: _goTab,
-        onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
-        onBorcluUyeler: _borcluUyeler,
-      ),
-      const RaporlarPage(),
-      UyelerPage(onAyarIstegi: _uyeOnAyari),
-      const AntrenorlerPage(),
-      const DerslerPage(),
-    ];
     _yoneticiAdiYukle();
     // Sürüm notu popup'ı ("Neler yeni?"). Duyuru popup'ı burada ÇIKMAZ: sıranın
     // rol filtresi onu üye ve antrenöre bırakıyor (bilinçli karar).
@@ -74,7 +82,10 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
   }
 
   void _goTab(int index) {
-    setState(() => _selectedIndex = index);
+    setState(() {
+      _selectedIndex = index;
+      _acilanlar.add(index);
+    });
   }
 
   /// Ayrı Borçlu Üyeler sayfası yerine: Üyeler sekmesi, "borçlu + en borçlu
@@ -101,7 +112,7 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
         sekmeyeGec: _goTab,
         child: IndexedStack(
           index: _selectedIndex,
-          children: _pages,
+          children: List.generate(_sekmeSayisi, _sayfa),
         ),
       ),
       bottomNavigationBar: YoneticiBottomBar(

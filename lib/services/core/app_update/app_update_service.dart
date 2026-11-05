@@ -76,6 +76,9 @@ class UygulamaGuncellemeServisi {
       (j) =>
           MobilUygulamaKonfigModel.fromMap((j as Map).cast<String, dynamic>()),
       auth: false,
+      // Zayıf ağda 20 sn'lik varsayılan, beni-hatırla girişini o kadar
+      // bekletiyordu; ulaşılamazsa güncelleme kontrolü atlanır.
+      timeout: const Duration(seconds: 5),
     );
 
     final cfg = res.data;

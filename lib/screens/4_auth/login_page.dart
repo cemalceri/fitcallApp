@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
+import 'package:fitcall/models/dtos/kullanici_profilleri_result_dto.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_fcm_service.dart';
@@ -81,6 +82,8 @@ class _LoginPageState extends State<LoginPage> {
     if (mounted) setState(() => _beniHatirla = remember);
     if (remember != true) {
       _formuGoster();
+    } else {
+      _erkenProfiller = _profilleriErkenIste();
     }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
@@ -93,6 +96,33 @@ class _LoginPageState extends State<LoginPage> {
       }
       await _tryAutoLoginFromApi();
     });
+  }
+
+  /// Beni hatırla açıkken profil isteği güncelleme kontrolüyle AYNI ANDA
+  /// başlar (eskiden konfig cevabı beklenip sonra başlıyordu). Yönlendirme
+  /// yine güncelleme kararından sonra [_tryAutoLoginFromApi]'de yapılır,
+  /// zorunlu güncelleme delinmez. Future hata fırlatmaz: sonuç ya da hata
+  /// kayıtta döner.
+  Future<(KullaniciProfilleriResult?, Object?)?>? _erkenProfiller;
+
+  Future<(KullaniciProfilleriResult?, Object?)?> _profilleriErkenIste() async {
+    if (NotificationFCMService.instance.hasPendingNotification.value) {
+      return null;
+    }
+    final u = await SecureStorageService.getValue<String>(_kRememberUser);
+    final p = await SecureStorageService.getValue<String>(_kRememberPass);
+    if (u == null || u.isEmpty || p == null || p.isEmpty) return null;
+    try {
+      return (await AuthService.fetchMyMembers(u, p), null);
+    } catch (e) {
+      // Zorunlu güncelleme/bakım ekranında otomatik giriş hiç çalışmaz; eski
+      // parola burada silinmezse her açılış hatalı giriş sayacını artırıp
+      // hesabı kilitliyordu.
+      if (e is ApiException && e.code == 'INVALID_CREDENTIALS') {
+        await SecureStorageService.remove(_kRememberPass);
+      }
+      return (null, e);
+    }
   }
 
   void _formuGoster() {
@@ -114,6 +144,12 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    // Erken istek yalnız başarılıysa kullanılır; hata verdiyse (ağ, ya da
+    // bildirim penceresi dakikalarca açık kaldıysa bayat) yeniden istenir.
+    // Hatalı parolayı erken istek zaten sildi, aşağıda form açılır.
+    final erken = await _erkenProfiller;
+    _erkenProfiller = null;
+
     final u = await SecureStorageService.getValue<String>(_kRememberUser);
     final p = await SecureStorageService.getValue<String>(_kRememberPass);
     if (u == null || u.isEmpty || p == null || p.isEmpty) {
@@ -127,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
       _yukleniyor = true;
     });
     try {
-      final result = await AuthService.fetchMyMembers(u, p);
+      final result = erken?.$1 ?? await AuthService.fetchMyMembers(u, p);
       final profiller = result.profiller;
 
       if (!mounted) return;

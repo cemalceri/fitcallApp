@@ -123,5 +123,39 @@ void main() {
       ApiClient.appCheckTokeni = null;
       expect(await ApiClient.ortakBasliklar(), isEmpty);
     });
+
+    test('sunucuda muaf uçlar token beklemez', () async {
+      var istendi = 0;
+      ApiClient.appCheckTokeni = () async {
+        istendi++;
+        return 'tkn';
+      };
+      final cfg = await ApiClient.ortakBasliklar(
+          url: 'https://www.binay.fit/api/getMobilConfigs');
+      expect(cfg.containsKey('X-Firebase-AppCheck'), isFalse);
+      expect(istendi, 0);
+
+      final diger = await ApiClient.ortakBasliklar(
+          url: 'https://www.binay.fit/api/getMyMembers');
+      expect(diger['X-Firebase-AppCheck'], 'tkn');
+      expect(ApiClient.appCheckMuafMi('https://x/api/getMobilConfigsX'), isFalse);
+    });
+  });
+
+  test('platform kanalı dönmezse alma işlemi sınırda biter, istekler takılmaz',
+      () async {
+    AppCheckServisi.almaSiniri = const Duration(milliseconds: 80);
+    AppCheckServisi.tokenAl = () {
+      cagri++;
+      return Completer<String?>().future; // hiç dönmez
+    };
+    expect(await AppCheckServisi.token(), isNull); // bekleme süresi doldu
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    // Alma işlemi sınırda bitti → 1 dk deneme yasağı: bekletmeden null.
+    final sw = Stopwatch()..start();
+    expect(await AppCheckServisi.token(), isNull);
+    expect(sw.elapsedMilliseconds, lessThan(30));
+    expect(cagri, 1);
+    AppCheckServisi.almaSiniri = const Duration(seconds: 10);
   });
 }

@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/services/http_istemci.dart';
 import 'package:fitcall/services/ogrenme/ogrenme_kapisi.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:http/http.dart' as http;
@@ -19,7 +20,7 @@ class ApiClient {
   /// demektir. Ana sayfa açılışta 6 istek attığı için bu maliyet katlanıyordu.
   /// Tek client ile keep-alive devreye girer, bağlantı yeniden kullanılır.
   /// Uygulama ömrü boyunca yaşadığı için kapatılmaz.
-  static final http.Client _client = http.Client();
+  static final http.Client _client = paylasilanIstemciOlustur();
 
   /// Token'lı bir istek oturum hatası aldığında çağrılır (main.dart bağlar);
   /// parametre o istekte gönderilen token (yoksa null).
@@ -55,10 +56,22 @@ class ApiClient {
   /// Null dönerse başlık konmaz; sunucu "log" modundayken istek yine geçer.
   static Future<String?> Function()? appCheckTokeni;
 
+  /// Sunucuda App Check'ten muaf uçlar (`api/core/app_check.py` MUAF_YOLLAR):
+  /// bunlar için token beklenmez, soğuk açılışta ilk istek 2 sn gecikmesin.
+  static const _appCheckMuafUclar = {'/api/getMobilConfigs', '/api/gate'};
+
+  @visibleForTesting
+  static bool appCheckMuafMi(String? url) {
+    if (url == null) return false;
+    final yol = Uri.tryParse(url)?.path ?? '';
+    return _appCheckMuafUclar.any((m) => yol == m || yol == '$m/');
+  }
+
   /// Giriş dahil (token'sız uçlar da) her isteğin ortak başlıkları.
   @visibleForTesting
-  static Future<Map<String, String>> ortakBasliklar() async {
+  static Future<Map<String, String>> ortakBasliklar({String? url}) async {
     final basliklar = <String, String>{...istemciBasliklari};
+    if (appCheckMuafMi(url)) return basliklar;
     try {
       final token = await appCheckTokeni?.call();
       if (token != null) basliklar['X-Firebase-AppCheck'] = token;
@@ -71,10 +84,11 @@ class ApiClient {
   static Future<Map<String, String>> _buildHeaders({
     Map<String, String>? headers,
     bool auth = false,
+    String? url,
   }) async {
     final base = <String, String>{
       'Content-Type': 'application/json',
-      ...await ortakBasliklar(),
+      ...await ortakBasliklar(url: url),
     };
     if (auth) {
       final token = await StorageService.getToken();
@@ -102,7 +116,7 @@ class ApiClient {
             Uri.parse(url),
             headers: {
               'Content-Type': 'application/json',
-              ...await ortakBasliklar(),
+              ...await ortakBasliklar(url: url),
               if (headers != null) ...headers,
             },
             body: jsonEncode(body),
@@ -150,7 +164,10 @@ class ApiClient {
     try {
       final res = await _client
           .get(Uri.parse(url),
-              headers: {...await ortakBasliklar(), if (headers != null) ...headers})
+              headers: {
+                ...await ortakBasliklar(url: url),
+                if (headers != null) ...headers
+              })
           .timeout(timeout ?? _defaultTimeout);
       final status = res.statusCode;
       final text = utf8.decode(res.bodyBytes);
@@ -301,7 +318,8 @@ class ApiClient {
     // Rehber (öğrenme modu) açıkken yazma ağa çıkmaz; bkz. ogrenme_kapisi.dart.
     OgrenmeKapisi.denetle(url);
     try {
-      final effHeaders = await _buildHeaders(headers: headers, auth: auth);
+      final effHeaders =
+          await _buildHeaders(headers: headers, auth: auth, url: url);
       final res = await _client
           .post(
             Uri.parse(url),
@@ -392,7 +410,8 @@ class ApiClient {
   }) async {
     OgrenmeKapisi.denetle(url);
     try {
-      final effHeaders = await _buildHeaders(headers: headers, auth: auth);
+      final effHeaders =
+          await _buildHeaders(headers: headers, auth: auth, url: url);
       final res = await _client
           .get(Uri.parse(url), headers: effHeaders)
           .timeout(timeout ?? _defaultTimeout);

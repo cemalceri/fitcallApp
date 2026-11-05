@@ -51,29 +51,40 @@ class _OfisMainPageState extends State<OfisMainPage>
   int _selectedIndex = 0;
   String _ofisAdi = '';
 
-  late final List<Widget> _pages;
+  /// Sekmeler ilk açıldığında kurulur (üye/antrenör kabuğu gibi): açılışta
+  /// hepsi kurulunca haftalık program (~350 KB) dahil 6 istek aynı anda
+  /// gidiyordu.
+  final Set<int> _acilanlar = {0};
+  static const _sekmeSayisi = 4;
+
+  void _menu() => _scaffoldKey.currentState?.openDrawer();
+
+  Widget _sayfa(int indeks) {
+    if (!_acilanlar.contains(indeks)) return const SizedBox.shrink();
+    return switch (indeks) {
+      0 => OfisAnaSayfaPage(
+          key: _anaSayfa,
+          onMenuTap: _menu,
+          onDerslerSekmesi: () {
+            // Sekme ilk kez açılıyorsa zaten bugün + tüm derslerle kurulur;
+            // açıksa özetten gelindiği için bugüne döner.
+            final acikti = _acilanlar.contains(2);
+            _goTab(2);
+            if (acikti) _dersler.currentState?.bugune();
+          },
+        ),
+      1 => OfisProgramPage(onMenuTap: _menu),
+      // Gün listesi + onay/hakediş/paket/teyit işlemleri (yönetici kabuğundaki
+      // salt-okunur ortak DerslerPage'in yerine).
+      2 => OfisDerslerPage(key: _dersler),
+      _ => const OfisUyelerPage(),
+    };
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    void menu() => _scaffoldKey.currentState?.openDrawer();
-    _pages = [
-      OfisAnaSayfaPage(
-        key: _anaSayfa,
-        onMenuTap: menu,
-        onDerslerSekmesi: () {
-          _goTab(2);
-          // Özetten gelindi: bugünün tüm dersleri.
-          _dersler.currentState?.bugune();
-        },
-      ),
-      OfisProgramPage(onMenuTap: menu),
-      // Gün listesi + onay/hakediş/paket/teyit işlemleri (yönetici kabuğundaki
-      // salt-okunur ortak DerslerPage'in yerine).
-      OfisDerslerPage(key: _dersler),
-      const OfisUyelerPage(),
-    ];
     NotificationService.refreshUnreadCount();
     _adYukle();
     // Sürüm notu popup'ı ("Neler yeni?"). Duyuru popup'ı burada ÇIKMAZ: sıranın
@@ -111,8 +122,14 @@ class _OfisMainPageState extends State<OfisMainPage>
 
   void _goTab(int index) {
     if (index == _selectedIndex) return;
-    setState(() => _selectedIndex = index);
-    _aktifiTazele();
+    // İlk açılışta sayfa kendi initState'inde yükler; tazeleme yalnız
+    // önceden kurulmuş sekmede.
+    final acikti = _acilanlar.contains(index);
+    setState(() {
+      _selectedIndex = index;
+      _acilanlar.add(index);
+    });
+    if (acikti) _aktifiTazele();
   }
 
   @override
@@ -139,7 +156,7 @@ class _OfisMainPageState extends State<OfisMainPage>
           sekmeyeGec: _goTab,
           child: IndexedStack(
             index: _selectedIndex,
-            children: _pages,
+            children: List.generate(_sekmeSayisi, _sayfa),
           ),
         ),
         bottomNavigationBar: OgrenmeHedefi(
