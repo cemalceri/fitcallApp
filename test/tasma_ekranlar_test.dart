@@ -355,6 +355,11 @@ SilmeEtkisi _silmeEtkisi() => SilmeEtkisi.fromJson({
       'paket_kullanimi': 12,
       'telafi_kaybolacak': 5,
       'telafi_serbest_kalacak': 4,
+      // Uzun ad + 6 kişi: "ve 1 kişi daha" dahil en uzun uyarı satırı
+      'telafi_kullanilmis': [
+        for (var i = 0; i < 6; i++)
+          'Ayşegül Arslanoğulları Uzunsoyad · 1$i.11.2026 18:30',
+      ],
       'teyit_sayisi': 12,
       'onay_sayisi': 2,
       'degerlendirme_sayisi': 9,

@@ -562,6 +562,9 @@ class SilmeEtkisi {
   final int paketKullanimi;
   final int telafiKaybolacak;
   final int telafiSerbestKalacak;
+
+  /// Silinecek haklardan başka derste kullanılmış olanlar ("Ad SOYAD · tarih saat").
+  final List<String> telafiKullanilmis;
   final int teyitSayisi;
   final int onaySayisi;
   final int degerlendirmeSayisi;
@@ -574,6 +577,7 @@ class SilmeEtkisi {
     required this.paketKullanimi,
     required this.telafiKaybolacak,
     required this.telafiSerbestKalacak,
+    this.telafiKullanilmis = const [],
     required this.teyitSayisi,
     required this.onaySayisi,
     required this.degerlendirmeSayisi,
@@ -589,6 +593,9 @@ class SilmeEtkisi {
       paketKullanimi: _int(j['paket_kullanimi']),
       telafiKaybolacak: _int(j['telafi_kaybolacak']),
       telafiSerbestKalacak: _int(j['telafi_serbest_kalacak']),
+      telafiKullanilmis: (j['telafi_kullanilmis'] as List? ?? const [])
+          .map((e) => e.toString())
+          .toList(),
       teyitSayisi: _int(j['teyit_sayisi']),
       onaySayisi: _int(j['onay_sayisi']),
       degerlendirmeSayisi: _int(j['degerlendirme_sayisi']),
@@ -604,6 +611,13 @@ class SilmeEtkisi {
     if (telafiKaybolacak > 0) {
       satirlar.add(
           '$telafiKaybolacak telafi hakkı silinecek (üyeler bu haklarını kaybeder)');
+    }
+    if (telafiKullanilmis.isNotEmpty) {
+      final ilkler = telafiKullanilmis.take(5).join(', ');
+      final kalan = telafiKullanilmis.length - 5;
+      satirlar.add('Dikkat: bunlardan ${telafiKullanilmis.length} tanesi başka '
+          'derste kullanılmış ($ilkler${kalan > 0 ? ' ve $kalan kişi daha' : ''}). '
+          'O telafiler de düşer');
     }
     if (paketKullanimi > 0) {
       satirlar.add('$paketKullanimi paket kullanım kaydı silinecek');

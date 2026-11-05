@@ -180,6 +180,19 @@ void main() {
       expect(satirlar.any((s) => s.contains('paket')), isFalse);
     });
 
+    // Kaynak ders silinince hak silinir; başka derste kullanılmışsa uyarılır.
+    test('kullanılmış telafi hakkı kişi ve saatle uyarılır', () {
+      final e = SilmeEtkisi.fromJson({
+        'telafi_kaybolacak': 2,
+        'telafi_kullanilmis': ['Ali TEST · 10.11.2026 10:00'],
+        'ders': {},
+      });
+
+      final satirlar = e.uyariSatirlari;
+      expect(satirlar[1], contains('1 tanesi başka derste kullanılmış'));
+      expect(satirlar[1], contains('Ali TEST · 10.11.2026 10:00'));
+    });
+
     test('bağlı kayıt yoksa liste boş', () {
       final e = SilmeEtkisi.fromJson({'ders': {}});
       expect(e.uyariSatirlari, isEmpty);
