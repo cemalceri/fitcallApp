@@ -216,6 +216,8 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
         (bitSaat - basSaat) * ProgramOlculeri.saatYuksekligi;
     final izgaraGenisligi =
         widget.kortlar.length * ProgramOlculeri.kortKolonGenisligi;
+    final bosSaat =
+        widget.onBosSlotTap == null ? null : _bosSaat(basSaat, bitSaat);
 
     return Column(
       children: [
@@ -257,6 +259,24 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
                             ..._dersBloklari(basSaat),
                             if (_bugunMu)
                               _simdiCizgisi(basSaat, izgaraGenisligi),
+                            // En sonda: ekleyip kaldırmak öbür çocukları
+                            // kaydırmaz. Saydam hedef dokunuşu yutmaz, altındaki
+                            // dokunma katmanı boş saati yine kendisi hesaplar.
+                            if (bosSaat != null)
+                              Positioned(
+                                left: bosSaat.$1 *
+                                        ProgramOlculeri.kortKolonGenisligi +
+                                    ProgramOlculeri.blokYatayBosluk,
+                                top: ProgramZaman.zamandanPiksel(
+                                    bosSaat.$2, basSaat),
+                                width: ProgramOlculeri.kortKolonGenisligi -
+                                    ProgramOlculeri.blokYatayBosluk * 2,
+                                height: ProgramOlculeri.saatYuksekligi,
+                                child: const OgrenmeHedefi(
+                                  id: Hedef.programBosSaat,
+                                  child: SizedBox.expand(),
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -270,6 +290,37 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
         ),
       ],
     );
+  }
+
+  /// "Yeni ders" rehberinin dokunduracağı boş saat (kort sırası, başlangıç):
+  /// o kortta ders ya da talep olmayan ilk bir saat; bugünse şu andan
+  /// sonraki, yoksa günün ilki. Rehber eskiden bütün ızgarayı parlatıyordu,
+  /// dokunuş derse düşünce form yerine ders sayfası açılıyordu.
+  (int, DateTime)? _bosSaat(int basSaat, int bitSaat) {
+    final gun = widget.secilenGun;
+    DateTime an(int dakika) =>
+        DateTime(gun.year, gun.month, gun.day, dakika ~/ 60, dakika % 60);
+    bool bos(int kort, DateTime bas) {
+      final bit = bas.add(const Duration(hours: 1));
+      final id = widget.kortlar[kort].id;
+      return !_ogeler.any((o) =>
+          _kortIdsi(o) == id && o.baslangic.isBefore(bit) && o.bitis.isAfter(bas));
+    }
+
+    (int, DateTime)? ara(int ilk) {
+      for (var d = ilk; d + 60 <= bitSaat * 60; d += 30) {
+        for (var k = 0; k < widget.kortlar.length; k++) {
+          if (bos(k, an(d))) return (k, an(d));
+        }
+      }
+      return null;
+    }
+
+    final gunBasi = basSaat * 60;
+    if (!_bugunMu) return ara(gunBasi);
+    final simdi = simdiKulup();
+    final sonraki = ((simdi.hour * 60 + simdi.minute) ~/ 30 + 1) * 30;
+    return ara(sonraki < gunBasi ? gunBasi : sonraki) ?? ara(gunBasi);
   }
 
   bool get _bugunMu {

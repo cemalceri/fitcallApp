@@ -83,10 +83,20 @@ class HedefBulucu {
     if (adimlar.every((a) => a.bilgi)) {
       return adimlar.every((a) => adimHedefi(a) != null);
     }
-    if (adimHedefi(adimlar.first) != null) return true;
-    return adimlar.first.atlanabilir &&
-        adimlar.length > 1 &&
-        adimHedefi(adimlar[1]) != null;
+    if (adimHedefi(adimlar.first) == null) {
+      return adimlar.first.atlanabilir &&
+          adimlar.length > 1 &&
+          adimHedefi(adimlar[1]) != null;
+    }
+    // Dokunulmayan okuma adımı ekranı değiştirmez: ardından gelen ilk
+    // eylemin hedefi de şimdi ekranda olmalı (boş listede «bir üyeye dokun»
+    // adımına gelen rehber okuma adımına geri dönüp takılıyordu).
+    for (final adim in adimlar) {
+      if (adim.bilgi && adim.dokunulur) return true;
+      if (adimHedefi(adim) == null) return false;
+      if (!adim.bilgi) return true;
+    }
+    return true;
   }
 
   /// Ekran dışında kalan hedefi ortaya kaydırır; görünümünden uzun hedefin

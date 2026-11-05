@@ -411,10 +411,10 @@ const List<OgrenmeGorevi> ofisGorevleri = [
     id: 'ofis.yeniDers',
     sayfa: OgrenmeSayfasi.ofisProgram,
     baslik: 'Programa yeni bir dersi nasıl eklerim?',
-    kosulMetni: 'Program açılınca',
+    kosulMetni: 'Seçili günde boş saat olunca',
     adimlar: [
       OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.programIzgara),
+        hedef: Secici.hedef(Hedef.programBosSaat),
         metin: 'Boş bir saate dokun.',
       ),
       OgrenmeAdimi(
@@ -947,19 +947,19 @@ const List<OgrenmeGorevi> ofisGorevleri = [
     id: 'ofis.uyeBul',
     sayfa: OgrenmeSayfasi.ofisUyeler,
     baslik: 'Bir üyeyi nasıl bulurum?',
-    kosulMetni: 'Üye listesi açılınca',
+    kosulMetni: 'Listede üye olunca',
+    // Arama ve süzgeç yalnız gösterilir: denerken liste boşalırsa (eşleşmeyen
+    // arama, pasif üyesi olmayan süzgeç) son adımın satırı kalmıyordu.
     adimlar: [
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.ofisUyeArama),
-        metin: 'İsim, telefon ya da üye no yaz.',
+        metin: 'İsim, telefon ya da üye no ile ararsın.',
         bilgi: true,
-        dokunulur: true,
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.ofisUyeFiltre),
-        metin: 'Aramanın altından «Aktif» ya da «Pasif» seç.',
+        metin: 'Aramanın altında «Aktif» ya da «Pasif» seçersin.',
         bilgi: true,
-        dokunulur: true,
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.ofisUyeSatiri),

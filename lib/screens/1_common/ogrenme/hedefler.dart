@@ -261,11 +261,12 @@ abstract final class Hedef {
   /// Onay bekleyen dersler listesindeki gün satırı.
   static const ofisOnayGunu = 'ofis.onayGunu';
 
-  /// Program: gün şeridi, hafta başlığı, ızgara; iptalli ders / gün; talep
-  /// bloğu ve talep olan gün.
+  /// Program: gün şeridi, hafta başlığı, ızgara, ızgaradaki bir boş saat;
+  /// iptalli ders / gün; talep bloğu ve talep olan gün.
   static const programGunSeridi = 'ofis.programGunSeridi';
   static const programBaslik = 'ofis.programBaslik';
   static const programIzgara = 'ofis.programIzgara';
+  static const programBosSaat = 'ofis.programBosSaat';
   static const programIptalGun = 'ofis.programIptalGun';
   static const programIptalDers = 'ofis.programIptalDers';
   static const programIptalKunyesi = 'ofis.programIptalKunyesi';

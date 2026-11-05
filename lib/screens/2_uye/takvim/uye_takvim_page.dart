@@ -240,12 +240,15 @@ class _DersListesiPageState extends State<DersListesiPage>
       ? Hedef.takvimDers
       : (_rehberIptali(ders) ? Hedef.uyeIptalDers : null);
 
-  String? _rehberGunu(DateTime gun) {
+  /// Günün rehber kimlikleri. Aynı günde cevap bekleyen ve iptalli ders
+  /// varsa gün iki rehberin de hedefidir (yoksa iptal rehberi o günü bulamazdı).
+  List<String> _rehberGunleri(DateTime gun) {
     bool gunde(bool Function(EtkinlikModel) uygun) => _haftaDersleri.any((d) =>
         TimeUtils.isSameDay(d.baslangicTarihSaat, gun) && uygun(d));
-    if (gunde(_rehberDersi)) return Hedef.takvimDersliGun;
-    if (gunde(_rehberIptali)) return Hedef.uyeIptalGunu;
-    return null;
+    return [
+      if (gunde(_rehberDersi)) Hedef.takvimDersliGun,
+      if (gunde(_rehberIptali)) Hedef.uyeIptalGunu,
+    ];
   }
 
   void _onLessonTap(EtkinlikModel ders) {
@@ -318,7 +321,7 @@ class _DersListesiPageState extends State<DersListesiPage>
                     lessonCounts: _gunlukDersSayilari,
                     onDaySelected: _onDaySelected,
                     onPageChanged: _onPageChanged,
-                    ogrenmeHedefi: _rehberGunu,
+                    ogrenmeHedefleri: _rehberGunleri,
                   ),
                   if (!_ajandaGorunumu) _buildDayHeader(Theme.of(context)),
                   Expanded(
