@@ -42,6 +42,55 @@ görüyor (tam ekran popup; kalıcı erişim Ayarlar › "Neler yeni").
    popup işe yaramıyor demektir; kararı tek sürüme değil birkaç sürüme bakarak
    ver.
 
+## 3.15.0 — 2026-11-05
+
+### Mağaza metni (tr-TR)
+
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (478 karakter). 3.14.0 iki mağazada onaylandı ama
+yayına alınmadı; canlıdaki 3.13.1'den bu yana tüm üye yenilikleri (3.14.0 dahil).
+
+- Ders talebi ve kort kiralama: menüden uygun saati seçip talep açın; ofisin cevabı Taleplerim'de.
+- Rehber: başlıktaki ? simgesi ekranı adım adım tanıtır. Çıkış Ayarlar'a taşındı.
+- Başka işletmeye üyelik: Ayarlar'dan diğer işletmelerimize mevcut hesabınızla başvurun.
+- Menü her sayfada; ekranın sol kenarından kaydırarak da açılır.
+- Geçmiş Dersler: dersin durumu ve yoklamanız ayrı etiketlerle gösteriliyor.
+- Daha hızlı açılış, güçlendirilmiş güvenlik ve hata düzeltmeleri.
+
+### "Neler yeni?" popup'ı
+
+Backend `surum_notlari.json`'da 3.15.0 bloğu 3.14.0 maddelerini de taşır; yayınlanmayan 3.14.0 bloğu
+dosyadan çıkarıldı (DB'deki kaydı `yayinda=False` kalır). Üye: ders talebi, "?" rehberi, başka işletmeye
+üyelik, Geçmiş Dersler (menü maddesi "Tümünü gör"de). Antrenör: rehber, Ofis Soruyor, menü. Ofis:
+Talepler, plan dışı Telafi, rehber, bildirim listesi (ders silme uyarısı ve menü "Tümünü gör"de).
+Yönetici: Ana Sayfa adı, rehber, menü. Yeni ikon yok.
+
+### Yayın sırası (bu sürüme özel)
+
+1. Backend push + deploy (önce backend): 0104 hoca katsayısı, 0105 kullanılmayan modeller, 0106 işletme
+   başvurusu, 0107 plan dışı telafi. Hepsi eklemeli; 3.13.1/3.14.0 istemcileri etkilenmez.
+2. Mobil `perf/mobil-acilis` → `main`, tag `v3.15.0` → doğrudan üretim. App Store'da "yayın bekliyor"
+   duran 3.14.0, yeni sürüm gönderilmeden önce geri çekilmeli (Developer Reject) ya da yayınlanmalı.
+3. Mağazada canlı görülünce admin'den 3.15.0 sürüm notunun `yayinda`'sını aç.
+
+### Teknik
+
+- **Üye ders / kort kiralama talebi.** Menü › Ders Talebi ve Kort Kiralama → Taleplerim; ofiste
+  Menü › Talepler, antrenörde Menü › Ofis Soruyor. Backend Heroku v351'den beri canlı.
+- **"?" öğrenme rehberi.** 148 rehber dört profilde; açıkken yazma istekleri ağa çıkmaz
+  (`OgrenmeKapisi`). Ana sayfa başlıklarındaki çıkış butonu Ayarlar'a taşındı; yönetici ders kartı
+  "Yapılan" → "Onaylanan". Üye ve antrenörde ders iptal talebi ekranları kalktı (iptal yalnız ofiste).
+- **Başka işletmeye üyelik.** Ayarlar'dan başvuru (yalnız ana hesap), onay hedef işletmenin web
+  "Üye onayla"sında; onayda profil mevcut hesaba bağlanır.
+- **Plan dışı Telafi kararı.** Üyenin kendi hakkından, süresi en erken dolan düşülür; geri alma ve
+  sıfırlamada hak iade edilir. Web ve mobil ofis.
+- **Ofis bildirimleri.** Ofis tipleri ofis profilinin listesinde ve sayacında; ders teyidinin antrenör
+  kopyası antrenörde. Dekont bildirimi etkin role göre doğru üye sayfasını açar.
+- **Ders silme uyarısı.** Silinen dersten doğan ve başka derste kullanılmış telafi hakları kişi ve saatle
+  listelenir (`telafi_kullanilmis`).
+- **Açılış hızı.** FCM kaydı beklenmez, profil isteği konfigle paralel, sekmeler tembel yüklenir;
+  backend'de antrenör/duyuru N+1'leri giderildi.
+- **Android.** Gömülü Kotlin'e geçiş, KGP uygulayan eklentiler güncellendi.
+
 ## 3.14.0 — 2026-10-30
 
 ### Mağaza metni (tr-TR)
@@ -83,47 +132,3 @@ listede.
 - **Android.** AGP 9.1, Gradle 9.3.1, Kotlin 2.4.0, `add_2_calendar` 3.1.1; edge-to-edge. En az
   Flutter 3.44.
 - **Diğer.** Devir bildiriminde "Reddet" çerçeveli; antrenör SSS'ine iki soru.
-
-## 3.13.1 — 2026-10-23 (güvenlik güncellemesi)
-
-### Mağaza metni (tr-TR)
-
-`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (393 karakter). Yalnız 3.13.0'dan sonraki üye
-değişiklikleri; 3.13.0 bir mağazada henüz yayında değilse o mağazanın metnine 3.13.0 maddeleri eklenmeli.
-
-- Hesap güvenliği güçlendirildi: hatalı şifre girişinde kalan deneme hakkınız gösteriliyor, çok sayıda hatalı denemede giriş 15 dakika kilitleniyor.
-- Şifremi unuttum: sıfırlama bağlantısı, kullanıcı adınıza ya da telefonunuza bağlı hesapların e-posta adresine gönderiliyor.
-- Oturumunuz sona erdiğinde uygulama sizi giriş ekranına yönlendiriyor.
-- Çeşitli iyileştirmeler ve hata düzeltmeleri.
-
-### "Neler yeni?" popup'ı
-
-Yazılmadı: güvenlik sürümü, ekranda madde olacak kadar fark yok; hiçbir profil popup görmez.
-
-### Yayın sırası (bu sürüme özel)
-
-Backend değişikliği eski sürümlerle uyumsuz (`createToken` kanıt istiyor, eski token'lar düşüyor).
-Mobil önce iki mağazada onaylanır (elle yayın), sonra backend `guvenlik-guncellemeleri` yayına alınır,
-hemen ardından mobil yayınlanır ve admin'den 3.13.1 için zorunlu güncelleme açılır. Ayrıntı:
-[MOBIL_GELISTIRMELER.md](MOBIL_GELISTIRMELER.md) › Güvenlik.
-
-### Teknik
-
-- **Token alma.** `getMyMembers` parolayı doğrulayınca 10 dk'lık imzalı `giris_bileti` döner;
-  `createToken` bileti ya da aynı kullanıcının geçerli token'ını (profil değiştirme) ister. Mobil bileti
-  bellekte tutar, `createToken`'ı `auth: true` ile çağırır.
-- **Oturum düşmesi.** Token'da parola izi (`pv`): parola değişince ya da hesap kapanınca token düşer.
-  Mobil 401 + `AUTH_ERROR`/`AUTH_REQUIRED` alınca token'ı siler ve girişe döner ("beni hatırla"
-  varsa sessizce yeniden girer); geç dönen eski istek yeni token'ı silmez.
-- **Hız sınırı + hesap gizleme.** Giriş: hesaba 15 dk'da 10, IP'ye 100 hatalı deneme, mesajda kalan
-  hak; kayıtlı olmayan adda aynı yanıt. Şifre sıfırlama tek tip yanıt, hesap seçimi kalktı (eşleşen her
-  hesaba bağlantı gider). Sayaç veritabanında (`auths.0013`), IP `X-Forwarded-For`'un son değeri.
-- **Yetki.** Teyit/onay/değerlendirme yalnız kendi (veli: çocuklarının) ve kayıtlı olunan ders için;
-  iptal talebi yalnız antrenör, kendi dersi; `getAktifUyeListesi` yalnız antrenör; antrenöre öğrenci
-  için yalnız ad, doğum yılı, fotoğraf, seviye; ana hesap olmayan profile muhasebe/ödeme/dekont ve
-  ana sayfada bakiye yok; üye ders programında başkasının iletişim bilgisi, ücret, katsayı yok.
-- **Diğer.** Duyuru kitlesi rolden; aynı cihaza yeni giriş öncekinin bildirim kaydını kapatır; ödeme
-  sonuç sayfasında XSS kaçışı, callback sonuçlanmış siparişi bozmaz; etkinlik misafir QR'ını yalnız
-  oluşturan (ya da ofis/yönetici) siler; giriş yanıtında parola hash'i yok; teyit bildirimi bildirimin
-  üyesine yazılır; antrenörün `ANTRENOR_IPTAL` talebi artık reddedilmiyor.
-
