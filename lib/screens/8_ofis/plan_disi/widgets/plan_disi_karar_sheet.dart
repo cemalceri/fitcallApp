@@ -1,10 +1,11 @@
 // lib/screens/8_ofis/plan_disi/widgets/plan_disi_karar_sheet.dart
 //
-// Plan dışı üye / misafir için karar: borç yaz, paketten düş ya da ücretsiz.
-// Seçenekler (ödeyici adaylar ve aktif paketleri) sunucudan gelir; kurallar
-// plan_disi_karar_service'te (açıklama zorunlu, borçta tutar > 0, paket
-// ödeyene ait olmalı). Borç tutarı ofisin gördüğü tek para alanı — kullanıcı
-// kararıyla (2026-10-12).
+// Plan dışı üye / misafir için karar: borç yaz, paketten düş, telafi ya da
+// ücretsiz. Seçenekler (ödeyici adaylar, aktif paketleri, üyenin telafi hakkı)
+// sunucudan gelir; kurallar plan_disi_karar_service'te (açıklama zorunlu,
+// borçta tutar > 0, paket ödeyene ait olmalı, telafi yalnız üyenin kendi
+// hakkından). Borç tutarı ofisin gördüğü tek para alanı — kullanıcı kararıyla
+// (2026-10-12).
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
@@ -198,13 +199,19 @@ class _PlanDisiKararFormuState extends State<PlanDisiKararFormu> {
       .where((a) => a.uyeId == _hedefUyeId)
       .firstOrNull;
 
+  /// Plan dışı üyenin kendi telafi hakkı (misafirde ve başkasında 0 gelir).
+  int get _telafiHakki => widget.kisi.misafirMi
+      ? 0
+      : widget.secenekler.adaylar.fold(0, (t, a) => t + a.telafiHakki);
+
   void _kaydet() {
     if (!(_form.currentState?.validate() ?? false)) return;
     HapticFeedback.lightImpact();
     widget.onKaydet(PlanDisiKararGirdisi(
       karar: _karar,
       aciklama: _aciklama.text.trim(),
-      hedefUyeId: _hedefUyeId,
+      // Telafi her zaman kişinin kendi hakkından: ödeyen gönderilmez.
+      hedefUyeId: _karar == 'TELAFI' ? null : _hedefUyeId,
       uyeUrunId: _karar == 'PAKET' ? _paketId : null,
       tutar: _karar == 'BORC' ? _tutar.text.trim().replaceAll(',', '.') : null,
     ));
@@ -229,17 +236,30 @@ class _PlanDisiKararFormuState extends State<PlanDisiKararFormu> {
           ),
           const SizedBox(height: 16),
           SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'BORC', label: Text('Borç yaz')),
-              ButtonSegment(value: 'PAKET', label: Text('Paketten')),
-              ButtonSegment(value: 'UCRETSIZ', label: Text('Ücretsiz')),
+            segments: [
+              const ButtonSegment(value: 'BORC', label: Text('Borç yaz')),
+              const ButtonSegment(value: 'PAKET', label: Text('Paketten')),
+              // Hep görünür (rehber hedefi); hakkı yoksa ya da misafirse kapalı.
+              ButtonSegment(
+                value: 'TELAFI',
+                label: const Text('Telafi'),
+                enabled: _telafiHakki > 0,
+              ),
+              const ButtonSegment(value: 'UCRETSIZ', label: Text('Ücretsiz')),
             ],
             selected: {_karar},
             showSelectedIcon: false,
             onSelectionChanged: (s) => setState(() => _karar = s.first),
           ),
+          if (_karar == 'TELAFI') ...[
+            const SizedBox(height: 12),
+            Text(
+              '$_telafiHakki telafi hakkı var; süresi en erken dolan düşülür.',
+              style: context.metin.bodySmall,
+            ),
+          ],
           const SizedBox(height: 16),
-          if (_karar != 'UCRETSIZ')
+          if (_karar != 'UCRETSIZ' && _karar != 'TELAFI')
             OgrenmeHedefi(
               id: Hedef.planDisiUstlenen,
               child: DropdownButtonFormField<int>(

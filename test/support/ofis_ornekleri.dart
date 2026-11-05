@@ -176,6 +176,29 @@ PlanDisiSecenekler ornekSecenekler() => PlanDisiSecenekler.fromJson({
       ],
     });
 
+/// Plan dışı ÜYE için seçenekler: kendi satırında telafi hakkı var.
+PlanDisiSecenekler ornekUyeSecenekleri({int telafiHakki = 2}) =>
+    PlanDisiSecenekler.fromJson({
+      'kisi': 'Deniz Yılmaz',
+      'mevcut_karar': 'BEKLIYOR',
+      'adaylar': [
+        {
+          'uye_id': 7,
+          'ad_soyad': 'Deniz Yılmaz',
+          'varsayilan': true,
+          'paketler': [],
+          'telafi_hakki': telafiHakki,
+        },
+        {
+          'uye_id': 8,
+          'ad_soyad': 'Ayşe Arslanoğulları',
+          'varsayilan': false,
+          'paketler': [],
+          'telafi_hakki': 0,
+        },
+      ],
+    });
+
 /// Ders kayıt talebi örneği (backend talep_sozlugu biçimi). Uzun not ve uzun
 /// ad taşma testleri için bilerek seçildi.
 Map<String, dynamic> ornekTalepJson({

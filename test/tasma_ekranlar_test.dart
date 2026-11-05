@@ -2001,6 +2001,17 @@ void main() {
         onKaydet: (_) {},
       ),
     );
+    // Telafi segmentiyle dört seçenek: dar ekranda ve büyük yazıda sığmalı.
+    tasmaTesti(
+      'PlanDisiKararFormu (telafi hakkı olan üye)',
+      () => PlanDisiKararFormu(
+        ders: ornekPlanDisi().first,
+        kisi: ornekPlanDisi().first.kisiler.last,
+        secenekler: ornekUyeSecenekleri(),
+        kaydediliyor: false,
+        onKaydet: (_) {},
+      ),
+    );
   });
 
   group('Ders değerlendirmeleri', () {

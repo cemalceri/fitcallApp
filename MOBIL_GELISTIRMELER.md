@@ -37,6 +37,8 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
   Rehber "Başka işletmeye nasıl üye olurum?" (Ayarlar), üye SSS'i.
 - Kalan (kullanıcı): backend deploy, prod'da Pilates `IsletmeModel` + kort/hoca + hocalara yönetici ve ofis
   profili. Mobil ofiste üye onay ekranı yok (onay web'de); istenirse ayrı iş.
+- Test ajanı düzeltmeleri commit'li (hesapla eşleştirme, kilit, onay geri alınınca profil kapanır). Aynı
+  turda: ofis bildirim listesi, dekont bildirimi role göre, plan dışı "Telafi" kararı (migration `0107`).
 
 ### Üye ders / kort kiralama talebi (2026-10-31; backend CANLI Heroku v351, mobil 2026-11-05'te main'e alındı ve push edildi)
 - Kod tamam: üye sihirbazı + Taleplerim (`2_uye/talep/`; giriş yan menüde "Ders Talebi ve Kort Kiralama", ana sayfada yok), ofis sekmeli Talepler + detay/öneri

@@ -4,11 +4,14 @@
 // denetimi (sunucuyla aynı 5 MB ve tür kuralı), tutar ayrıştırma ve ofis
 // bildiriminin üye detayına yönlenmesi.
 
+import 'package:fitcall/common/constants.dart';
 import 'package:fitcall/common/dekont_dosya_util.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/6_muhasebe/banka_hesabi_model.dart';
 import 'package:fitcall/models/6_muhasebe/dekont_model.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
+import 'package:fitcall/screens/7_yonetici/uyeler/uye_detay_page.dart';
+import 'package:fitcall/screens/8_ofis/uyeler/ofis_uye_detay_page.dart';
 import 'package:fitcall/services/notification/notification_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -196,6 +199,16 @@ void main() {
         isNull,
       );
       expect(ofisDekontUyeId(_bildirim(tur: NotificationType.ofisDekontYuklendi)), isNull);
+    });
+
+    // Push tüm ofis rolündekilere gider; başka profildeyken ofis ucu
+    // "yetkiniz yok" diyordu (2026-11-05).
+    test('aktif role göre doğru detay açılır', () {
+      expect(dekontUyeDetaySayfasi(Roller.ofis.name, 7), isA<OfisUyeDetayPage>());
+      expect(dekontUyeDetaySayfasi(Roller.yonetici.name, 7), isA<UyeDetayPage>());
+      expect(dekontUyeDetaySayfasi(Roller.uye.name, 7), isNull);
+      expect(dekontUyeDetaySayfasi(Roller.antrenor.name, 7), isNull);
+      expect(dekontUyeDetaySayfasi(null, 7), isNull);
     });
   });
 }

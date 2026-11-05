@@ -333,6 +333,52 @@ void main() {
       await tester.pump();
       expect(find.textContaining('aktif paketi yok'), findsOneWidget);
     });
+
+    // Plan dışı üye kendi telafi hakkından düşülebilir (2026-11-05).
+    testWidgets('telafi: hakkı olan üyede seçilir, ödeyen gönderilmez',
+        (tester) async {
+      final kayit = <PlanDisiKararGirdisi>[];
+      final ders = ornekPlanDisi().first;
+      await tester.pumpWidget(_uygulama(PlanDisiKararFormu(
+        ders: ders,
+        kisi: ders.kisiler.last,
+        secenekler: ornekUyeSecenekleri(),
+        kaydediliyor: false,
+        onKaydet: kayit.add,
+      )));
+      await tester.tap(find.text('Telafi'));
+      await tester.pump();
+      expect(find.textContaining('2 telafi hakkı var'), findsOneWidget);
+      expect(find.text('Ücreti üstlenen'), findsNothing);
+      await tester.enterText(
+          find.widgetWithText(TextFormField, 'Açıklama'), 'Telafiden');
+      await tester.tap(find.text('Kararı kaydet'));
+      await tester.pump();
+      expect(kayit.single.karar, 'TELAFI');
+      expect(kayit.single.hedefUyeId, isNull);
+      expect(kayit.single.tutar, isNull);
+    });
+
+    testWidgets('telafi: misafirde ve hakkı olmayan üyede kapalı',
+        (tester) async {
+      final ders = ornekPlanDisi().first;
+      for (final (kisi, secenekler) in [
+        (ders.kisiler.first, ornekUyeSecenekleri()), // misafir
+        (ders.kisiler.last, ornekUyeSecenekleri(telafiHakki: 0)),
+      ]) {
+        await tester.pumpWidget(_uygulama(PlanDisiKararFormu(
+          key: UniqueKey(),
+          ders: ders,
+          kisi: kisi,
+          secenekler: secenekler,
+          kaydediliyor: false,
+          onKaydet: (_) {},
+        )));
+        await tester.tap(find.text('Telafi'));
+        await tester.pump();
+        expect(find.textContaining('telafi hakkı var'), findsNothing);
+      }
+    });
   });
 
   group('Ana Sayfa', () {

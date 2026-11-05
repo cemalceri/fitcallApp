@@ -924,6 +924,11 @@ const List<OgrenmeGorevi> ofisGorevleri = [
         bilgi: true,
       ),
       OgrenmeAdimi(
+        hedef: Secici.metin('Telafi'),
+        metin: '«Telafi»: üyenin telafi hakkı varsa ondan düşülür.',
+        bilgi: true,
+      ),
+      OgrenmeAdimi(
         hedef: Secici.metin('Ücretsiz'),
         metin: '«Ücretsiz»: kimseye borç ya da düşüm yazılmaz.',
         bilgi: true,

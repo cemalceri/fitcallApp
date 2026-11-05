@@ -307,7 +307,8 @@ const _tumBolumler = <_KapsamliBolum>[
               '• Ders kayıt talepleri — antrenörün programa eklenmesini istediği'
               ' dersler.\n'
               '• Plan dışı / misafir kararı — antrenörün derse eklediği plan dışı'
-              ' üyeler ve misafirler için borç, paket ya da ücretsiz kararı.\n'
+              ' üyeler ve misafirler için borç, paket, telafi ya da ücretsiz'
+              ' kararı.\n'
               '• Katılım cevabı bekleyen — bugün ve yarınki derslerde katılım'
               ' bildirimine cevap vermemiş üyeler.\n'
               'Üstteki "Bugün" kartı günün ders sayısını gösterir; dokununca'
@@ -349,9 +350,11 @@ const _tumBolumler = <_KapsamliBolum>[
           soru: 'Plan dışı / misafir kararı nasıl verilir?',
           cevap:
               'Menüden ya da Ana Sayfa\'dan "Plan dışı kararlar"ı açıp kişiye'
-              ' dokunun. Üç seçenek var: Borç yaz (tutar girilir, ücreti üstlenen'
+              ' dokunun. Dört seçenek var: Borç yaz (tutar girilir, ücreti üstlenen'
               ' kişinin hesabına yazılır), Paketten (seçilen kişinin aktif'
-              ' paketinden bir hak düşülür) ve Ücretsiz. Açıklama zorunludur: kişi'
+              ' paketinden bir hak düşülür), Telafi (plan dışı üyenin o gün geçerli'
+              ' telafi hakkı varsa süresi en erken dolanı kullanılır; misafirde'
+              ' yok) ve Ücretsiz. Açıklama zorunludur: kişi'
               ' ileride üye olursa borcun hangi dersten geldiği oradan anlaşılır.'
               ' Misafirden ödeme alma ve misafiri üyeye aktarma web panelindedir.',
         ),

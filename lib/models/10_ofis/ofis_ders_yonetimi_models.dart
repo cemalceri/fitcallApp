@@ -402,17 +402,23 @@ class PlanDisiAday {
   final bool varsayilan;
   final List<PlanDisiPaket> paketler;
 
+  /// Dersin gününde geçerli telafi hakkı sayısı; yalnız plan dışı üyenin
+  /// kendi satırında dolu (telafi başkasından düşülmez).
+  final int telafiHakki;
+
   const PlanDisiAday({
     required this.uyeId,
     required this.adSoyad,
     required this.varsayilan,
     this.paketler = const [],
+    this.telafiHakki = 0,
   });
 
   factory PlanDisiAday.fromJson(Map<String, dynamic> j) => PlanDisiAday(
         uyeId: _int(j['uye_id']),
         adSoyad: _metin(j['ad_soyad']) ?? '-',
         varsayilan: j['varsayilan'] == true,
+        telafiHakki: _int(j['telafi_hakki']),
         paketler: (j['paketler'] as List? ?? [])
             .map((e) => Map<String, dynamic>.from(e))
             .map((m) => PlanDisiPaket(

@@ -98,7 +98,7 @@ class OfisDersYonetimiService {
     return sonuc.data;
   }
 
-  /// [karar]: BORC | PAKET | UCRETSIZ (backend PlanDisiKararEnum).
+  /// [karar]: BORC | PAKET | UCRETSIZ | TELAFI (backend PlanDisiKararEnum).
   static Future<String> planDisiKarar({
     required List<PlanDisiKisi> kisiler,
     required String karar,

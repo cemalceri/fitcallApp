@@ -1,9 +1,12 @@
+import 'package:fitcall/common/constants.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/notification/notification_model.dart';
+import 'package:fitcall/screens/7_yonetici/uyeler/uye_detay_page.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/bildirim_detay_sheet.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/ders_teyit_bildirim_page.dart';
 import 'package:fitcall/screens/1_common/1_notification/pages/ders_devir_bildirim_page.dart';
 import 'package:fitcall/screens/8_ofis/uyeler/ofis_uye_detay_page.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_fcm_service.dart';
 import 'package:flutter/material.dart';
 
@@ -18,6 +21,15 @@ int? ofisDekontUyeId(NotificationModel n) {
   if (v == null) return null;
   if (v is int) return v;
   return int.tryParse(v.toString());
+}
+
+/// Dekont bildiriminde aktif profilin rolüne göre açılacak üye detayı:
+/// ofis → ofis detayı, yönetici → yönetici detayı; diğer roller null
+/// (bildirim detayı gösterilir).
+Widget? dekontUyeDetaySayfasi(String? rol, int uyeId) {
+  if (rol == Roller.ofis.name) return OfisUyeDetayPage(uyeId: uyeId);
+  if (rol == Roller.yonetici.name) return UyeDetayPage(uyeId: uyeId);
+  return null;
 }
 
 class NotificationRouter {
@@ -124,19 +136,28 @@ class NotificationRouter {
     }
 
     // 5) Ofise dekont bildirimi: üye detayını aç (ofis para görmez; dekont
-    // web'deki Dekontlar sayfasında işlenir, mobilde ekranı yok).
+    // web'deki Dekontlar sayfasında işlenir, mobilde ekranı yok). Push ofis
+    // rolündeki tüm kullanıcılara gider; aktif profil ofis değilse ofis ucu
+    // "yetkiniz yok" döner. Yönetici kendi üye detayını, diğerleri bildirimin
+    // detayını görür.
     final dekontUyeId = ofisDekontUyeId(notification);
-    if (dekontUyeId != null) {
-      nav.push(MaterialPageRoute(
-        builder: (_) => OfisUyeDetayPage(uyeId: dekontUyeId),
-      ));
+    final dekontSayfasi = dekontUyeId == null
+        ? null
+        : dekontUyeDetaySayfasi(
+            (await StorageService.uyeProfilBilgileriniGetir())?.rol,
+            dekontUyeId,
+          );
+    if (dekontSayfasi != null) {
+      nav.push(MaterialPageRoute(builder: (_) => dekontSayfasi));
       NotificationFCMService.instance.notifyDismissed();
       return;
     }
 
     // 6) Default: bildirim detay sheet
-    await BildirimDetaySheetWidget.goster(
-        context: ctx, notification: notification);
+    if (ctx.mounted) {
+      await BildirimDetaySheetWidget.goster(
+          context: ctx, notification: notification);
+    }
     NotificationFCMService.instance.notifyDismissed();
   }
 
