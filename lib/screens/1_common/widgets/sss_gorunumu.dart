@@ -51,6 +51,19 @@ class SssBolum {
   });
 }
 
+/// Üç rolün yardım sayfasında da duran soru: başlıktaki "?" rehberi
+/// (lib/screens/1_common/ogrenme/). Rehber metinleri değişirse burası da.
+const rehberSorusu = SssSoru(
+  ikon: Icons.help_outline_rounded,
+  soru: 'Başlıktaki "?" işareti ne işe yarar?',
+  cevap: 'O ekranda yapılabilen işleri listeler. Birini seçince uygulama sizi'
+      ' adım adım götürür: parlayan yere dokundukça ilerlersiniz. Rehber bir'
+      ' denemedir, hiçbir şey kaydedilmez; son adımda gerçekte ne olacağı yazar.'
+      ' Aradığınız iş listede yoksa aynı yerden Sık sorulanlar\'a geçersiniz.'
+      ' Ana sayfadaki "Ekranları birlikte tanıyalım mı?" kartı bir kez çıkar;'
+      ' "Sonra" derseniz tanıtım yine "?" içinde durur.',
+);
+
 /// Yardım sayfası kabuğu: AppBar + arama + bölümler + iletişim kartı.
 class SssGorunumu extends StatefulWidget {
   /// AppBar başlığı.

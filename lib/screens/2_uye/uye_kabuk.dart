@@ -3,6 +3,8 @@
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/1_common/event/event_model.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/erisim_kisitli.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
@@ -15,6 +17,7 @@ import 'package:fitcall/screens/6_muhasebe/muhasebe_page.dart';
 import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_modu.dart';
 
 /// Üyenin kalıcı sekme kabuğu.
 ///
@@ -123,13 +126,19 @@ class _UyeKabukState extends State<UyeKabuk> {
     };
   }
 
+  void _sekmeyeGec(int i) => setState(() {
+        _aktif = i;
+        _acilanlar.add(i);
+      });
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
       // Alt sekmelerdeyken geri tuşu uygulamadan çıkmasın, ana sayfaya dönsün.
       canPop: _aktif == 0,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) setState(() => _aktif = 0);
+        // Rehber açıkken geri tuşu yalnız rehberi kapatır.
+        if (!didPop && !OgrenmeModu.ornek.acik) setState(() => _aktif = 0);
       },
       child: Scaffold(
         key: _scaffoldKey,
@@ -144,41 +153,43 @@ class _UyeKabukState extends State<UyeKabuk> {
         },
         body: KabukMenusu(
           menuyuAc: () => _scaffoldKey.currentState?.openDrawer(),
+          aktifSekme: () => _aktif,
+          sekmeyeGec: _sekmeyeGec,
           child: IndexedStack(
             index: _aktif,
             children: List.generate(4, _sayfa),
           ),
         ),
-        bottomNavigationBar: KabukAltBar(
-          aktifIndeks: _aktif,
-          onSekme: (i) => setState(() {
-            _aktif = i;
-            _acilanlar.add(i);
-          }),
-          onMerkez: () =>
-              Navigator.pushNamed(context, routeEnums[SayfaAdi.qrKodKayit]!),
-          sekmeler: const [
-            KabukSekmesi(
-              ikon: Icons.home_outlined,
-              seciliIkon: Icons.home_rounded,
-              etiket: 'Ana Sayfa',
-            ),
-            KabukSekmesi(
-              ikon: Icons.calendar_month_outlined,
-              seciliIkon: Icons.calendar_month_rounded,
-              etiket: 'Takvim',
-            ),
-            KabukSekmesi(
-              ikon: Icons.account_balance_wallet_outlined,
-              seciliIkon: Icons.account_balance_wallet_rounded,
-              etiket: 'Hareketler',
-            ),
-            KabukSekmesi(
-              ikon: Icons.person_outline_rounded,
-              seciliIkon: Icons.person_rounded,
-              etiket: 'Hesabım',
-            ),
-          ],
+        bottomNavigationBar: OgrenmeHedefi(
+            id: Hedef.uyeAltBar,
+            child: KabukAltBar(
+            aktifIndeks: _aktif,
+            onSekme: _sekmeyeGec,
+            onMerkez: () =>
+                Navigator.pushNamed(context, routeEnums[SayfaAdi.qrKodKayit]!),
+            sekmeler: const [
+              KabukSekmesi(
+                ikon: Icons.home_outlined,
+                seciliIkon: Icons.home_rounded,
+                etiket: 'Ana Sayfa',
+              ),
+              KabukSekmesi(
+                ikon: Icons.calendar_month_outlined,
+                seciliIkon: Icons.calendar_month_rounded,
+                etiket: 'Takvim',
+              ),
+              KabukSekmesi(
+                ikon: Icons.account_balance_wallet_outlined,
+                seciliIkon: Icons.account_balance_wallet_rounded,
+                etiket: 'Hareketler',
+              ),
+              KabukSekmesi(
+                ikon: Icons.person_outline_rounded,
+                seciliIkon: Icons.person_rounded,
+                etiket: 'Hesabım',
+              ),
+            ],
+          ),
         ),
       ),
     );

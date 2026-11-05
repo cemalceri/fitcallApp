@@ -1,6 +1,7 @@
 // lib/screens/3_antrenor/antrenor_profil_page.dart
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
@@ -103,7 +104,8 @@ class _AntrenorProfilContent extends StatelessWidget {
             // Sekmeyken geri oku yerine kabuğun menüsü.
             leading: geriVar ? null : kabukMenuLeading(context),
             // Ad açıkken genişleyen alanda yazıyor; çubukta yalnız kapanınca.
-            title: KapaninciBaslik(child: Text('${antrenor.adi} ${antrenor.soyadi}')),
+            title: KapaninciBaslik(
+                child: Text('${antrenor.adi} ${antrenor.soyadi}')),
             // iOS'ta aşağı çekince başlık esner, üstünde zemin boşluğu açılmaz.
             stretch: true,
             actions: [
@@ -113,6 +115,8 @@ class _AntrenorProfilContent extends StatelessWidget {
                 onPressed: () =>
                     Navigator.pushNamed(context, routeEnums[SayfaAdi.ayarlar]!),
               ),
+              OgrenmeButonu(sssRotasi: routeEnums[SayfaAdi.antrenorYardim]!),
+              const SizedBox(width: 4),
             ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: EdgeInsets.zero,

@@ -8,6 +8,7 @@
 
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_renkleri.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_zaman.dart';
@@ -164,10 +165,13 @@ class _AyGezinme extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _OkButonu(
-          ikon: Icons.chevron_left_rounded,
-          etiket: 'Önceki hafta',
-          onTap: onGeri,
+        OgrenmeHedefi(
+          id: Hedef.uyeHaftaOnceki,
+          child: _OkButonu(
+            ikon: Icons.chevron_left_rounded,
+            etiket: 'Önceki hafta',
+            onTap: onGeri,
+          ),
         ),
         Flexible(
           child: Semantics(
@@ -193,16 +197,22 @@ class _AyGezinme extends StatelessWidget {
             ),
           ),
         ),
-        _OkButonu(
-          ikon: Icons.chevron_right_rounded,
-          etiket: 'Sonraki hafta',
-          onTap: onIleri,
+        OgrenmeHedefi(
+          id: Hedef.uyeHaftaSonraki,
+          child: _OkButonu(
+            ikon: Icons.chevron_right_rounded,
+            etiket: 'Sonraki hafta',
+            onTap: onIleri,
+          ),
         ),
         const SizedBox(width: Bosluk.s),
         // Yazılı buton: bugüne dönüş eskiden yalnız ay etiketine dokunmakla ya
         // da başlıktaki takvim ikonuyla oluyordu; ikisi de ne yaptığını
         // söylemiyordu.
-        _BugunButonu(onTap: onBugun),
+        OgrenmeHedefi(
+          id: Hedef.uyeHaftaBugun,
+          child: _BugunButonu(onTap: onBugun),
+        ),
       ],
     );
   }

@@ -138,13 +138,6 @@ const String getDersTumDegerlendirmelerUrl =
 // Yalnız yönetici: bir antrenörün puan + yorum + ders detayı.
 const String degerlendirmeListesiUrl = "$baseUrl/degerlendirmeListesi";
 
-// İptal Talebi
-const String createIptalTalebiUrl = "$baseUrl/etkinlikIptalTalebiOlustur";
-const String getKullaniciIptalTalepleriUrl =
-    "$baseUrl/getKullaniciIptalTalepleri";
-const String getDersIptalTalebiUrl = "$baseUrl/getDersIptalTalebi";
-const String iptalTalebiGeriCekUrl = "$baseUrl/iptalTalebiGeriCek";
-
 // =================== OFİS (ÖN BÜRO) ===================
 // Ders yönetimi uçları yöneticiyle ORTAK (yoneticiEtkinlik*, yoneticiDersler);
 // ofise özel olan yalnız üye uçları, çünkü tek fark alan kırpması: bu uçlar

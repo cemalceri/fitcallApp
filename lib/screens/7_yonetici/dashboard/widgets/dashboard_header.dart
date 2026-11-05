@@ -3,11 +3,15 @@
 import 'dart:convert';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
-import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:fitcall/common/tarih_util.dart';
@@ -71,10 +75,13 @@ class _DashboardHeaderState extends State<DashboardHeader> {
         if (widget.onMenuTap != null)
           Padding(
             padding: const EdgeInsets.only(right: Bosluk.s),
-            child: BaslikIkonButonu(
-              ikon: Icons.menu_rounded,
-              ipucu: 'Menü',
-              onTap: widget.onMenuTap!,
+            child: OgrenmeHedefi(
+              id: Hedef.yoneticiMenu,
+              child: BaslikIkonButonu(
+                ikon: Icons.menu_rounded,
+                ipucu: 'Menü',
+                onTap: widget.onMenuTap!,
+              ),
             ),
           ),
 
@@ -115,15 +122,11 @@ class _DashboardHeaderState extends State<DashboardHeader> {
           children: [
             const NotificationsBell(),
             if (_hasMultipleProfiles) const ProfilDegistirButonu(),
-            // Çıkış — renkli başlıkta kırmızı değil; diğer butonlarla aynı.
-            BaslikIkonButonu(
-              ikon: Icons.logout_rounded,
-              ipucu: 'Çıkış yap',
-              onTap: () async {
-                if (await cikisOnayla(context) && context.mounted) {
-                  AuthService.logout(context);
-                }
-              },
+            // Çıkış Ayarlar'da; başlığın sağ ucu "?".
+            OgrenmeButonu(
+              sayfa: OgrenmeSayfasi.yoneticiAnaSayfa,
+              sssRotasi: routeEnums[SayfaAdi.yoneticiYardim]!,
+              kutulu: true,
             ),
           ],
         ),

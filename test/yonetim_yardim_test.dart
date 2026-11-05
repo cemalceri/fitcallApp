@@ -134,7 +134,7 @@ void main() {
       expect(
           find.textContaining('Program ekranını nasıl okurum'), findsNothing);
       expect(
-          find.textContaining('Üye listesinde ne arayabilir'), findsOneWidget);
+          find.textContaining('Üye listesinde nasıl arama'), findsOneWidget);
     });
   });
 

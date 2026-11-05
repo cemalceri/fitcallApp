@@ -2,6 +2,8 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_varsayilan_poster.dart';
 import 'package:fitcall/services/api_result.dart';
@@ -179,7 +181,11 @@ class _DuyuruDetaySheetState extends State<DuyuruDetaySheet> {
 
                         const SizedBox(height: Bosluk.l),
 
-                        Text(duyuru.baslik, style: metin.headlineSmall),
+                        OgrenmeHedefi(
+                          id: Hedef.duyuruIcerik,
+                          child:
+                              Text(duyuru.baslik, style: metin.headlineSmall),
+                        ),
 
                         if (duyuru.altBaslik.isNotEmpty) ...[
                           const SizedBox(height: Bosluk.s),

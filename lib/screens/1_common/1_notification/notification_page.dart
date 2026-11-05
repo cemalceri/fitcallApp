@@ -2,6 +2,10 @@
 
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
@@ -293,43 +297,48 @@ class _NotificationPageState extends State<NotificationPage> {
             ),
           ),
           if (_notifications.isNotEmpty)
-            PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert_rounded, size: 22, color: on),
-              tooltip: 'Bildirim işlemleri',
-              onSelected: (secim) {
-                if (secim == 'okundu') {
-                  _markAllRead();
-                } else if (secim == 'sil') {
-                  _deleteAll();
-                }
-              },
-              itemBuilder: (_) => [
-                if (_unreadCount > 0)
+            OgrenmeHedefi(
+              id: Hedef.genelBildirimMenu,
+              child: PopupMenuButton<String>(
+                icon: Icon(Icons.more_vert_rounded, size: 22, color: on),
+                tooltip: 'Bildirim işlemleri',
+                onSelected: (secim) {
+                  if (secim == 'okundu') {
+                    _markAllRead();
+                  } else if (secim == 'sil') {
+                    _deleteAll();
+                  }
+                },
+                itemBuilder: (_) => [
+                  if (_unreadCount > 0)
+                    PopupMenuItem(
+                      value: 'okundu',
+                      child: Row(
+                        children: [
+                          Icon(Icons.done_all_rounded,
+                              size: 20, color: context.bildirimRenk.anaMavi),
+                          SizedBox(width: 12),
+                          Text('Tümünü okundu yap'),
+                        ],
+                      ),
+                    ),
                   PopupMenuItem(
-                    value: 'okundu',
+                    value: 'sil',
                     child: Row(
                       children: [
-                        Icon(Icons.done_all_rounded,
-                            size: 20, color: context.bildirimRenk.anaMavi),
-                        SizedBox(width: 12),
-                        Text('Tümünü okundu yap'),
+                        Icon(Icons.delete_outline_rounded,
+                            size: 20, color: context.renkler.hata),
+                        const SizedBox(width: 12),
+                        Text('Tümünü sil',
+                            style: TextStyle(color: context.renkler.hata)),
                       ],
                     ),
                   ),
-                PopupMenuItem(
-                  value: 'sil',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete_outline_rounded,
-                          size: 20, color: context.renkler.hata),
-                      const SizedBox(width: 12),
-                      Text('Tümünü sil',
-                          style: TextStyle(color: context.renkler.hata)),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
+          // Rollerle ortak sayfa: Sık sorulanlar açık profilin rolünden.
+          const OgrenmeButonu(sayfa: OgrenmeSayfasi.bildirimler),
         ],
       ),
     );
@@ -349,9 +358,14 @@ class _NotificationPageState extends State<NotificationPage> {
             direction: DismissDirection.endToStart,
             background: _silmeZemini(),
             onDismissed: (_) => _bildirimSil(items[i]),
-            child: _BildirimSatiri(
-              notification: items[i],
-              onTap: () => _onNotificationTap(items[i]),
+            child: ogrenmeHedefiSar(
+              items[i].notificationType == NotificationType.antrenorDevirTeklifi
+                  ? Hedef.antrenorBildirimDevir
+                  : (i == 0 ? Hedef.genelBildirimSatiri : null),
+              _BildirimSatiri(
+                notification: items[i],
+                onTap: () => _onNotificationTap(items[i]),
+              ),
             ),
           ),
         ],

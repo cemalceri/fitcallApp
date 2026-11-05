@@ -14,8 +14,11 @@ import 'dart:convert';
 
 import 'package:fitcall/models/6_muhasebe/banka_hesabi_model.dart';
 import 'package:fitcall/screens/1_common/ogrenme/gorevler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ilk_giris_karti.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_katmani.dart';
+import 'package:fitcall/screens/1_common/ogrenme/rehber_balonu.dart';
 import 'package:fitcall/models/6_muhasebe/dekont_model.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/banka_hesabi_karti.dart';
 import 'package:fitcall/screens/6_muhasebe/widgets/odeme_butonlari.dart';
@@ -697,6 +700,36 @@ void main() {
         ),
       ),
     );
+    // Antrenörler: sağda "?", sayı seçili dilimde ("Aktif 128").
+    tasmaTesti(
+      'SekmeBasligi (rehber + sayılı dilim)',
+      () => SekmeBasligi(
+        baslik: 'Antrenörler',
+        sag: const OgrenmeButonu(
+          sayfa: OgrenmeSayfasi.yoneticiAntrenorler,
+          kutulu: true,
+        ),
+        alt: BaslikSecici<String>(
+          secenekler: const [
+            ('aktif', 'Aktif 128'),
+            ('pasif', 'Pasif'),
+            ('tumu', 'Tümü'),
+          ],
+          secili: 'aktif',
+          onSec: (_) {},
+        ),
+      ),
+      sar: (w) => KabukMenusu(menuyuAc: () {}, child: w),
+    );
+    // Öğrencilerim (antrenör): yalnız "?", menüyle.
+    tasmaTesti(
+      'SekmeBasligi (rehber, menüyle)',
+      () => const SekmeBasligi(
+        baslik: 'Öğrencilerim',
+        sag: OgrenmeButonu(kutulu: true),
+      ),
+      sar: (w) => KabukMenusu(menuyuAc: () {}, child: w),
+    );
     // Kabuk sekmesindeyken solda menü butonu.
     tasmaTesti(
       'SekmeBasligi (kabuk menüsüyle)',
@@ -779,7 +812,7 @@ void main() {
         children: [
           Expanded(
             child: YikiciButon(
-                etiket: 'İptal talebini gönder ve öğrencilere bildir',
+                etiket: 'Dersi iptal et ve katılımcılara bildir',
                 onPressed: () {}),
           ),
           const SizedBox(width: 8),
@@ -937,6 +970,10 @@ void main() {
         onDersTap: (_) {},
         onTalepTap: (_) {},
         vurgulaAntrenorId: 1,
+        sag: const OgrenmeButonu(
+          sayfa: OgrenmeSayfasi.antrenorProgram,
+          kompakt: true,
+        ),
       );
     });
 
@@ -1424,6 +1461,26 @@ void main() {
 
     tasmaTesti('OfisAnaSayfaGorunumu (dolu)',
         () => anaSayfa(veri: ornekBekleyenIsler()));
+    tasmaTesti(
+      'OfisAnaSayfaGorunumu (ilk giriş kartıyla)',
+      () => OfisAnaSayfaGorunumu(
+        ofisAdi: 'Mehmet Yılmazoğulları Kandemir',
+        profilDegistir: true,
+        veri: ornekBekleyenIsler(),
+        yukleniyor: false,
+        hata: null,
+        onMenu: () {},
+        onYenile: () async {},
+        onYenidenDene: () {},
+        onOnay: () {},
+        onPlanDisi: () {},
+        onTeyit: () {},
+        onBugununDersleri: () {},
+        onDersKayitTalepleri: () {},
+        zil: const SizedBox(width: 42, height: 42),
+        ilkGirisKarti: IlkGirisKartiGorunumu(onBasla: () {}, onSonra: () {}),
+      ),
+    );
     tasmaTesti('OfisAnaSayfaGorunumu (bekleyen yok)',
         () => anaSayfa(veri: ornekBekleyenIsler(bos: true)));
     tasmaTesti(
@@ -2881,6 +2938,98 @@ void main() {
         denendi: true,
         donusEtiketi: gorev.sayfa.donusEtiketi,
         onDon: () {},
+      ),
+    );
+
+    // Katalogdaki en uzun metinler: adım paneli, okuma listesi, bitiş kuralı.
+    final adimlar = [for (final g in ogrenmeGorevleri) ...g.adimlar];
+    final enUzunAdim = adimlar.reduce(
+        (a, b) => b.metin.length > a.metin.length ? b : a);
+    final enUzunKural = ogrenmeGorevleri.reduce(
+        (a, b) => (b.kural?.length ?? 0) > (a.kural?.length ?? 0) ? b : a);
+    final enUzunTur = ogrenmeGorevleri.reduce(
+        (a, b) => b.adimlar.length > a.adimlar.length ? b : a);
+    tasmaTesti(
+      'RehberAdimPaneli (en uzun adım)',
+      () => RehberAdimPaneli(
+        adim: enUzunAdim,
+        no: 6,
+        toplam: 6,
+        onKapat: () {},
+        onAnladim: () {},
+      ),
+    );
+    tasmaTesti('OgrenmeOkuma (en çok adım)',
+        () => OgrenmeOkuma(gorev: enUzunTur));
+    tasmaTesti(
+      'RehberBitisKarti (en uzun kural)',
+      () => RehberBitisKarti(
+        kural: enUzunKural.kural,
+        denendi: false,
+        donusEtiketi: enUzunKural.sayfa.donusEtiketi,
+        onDon: () {},
+      ),
+    );
+    tasmaTesti(
+      'IlkGirisKartiGorunumu',
+      () => IlkGirisKartiGorunumu(onBasla: () {}, onSonra: () {}),
+    );
+
+    // Balon sahnede: en uzun adım, yanlış dokunuş ipucu ve "basınca" satırı
+    // aynı anda; hedef üstte (balon altta), uzun liste (balon üstte ya da
+    // delik kırpılır) ve bitişte son parlayan yerin yanında.
+    final enUzunSonuc = adimlar.fold<String>(
+        'kayıt silinir',
+        (s, a) => (a.sonuc?.length ?? 0) > s.length ? a.sonuc! : s);
+    final enAgirAdim = OgrenmeAdimi(
+      hedef: enUzunAdim.hedef,
+      metin: enUzunAdim.metin,
+      kalici: true,
+      sonuc: enUzunSonuc,
+      bilgi: true,
+    );
+    Widget sahne(Rect Function(Size) hedef, Widget balon,
+            {bool bitis = false}) =>
+        LayoutBuilder(
+          builder: (c, k) {
+            final alan = hedef(k.biggest);
+            return RehberSahnesi(
+              hedef: bitis ? null : alan,
+              konum: bitis ? alan : null,
+              guvenli: Offset.zero & k.biggest,
+              renkler: RehberRenkleri.baglamdan(c),
+              child: balon,
+            );
+          },
+        );
+    Widget agirPanel() => RehberAdimPaneli(
+          adim: enAgirAdim,
+          no: 6,
+          toplam: 6,
+          yanlis: true,
+          onKapat: () {},
+          onAnladim: () {},
+        );
+    tasmaTesti(
+      'RehberSahnesi (üstteki hedef, en ağır balon)',
+      () => sahne((b) => Rect.fromLTWH(16, 60, b.width - 32, 56), agirPanel()),
+    );
+    tasmaTesti(
+      'RehberSahnesi (alta uzanan liste, en ağır balon)',
+      () => sahne((b) => Rect.fromLTRB(0, b.height * 0.25, b.width, b.height),
+          agirPanel()),
+    );
+    tasmaTesti(
+      'RehberSahnesi (bitiş, en uzun kural)',
+      () => sahne(
+        (b) => Rect.fromLTWH(16, b.height - 120, b.width - 32, 60),
+        RehberBitisKarti(
+          kural: enUzunKural.kural,
+          denendi: true,
+          donusEtiketi: enUzunKural.sayfa.donusEtiketi,
+          onDon: () {},
+        ),
+        bitis: true,
       ),
     );
   });

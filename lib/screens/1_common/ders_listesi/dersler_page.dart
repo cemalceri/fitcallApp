@@ -1,6 +1,10 @@
 // lib/screens/1_common/ders_listesi/dersler_page.dart
 
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -146,6 +150,11 @@ class _DerslerPageState extends State<DerslerPage> {
                           ),
                         ),
                       ),
+                      // Yönetici sekmesi (salt okunur ders listesi).
+                      const OgrenmeButonu(
+                        sayfa: OgrenmeSayfasi.yoneticiDersler,
+                        kutulu: true,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -193,11 +202,14 @@ class _DerslerPageState extends State<DerslerPage> {
                           ),
                         ),
                       ),
-                      IconButton(
-                        tooltip: 'Sonraki gün',
-                        onPressed: _nextDay,
-                        icon: const Icon(Icons.chevron_right),
-                        style: kontrolStili,
+                      OgrenmeHedefi(
+                        id: Hedef.yoneticiDersSonrakiGun,
+                        child: IconButton(
+                          tooltip: 'Sonraki gün',
+                          onPressed: _nextDay,
+                          icon: const Icon(Icons.chevron_right),
+                          style: kontrolStili,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       TextButton(
@@ -302,14 +314,20 @@ class _DerslerPageState extends State<DerslerPage> {
             return Padding(
               padding:
                   const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.l),
-              child: DersIstatistikKartlar(data: _data!.istatistikler),
+              child: OgrenmeHedefi(
+                id: Hedef.yoneticiDersKartlari,
+                child: DersIstatistikKartlar(data: _data!.istatistikler),
+              ),
             );
           }
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (index > 1) const ListeAyraci(solBosluk: 78),
-              DersListeItemWidget(ders: dersler[index - 1]),
+              ogrenmeHedefiSar(
+                index == 1 ? Hedef.yoneticiDersSatiri : null,
+                DersListeItemWidget(ders: dersler[index - 1]),
+              ),
             ],
           );
         },

@@ -4,13 +4,21 @@ import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart'
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/common/tema.dart';
-import 'package:fitcall/services/core/auth_service.dart';
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
 class UyeHeader extends StatelessWidget {
   final String uyeAdi;
   final bool hasMultipleProfiles;
+
+  /// Ana hesap mı: alt profilde bakiye, paket ve bildirim sayfaları açılmaz;
+  /// bunları anlatan rehberler listeden çıkar.
+  final bool anaHesap;
 
   /// Sol üstteki menü (hamburger) butonuna dokununca çağrılır. null ise buton
   /// gizlenir.
@@ -20,6 +28,7 @@ class UyeHeader extends StatelessWidget {
     super.key,
     required this.uyeAdi,
     required this.hasMultipleProfiles,
+    this.anaHesap = true,
     this.onMenuTap,
   });
 
@@ -30,11 +39,6 @@ class UyeHeader extends StatelessWidget {
     return 'İyi akşamlar';
   }
 
-  Future<void> _logout(BuildContext context) async {
-    if (await cikisOnayla(context) && context.mounted) {
-      AuthService.logout(context);
-    }
-  }
 
   /// Takım renginde başlık bandının içinde durur (bkz. UyeHomePage); yazı ve
   /// ikon renkleri banttan gelir.
@@ -48,10 +52,13 @@ class UyeHeader extends StatelessWidget {
           if (onMenuTap != null)
             Padding(
               padding: const EdgeInsets.only(right: Bosluk.s),
-              child: BaslikIkonButonu(
-                ikon: Icons.menu_rounded,
-                ipucu: 'Menü',
-                onTap: onMenuTap!,
+              child: OgrenmeHedefi(
+                id: Hedef.genelKabukMenu,
+                child: BaslikIkonButonu(
+                  ikon: Icons.menu_rounded,
+                  ipucu: 'Menü',
+                  onTap: onMenuTap!,
+                ),
               ),
             ),
           if (onMenuTap == null) const SizedBox(width: 8),
@@ -91,16 +98,27 @@ class UyeHeader extends StatelessWidget {
           Row(
             children: [
               // Bildirim zili
-              const NotificationsBell(),
+              const OgrenmeHedefi(
+                id: Hedef.uyeBildirimZili,
+                child: NotificationsBell(),
+              ),
 
               // Profil değiştir
               if (hasMultipleProfiles) const ProfilDegistirButonu(),
 
-              // Çıkış — renkli başlıkta kırmızı değil; diğer butonlarla aynı.
-              BaslikIkonButonu(
-                ikon: Icons.logout_rounded,
-                ipucu: 'Çıkış yap',
-                onTap: () => _logout(context),
+              // "?" hep en sağda. Çıkış Ayarlar'da.
+              OgrenmeButonu(
+                sayfa: OgrenmeSayfasi.uyeAnaSayfa,
+                sssRotasi: routeEnums[SayfaAdi.yardim]!,
+                haric: {
+                  if (!hasMultipleProfiles) 'uye.cocukDersleri',
+                  if (!anaHesap) ...const {
+                    'uye.borcum',
+                    'uye.kalanHak',
+                    'uye.bildirimZili',
+                  },
+                },
+                kutulu: true,
               ),
             ],
           ),

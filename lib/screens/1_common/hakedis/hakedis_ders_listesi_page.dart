@@ -12,6 +12,8 @@ import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ders_karti.dart
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_stil.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 class HakedisDersListesiPage extends StatefulWidget {
@@ -177,8 +179,10 @@ class _HakedisDersListesiPageState extends State<HakedisDersListesiPage> {
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                     itemCount: veri!.dersler.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, i) =>
-                        HakedisDersKarti(ders: veri.dersler[i]),
+                    itemBuilder: (context, i) => OgrenmeHedefi(
+                      id: Hedef.hakedisDers,
+                      child: HakedisDersKarti(ders: veri.dersler[i]),
+                    ),
                   ),
                 ),
               ),

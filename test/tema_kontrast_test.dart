@@ -9,6 +9,7 @@
 // kırılır ve hangi tema/mod/çift olduğunu söyler.
 
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/rehber_balonu.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -290,6 +291,31 @@ void main() {
           metin('yol çipi', r.bilgi, r.bilgiZemin);
           // Çipin ikonu grafik öğe: eşik 3:1.
           metin('yol çipi ikonu', r.bilgi, r.bilgiZemin, 3);
+        });
+
+        // "?" rehberi: karartma, halka ve balon (rehber_balonu.dart).
+        test('rehber karartması, halkası ve balonu okunur', () {
+          final rr = RehberRenkleri.of(cs, g);
+          metin('balon yazısı', rr.onBalon, rr.balon);
+          metin('ipucu çipi', rr.balon, rr.onBalon);
+          // «Anladım» dolu buton: zemini balona karşı grafik öğe.
+          metin('balon eylemi', cs.primary, rr.balon, 3);
+          metin('balon eylemi yazısı', cs.onPrimary, cs.primary);
+          for (final (ad, zemin) in [
+            ('yüzey', cs.surface),
+            ('sayfa', sayfa),
+            ('başlık', g.baslik),
+          ]) {
+            final karartilmis = Color.alphaBlend(rr.karartma, zemin);
+            metin('halka / karartılmış $ad', rr.halka, karartilmis, 7);
+            // Koyu modda kap karartmadan ayrışmıyor; kenarı ana renk çizer.
+            metin('balon kenarı / karartılmış $ad', rr.balonKenari ?? rr.balon,
+                karartilmis, 3);
+          }
+          if (mod == Brightness.light) {
+            metin('parlayan / karartılmış yüzey', cs.surface,
+                Color.alphaBlend(rr.karartma, cs.surface), 8);
+          }
         });
 
         // Popup'ın kimlik yüzeyi: sürüm rozeti kapsül zemini üstünde.

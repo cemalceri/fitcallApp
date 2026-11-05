@@ -18,6 +18,11 @@ import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_antrenor_listes
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_stil.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/yonetici/yonetici_hakedis_service.dart';
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 class HakedisAntrenorSecimPage extends StatefulWidget {
@@ -117,6 +122,13 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Hakediş Saatleri'),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.yoneticiHakedis,
+            sssRotasi: routeEnums[SayfaAdi.yoneticiYardim]!,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -127,17 +139,23 @@ class _HakedisAntrenorSecimPageState extends State<HakedisAntrenorSecimPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextField(
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      hintText: 'Antrenör ara',
-                      prefixIcon: Icon(Icons.search_rounded, size: 20),
-                      border: OutlineInputBorder(),
+                  OgrenmeHedefi(
+                    id: Hedef.hakedisArama,
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        hintText: 'Antrenör ara',
+                        prefixIcon: Icon(Icons.search_rounded, size: 20),
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (deger) => setState(() => _arama = deger),
                     ),
-                    onChanged: (deger) => setState(() => _arama = deger),
                   ),
                   const SizedBox(height: 10),
-                  _Filtreler(secili: _filtre, onSec: _filtreDegis),
+                  OgrenmeHedefi(
+                    id: Hedef.hakedisFiltre,
+                    child: _Filtreler(secili: _filtre, onSec: _filtreDegis),
+                  ),
                 ],
               ),
             ),

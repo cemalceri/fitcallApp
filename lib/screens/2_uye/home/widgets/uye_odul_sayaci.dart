@@ -8,6 +8,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/uye_odul_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:flutter/material.dart';
@@ -120,18 +122,21 @@ class _UyeOdulSayaciState extends State<UyeOdulSayaci> {
                 _Fincan(doluluk: durum.doluluk),
                 const SizedBox(width: 14),
                 Expanded(child: _Metinler(durum: durum)),
-                IconButton(
-                  onPressed: () => _bilgiGoster(context, durum),
-                  tooltip: 'Ödül nasıl kazanılır?',
-                  icon: Icon(
-                    Icons.info_outline_rounded,
-                    size: 20,
-                    color: colorScheme.onSurfaceVariant,
+                OgrenmeHedefi(
+                  id: Hedef.uyeOdulBilgi,
+                  child: IconButton(
+                    onPressed: () => _bilgiGoster(context, durum),
+                    tooltip: 'Ödül nasıl kazanılır?',
+                    icon: Icon(
+                      Icons.info_outline_rounded,
+                      size: 20,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints.tightFor(width: 32, height: 32),
                   ),
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints:
-                      const BoxConstraints.tightFor(width: 32, height: 32),
                 ),
               ],
             ),

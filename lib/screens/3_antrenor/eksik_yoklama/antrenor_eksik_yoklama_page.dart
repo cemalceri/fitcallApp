@@ -1,6 +1,9 @@
 // lib/screens/3_antrenor/eksik_yoklama/antrenor_eksik_yoklama_page.dart
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/spinner_widgets.dart';
@@ -79,6 +82,13 @@ class _AntrenorEksikYoklamaPageState extends State<AntrenorEksikYoklamaPage> {
           'Eksik Yoklamalar',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.antrenorEksikYoklama,
+            sssRotasi: routeEnums[SayfaAdi.antrenorYardim]!,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: _isLoading
           ? const LoadingSpinnerWidget(message: 'Yükleniyor...')

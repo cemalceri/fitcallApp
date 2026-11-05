@@ -5,6 +5,8 @@
 // sebep listesi ve aynı 4 mod kullanılır (backend'de ortak servis işler).
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:flutter/material.dart';
 
@@ -112,22 +114,25 @@ class _DersIptalDialogState extends State<DersIptalDialog> {
                     const SizedBox(height: 16),
                     Text('İptal sebebi', style: _baslikStili(renk)),
                     const SizedBox(height: 6),
-                    DropdownButtonFormField<String>(
-                      initialValue: _sebep,
-                      isExpanded: true,
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        border: OutlineInputBorder(),
-                        hintText: 'Seçiniz',
+                    OgrenmeHedefi(
+                      id: Hedef.iptalSebebi,
+                      child: DropdownButtonFormField<String>(
+                        initialValue: _sebep,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          border: OutlineInputBorder(),
+                          hintText: 'Seçiniz',
+                        ),
+                        items: widget.sebepler
+                            .map((s) => DropdownMenuItem(
+                                  value: s.kod,
+                                  child: Text(s.ad,
+                                      overflow: TextOverflow.ellipsis),
+                                ))
+                            .toList(),
+                        onChanged: (v) => setState(() => _sebep = v),
                       ),
-                      items: widget.sebepler
-                          .map((s) => DropdownMenuItem(
-                                value: s.kod,
-                                child:
-                                    Text(s.ad, overflow: TextOverflow.ellipsis),
-                              ))
-                          .toList(),
-                      onChanged: (v) => setState(() => _sebep = v),
                     ),
                     const SizedBox(height: 16),
                     Text('Açıklama (opsiyonel)', style: _baslikStili(renk)),
@@ -143,29 +148,33 @@ class _DersIptalDialogState extends State<DersIptalDialog> {
                     const SizedBox(height: 16),
                     Text('İşlem şekli', style: _baslikStili(renk)),
                     const SizedBox(height: 6),
-                    RadioGroup<String>(
-                      groupValue: _mod,
-                      onChanged: (v) => setState(() => _mod = v ?? 'STANDART'),
-                      child: Column(
-                        children: widget.modlar
-                            .map(
-                              (m) => RadioListTile<String>(
-                                value: m.kod,
-                                dense: true,
-                                contentPadding: EdgeInsets.zero,
-                                title: Text(
-                                  m.ad,
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600),
+                    OgrenmeHedefi(
+                      id: Hedef.iptalIslemSekli,
+                      child: RadioGroup<String>(
+                        groupValue: _mod,
+                        onChanged: (v) =>
+                            setState(() => _mod = v ?? 'STANDART'),
+                        child: Column(
+                          children: widget.modlar
+                              .map(
+                                (m) => RadioListTile<String>(
+                                  value: m.kod,
+                                  dense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    m.ad,
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                  subtitle: m.aciklama.isEmpty
+                                      ? null
+                                      : Text(m.aciklama,
+                                          style: const TextStyle(fontSize: 12)),
                                 ),
-                                subtitle: m.aciklama.isEmpty
-                                    ? null
-                                    : Text(m.aciklama,
-                                        style: const TextStyle(fontSize: 12)),
-                              ),
-                            )
-                            .toList(),
+                              )
+                              .toList(),
+                        ),
                       ),
                     ),
                   ],
@@ -186,18 +195,21 @@ class _DersIptalDialogState extends State<DersIptalDialog> {
                       const SizedBox(width: 12),
                       Expanded(
                         flex: 2,
-                        child: YikiciButon(
-                          etiket: 'Dersi iptal et',
-                          onPressed: _sebep == null
-                              ? null
-                              : () => Navigator.pop(
-                                    context,
-                                    DersIptalSonucu(
-                                      sebep: _sebep!,
-                                      aciklama: _aciklamaCtrl.text.trim(),
-                                      mod: _mod,
+                        child: OgrenmeHedefi(
+                          id: Hedef.iptalOnay,
+                          child: YikiciButon(
+                            etiket: 'Dersi iptal et',
+                            onPressed: _sebep == null
+                                ? null
+                                : () => Navigator.pop(
+                                      context,
+                                      DersIptalSonucu(
+                                        sebep: _sebep!,
+                                        aciklama: _aciklamaCtrl.text.trim(),
+                                        mod: _mod,
+                                      ),
                                     ),
-                                  ),
+                          ),
                         ),
                       ),
                     ],

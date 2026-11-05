@@ -16,6 +16,8 @@
 //   tutucusu yükleme takılınca kutuyu bembeyaz bırakıyordu (2026-10-19);
 //   artık yüklenirken gösterge, hata olursa "tekrar dene" var.
 
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -276,35 +278,42 @@ class _BankaHesabiKartiState extends State<BankaHesabiKarti> {
             ],
           ),
           const SizedBox(height: Bosluk.s),
-          Padding(
-            padding: const EdgeInsets.only(left: 52),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('IBAN',
-                          style: metin.labelSmall
-                              ?.copyWith(color: cs.onSurfaceVariant)),
-                      SelectableText(
-                        hesap.ibanGruplu,
-                        style: metin.bodyLarge?.copyWith(
-                          fontFamily: 'monospace',
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                          letterSpacing: 0.2,
-                          height: 1.4,
+          OgrenmeHedefi(
+            id: Hedef.havaleIban,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 52),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('IBAN',
+                            style: metin.labelSmall
+                                ?.copyWith(color: cs.onSurfaceVariant)),
+                        SelectableText(
+                          hesap.ibanGruplu,
+                          style: metin.bodyLarge?.copyWith(
+                            fontFamily: 'monospace',
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                            letterSpacing: 0.2,
+                            height: 1.4,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                _KopyalaButonu(
-                  ipucu: 'IBAN kopyala',
-                  kopyalandi: _kopyalanan == 'iban',
-                  onTap: () => _kopyala('iban', hesap.iban, 'IBAN kopyalandı'),
-                ),
-              ],
+                  OgrenmeHedefi(
+                    id: Hedef.uyeIbanKopyala,
+                    child: _KopyalaButonu(
+                      ipucu: 'IBAN kopyala',
+                      kopyalandi: _kopyalanan == 'iban',
+                      onTap: () =>
+                          _kopyala('iban', hesap.iban, 'IBAN kopyalandı'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           if (hesap.karekodUrl != null) ...[

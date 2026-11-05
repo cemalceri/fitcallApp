@@ -30,4 +30,5 @@ Yayın Codemagic'te, tag ile. `lib/common/api_urls.dart`'ta `baseUrl` **her zama
 - **Renk:** ekranda sabit renk yazma; `context.cs` / `context.renkler` / `context.gecis`. Başlıklar `gecis.baslik`, elle çizilen başlık `BaslikBandi`. `tema_kontrast_test` ve `gomulu_renk_mandal_test` geçmeli.
 - **Taşma:** yazı ölçeği 1.0–1.3; her yeni görsel widget `test/tasma_ekranlar_test.dart`'a (`tasmaTesti`). API çağıran sayfanın görünümünü veriyle beslenen ayrı widget'a çıkar.
 - **Listeler** `ListeSatiri` (kart yok), uzun listeler `SayfaliListe` (20'şer). **Yükleme** `Iskelet*`; `CircularProgressIndicator` yalnız buton içi / auth akışı.
+- **"?" rehberi:** koşullu öğe (rozet, yıldız, sayı) adımda "varsa" diye yazılır; hedef adımın gerektirdiği durumdaki öğeye konur (listenin ilkine değil); dokunuştan sonra boş kalabilecek ekranda rehber o dokunuşla biter.
 - Takvim çizelgesi ortak (`1_common/takvim/`), ders bloğu (`lesson_block`, `position_calculator`) üye ve antrenörde ayrı; birindeki değişiklik çoğu zaman ötekinde de gerekir.

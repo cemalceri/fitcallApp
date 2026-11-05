@@ -1,5 +1,7 @@
 // lib/screens/7_yonetici/raporlar/widgets/antrenor_performans_section.dart
 
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_kaydirmali_liste.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
@@ -61,7 +63,9 @@ class AntrenorPerformansSection extends StatelessWidget {
           else
             RaporKaydirmaliListe(
               satirlar: [
-                for (final item in data)
+                for (final (i, item) in data.indexed)
+                  ogrenmeHedefiSar(
+                    i == 0 ? Hedef.raporAntrenorSatiri : null,
                   Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(12),
@@ -146,6 +150,7 @@ class AntrenorPerformansSection extends StatelessWidget {
                           ),
                       ],
                     ),
+                  ),
                   ),
               ],
             ),

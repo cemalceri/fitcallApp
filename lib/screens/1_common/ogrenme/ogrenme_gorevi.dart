@@ -5,9 +5,50 @@
 // yazısıyla ([Secici.metin]) ya da yazısı olmayan öğeye sarılan
 // [OgrenmeHedefi] kimliğiyle ([Secici.hedef]) bulunur.
 
+import 'package:fitcall/common/constants.dart';
+
 /// Rehberi olan sayfalar. "?" butonu hangi listeyi açacağını buradan bilir.
 enum OgrenmeSayfasi {
-  uyeTakvim('Takvime dön');
+  uyeAnaSayfa('Ana sayfaya dön'),
+  uyeTakvim('Takvime dön'),
+  uyeHareketler('Hareketlere dön'),
+  uyeHavale('Ödeme sayfasına dön'),
+  uyeUrunler('Paketlere dön'),
+  uyeTelafi('Telafi derslerine dön'),
+  uyeGecmisDersler('Geçmiş derslere dön'),
+  uyeProfil('Hesabıma dön'),
+  uyeTeyit('Katılım sayfasına dön'),
+  uyeEvent('Davet sayfasına dön'),
+
+  /// Bütün rollerde aynı sayfalar; rol bağımlı rehberde `roller` verilir.
+  qrOlustur('QR ekranına dön'),
+  bildirimler('Bildirimlere dön'),
+  ayarlar('Ayarlara dön'),
+
+  /// Ofis ve yönetici ortak.
+  duyurular('Duyurulara dön'),
+  antrenorAnaSayfa('Ana sayfaya dön'),
+  antrenorTakvim('Takvime dön'),
+  antrenorEksikYoklama('Eksik yoklamalara dön'),
+  antrenorProgram('Programa dön'),
+  antrenorHakedis('Hakediş saatlerine dön'),
+  antrenorCalismaSaatleri('Çalışma saatlerine dön'),
+  antrenorOgrenciler('Öğrencilerime dön'),
+  ofisAnaSayfa('Ana sayfaya dön'),
+  ofisProgram('Programa dön'),
+  ofisDersler('Derslere dön'),
+  ofisDersKayitTalepleri('Taleplere dön'),
+  ofisPlanDisi('Kararlara dön'),
+  ofisUyeler('Üyelere dön'),
+  qrDogrula('QR doğrulamaya dön'),
+  yoneticiAnaSayfa('Ana sayfaya dön'),
+  yoneticiRaporlar('Raporlara dön'),
+  yoneticiUyeler('Üyelere dön'),
+  yoneticiUyeDetay('Üye detayına dön'),
+  yoneticiAntrenorler('Antrenörlere dön'),
+  yoneticiDersler('Derslere dön'),
+  yoneticiDegerlendirmeler('Değerlendirmelere dön'),
+  yoneticiHakedis('Hakediş saatlerine dön');
 
   /// Bitişte rehberin başladığı sayfaya dönen butonun adı. Yönelme eki
   /// sayfa adından güvenle üretilemediği için elle yazılır.
@@ -56,9 +97,13 @@ class OgrenmeAdimi {
   /// günde ders varken "Dersi olan bir güne dokun").
   final bool atlanabilir;
 
-  /// Okuma adımı: hedef parlar, kullanıcı ona dokunup yazabilir; adım
-  /// «Anladım» ile geçilir.
+  /// Okuma adımı: hedef parlar, adım «Anladım» ile geçilir.
   final bool bilgi;
+
+  /// Okuma adımında parlayan yere dokunulabilir mi (yazı alanı, seçim).
+  /// Varsayılan kapalı: parlayan kart sekme değiştiriyor ya da sayfa
+  /// açıyorsa dokunuş rehberi yolundan çıkarmasın.
+  final bool dokunulur;
 
   const OgrenmeAdimi({
     required this.hedef,
@@ -67,6 +112,7 @@ class OgrenmeAdimi {
     this.sonuc,
     this.atlanabilir = false,
     this.bilgi = false,
+    this.dokunulur = false,
   });
 }
 
@@ -87,6 +133,10 @@ class OgrenmeGorevi {
   /// cevapla ve ekrandaki bilgi notuyla çelişmemeli.
   final String? kural;
 
+  /// Rollerle ortak sayfada (Bildirimler, Ayarlar) yalnız bu rollere
+  /// gösterilir; boşsa herkese.
+  final Set<Roller> roller;
+
   const OgrenmeGorevi({
     required this.id,
     required this.sayfa,
@@ -94,5 +144,9 @@ class OgrenmeGorevi {
     required this.kosulMetni,
     required this.adimlar,
     this.kural,
+    this.roller = const {},
   });
+
+  /// [rol] (profilin rol adı) bu rehberi görür mü?
+  bool rolde(String? rol) => roller.isEmpty || roller.any((r) => r.name == rol);
 }

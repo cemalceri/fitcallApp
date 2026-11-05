@@ -1,6 +1,8 @@
 // lib/screens/3_antrenor/takvim/widgets/misafir_ekle_sheet.dart
 
 import 'package:fitcall/models/5_etkinlik/misafir_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
@@ -111,24 +113,27 @@ class _MisafirEkleSheetState extends State<MisafirEkleSheet> {
               ),
             ),
             const SizedBox(height: 18),
-            TextField(
-              controller: _adCtrl,
-              autofocus: true,
-              textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                labelText: 'Ad soyad',
-                hintText: 'Örn. Mehmet Kaya',
-                errorText: _hata,
-                filled: true,
-                fillColor: Colors.grey.withValues(alpha: 0.10),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+            OgrenmeHedefi(
+              id: Hedef.antrenorMisafirAd,
+              child: TextField(
+                controller: _adCtrl,
+                autofocus: true,
+                textCapitalization: TextCapitalization.words,
+                decoration: InputDecoration(
+                  labelText: 'Ad soyad',
+                  hintText: 'Örn. Mehmet Kaya',
+                  errorText: _hata,
+                  filled: true,
+                  fillColor: Colors.grey.withValues(alpha: 0.10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
+                onChanged: (_) {
+                  if (_hata != null) setState(() => _hata = null);
+                },
               ),
-              onChanged: (_) {
-                if (_hata != null) setState(() => _hata = null);
-              },
             ),
             const SizedBox(height: 12),
             TextField(

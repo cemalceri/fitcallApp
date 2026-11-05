@@ -3,6 +3,8 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -59,12 +61,21 @@ class UyeIstatistikKartlar extends StatelessWidget {
           for (final (i, (kod, etiket, deger, ton)) in kartlar.indexed) ...[
             if (i > 0) const SizedBox(width: 6),
             Expanded(
-              child: _FiltreKarti(
-                etiket: etiket,
-                deger: deger,
-                ton: ton,
-                secili: kod == secili,
-                onTap: () => onSec(kod),
+              child: ogrenmeHedefiSar(
+                switch (kod) {
+                  // Borçlu yokken borç rehberi listede takılmasın.
+                  UyeOnAyari.borclu when (d?.borcluUye ?? 0) > 0 =>
+                    Hedef.uyeBorcluKart,
+                  UyeOnAyari.yeni => Hedef.uyeYeniKart,
+                  _ => null,
+                },
+                _FiltreKarti(
+                  etiket: etiket,
+                  deger: deger,
+                  ton: ton,
+                  secili: kod == secili,
+                  onTap: () => onSec(kod),
+                ),
               ),
             ),
           ],

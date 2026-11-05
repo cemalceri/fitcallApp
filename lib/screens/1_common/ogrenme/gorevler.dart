@@ -4,47 +4,35 @@
 // cümle ve en çok 8 kelime, buton adı ekrandaki gibi «…» içinde. Yapı
 // test/ogrenme/gorev_katalogu_test.dart ile, ekranla uyumu sürücü testiyle
 // korunur.
+//
+// Ana sayfa turları (`*.anaSayfa`) yalnız okuma adımlarıdır; ilk giriş
+// kartının «Başla»sı bunları açar.
+//
+// Rehberler rol dosyalarında (gorevler_<rol>.dart); bu dosya yalnız
+// birleştirir. Rollerle ortak sayfalar gorevler_genel / gorevler_duyuru'da.
 
-import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/gorevler_antrenor.dart';
+import 'package:fitcall/screens/1_common/ogrenme/gorevler_duyuru.dart';
+import 'package:fitcall/screens/1_common/ogrenme/gorevler_genel.dart';
+import 'package:fitcall/screens/1_common/ogrenme/gorevler_ofis.dart';
+import 'package:fitcall/screens/1_common/ogrenme/gorevler_uye.dart';
+import 'package:fitcall/screens/1_common/ogrenme/gorevler_yonetici.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 
 const List<OgrenmeGorevi> ogrenmeGorevleri = [
-  OgrenmeGorevi(
-    id: 'uye.katilamayacagim',
-    sayfa: OgrenmeSayfasi.uyeTakvim,
-    baslik: 'Derse gelemeyeceğimi nasıl bildiririm?',
-    kosulMetni: 'Takviminde ders olunca',
-    adimlar: [
-      OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.takvimDersliGun),
-        metin: 'Dersi olan bir güne dokun.',
-        atlanabilir: true,
-      ),
-      OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.takvimDers),
-        metin: 'Gelecek bir dersine dokun.',
-      ),
-      OgrenmeAdimi(
-        hedef: Secici.metin('Katılamayacağım'),
-        metin: '«Katılamayacağım»a dokun.',
-      ),
-      OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.takvimAciklama),
-        metin: 'İstersen kutuya nedenini yaz.',
-        bilgi: true,
-      ),
-      OgrenmeAdimi(
-        hedef: Secici.metin('Katılamayacağımı Bildir'),
-        metin: '«Katılamayacağımı Bildir»e dokun.',
-        kalici: true,
-        sonuc: 'ofise ve hocana haber gider',
-      ),
-    ],
-    kural: 'Dersten en az 24 saat önce bildirirsen ders hakkın yanmaz. '
-        'Daha geç bildirirsen ders hakkın yanar. '
-        'Grup dersinde diğerleri geliyorsa ders iptal olmaz.',
-  ),
+  ...uyeGorevleri,
+  ...antrenorGorevleri,
+  ...ofisGorevleri,
+  ...yoneticiGorevleri,
+  ...genelGorevler,
+  ...duyuruGorevleri,
 ];
 
-List<OgrenmeGorevi> sayfaGorevleri(OgrenmeSayfasi sayfa) =>
-    ogrenmeGorevleri.where((g) => g.sayfa == sayfa).toList();
+/// [sayfa]'nın rehberleri; [rol] verilirse yalnız o role açık olanlar.
+List<OgrenmeGorevi> sayfaGorevleri(OgrenmeSayfasi sayfa, {String? rol}) =>
+    ogrenmeGorevleri
+        .where((g) => g.sayfa == sayfa && (rol == null || g.rolde(rol)))
+        .toList();
+
+OgrenmeGorevi gorevBul(String id) =>
+    ogrenmeGorevleri.firstWhere((g) => g.id == id);

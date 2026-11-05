@@ -4,17 +4,21 @@
 // bildirim, profil değiştir, çıkış), bugünün özeti (kimlik yüzeyi) ve bekleyen
 // işler. Her iş satırı ilgili ekrana götürür. API çağrısı içermez.
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
-import 'package:fitcall/services/core/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -36,6 +40,10 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
   /// Bildirim zili (testte ağ/servis gerektirmeyen yer tutucu verilebilir).
   final Widget zil;
 
+  /// "Ekranları birlikte tanıyalım mı?" kartı (sayfa verir; görünüm
+  /// depolamaya dokunmasın diye).
+  final Widget ilkGirisKarti;
+
   const OfisAnaSayfaGorunumu({
     super.key,
     required this.ofisAdi,
@@ -52,6 +60,7 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
     required this.onBugununDersleri,
     required this.onDersKayitTalepleri,
     this.zil = const NotificationsBell(),
+    this.ilkGirisKarti = const SizedBox.shrink(),
   });
 
   static final _gun = DateFormat('d MMMM EEEE', 'tr_TR');
@@ -92,8 +101,11 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
         if (onMenu != null)
           Padding(
             padding: const EdgeInsets.only(right: Bosluk.s),
-            child: BaslikIkonButonu(
-                ikon: Icons.menu_rounded, ipucu: 'Menü', onTap: onMenu!),
+            child: OgrenmeHedefi(
+              id: Hedef.ofisMenu,
+              child: BaslikIkonButonu(
+                  ikon: Icons.menu_rounded, ipucu: 'Menü', onTap: onMenu!),
+            ),
           )
         else
           const SizedBox(width: 8),
@@ -116,17 +128,13 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
             ],
           ),
         ),
-        zil,
+        OgrenmeHedefi(id: Hedef.ofisZil, child: zil),
         if (profilDegistir) const ProfilDegistirButonu(),
-        // Çıkış — üye/antrenör/yönetici başlıklarındakiyle aynı, onaylı.
-        BaslikIkonButonu(
-          ikon: Icons.logout_rounded,
-          ipucu: 'Çıkış yap',
-          onTap: () async {
-            if (await cikisOnayla(context) && context.mounted) {
-              AuthService.logout(context);
-            }
-          },
+        // Çıkış Ayarlar'da; başlığın sağ ucu "?".
+        OgrenmeButonu(
+          sayfa: OgrenmeSayfasi.ofisAnaSayfa,
+          sssRotasi: routeEnums[SayfaAdi.ofisYardim]!,
+          kutulu: true,
         ),
       ],
     );
@@ -157,12 +165,16 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
     }
     final v = veri!;
     return [
+      ilkGirisKarti,
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-        child: _BugunKarti(
-            veri: v,
-            tarih: _gun.format(bugunKulup()),
-            onTap: onBugununDersleri),
+        child: OgrenmeHedefi(
+          id: Hedef.ofisBugun,
+          child: _BugunKarti(
+              veri: v,
+              tarih: _gun.format(bugunKulup()),
+              onTap: onBugununDersleri),
+        ),
       ),
       const ListeGrupBasligi(baslik: 'Bekleyen işler'),
       if (v.isYok)

@@ -9,6 +9,8 @@ import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_haritasi_sec
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_raporu_section.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_ozet_kartlar.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/tahsilat_raporu_section.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -35,6 +37,7 @@ class RaporDonemGrubu extends StatelessWidget {
     return DonemKutusu(
       ikon: Icons.payments_rounded,
       baslik: 'Ciro ve tahsilat',
+      seciciHedefi: Hedef.raporCiroSecici,
       seciliDonem: donem,
       onDonemChanged: onDonemChanged,
       yukleniyor: yukleniyor,
@@ -43,13 +46,22 @@ class RaporDonemGrubu extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Aktif üye (o anki sayı, dönemden bağımsız) panoda "Şu an" altında.
-          RaporOzetKartlar(
-            data: data.ozetKartlar.where((k) => !k.anlikMi).toList(),
+          OgrenmeHedefi(
+            id: Hedef.raporOzetKartlar,
+            child: RaporOzetKartlar(
+              data: data.ozetKartlar.where((k) => !k.anlikMi).toList(),
+            ),
           ),
           const SizedBox(height: 16),
-          CiroRaporuSection(data: data.ciroRaporu),
+          OgrenmeHedefi(
+            id: Hedef.raporCiroTablosu,
+            child: CiroRaporuSection(data: data.ciroRaporu),
+          ),
           const SizedBox(height: 16),
-          TahsilatRaporuSection(data: data.tahsilatRaporu),
+          OgrenmeHedefi(
+            id: Hedef.raporTahsilatTablosu,
+            child: TahsilatRaporuSection(data: data.tahsilatRaporu),
+          ),
         ],
       ),
     );
@@ -78,6 +90,7 @@ class RaporKortAntrenorGrubu extends StatelessWidget {
       ikon: Icons.sports_tennis_rounded,
       baslik: 'Kort ve antrenör',
       seciliDonem: donem,
+      seciciHedefi: Hedef.raporKortSecici,
       onDonemChanged: onDonemChanged,
       yukleniyor: yukleniyor,
       iskeletYukseklikleri: const [260, 260],
@@ -126,7 +139,10 @@ class RaporHaftalikYogunluk extends StatelessWidget {
           ikon: Icons.grid_on_rounded,
           etiket: 'Bu hafta · ${haftaAraligi(bugun)}',
         ),
-        DolulukHaritasiSection(data: data),
+        OgrenmeHedefi(
+          id: Hedef.raporIsiHaritasi,
+          child: DolulukHaritasiSection(data: data),
+        ),
       ],
     );
   }

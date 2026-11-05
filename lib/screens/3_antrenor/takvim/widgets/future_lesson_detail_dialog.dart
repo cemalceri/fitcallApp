@@ -3,11 +3,11 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
-import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'lesson_cancel_dialog.dart';
 import 'lesson_devir_dialog.dart';
 import 'takvim_constants.dart';
 import 'package:fitcall/common/tema.dart';
@@ -289,7 +289,9 @@ class FutureLessonDetailDialog extends StatelessWidget {
   /* -------------------------------------------------------------------------- */
 
   Widget _buildKatilimDurumlari(BuildContext context) {
-    return Column(
+    return OgrenmeHedefi(
+      id: Hedef.antrenorDetayKatilimcilar,
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -329,7 +331,7 @@ class FutureLessonDetailDialog extends StatelessWidget {
           ),
         ),
       ],
-    );
+    ));
   }
 
   Widget _buildUyeDurumChip(
@@ -443,7 +445,9 @@ class FutureLessonDetailDialog extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Detay için "Devret" butonuna dokunun',
+                  benTalepEden
+                      ? 'Detay ve geri çekmek için "Talebi Gör"e dokunun'
+                      : 'Teklifi Bildirimler sayfasından yanıtlayabilirsiniz',
                   style: TextStyle(
                     fontSize: 11,
                     color: context.takvim.textSecondary,
@@ -491,16 +495,6 @@ class FutureLessonDetailDialog extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            // Yıkıcı aksiyon kenarlıklı: sayfanın baskın aksiyonu gibi durmasın.
-            child: YikiciButon(
-              etiket: 'Dersi İptal Et',
-              ikon: Icons.event_busy_rounded,
-              onPressed: () => _iptalAc(context),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
-          ),
         ],
       ),
     );
@@ -514,20 +508,6 @@ class FutureLessonDetailDialog extends StatelessWidget {
       LessonDevirDialog.show(
         context: rootContext,
         ders: ders,
-        onSuccess: onSuccess,
-      );
-    });
-  }
-
-  void _iptalAc(BuildContext context) {
-    HapticFeedback.selectionClick();
-    final rootContext = Navigator.of(context, rootNavigator: true).context;
-    Navigator.pop(context);
-    Future.microtask(() {
-      LessonCancelDialog.show(
-        context: rootContext,
-        ders: ders,
-        userId: userId,
         onSuccess: onSuccess,
       );
     });

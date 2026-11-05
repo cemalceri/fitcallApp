@@ -8,6 +8,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
@@ -238,24 +240,27 @@ class _PlanDisiKararFormuState extends State<PlanDisiKararFormu> {
           ),
           const SizedBox(height: 16),
           if (_karar != 'UCRETSIZ')
-            DropdownButtonFormField<int>(
-              initialValue: _hedefUyeId,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Ücreti üstlenen'),
-              items: [
-                for (final a in widget.secenekler.adaylar)
-                  DropdownMenuItem(
-                    value: a.uyeId,
-                    child: Text(a.adSoyad,
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
-                  ),
-              ],
-              onChanged: (v) => setState(() {
-                _hedefUyeId = v;
-                _paketId = null;
-              }),
-              validator: (v) =>
-                  v == null ? 'Ücreti üstlenen kişiyi seçin.' : null,
+            OgrenmeHedefi(
+              id: Hedef.planDisiUstlenen,
+              child: DropdownButtonFormField<int>(
+                initialValue: _hedefUyeId,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Ücreti üstlenen'),
+                items: [
+                  for (final a in widget.secenekler.adaylar)
+                    DropdownMenuItem(
+                      value: a.uyeId,
+                      child: Text(a.adSoyad,
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ),
+                ],
+                onChanged: (v) => setState(() {
+                  _hedefUyeId = v;
+                  _paketId = null;
+                }),
+                validator: (v) =>
+                    v == null ? 'Ücreti üstlenen kişiyi seçin.' : null,
+              ),
             ),
           if (_karar == 'PAKET') ...[
             const SizedBox(height: 12),
@@ -266,55 +271,64 @@ class _PlanDisiKararFormuState extends State<PlanDisiKararFormu> {
                     ?.copyWith(color: context.renkler.hata),
               )
             else
-              DropdownButtonFormField<int>(
-                initialValue: _paketId,
-                isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Paket'),
-                items: [
-                  for (final p in paketler)
-                    DropdownMenuItem(
-                      value: p.id,
-                      child: Text(p.etiket,
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
-                    ),
-                ],
-                onChanged: (v) => setState(() => _paketId = v),
-                validator: (v) => v == null ? 'Paket seçin.' : null,
+              OgrenmeHedefi(
+                id: Hedef.planDisiPaket,
+                child: DropdownButtonFormField<int>(
+                  initialValue: _paketId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Paket'),
+                  items: [
+                    for (final p in paketler)
+                      DropdownMenuItem(
+                        value: p.id,
+                        child: Text(p.etiket,
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ),
+                  ],
+                  onChanged: (v) => setState(() => _paketId = v),
+                  validator: (v) => v == null ? 'Paket seçin.' : null,
+                ),
               ),
           ],
           if (_karar == 'BORC') ...[
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _tutar,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-              ],
-              decoration: const InputDecoration(
-                labelText: 'Tutar',
-                suffixText: '₺',
+            OgrenmeHedefi(
+              id: Hedef.planDisiTutar,
+              child: TextFormField(
+                controller: _tutar,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Tutar',
+                  suffixText: '₺',
+                ),
+                validator: (v) {
+                  final t = double.tryParse((v ?? '').replaceAll(',', '.'));
+                  return (t == null || t <= 0)
+                      ? 'Geçerli bir tutar girin.'
+                      : null;
+                },
               ),
-              validator: (v) {
-                final t = double.tryParse((v ?? '').replaceAll(',', '.'));
-                return (t == null || t <= 0)
-                    ? 'Geçerli bir tutar girin.'
-                    : null;
-              },
             ),
           ],
           const SizedBox(height: 12),
-          TextFormField(
-            controller: _aciklama,
-            maxLines: 2,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Açıklama',
-              hintText: 'Ör. Ayşe\'nin misafiri, deneme dersi',
+          OgrenmeHedefi(
+            id: Hedef.planDisiAciklama,
+            child: TextFormField(
+              controller: _aciklama,
+              maxLines: 2,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: const InputDecoration(
+                labelText: 'Açıklama',
+                hintText: 'Ör. Ayşe\'nin misafiri, deneme dersi',
+              ),
+              validator: (v) => (v ?? '').trim().isEmpty
+                  ? 'Açıklama zorunlu: borcun hangi dersten geldiği buradan anlaşılır.'
+                  : null,
             ),
-            validator: (v) => (v ?? '').trim().isEmpty
-                ? 'Açıklama zorunlu: borcun hangi dersten geldiği buradan anlaşılır.'
-                : null,
           ),
           if (widget.hata != null) ...[
             const SizedBox(height: 12),

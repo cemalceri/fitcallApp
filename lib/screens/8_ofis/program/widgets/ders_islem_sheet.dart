@@ -3,6 +3,8 @@
 // Izgarada bir derse dokunulduğunda açılan özet + işlem menüsü.
 // İşlemi bu sheet yapmaz; seçilen eylemi çağırana döndürür.
 
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:flutter/material.dart';
@@ -94,7 +96,10 @@ class DersIslemSheet extends StatelessWidget {
                     _satir(Icons.notes, ders.aciklama!, renk),
                   if (ders.iptalKunyesiVar) ...[
                     const SizedBox(height: 10),
-                    _IptalKunyesi(ders: ders),
+                    OgrenmeHedefi(
+                      id: Hedef.programIptalKunyesi,
+                      child: _IptalKunyesi(ders: ders),
+                    ),
                   ],
                   const SizedBox(height: 10),
                   Text(

@@ -1,5 +1,7 @@
 // lib/screens/3_antrenor/home/widgets/gunluk_kokpit_card.dart
 
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/3_antrenor/gunluk_ozet_model.dart';
@@ -132,7 +134,10 @@ class GunlukKokpitCard extends StatelessWidget {
         ],
         if (o.eksikYoklama > 0 || o.eksikYoklamaGecmis > 0) ...[
           const SizedBox(height: 12),
-          _eksikYoklamaUyarisi(context, o),
+          OgrenmeHedefi(
+            id: Hedef.antrenorEksikUyari,
+            child: _eksikYoklamaUyarisi(context, o),
+          ),
         ],
       ],
     );

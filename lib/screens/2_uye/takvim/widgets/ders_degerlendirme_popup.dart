@@ -2,6 +2,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
@@ -314,9 +316,15 @@ class _DersDegerlendirmePopupState extends State<DersDegerlendirmePopup> {
                         ),
                       ),
                     ] else ...[
-                      _buildPuanlamaSection(),
+                      OgrenmeHedefi(
+                        id: Hedef.uyeDegerlendirmePuan,
+                        child: _buildPuanlamaSection(),
+                      ),
                       const SizedBox(height: 20),
-                      _buildYorumSection(),
+                      OgrenmeHedefi(
+                        id: Hedef.uyeDegerlendirmeYorum,
+                        child: _buildYorumSection(),
+                      ),
                       const SizedBox(height: 24),
                       Row(
                         children: [

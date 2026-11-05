@@ -13,6 +13,8 @@
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 import 'program_constants.dart';
@@ -72,6 +74,9 @@ class ProgramIzgara extends StatefulWidget {
   /// kontrolü değil, veri: hangi derslerin "senin" olduğunu sayfa söyler.
   final int? vurgulaAntrenorId;
 
+  /// Rehberin işaret edeceği ders bloğu; null dönen kimliksiz sarılır (hedef olmaz).
+  final String? Function(ProgramDersi ders)? dersHedefi;
+
   const ProgramIzgara({
     super.key,
     required this.kortlar,
@@ -82,6 +87,7 @@ class ProgramIzgara extends StatefulWidget {
     this.talepler = const [],
     this.onTalepTap,
     this.vurgulaAntrenorId,
+    this.dersHedefi,
   });
 
   @override
@@ -215,7 +221,9 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
       children: [
         _kortBasliklari(),
         Expanded(
-          child: SingleChildScrollView(
+          child: OgrenmeHedefi(
+            id: Hedef.programIzgara,
+            child: SingleChildScrollView(
             child: SizedBox(
               height: toplamYukseklik + 24,
               child: Row(
@@ -256,6 +264,7 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
                   ),
                 ],
               ),
+            ),
             ),
           ),
         ),
@@ -430,19 +439,25 @@ class _ProgramIzgaraState extends State<ProgramIzgara> {
           width: kolonGenislik - ProgramOlculeri.blokYatayBosluk * 2,
           height: y.yukseklik,
           child: ders != null
-              ? ProgramDersBlok(
-                  ders: ders,
-                  yukseklik: y.yukseklik,
-                  vurgulu: widget.vurgulaAntrenorId != null &&
-                      ders.antrenorId == widget.vurgulaAntrenorId,
-                  onTap: () => widget.onDersTap(ders),
+              ? ogrenmeHedefiSar(
+                  widget.dersHedefi?.call(ders),
+                  ProgramDersBlok(
+                    ders: ders,
+                    yukseklik: y.yukseklik,
+                    vurgulu: widget.vurgulaAntrenorId != null &&
+                        ders.antrenorId == widget.vurgulaAntrenorId,
+                    onTap: () => widget.onDersTap(ders),
+                  ),
                 )
-              : ProgramTalepBlok(
-                  talep: talep!,
-                  yukseklik: y.yukseklik,
-                  onTap: widget.onTalepTap == null
-                      ? null
-                      : () => widget.onTalepTap!(talep),
+              : ogrenmeHedefiSar(
+                  Hedef.programTalep,
+                  ProgramTalepBlok(
+                    talep: talep!,
+                    yukseklik: y.yukseklik,
+                    onTap: widget.onTalepTap == null
+                        ? null
+                        : () => widget.onTalepTap!(talep),
+                  ),
                 ),
         ));
       }

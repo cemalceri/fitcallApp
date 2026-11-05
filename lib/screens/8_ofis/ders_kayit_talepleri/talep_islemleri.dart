@@ -9,6 +9,8 @@
 // talebi aynı işlemde kapatır; talep edene bildirim gider.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/program/talep_notu_kutusu.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
@@ -128,18 +130,21 @@ class _TalepReddetDialogState extends State<TalepReddetDialog> {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _neden,
-              autofocus: true,
-              enabled: !_isleniyor,
-              minLines: 2,
-              maxLines: 4,
-              maxLength: 500,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                labelText: 'Red nedeni',
-                hintText: 'Talep edene bildirimle gider',
-                errorText: _hata,
+            OgrenmeHedefi(
+              id: Hedef.talepRedNedeni,
+              child: TextField(
+                controller: _neden,
+                autofocus: true,
+                enabled: !_isleniyor,
+                minLines: 2,
+                maxLines: 4,
+                maxLength: 500,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(
+                  labelText: 'Red nedeni',
+                  hintText: 'Talep edene bildirimle gider',
+                  errorText: _hata,
+                ),
               ),
             ),
           ],

@@ -1,7 +1,12 @@
 // lib/screens/3_antrenor/calisma_saatleri/calisma_saatleri_page.dart
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/3_antrenor/calisma_saatleri_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -205,6 +210,13 @@ class _CalismaSaatleriPageState extends State<CalismaSaatleriPage> {
       appBar: AppBar(
         title: const Text('Çalışma Saatlerim'),
         centerTitle: true,
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.antrenorCalismaSaatleri,
+            sssRotasi: routeEnums[SayfaAdi.antrenorYardim]!,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: _isLoading
           ? const IskeletListe(satirSayisi: 7)
@@ -219,9 +231,16 @@ class _CalismaSaatleriPageState extends State<CalismaSaatleriPage> {
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.all(16),
                           children: [
-                            _bilgiNotu(colorScheme),
+                            OgrenmeHedefi(
+                              id: Hedef.antrenorCalismaNotu,
+                              child: _bilgiNotu(colorScheme),
+                            ),
                             const SizedBox(height: 16),
-                            ..._gunler.map((s) => _gunKarti(colorScheme, s)),
+                            for (final (i, s) in _gunler.indexed)
+                              _gunKarti(colorScheme, s,
+                                  ilk: i == 0,
+                                  ilkAktif: i ==
+                                      _gunler.indexWhere((g) => g.aktif)),
                           ],
                         ),
                       ),
@@ -275,7 +294,8 @@ class _CalismaSaatleriPageState extends State<CalismaSaatleriPage> {
     );
   }
 
-  Widget _gunKarti(ColorScheme colorScheme, _GunSatiri satir) {
+  Widget _gunKarti(ColorScheme colorScheme, _GunSatiri satir,
+      {bool ilk = false, bool ilkAktif = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -305,8 +325,11 @@ class _CalismaSaatleriPageState extends State<CalismaSaatleriPage> {
                 ),
               ),
               if (satir.aktif) ...[
-                _saatButonu(colorScheme, _formatSaat(satir.baslangic),
-                    () => _saatSec(satir, baslangicMi: true)),
+                ogrenmeHedefiSar(
+                  ilkAktif ? Hedef.antrenorCalismaSaat : null,
+                  _saatButonu(colorScheme, _formatSaat(satir.baslangic),
+                      () => _saatSec(satir, baslangicMi: true)),
+                ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: Text('—',
@@ -316,12 +339,15 @@ class _CalismaSaatleriPageState extends State<CalismaSaatleriPage> {
                     () => _saatSec(satir, baslangicMi: false)),
                 const SizedBox(width: 8),
               ],
-              Switch(
-                value: satir.aktif,
-                onChanged: (v) {
-                  HapticFeedback.lightImpact();
-                  setState(() => satir.aktif = v);
-                },
+              ogrenmeHedefiSar(
+                ilk ? Hedef.antrenorCalismaAnahtar : null,
+                Switch(
+                  value: satir.aktif,
+                  onChanged: (v) {
+                    HapticFeedback.lightImpact();
+                    setState(() => satir.aktif = v);
+                  },
+                ),
               ),
             ],
           ),

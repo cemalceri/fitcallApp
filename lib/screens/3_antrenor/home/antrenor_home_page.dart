@@ -11,6 +11,9 @@ import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ilk_giris_karti.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 // Widgets
@@ -208,13 +211,23 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
                 ),
               ),
 
+              SliverToBoxAdapter(
+                child: IlkGirisKarti(
+                  gorevId: 'antrenor.anaSayfa',
+                  hazir: !_isLoading,
+                ),
+              ),
+
               // Günlük Kokpit
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 sliver: SliverToBoxAdapter(
-                  child: GunlukKokpitCard(
-                    ozet: _gunlukOzet,
-                    isLoading: _isLoading,
+                  child: OgrenmeHedefi(
+                    id: Hedef.antrenorKokpit,
+                    child: GunlukKokpitCard(
+                      ozet: _gunlukOzet,
+                      isLoading: _isLoading,
+                    ),
                   ),
                 ),
               ),
@@ -236,9 +249,12 @@ class _AntrenorHomePageState extends State<AntrenorHomePage> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
                 sliver: SliverToBoxAdapter(
-                  child: NextLessonCard(
-                    nextLesson: _nextLesson,
-                    isLoading: _isLoading,
+                  child: OgrenmeHedefi(
+                    id: Hedef.antrenorSonrakiDers,
+                    child: NextLessonCard(
+                      nextLesson: _nextLesson,
+                      isLoading: _isLoading,
+                    ),
                   ),
                 ),
               ),

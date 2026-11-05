@@ -1,6 +1,11 @@
 // lib/screens/7_yonetici/uyeler/uye_detay_page.dart
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
@@ -118,6 +123,13 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
       appBar: AppBar(
         title: Text(
             _data?.profil.adSoyad ?? widget.baslangicAdSoyad ?? 'Üye Detayı'),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.yoneticiUyeDetay,
+            sssRotasi: routeEnums[SayfaAdi.yoneticiYardim]!,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       // Sayfa yıkaması temadan gelir (SayfaZemini); burada ayrıca çizilmez.
       body: _buildContent(),
@@ -165,28 +177,39 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
         children: [
           _UyeDetayHeader(profil: data.profil),
           const SizedBox(height: 16),
-          _hizliAksiyonlar(data.profil),
+          OgrenmeHedefi(
+              id: Hedef.uyeDetayHizli, child: _hizliAksiyonlar(data.profil)),
           const SizedBox(height: 16),
-          _bakiyeKarti(data),
+          OgrenmeHedefi(id: Hedef.uyeDetayBakiye, child: _bakiyeKarti(data)),
           const SizedBox(height: 16),
-          _iletisimBilgileri(data.profil),
+          OgrenmeHedefi(
+              id: Hedef.uyeDetayBilgiler,
+              child: _iletisimBilgileri(data.profil)),
           const SizedBox(height: 16),
-          _paketlerBolumu(data.paketler),
+          OgrenmeHedefi(
+              id: Hedef.uyeDetayPaketler,
+              child: _paketlerBolumu(data.paketler)),
           const SizedBox(height: 16),
-          _derslerBolumu(
-            baslik: 'Yaklaşan Dersler',
-            ikon: Icons.event_available,
-            renk: context.cs.primary,
-            dersler: data.yaklasanDersler,
-            bosMesaj: 'Yaklaşan ders yok',
+          OgrenmeHedefi(
+            id: Hedef.uyeDetayYaklasan,
+            child: _derslerBolumu(
+              baslik: 'Yaklaşan Dersler',
+              ikon: Icons.event_available,
+              renk: context.cs.primary,
+              dersler: data.yaklasanDersler,
+              bosMesaj: 'Yaklaşan ders yok',
+            ),
           ),
           const SizedBox(height: 16),
-          _derslerBolumu(
-            baslik: 'Geçmiş Dersler',
-            ikon: Icons.history,
-            renk: context.cs.onSurfaceVariant,
-            dersler: data.gecmisDersler,
-            bosMesaj: 'Geçmiş ders kaydı yok',
+          OgrenmeHedefi(
+            id: Hedef.uyeDetayGecmis,
+            child: _derslerBolumu(
+              baslik: 'Geçmiş Dersler',
+              ikon: Icons.history,
+              renk: context.cs.onSurfaceVariant,
+              dersler: data.gecmisDersler,
+              bosMesaj: 'Geçmiş ders kaydı yok',
+            ),
           ),
         ],
       ),

@@ -1,5 +1,9 @@
 // lib/screens/3_antrenor/takvim/antrenor_takvim_page.dart
 
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/dtos/takvim_dtos/week_takvim_data_dto.dart';
@@ -21,7 +25,6 @@ import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'widgets/takvim_constants.dart';
 import 'widgets/lesson_approval_dialog.dart';
 import 'widgets/lesson_block.dart';
-import 'widgets/lesson_cancel_dialog.dart';
 import 'widgets/lesson_devir_dialog.dart';
 
 class AntrenorTakvimPage extends StatefulWidget {
@@ -251,20 +254,6 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
                   );
                 },
               ),
-              ListTile(
-                leading: Icon(Icons.event_busy_rounded,
-                    color: Theme.of(context).colorScheme.error),
-                title: const Text('İptal talebi'),
-                onTap: () {
-                  Navigator.pop(context);
-                  LessonCancelDialog.show(
-                    context: context,
-                    ders: ders,
-                    userId: userId,
-                    onSuccess: _forceRefresh,
-                  );
-                },
-              ),
             ],
             const SizedBox(height: 8),
           ],
@@ -320,6 +309,42 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
     );
   }
 
+  /// "?" rehberinin parlattığı ders: bitmiş ders yoklama (plan dışı
+  /// ekleme), başlamamış ve devir talebi olmayan ders devir rehberinde.
+  /// Yönetici kilitlediyse yoklama değişmez: yoklama rehberleri onu seçmez.
+  String? _rehberHedefi(EtkinlikModel ders) {
+    if (ders.iptalMi) return null;
+    final simdi = simdiKulup();
+    if (ders.bitisTarihSaat.isBefore(simdi)) {
+      return ders.yoneticiOnayi == null ? Hedef.antrenorBitmisDers : null;
+    }
+    if (ders.baslangicTarihSaat.isAfter(simdi) &&
+        ders.aktifDevirTalebi == null) {
+      return Hedef.antrenorGelecekDers;
+    }
+    return null;
+  }
+
+  /// Aynı ders bloğu birden çok rehbere hedef olabilir: yoklaması girilmiş,
+  /// yönetici kilitlemiş ya da devir talebi gönderdiğim ders ayrıca işaretlenir.
+  Widget _rehberSar(EtkinlikModel ders, Widget blok) {
+    var sarili = ogrenmeHedefiSar(_rehberHedefi(ders), blok);
+    if (ders.iptalMi) return sarili;
+    final simdi = simdiKulup();
+    if (ders.bitisTarihSaat.isBefore(simdi)) {
+      if (ders.yoneticiOnayi != null) {
+        sarili = ogrenmeHedefiSar(Hedef.antrenorKilitliDers, sarili);
+      } else if (ders.antrenorOnayi != null) {
+        sarili = ogrenmeHedefiSar(Hedef.antrenorYoklamaGirilmisDers, sarili);
+      } else {
+        sarili = ogrenmeHedefiSar(Hedef.antrenorYoklamasizDers, sarili);
+      }
+    } else if (ders.aktifDevirTalebi?.benTalepEdenim == true) {
+      sarili = ogrenmeHedefiSar(Hedef.antrenorDevirliDers, sarili);
+    }
+    return sarili;
+  }
+
   /* --------------------------------- UI ----------------------------------- */
   @override
   Widget build(BuildContext context) {
@@ -330,29 +355,39 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
       appBar: AppBar(
         // Sekmeyken kabuğun menüsü; itilmiş sayfada AppBar geri okunu koyar.
         leading: kabukMenuLeading(context),
-        title: const Text('Antrenör Takvimi'),
+        title: const Text('Takvim'),
         actions: [
           // Tüm antrenörlerin salt-okunur programı; seçili gün taşınır.
-          IconButton(
-            tooltip: 'Tüm program',
-            onPressed: () => Navigator.pushNamed(
-              context,
-              routeEnums[SayfaAdi.antrenorTumProgram]!,
-              arguments: {'tarih': formatApiGun(_selectedDay)},
+          OgrenmeHedefi(
+            id: Hedef.antrenorTumProgramDugmesi,
+            child: IconButton(
+              tooltip: 'Tüm program',
+              onPressed: () => Navigator.pushNamed(
+                context,
+                routeEnums[SayfaAdi.antrenorTumProgram]!,
+                arguments: {'tarih': formatApiGun(_selectedDay)},
+              ),
+              icon: const Icon(Icons.view_week_rounded),
             ),
-            icon: const Icon(Icons.view_week_rounded),
           ),
-          IconButton(
-            tooltip: _ajandaGorunumu ? 'Izgara görünümü' : 'Ajanda görünümü',
-            onPressed: _gorunumDegistir,
-            icon: Icon(_ajandaGorunumu
-                ? Icons.calendar_view_day_rounded
-                : Icons.view_agenda_rounded),
+          OgrenmeHedefi(
+            id: Hedef.antrenorGorunumDugmesi,
+            child: IconButton(
+              tooltip: _ajandaGorunumu ? 'Izgara görünümü' : 'Ajanda görünümü',
+              onPressed: _gorunumDegistir,
+              icon: Icon(_ajandaGorunumu
+                  ? Icons.calendar_view_day_rounded
+                  : Icons.view_agenda_rounded),
+            ),
           ),
           IconButton(
             onPressed: _forceRefresh,
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Yenile',
+          ),
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.antrenorTakvim,
+            sssRotasi: routeEnums[SayfaAdi.antrenorYardim]!,
           ),
           const SizedBox(width: 4),
         ],
@@ -360,12 +395,15 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
       body: Column(
         children: [
           // Hafta seçici
-          HaftaGunSecici(
-            selectedDay: _selectedDay,
-            focusedDay: _focusedDay,
-            lessonCounts: _gunlukDersSayilari,
-            onDaySelected: _onDaySelected,
-            onPageChanged: _onPageChanged,
+          OgrenmeHedefi(
+            id: Hedef.antrenorGunSeridi,
+            child: HaftaGunSecici(
+              selectedDay: _selectedDay,
+              focusedDay: _focusedDay,
+              lessonCounts: _gunlukDersSayilari,
+              onDaySelected: _onDaySelected,
+              onPageChanged: _onPageChanged,
+            ),
           ),
 
           // Timeline
@@ -379,14 +417,15 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
                         onLessonTap: _onLessonTap,
                         onLessonLongPress: _dersMenusu,
                         altSatir: _katilimcilar,
+                        ogrenmeHedefi: _rehberHedefi,
                       )
                     : TakvimZamanCizelgesi(
                         dersler: selectedDersler,
                         selectedDay: _selectedDay,
                         onLessonTap: _onLessonTap,
                         onLessonLongPress: _dersMenusu,
-                        blokYapici: (ders, onTap) =>
-                            LessonBlock(ders: ders, onTap: onTap),
+                        blokYapici: (ders, onTap) => _rehberSar(
+                            ders, LessonBlock(ders: ders, onTap: onTap)),
                       ),
           ),
         ],

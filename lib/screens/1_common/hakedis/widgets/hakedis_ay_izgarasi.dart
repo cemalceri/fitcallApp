@@ -14,6 +14,8 @@
 // kullanılıyor (sabit oran 1.3 ölçekte taşıyordu).
 
 import 'package:fitcall/models/1_common/hakedis_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 import 'hakedis_stil.dart';
@@ -37,26 +39,32 @@ class HakedisAyIzgarasi extends StatelessWidget {
   Widget build(BuildContext context) {
     final satirSayisi = (aylar.length + sutunSayisi - 1) ~/ sutunSayisi;
 
-    return Column(
-      children: [
-        for (var satir = 0; satir < satirSayisi; satir++)
-          Padding(
-            padding: EdgeInsets.only(bottom: satir == satirSayisi - 1 ? 0 : 8),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (var sutun = 0; sutun < sutunSayisi; sutun++) ...[
-                    if (sutun > 0) const SizedBox(width: 8),
-                    Expanded(
-                      child: _hucre(satir * sutunSayisi + sutun),
-                    ),
+    // Rehber bütün ızgarayı parlatır: kullanıcı dersi olan ayı kendi seçer
+    // (yalnız ilk hücre parlasaydı en eski, çoğu zaman boş ay seçilirdi).
+    return OgrenmeHedefi(
+      id: Hedef.hakedisAy,
+      child: Column(
+        children: [
+          for (var satir = 0; satir < satirSayisi; satir++)
+            Padding(
+              padding:
+                  EdgeInsets.only(bottom: satir == satirSayisi - 1 ? 0 : 8),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var sutun = 0; sutun < sutunSayisi; sutun++) ...[
+                      if (sutun > 0) const SizedBox(width: 8),
+                      Expanded(
+                        child: _hucre(satir * sutunSayisi + sutun),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 

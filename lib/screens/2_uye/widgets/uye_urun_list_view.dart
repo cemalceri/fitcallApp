@@ -1,6 +1,8 @@
 import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fitcall/common/tema.dart';
@@ -180,7 +182,10 @@ class _UyeUrunListViewState extends State<UyeUrunListView> {
                   for (final u in items)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: _UrunKart(urun: u, renk: renk),
+                      child: ogrenmeHedefiSar(
+                        identical(u, items.first) ? Hedef.uyeUrunKart : null,
+                        _UrunKart(urun: u, renk: renk),
+                      ),
                     ),
                 ],
               ),

@@ -21,4 +21,4 @@ TextSpan rehberMetni(String metin, {TextStyle? stil}) {
 
 /// Son adımda butonun ne yapacağını söyleyen cümle.
 String sonucCumlesi(String sonuc) =>
-    'Buna basınca $sonuc. Şimdi basarsan bir şey olmaz.';
+    'Buna basınca $sonuc. Şimdi basarsan herhangi bir işlem yapılmaz.';

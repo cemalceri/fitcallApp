@@ -1,5 +1,7 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/gecmis_ders_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -37,6 +39,7 @@ class GecmisDerslerListesi extends StatelessWidget {
     }
 
     final widgets = <Widget>[];
+    var ilkSatir = true;
     gruplar.forEach((ay, list) {
       widgets.add(
         ListeGrupBasligi(
@@ -47,11 +50,15 @@ class GecmisDerslerListesi extends StatelessWidget {
       for (var i = 0; i < list.length; i++) {
         if (i > 0) widgets.add(const ListeAyraci(solBosluk: 76));
         widgets.add(
-          _DersSatiri(
-            ders: list[i],
-            onDegerlendir: () => onDegerlendir(list[i]),
+          ogrenmeHedefiSar(
+            ilkSatir ? Hedef.uyeGecmisDers : null,
+            _DersSatiri(
+              ders: list[i],
+              onDegerlendir: () => onDegerlendir(list[i]),
+            ),
           ),
         );
+        ilkSatir = false;
       }
     });
     if (footer != null) {

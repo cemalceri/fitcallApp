@@ -2,41 +2,101 @@
 //
 // Başlıktaki "?" ve açtığı "Bu sayfada ne öğrenmek istersin?" listesi.
 // Ekranda gereken şey varsa (ör. takvimde ders) rehber gerçek ekranda adım
-// adım başlar; yoksa aynı rehber numaralı adımlar olarak okunur.
+// adım başlar; yoksa aynı rehber numaralı adımlar olarak okunur. Rehberi
+// olmayan sayfada "?" doğrudan Sık sorulanlar'ı açar. Yeri hep başlık
+// satırının en sağı.
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/ogrenme/gorevler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_modu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/rehber_metni.dart';
 import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
+import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
+import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
 
 class OgrenmeButonu extends StatelessWidget {
-  final OgrenmeSayfasi sayfa;
+  /// Rehberi olan sayfa; null ise "?" doğrudan Sık sorulanlar'ı açar.
+  final OgrenmeSayfasi? sayfa;
 
-  /// "Sık sorulanlar" bağlantısının rotası (role göre yardım sayfası).
-  final String sssRotasi;
+  /// "Sık sorulanlar" bağlantısının rotası. Verilmezse (rollerle ortak
+  /// sayfa) açık profilin rolünden bulunur.
+  final String? sssRotasi;
+
+  /// Bu ekranda gösterilmeyecek rehberler (ör. tek profilli üyede
+  /// "Çocuğumun derslerini nasıl görürüm?").
+  final Set<String> haric;
+
+  /// Komşuları kutulu başlık butonuysa ([BaslikIkonButonu]) aynı biçim;
+  /// AppBar'da düz ikon.
+  final bool kutulu;
+
+  /// Komşuları sıkı yerleşimli ikonsa (program başlığı) aynı sıklık.
+  final bool kompakt;
 
   const OgrenmeButonu({
     super.key,
-    required this.sayfa,
-    required this.sssRotasi,
+    this.sayfa,
+    this.sssRotasi,
+    this.haric = const {},
+    this.kutulu = false,
+    this.kompakt = false,
   });
+
+  List<OgrenmeGorevi> get _gorevler {
+    final s = sayfa;
+    if (s == null) return const [];
+    return [
+      for (final g in sayfaGorevleri(s))
+        if (!haric.contains(g.id)) g,
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: 'Nasıl yapılır?',
-      icon: const Icon(Icons.help_outline_rounded),
-      onPressed: () => _ac(context),
-    );
+    final ipucu = _gorevler.isEmpty ? 'Sık sorulanlar' : 'Nasıl yapılır?';
+    final buton = kutulu
+        ? BaslikIkonButonu(
+            ikon: Icons.help_outline_rounded,
+            ipucu: ipucu,
+            onTap: () => _ac(context),
+          )
+        : IconButton(
+            tooltip: ipucu,
+            icon: const Icon(Icons.help_outline_rounded),
+            visualDensity: kompakt ? VisualDensity.compact : null,
+            onPressed: () => _ac(context),
+          );
+    return OgrenmeHedefi(id: Hedef.ogrenmeButonu, child: buton);
   }
 
+  Future<String> _sss() async =>
+      sssRotasi ??
+      yardimRotasi((await StorageService.uyeProfilBilgileriniGetir())?.rol);
+
   Future<void> _ac(BuildContext context) async {
+    var gorevler = _gorevler;
+    final navigator = Navigator.of(context);
+    // Ortak sayfada role özel rehber varsa açık profilin rolüne süz.
+    if (gorevler.any((g) => g.roller.isNotEmpty)) {
+      final rol = (await StorageService.uyeProfilBilgileriniGetir())?.rol;
+      if (!context.mounted) return;
+      gorevler = [
+        for (final g in gorevler)
+          if (g.rolde(rol)) g,
+      ];
+    }
+    if (gorevler.isEmpty) {
+      navigator.pushNamed(await _sss());
+      return;
+    }
     final modu = OgrenmeModu.ornek;
-    final gorevler = sayfaGorevleri(sayfa);
     // Hazır olma, liste açılmadan bakılır: liste ekranı örttükten sonra
     // hedefler görünmez olur.
     final bulucu = modu.bulucu;
@@ -46,25 +106,61 @@ class OgrenmeButonu extends StatelessWidget {
         for (final g in gorevler)
           if (bulucu.baslatilabilir(g)) g.id,
     };
-    final navigator = Navigator.of(context);
     final sayfaRotasi = ModalRoute.of(context);
+    final sekme = rehberSekmesi(context);
     final secilen = await altSayfaGoster<OgrenmeGorevi>(
       context,
       cocuk: OgrenmeListesi(
         gorevler: gorevler,
         hazir: hazir,
         yukleniyor: yukleniyor,
-        onSss: () {
+        onSss: () async {
           navigator.pop();
-          navigator.pushNamed(sssRotasi);
+          navigator.pushNamed(await _sss());
         },
       ),
     );
     if (secilen == null || sayfaRotasi == null || !sayfaRotasi.isActive) {
       return;
     }
-    modu.baslat(secilen, navigator: navigator, baslangic: sayfaRotasi);
+    modu.baslat(
+      secilen,
+      navigator: navigator,
+      baslangic: sayfaRotasi,
+      sekme: sekme,
+    );
   }
+}
+
+/// [context] bir kabuk sekmesindeyse hangisi olduğu; rehber bitince bu
+/// sekmeye dönülür.
+RehberSekmesi? rehberSekmesi(BuildContext context) {
+  final kabuk = KabukMenusu.kabuk(context);
+  final aktif = kabuk?.aktifSekme;
+  final gec = kabuk?.sekmeyeGec;
+  if (aktif == null || gec == null) return null;
+  return RehberSekmesi(sekme: aktif(), aktif: aktif, gec: gec);
+}
+
+/// [gorev]'i [context]'in sayfasında açar: ekranda gereken şey varsa adım
+/// adım başlar, yoksa numaralı okuma alt sayfası açılır.
+Future<void> rehberiAc(BuildContext context, OgrenmeGorevi gorev) async {
+  final modu = OgrenmeModu.ornek;
+  final bulucu = modu.bulucu;
+  final rota = ModalRoute.of(context);
+  if (bulucu != null &&
+      rota != null &&
+      !bulucu.yukleniyorMu() &&
+      bulucu.baslatilabilir(gorev)) {
+    modu.baslat(
+      gorev,
+      navigator: Navigator.of(context),
+      baslangic: rota,
+      sekme: rehberSekmesi(context),
+    );
+    return;
+  }
+  await altSayfaGoster<void>(context, cocuk: OgrenmeOkuma(gorev: gorev));
 }
 
 /// Listenin içeriği. Hazır rehbere dokununca liste o rehberle kapanır;

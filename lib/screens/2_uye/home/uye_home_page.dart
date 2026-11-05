@@ -1,6 +1,9 @@
 // lib/screens/2_uye/home/uye_home_page.dart
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ilk_giris_karti.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'dart:convert';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
@@ -42,6 +45,8 @@ class _UyeHomePageState extends State<UyeHomePage> {
 
   // Profil ve kullanıcı
   bool _hasMultipleProfiles = false;
+  // Profil okunana dek kapalı: alt profile ana hesap rehberleri sunulmasın.
+  bool _anaHesap = false;
   String _uyeAdi = "";
 
   // Duyurular
@@ -146,6 +151,13 @@ class _UyeHomePageState extends State<UyeHomePage> {
         setState(() => _hasMultipleProfiles = true);
       }
     }
+    // Alt profilde bakiye, paket ve bildirim sayfaları kapalı: rehber listesi buna göre süzülür.
+    try {
+      final profil = await StorageService.uyeProfilBilgileriniGetir();
+      if (mounted) setState(() => _anaHesap = profil?.anaHesap ?? false);
+    } catch (_) {
+      if (mounted) setState(() => _anaHesap = false);
+    }
   }
 
   Future<void> _fetchWeek() async {
@@ -227,8 +239,20 @@ class _UyeHomePageState extends State<UyeHomePage> {
                   child: UyeHeader(
                     uyeAdi: _uyeAdi,
                     hasMultipleProfiles: _hasMultipleProfiles,
+                    anaHesap: _anaHesap,
                     onMenuTap: KabukMenusu.of(context),
                   ),
+                ),
+              ),
+
+              SliverToBoxAdapter(
+                child: IlkGirisKarti(
+                  gorevId: 'uye.anaSayfa',
+                  // Tur yükleme iskeleti ekrandayken canlı başlamaz.
+                  hazir: !_loadingOzet &&
+                      !_loadingWeek &&
+                      !_loadingDuyurular &&
+                      !_loadingOdul,
                 ),
               ),
 
@@ -236,9 +260,12 @@ class _UyeHomePageState extends State<UyeHomePage> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 sliver: SliverToBoxAdapter(
-                  child: UyeOzetSerit(
-                    ozet: _homeOzet?.ozet,
-                    isLoading: _loadingOzet,
+                  child: OgrenmeHedefi(
+                    id: Hedef.uyeOzet,
+                    child: UyeOzetSerit(
+                      ozet: _homeOzet?.ozet,
+                      isLoading: _loadingOzet,
+                    ),
                   ),
                 ),
               ),
@@ -247,10 +274,16 @@ class _UyeHomePageState extends State<UyeHomePage> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 sliver: SliverToBoxAdapter(
-                  child: UyeOdulSayaci(
-                    durum: _odulDurum,
-                    isLoading: _loadingOdul,
-                    onOdulAl: _odulAl,
+                  child: OgrenmeHedefi(
+                    // Kart çizilmiyorsa (ödül tanımsız) kimlik verilmez.
+                    id: (_odulDurum?.aktif ?? false) && !_loadingOdul
+                        ? Hedef.uyeOdul
+                        : null,
+                    child: UyeOdulSayaci(
+                      durum: _odulDurum,
+                      isLoading: _loadingOdul,
+                      onOdulAl: _odulAl,
+                    ),
                   ),
                 ),
               ),
@@ -259,12 +292,17 @@ class _UyeHomePageState extends State<UyeHomePage> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 0, 0),
                 sliver: SliverToBoxAdapter(
-                  child: InfoCardsCarousel(
-                    cards: _homeOzet?.kartlar ?? const [],
-                    isLoading: _loadingOzet,
-                    title: 'Bekleyen İşlemler',
-                    hideWhenEmpty: true,
-                    onCardTap: _onYapilacakKartTap,
+                  child: OgrenmeHedefi(
+                    id: (_homeOzet?.kartlar.isNotEmpty ?? false)
+                        ? Hedef.uyeBekleyen
+                        : null,
+                    child: InfoCardsCarousel(
+                      cards: _homeOzet?.kartlar ?? const [],
+                      isLoading: _loadingOzet,
+                      title: 'Bekleyen İşlemler',
+                      hideWhenEmpty: true,
+                      onCardTap: _onYapilacakKartTap,
+                    ),
                   ),
                 ),
               ),
@@ -273,9 +311,12 @@ class _UyeHomePageState extends State<UyeHomePage> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
                 sliver: SliverToBoxAdapter(
-                  child: UyeNextLessonCard(
-                    nextLesson: _nextLesson,
-                    isLoading: _loadingWeek,
+                  child: OgrenmeHedefi(
+                    id: Hedef.uyeSonrakiDers,
+                    child: UyeNextLessonCard(
+                      nextLesson: _nextLesson,
+                      isLoading: _loadingWeek,
+                    ),
                   ),
                 ),
               ),
@@ -284,7 +325,9 @@ class _UyeHomePageState extends State<UyeHomePage> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
                 sliver: SliverToBoxAdapter(
-                  child: Column(
+                  child: OgrenmeHedefi(
+                    id: Hedef.uyeDuyuru,
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Başlık
@@ -307,12 +350,16 @@ class _UyeHomePageState extends State<UyeHomePage> {
                       else
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 0),
-                          child: DuyuruCarousel(
-                            duyurular: _duyurular,
-                            height: 210,
+                          child: OgrenmeHedefi(
+                            id: Hedef.uyeDuyuruKarti,
+                            child: DuyuruCarousel(
+                              duyurular: _duyurular,
+                              height: 210,
+                            ),
                           ),
                         ),
                     ],
+                  ),
                   ),
                 ),
               ),

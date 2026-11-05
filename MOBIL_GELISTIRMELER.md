@@ -11,7 +11,7 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 | | |
 |---|---|
 | Mobil | **3.13.1+47** iki mağazada yayında. **3.14.0+48 tag'lendi** (2026-10-30; menü, geçmiş ders etiketleri, App Check, AGP 9): doğrudan üretim, zorunlu güncelleme yok; backend Heroku v350'de canlı. Mağazada görülünce admin'den sürüm notu `yayinda`. |
-| Testler | `flutter test` **3634 geçiyor**, `flutter analyze` temiz; backend `guvenlik-guncellemeleri` **1572 geçiyor** (yerel Postgres, 2026-10-23). |
+| Testler | `flutter test` **4336 geçiyor** (2026-11-05), `flutter analyze` temiz; backend `guvenlik-guncellemeleri` **1572 geçiyor** (yerel Postgres, 2026-10-23). |
 | Backend | Canlı, GitHub master canlıyla eşit. Son migration'lar `0097_ders_kayit_talebi`, `0098_dekont`, `0099_uye_borc_kontrol`. Canlıda bir banka hesabı girili (işletme 1). |
 | Mağaza | 3.13.0 mağaza metni yalnız 3.12.0'dan sonraki üye yenilikleri. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20, turuncu tonu değişti — 2.3.3 riski kabul). |
 
@@ -58,11 +58,20 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 - **İptal signal'ları:** 2026-09-29'dan beri çalışıyor; veri kontrolü için
   `heroku run python manage.py veri_tutarlilik_kontrol --ders-basi 2026-07-23 --kategori paket,tekders,telafi,onay,ekstra`.
 
+- **"?" öğrenme rehberi (2026-11-05, main'de commit'li, push yok):** 143 rehber dört profilde. Sahip telefonda
+  gözden geçiriyor, hata gördükçe ekran adını söyler; kontrol kuralı CLAUDE.md'de. Bilinen küçükler: ofis üye
+  aramada «Pasif» süzgeci boş liste verirse rehber takılır; üye takviminde aynı gün hem cevapsız hem iptal ders;
+  ofis "yeni ders" rehberinde boş saat yerine derse dokunulması. Ders talebi dalıyla gelecek: üye Taleplerim ×3,
+  ofis talep ×2 rehberi ve ofis menüsünde «Ders kayıt talepleri».
+
 ### Küçük işler
 - 3.10.0 ekran denetiminden ertelenenler (hâlâ geçerli mi bakılmalı): yönetici rapor bölümleri çok renkli,
   açık modda bazı ikon/yazılar düşük kontrastlı; antrenör profil başlığı kısa içerikte tam kapanmıyor;
   takvim bloğu 1.3 yazı ölçeğinde bir saatlik dersi kompakt moda düşürüyor; ders iptal sayfasında ikinci
   tutamaç (`showDragHandle`).
+- **Ders iptal talebi kaldırıldı (2026-11-04):** mobilde üye/antrenör ekranları silindi. Backend tarafı sonra
+  silinecek: `EtkinlikIptalTalebiModel` (`etkinlik_iptal_talebi`, prod'da 63 eski kayıt), `etkinlik_iptal_service`,
+  `api/urls.py` iptal uçları (`etkinlikIptalTalebiOlustur` … `iptalTalebiGeriCek`), admin kaydı, enum'lar.
 
 ---
 

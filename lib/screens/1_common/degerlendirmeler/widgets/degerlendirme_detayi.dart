@@ -8,6 +8,8 @@ import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/1_common/degerlendirme_models.dart';
 import 'package:fitcall/screens/1_common/degerlendirmeler/widgets/puan_parcalari.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -101,9 +103,12 @@ class DegerlendirmeDetayi extends StatelessWidget {
             deger: ders.urunAdi,
           ),
         const SizedBox(height: Bosluk.m),
-        ListeGrupBasligi(
-          baslik: 'Diğer katılımcılar',
-          sayi: digerleri.isEmpty ? null : digerleri.length,
+        OgrenmeHedefi(
+          id: Hedef.digerKatilimcilar,
+          child: ListeGrupBasligi(
+            baslik: 'Diğer katılımcılar',
+            sayi: digerleri.isEmpty ? null : digerleri.length,
+          ),
         ),
         if (digerleri.isEmpty)
           Padding(

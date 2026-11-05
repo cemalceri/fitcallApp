@@ -10,6 +10,8 @@
 // olduğu için taşma testine girebiliyor.
 
 import 'package:fitcall/models/1_common/hakedis_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 import 'hakedis_ay_izgarasi.dart';
@@ -67,7 +69,8 @@ class HakedisAntrenorListesiGorunumu extends StatelessWidget {
           ),
           const SizedBox(height: 20),
         ],
-        if (ay != null) _AyBasligi(ay: ay),
+        if (ay != null)
+          OgrenmeHedefi(id: Hedef.hakedisAyBasligi, child: _AyBasligi(ay: ay)),
         const SizedBox(height: 12),
         if (sirali.isEmpty)
           _BosListe(mesaj: bosMesaj)
@@ -75,10 +78,13 @@ class HakedisAntrenorListesiGorunumu extends StatelessWidget {
           ...sirali.map(
             (antrenor) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: _AntrenorSatiri(
-                antrenor: antrenor,
-                donem: antrenor.ay(seciliIndex),
-                onTap: () => onAntrenorTap(antrenor),
+              child: OgrenmeHedefi(
+                id: Hedef.hakedisAntrenor,
+                child: _AntrenorSatiri(
+                  antrenor: antrenor,
+                  donem: antrenor.ay(seciliIndex),
+                  onTap: () => onAntrenorTap(antrenor),
+                ),
               ),
             ),
           ),

@@ -6,8 +6,13 @@
 // (ders_yonetim_sheet.dart). API çağrısı içermez; taşma testinde doğrudan
 // çizilir.
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
@@ -90,6 +95,25 @@ class OfisDerslerGorunumu extends StatelessWidget {
     required this.onYenidenDene,
   });
 
+  /// Onay ve katılım rehberlerinin işaret ettiği satırlar.
+  static String? _rehberHedefi(YonetimDersi d) {
+    if (d.onayBekliyor) return Hedef.ofisOnayDers;
+    if (d.cevapsiz > 0) return Hedef.ofisCevapDers;
+    if (d.kararVerilebilir) return Hedef.ofisKararliDers;
+    return null;
+  }
+
+  /// Satır birden çok rehbere hedef olabilir: her satır genel satır
+  /// rehberinde, paketten düşülecek üyesi olan bitmiş ders ayrıca.
+  static Widget _rehberSar(YonetimDersi d, Widget satir) {
+    var sarili = ogrenmeHedefiSar(_rehberHedefi(d), satir);
+    if (!d.baslamadiMi &&
+        d.katilimcilar.any((k) => k.paketDusumu == PaketDusumu.dus)) {
+      sarili = ogrenmeHedefiSar(Hedef.ofisPaketDusumDers, sarili);
+    }
+    return ogrenmeHedefiSar(Hedef.dersSatiri, sarili);
+  }
+
   // Kısa biçim: oklar ve "Bugün" arasında uzun gün adı kesiliyordu.
   static final _tarihBicimi = DateFormat('d MMM y, EEE', 'tr_TR');
 
@@ -149,10 +173,18 @@ class OfisDerslerGorunumu extends StatelessWidget {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ),
+              const SizedBox(width: Bosluk.s),
+              OgrenmeButonu(
+                sayfa: OgrenmeSayfasi.ofisDersler,
+                sssRotasi: routeEnums[SayfaAdi.ofisYardim]!,
+                kutulu: true,
+              ),
             ],
           ),
           const SizedBox(height: 10),
-          Row(
+          OgrenmeHedefi(
+            id: Hedef.dersGunSecici,
+            child: Row(
             children: [
               IconButton(
                 tooltip: 'Önceki gün',
@@ -208,21 +240,25 @@ class OfisDerslerGorunumu extends StatelessWidget {
                 style: kontrolStili,
               ),
             ],
+            ),
           ),
           const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (final s in DersSuzgeci.values) ...[
-                  BaslikCipi(
-                    etiket: _cipEtiketi(s),
-                    secili: suzgec == s,
-                    onSec: () => onSuzgec(s),
-                  ),
-                  const SizedBox(width: 8),
+          OgrenmeHedefi(
+            id: Hedef.dersSuzgec,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final s in DersSuzgeci.values) ...[
+                    BaslikCipi(
+                      etiket: _cipEtiketi(s),
+                      secili: suzgec == s,
+                      onSec: () => onSuzgec(s),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ],
@@ -268,10 +304,13 @@ class OfisDerslerGorunumu extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 96),
         children: [
           if (toplu > 0)
-            TopluOnayKarti(
-              sayi: toplu,
-              devam: topluOnayDevam,
-              onOnayla: onTopluOnay,
+            OgrenmeHedefi(
+              id: Hedef.dersTopluOnay,
+              child: TopluOnayKarti(
+                sayi: toplu,
+                devam: topluOnayDevam,
+                onOnayla: onTopluOnay,
+              ),
             ),
           if (dersler.isEmpty)
             Padding(
@@ -292,7 +331,10 @@ class OfisDerslerGorunumu extends StatelessWidget {
           else
             for (final (i, d) in dersler.indexed) ...[
               if (i > 0) const ListeAyraci(),
-              DersYonetimSatiri(ders: d, onTap: () => onDersSec(d)),
+              _rehberSar(
+                d,
+                DersYonetimSatiri(ders: d, onTap: () => onDersSec(d)),
+              ),
             ],
         ],
       ),

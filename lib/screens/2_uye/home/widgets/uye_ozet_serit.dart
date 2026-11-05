@@ -3,6 +3,8 @@
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -36,13 +38,16 @@ class UyeOzetSerit extends StatelessWidget {
       children: [
         if (bakiyeGoster) ...[
           Expanded(
-            child: _OzetKart(
-              isLoading: isLoading,
-              icon: Icons.account_balance_wallet_outlined,
-              color: bakiyeRenk,
-              etiket: bakiye < 0 ? 'Borç' : 'Bakiye',
-              deger: '${tutarFmt.format(bakiye.abs())} ₺',
-              route: routeEnums[SayfaAdi.muhasebe]!,
+            child: OgrenmeHedefi(
+              id: Hedef.uyeOzetBakiye,
+              child: _OzetKart(
+                isLoading: isLoading,
+                icon: Icons.account_balance_wallet_outlined,
+                color: bakiyeRenk,
+                etiket: bakiye < 0 ? 'Borç' : 'Bakiye',
+                deger: '${tutarFmt.format(bakiye.abs())} ₺',
+                route: routeEnums[SayfaAdi.muhasebe]!,
+              ),
             ),
           ),
           const SizedBox(width: 10),

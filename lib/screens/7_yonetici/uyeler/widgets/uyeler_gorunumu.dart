@@ -11,6 +11,11 @@ import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/sayfali_liste_parcalari.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_filtre_seridi.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_istatistik_kartlar.dart';
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -136,12 +141,14 @@ class UyelerGorunumu extends StatelessWidget {
       title: const Text('Üyeler'),
       actions: [
         if (!yukleniyor && hata == null)
-          Padding(
-            padding: const EdgeInsets.only(right: Bosluk.l),
-            child: Center(
-              child: BaslikKapsulu('${toplam ?? uyeler.length} kayıt'),
-            ),
+          Center(
+            child: BaslikKapsulu('${toplam ?? uyeler.length} kayıt'),
           ),
+        OgrenmeButonu(
+          sayfa: OgrenmeSayfasi.yoneticiUyeler,
+          sssRotasi: routeEnums[SayfaAdi.yoneticiYardim]!,
+        ),
+        const SizedBox(width: 4),
       ],
       bottom: PreferredSize(
         preferredSize: Size.fromHeight(_aramaSeridiYuksekligi(context)),
@@ -151,7 +158,9 @@ class UyelerGorunumu extends StatelessWidget {
             Padding(
               padding:
                   const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.s),
-              child: TextField(
+              child: OgrenmeHedefi(
+                id: Hedef.uyeArama,
+                child: TextField(
                 controller: aramaDenetleyicisi,
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
@@ -178,6 +187,7 @@ class UyelerGorunumu extends StatelessWidget {
                     borderSide: BorderSide.none,
                   ),
                 ),
+                ),
               ),
             ),
             Padding(
@@ -195,10 +205,13 @@ class UyelerGorunumu extends StatelessWidget {
             Padding(
               padding:
                   const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.m),
-              child: UyeIstatistikKartlar(
-                data: istatistik,
-                secili: seciliOnAyar,
-                onSec: onOnAyar,
+              child: OgrenmeHedefi(
+                id: Hedef.uyeKartlari,
+                child: UyeIstatistikKartlar(
+                  data: istatistik,
+                  secili: seciliOnAyar,
+                  onSec: onOnAyar,
+                ),
               ),
             ),
           ],
@@ -333,7 +346,7 @@ class UyelerGorunumu extends StatelessWidget {
       _ => (context.cs.onSurfaceVariant, ListeTonu.bilgi),
     };
 
-    return ListeSatiri(
+    final satir = ListeSatiri(
       onGorsel: ListeAvatari(
         basHarfler: ListeAvatari.harfler(uye.adSoyad),
         fotoUrl: uye.profilFotografi,
@@ -363,6 +376,7 @@ class UyelerGorunumu extends StatelessWidget {
           ),
       ],
     );
+    return OgrenmeHedefi(id: Hedef.uyeSatiri, child: satir);
   }
 
   /// Pasif ve "Kesin" (borcu ön muhasebece kesinleşmiş) işaretleri.
@@ -389,7 +403,8 @@ class UyelerGorunumu extends StatelessWidget {
         t == null ? yok : '$ad: ${_gun.format(t)}';
     switch (siralama.alan) {
       case UyeSiralamaAlani.sonKontrol:
-        return tarih('Son kontrol', uye.sonKontrolTarihi, 'Hiç kontrol edilmedi');
+        return tarih(
+            'Son kontrol', uye.sonKontrolTarihi, 'Hiç kontrol edilmedi');
       case UyeSiralamaAlani.sonOdeme:
         return tarih('Son ödeme', uye.sonOdemeTarihi, 'Hiç ödeme yok');
       case UyeSiralamaAlani.sonDers:

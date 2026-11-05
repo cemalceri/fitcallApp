@@ -5,6 +5,8 @@
 // listede kalır; aksi halde kaydederken sessizce dersten düşerler.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 class UyeSecimSheet extends StatefulWidget {
@@ -67,155 +69,161 @@ class _UyeSecimSheetState extends State<UyeSecimSheet> {
       initialChildSize: 0.85,
       minChildSize: 0.5,
       maxChildSize: 0.95,
+      // Rehberde parlayan yer bütün sayfa: üyeler işaretlenip «Onayla»ya
+      // basılır.
       builder: (context, kaydirmaKontrol) {
-        return Column(
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: renk.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Katılımcılar',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: renk.onSurface,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '${_secili.length} seçili',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: renk.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
-                autofocus: false,
-                decoration: InputDecoration(
-                  hintText: 'Ad, üye no veya telefon ara',
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  isDense: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+        return OgrenmeHedefi(
+          id: Hedef.uyeSecimi,
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: renk.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                onChanged: (v) => setState(() => _sorgu = v),
               ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: filtreli.isEmpty
-                  ? Center(
-                      child: Text(
-                        'Eşleşen üye yok',
-                        style: TextStyle(color: renk.onSurfaceVariant),
-                      ),
-                    )
-                  : ListView.builder(
-                      controller: kaydirmaKontrol,
-                      itemCount: filtreli.length,
-                      itemBuilder: (context, i) {
-                        final u = filtreli[i];
-                        final secili = _secili.contains(u.id);
-                        return CheckboxListTile(
-                          value: secili,
-                          dense: true,
-                          controlAffinity: ListTileControlAffinity.leading,
-                          onChanged: (_) => setState(() {
-                            if (secili) {
-                              _secili.remove(u.id);
-                            } else {
-                              _secili.add(u.id);
-                            }
-                          }),
-                          title: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  u.adSoyad,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (u.pasif)
-                                Container(
-                                  margin: const EdgeInsets.only(left: 6),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: renk.errorContainer,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    'Pasif',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: renk.onErrorContainer,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          subtitle: (u.uyeNo == null || u.uyeNo!.isEmpty) &&
-                                  u.telefon.isEmpty
-                              ? null
-                              : Text(
-                                  [
-                                    if (u.uyeNo != null && u.uyeNo!.isNotEmpty)
-                                      'No: ${u.uyeNo}',
-                                    if (u.telefon.isNotEmpty) u.telefon,
-                                  ].join(' · '),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                        );
-                      },
-                    ),
-            ),
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 child: Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Vazgeç'),
+                      child: Text(
+                        'Katılımcılar',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: renk.onSurface,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: FilledButton(
-                        onPressed: () =>
-                            Navigator.pop(context, _secili.toList()),
-                        child: Text('Onayla (${_secili.length})'),
+                    Text(
+                      '${_secili.length} seçili',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: renk.primary,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  autofocus: false,
+                  decoration: InputDecoration(
+                    hintText: 'Ad, üye no veya telefon ara',
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onChanged: (v) => setState(() => _sorgu = v),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: filtreli.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Eşleşen üye yok',
+                          style: TextStyle(color: renk.onSurfaceVariant),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: kaydirmaKontrol,
+                        itemCount: filtreli.length,
+                        itemBuilder: (context, i) {
+                          final u = filtreli[i];
+                          final secili = _secili.contains(u.id);
+                          return CheckboxListTile(
+                            value: secili,
+                            dense: true,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            onChanged: (_) => setState(() {
+                              if (secili) {
+                                _secili.remove(u.id);
+                              } else {
+                                _secili.add(u.id);
+                              }
+                            }),
+                            title: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    u.adSoyad,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (u.pasif)
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: renk.errorContainer,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      'Pasif',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: renk.onErrorContainer,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            subtitle: (u.uyeNo == null || u.uyeNo!.isEmpty) &&
+                                    u.telefon.isEmpty
+                                ? null
+                                : Text(
+                                    [
+                                      if (u.uyeNo != null &&
+                                          u.uyeNo!.isNotEmpty)
+                                        'No: ${u.uyeNo}',
+                                      if (u.telefon.isNotEmpty) u.telefon,
+                                    ].join(' · '),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                          );
+                        },
+                      ),
+              ),
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Vazgeç'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: FilledButton(
+                          onPressed: () =>
+                              Navigator.pop(context, _secili.toList()),
+                          child: Text('Onayla (${_secili.length})'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

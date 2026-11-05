@@ -2,6 +2,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:fitcall/models/3_antrenor/ogrenci_detay_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -179,36 +181,40 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
   Widget _kart(ColorScheme colorScheme,
       {required String baslik,
       required IconData ikon,
-      required List<Widget> children}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(ikon, size: 18, color: widget.seviyeRenk),
-              const SizedBox(width: 8),
-              Text(
-                baslik,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-            ],
+      required List<Widget> children,
+      String? hedef}) {
+    return OgrenmeHedefi(
+      id: hedef,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
           ),
-          const SizedBox(height: 12),
-          ...children,
-        ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(ikon, size: 18, color: widget.seviyeRenk),
+                const SizedBox(width: 8),
+                Text(
+                  baslik,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...children,
+          ],
+        ),
       ),
     );
   }
@@ -244,6 +250,7 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
       colorScheme,
       baslik: 'Katılım (Son ${i.pencereGun} Gün)',
       ikon: Icons.insights_rounded,
+      hedef: Hedef.antrenorOgrenciKatilim,
       children: [
         Row(
           children: [
@@ -340,6 +347,7 @@ class _AntrenorOgrenciDetayPageState extends State<AntrenorOgrenciDetayPage> {
       colorScheme,
       baslik: 'İletişim',
       ikon: Icons.contact_phone_outlined,
+      hedef: Hedef.antrenorOgrenciIletisim,
       children: satirlar.isEmpty
           ? [
               Text(

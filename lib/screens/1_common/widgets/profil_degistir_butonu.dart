@@ -2,6 +2,8 @@
 
 import 'dart:convert';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/services/core/storage_service.dart';
@@ -48,11 +50,14 @@ class ProfilDegistirButonu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BaslikIkonButonu(
-      ikon: Icons.swap_horiz_rounded,
-      ipucu: 'Profil değiştir',
-      renk: renk,
-      onTap: () => _profilDegistir(context),
+    return OgrenmeHedefi(
+      id: Hedef.profilDegistir,
+      child: BaslikIkonButonu(
+        ikon: Icons.swap_horiz_rounded,
+        ipucu: 'Profil değiştir',
+        renk: renk,
+        onTap: () => _profilDegistir(context),
+      ),
     );
   }
 }

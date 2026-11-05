@@ -97,6 +97,8 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
       // Menü her sekmenin başlığından açılır (KabukMenuButonu).
       body: KabukMenusu(
         menuyuAc: () => _scaffoldKey.currentState?.openDrawer(),
+        aktifSekme: () => _selectedIndex,
+        sekmeyeGec: _goTab,
         child: IndexedStack(
           index: _selectedIndex,
           children: _pages,

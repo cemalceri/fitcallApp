@@ -2,6 +2,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -43,22 +45,28 @@ class UyeFiltreDugmeleri extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _SeritDugmesi(
-              ikon: Icons.tune_rounded,
-              etiket: sayi > 0 ? 'Filtrele ($sayi)' : 'Filtrele',
-              anlam: sayi > 0 ? 'Filtrele, $sayi filtre etkin' : 'Filtrele',
-              etkin: sayi > 0,
-              onTap: onFiltrele,
+            child: OgrenmeHedefi(
+              id: Hedef.uyeFiltrele,
+              child: _SeritDugmesi(
+                ikon: Icons.tune_rounded,
+                etiket: sayi > 0 ? 'Filtrele ($sayi)' : 'Filtrele',
+                anlam: sayi > 0 ? 'Filtrele, $sayi filtre etkin' : 'Filtrele',
+                etkin: sayi > 0,
+                onTap: onFiltrele,
+              ),
             ),
           ),
           const SizedBox(width: Bosluk.s),
           Expanded(
-            child: _SeritDugmesi(
-              ikon: Icons.swap_vert_rounded,
-              etiket: 'Sırala: ${siralama.kisaEtiket}',
-              anlam: 'Sırala, şu an ${siralama.etiket}',
-              etkin: siralama != UyeSiralama.varsayilan,
-              onTap: onSirala,
+            child: OgrenmeHedefi(
+              id: Hedef.uyeSirala,
+              child: _SeritDugmesi(
+                ikon: Icons.swap_vert_rounded,
+                etiket: 'Sırala: ${siralama.kisaEtiket}',
+                anlam: 'Sırala, şu an ${siralama.etiket}',
+                etkin: siralama != UyeSiralama.varsayilan,
+                onTap: onSirala,
+              ),
             ),
           ),
         ],

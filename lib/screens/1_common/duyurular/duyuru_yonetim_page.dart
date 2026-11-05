@@ -11,6 +11,8 @@
 import 'package:fitcall/models/1_common/duyuru_okuma_models.dart';
 import 'package:fitcall/screens/1_common/duyurular/duyuru_okuma_durumu_page.dart';
 import 'package:fitcall/screens/1_common/duyurular/widgets/duyuru_yonetim_listesi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -88,7 +90,15 @@ class _DuyuruYonetimPageState extends State<DuyuruYonetimPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Duyurular')),
+      appBar: AppBar(
+        title: const Text('Duyurular'),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.duyurular,
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: _govde(),
     );
   }

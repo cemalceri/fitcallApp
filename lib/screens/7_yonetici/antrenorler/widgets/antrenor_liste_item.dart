@@ -3,6 +3,8 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/screens/1_common/degerlendirmeler/widgets/puan_parcalari.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,11 +24,15 @@ class AntrenorListeItemWidget extends StatelessWidget {
   /// ve dokunulmaz.
   final VoidCallback? onDegerlendirmeler;
 
+  /// "?" rehberinin puan adımı bu satırın puan hücresini parlatır.
+  final bool puanHedefi;
+
   const AntrenorListeItemWidget({
     super.key,
     required this.antrenor,
     this.onHakedis,
     this.onDegerlendirmeler,
+    this.puanHedefi = false,
   });
 
   @override
@@ -54,10 +60,13 @@ class AntrenorListeItemWidget extends StatelessWidget {
                 ? satir
                 : Semantics(hint: 'Hakediş saatleri', child: satir),
           ),
-          PuanHucresi(
-            puan: antrenor.ortalamaPuan,
-            sayi: antrenor.degerlendirmeSayisi,
-            onTap: onDegerlendirmeler,
+          OgrenmeHedefi(
+            id: puanHedefi ? Hedef.antrenorPuan : null,
+            child: PuanHucresi(
+              puan: antrenor.ortalamaPuan,
+              sayi: antrenor.degerlendirmeSayisi,
+              onTap: onDegerlendirmeler,
+            ),
           ),
         ],
       ),

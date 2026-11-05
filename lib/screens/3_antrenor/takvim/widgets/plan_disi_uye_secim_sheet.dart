@@ -1,5 +1,7 @@
 // lib/screens/3_antrenor/takvim/widgets/plan_disi_uye_secim_sheet.dart
 
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/models/2_uye/basit_uye_model.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
@@ -201,34 +203,36 @@ class _PlanDisiUyeSecimSheetState extends State<PlanDisiUyeSecimSheet> {
           height: 1, color: Theme.of(context).colorScheme.outlineVariant),
       itemBuilder: (ctx, i) {
         final u = _filtered[i];
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor: Colors.blue.withValues(alpha: 0.10),
-            child: Text(
-              u.adSoyad.isNotEmpty ? u.adSoyad[0].toUpperCase() : '?',
-              style: TextStyle(
-                color: Colors.blue.shade700,
-                fontWeight: FontWeight.w700,
+        return ogrenmeHedefiSar(
+            i == 0 ? Hedef.planDisiUye : null,
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue.withValues(alpha: 0.10),
+                child: Text(
+                  u.adSoyad.isNotEmpty ? u.adSoyad[0].toUpperCase() : '?',
+                  style: TextStyle(
+                    color: Colors.blue.shade700,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
-            ),
-          ),
-          title: Text(
-            u.adSoyad,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          subtitle: Text(
-            [
-              if (u.uyeNo > 0) 'Üye No: ${u.uyeNo}',
-              if (u.telefon.isNotEmpty) u.telefon,
-            ].join(' • '),
-            style: const TextStyle(fontSize: 12),
-          ),
-          trailing: const Icon(Icons.add_circle_outline_rounded),
-          onTap: () {
-            HapticFeedback.lightImpact();
-            Navigator.pop(context, u.id);
-          },
-        );
+              title: Text(
+                u.adSoyad,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                [
+                  if (u.uyeNo > 0) 'Üye No: ${u.uyeNo}',
+                  if (u.telefon.isNotEmpty) u.telefon,
+                ].join(' • '),
+                style: const TextStyle(fontSize: 12),
+              ),
+              trailing: const Icon(Icons.add_circle_outline_rounded),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                Navigator.pop(context, u.id);
+              },
+            ));
       },
     );
   }

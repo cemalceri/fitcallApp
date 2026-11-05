@@ -12,6 +12,8 @@ import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_kayit_talebi_service.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -246,92 +248,109 @@ class _DersKayitTalebiSheetState extends State<DersKayitTalebiSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                InkWell(
-                  onTap: _gonderiliyor ? null : _tarihSec,
-                  borderRadius: BorderRadius.circular(Yaricap.m),
-                  child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Tarih',
-                      suffixIcon: Icon(Icons.calendar_today_rounded, size: 18),
-                    ),
-                    child: Text(
-                      tarihBicim.format(_tarih),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                OgrenmeHedefi(
+                  id: Hedef.talepZamani,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      InkWell(
+                        onTap: _gonderiliyor ? null : _tarihSec,
+                        borderRadius: BorderRadius.circular(Yaricap.m),
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: 'Tarih',
+                            suffixIcon:
+                                Icon(Icons.calendar_today_rounded, size: 18),
+                          ),
+                          child: Text(
+                            tarihBicim.format(_tarih),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: Bosluk.m),
+                      DropdownButtonFormField<int>(
+                        key: const ValueKey('talep_kort'),
+                        initialValue: _kortId,
+                        isExpanded: true,
+                        decoration: const InputDecoration(labelText: 'Kort'),
+                        items: [
+                          for (final k in widget.kortlar)
+                            DropdownMenuItem(
+                              value: k.id,
+                              child: Text(k.adi,
+                                  maxLines: 1, overflow: TextOverflow.ellipsis),
+                            ),
+                        ],
+                        onChanged: _gonderiliyor
+                            ? null
+                            : (v) => setState(() => _kortId = v),
+                      ),
+                      const SizedBox(height: Bosluk.m),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              key: ValueKey('talep_bas_$_basDakika'),
+                              initialValue: _basDakika,
+                              isExpanded: true,
+                              decoration:
+                                  const InputDecoration(labelText: 'Başlangıç'),
+                              items: [
+                                for (final d in _dilimler(dahil: _basDakika))
+                                  DropdownMenuItem(
+                                      value: d, child: Text(_saat(d))),
+                              ],
+                              onChanged: _gonderiliyor
+                                  ? null
+                                  : (v) {
+                                      if (v != null) _baslangicSec(v);
+                                    },
+                            ),
+                          ),
+                          const SizedBox(width: Bosluk.m),
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              key: ValueKey(
+                                  'talep_bit_${_basDakika}_$_bitDakika'),
+                              initialValue: bitisDilimleri.contains(_bitDakika)
+                                  ? _bitDakika
+                                  : null,
+                              isExpanded: true,
+                              decoration:
+                                  const InputDecoration(labelText: 'Bitiş'),
+                              items: [
+                                for (final d in bitisDilimleri)
+                                  DropdownMenuItem(
+                                      value: d, child: Text(_saat(d))),
+                              ],
+                              onChanged: _gonderiliyor
+                                  ? null
+                                  : (v) => setState(
+                                      () => _bitDakika = v ?? _bitDakika),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: Bosluk.m),
-                DropdownButtonFormField<int>(
-                  key: const ValueKey('talep_kort'),
-                  initialValue: _kortId,
-                  isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Kort'),
-                  items: [
-                    for (final k in widget.kortlar)
-                      DropdownMenuItem(
-                        value: k.id,
-                        child: Text(k.adi,
-                            maxLines: 1, overflow: TextOverflow.ellipsis),
-                      ),
-                  ],
-                  onChanged:
-                      _gonderiliyor ? null : (v) => setState(() => _kortId = v),
-                ),
-                const SizedBox(height: Bosluk.m),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<int>(
-                        key: ValueKey('talep_bas_$_basDakika'),
-                        initialValue: _basDakika,
-                        isExpanded: true,
-                        decoration:
-                            const InputDecoration(labelText: 'Başlangıç'),
-                        items: [
-                          for (final d in _dilimler(dahil: _basDakika))
-                            DropdownMenuItem(value: d, child: Text(_saat(d))),
-                        ],
-                        onChanged: _gonderiliyor
-                            ? null
-                            : (v) {
-                                if (v != null) _baslangicSec(v);
-                              },
-                      ),
+                OgrenmeHedefi(
+                  id: Hedef.talepAciklama,
+                  child: TextField(
+                    controller: _aciklama,
+                    enabled: !_gonderiliyor,
+                    minLines: 3,
+                    maxLines: 6,
+                    maxLength: 1000,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: const InputDecoration(
+                      labelText: 'Açıklama',
+                      hintText: 'Hangi dersin yerine? Ne değişti? Kimlerle?',
+                      alignLabelWithHint: true,
                     ),
-                    const SizedBox(width: Bosluk.m),
-                    Expanded(
-                      child: DropdownButtonFormField<int>(
-                        key: ValueKey('talep_bit_${_basDakika}_$_bitDakika'),
-                        initialValue: bitisDilimleri.contains(_bitDakika)
-                            ? _bitDakika
-                            : null,
-                        isExpanded: true,
-                        decoration: const InputDecoration(labelText: 'Bitiş'),
-                        items: [
-                          for (final d in bitisDilimleri)
-                            DropdownMenuItem(value: d, child: Text(_saat(d))),
-                        ],
-                        onChanged: _gonderiliyor
-                            ? null
-                            : (v) =>
-                                setState(() => _bitDakika = v ?? _bitDakika),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: Bosluk.m),
-                TextField(
-                  controller: _aciklama,
-                  enabled: !_gonderiliyor,
-                  minLines: 3,
-                  maxLines: 6,
-                  maxLength: 1000,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    labelText: 'Açıklama',
-                    hintText: 'Hangi dersin yerine? Ne değişti? Kimlerle?',
-                    alignLabelWithHint: true,
                   ),
                 ),
                 if (_hata != null) ...[

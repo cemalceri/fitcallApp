@@ -1,5 +1,7 @@
 // lib/screens/7_yonetici/dashboard/widgets/weekly_chart_card.dart
 
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
@@ -111,61 +113,64 @@ class _WeeklyChartCardState extends State<WeeklyChartCard> {
           const SizedBox(height: 20),
 
           // Grafik
-          SizedBox(
-            height: 140,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: List.generate(data.length, (index) {
-                final value = isCiro
-                    ? widget.ciroData[index].ciro
-                    : widget.tahsilatData[index].tahsilat;
-                final gun = isCiro
-                    ? widget.ciroData[index].gun
-                    : widget.tahsilatData[index].gun;
+          OgrenmeHedefi(
+            id: Hedef.grafikAlani,
+            child: SizedBox(
+              height: 140,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: List.generate(data.length, (index) {
+                  final value = isCiro
+                      ? widget.ciroData[index].ciro
+                      : widget.tahsilatData[index].tahsilat;
+                  final gun = isCiro
+                      ? widget.ciroData[index].gun
+                      : widget.tahsilatData[index].gun;
 
-                final heightRatio = maxValue > 0 ? value / maxValue : 0.0;
-                final barHeight = 90 * heightRatio;
+                  final heightRatio = maxValue > 0 ? value / maxValue : 0.0;
+                  final barHeight = 90 * heightRatio;
 
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        // Değer etiketi
-                        if (value > 0)
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          // Değer etiketi
+                          if (value > 0)
+                            Text(
+                              _formatCurrency(value),
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w500,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          const SizedBox(height: 4),
+                          // Bar
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            height: barHeight.clamp(4.0, 90.0),
+                            decoration: BoxDecoration(
+                              color: barColor,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          // Gün etiketi
                           Text(
-                            _formatCurrency(value),
+                            gun,
                             style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 11,
                               color: colorScheme.onSurfaceVariant,
                             ),
                           ),
-                        const SizedBox(height: 4),
-                        // Bar
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          height: barHeight.clamp(4.0, 90.0),
-                          decoration: BoxDecoration(
-                            color: barColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        // Gün etiketi
-                        Text(
-                          gun,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
           ),
 
@@ -220,15 +225,18 @@ class _WeeklyChartCardState extends State<WeeklyChartCard> {
             colorScheme: colorScheme,
             color: colorScheme.primary,
           ),
-          _buildToggleItem(
-            label: 'Tahsilat',
-            isSelected: _seciliTip == GrafikTipi.tahsilat,
-            onTap: () {
-              HapticFeedback.lightImpact();
-              setState(() => _seciliTip = GrafikTipi.tahsilat);
-            },
-            colorScheme: colorScheme,
-            color: colorScheme.primary,
+          OgrenmeHedefi(
+            id: Hedef.grafikTahsilat,
+            child: _buildToggleItem(
+              label: 'Tahsilat',
+              isSelected: _seciliTip == GrafikTipi.tahsilat,
+              onTap: () {
+                HapticFeedback.lightImpact();
+                setState(() => _seciliTip = GrafikTipi.tahsilat);
+              },
+              colorScheme: colorScheme,
+              color: colorScheme.primary,
+            ),
           ),
         ],
       ),

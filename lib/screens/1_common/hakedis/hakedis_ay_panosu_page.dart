@@ -10,7 +10,10 @@
 // atmaz — sadece seçili index değişir. Yerleşim HakedisAyPanosu'nda
 // (bu sayfa initState'te API çağırdığı için taşma testine giremiyor).
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/1_common/hakedis_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/hakedis/hakedis_ders_listesi_page.dart';
 import 'package:fitcall/screens/1_common/hakedis/hakedis_veri_kaynagi.dart';
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ay_panosu.dart';
@@ -43,6 +46,9 @@ class HakedisAyPanosuPage extends StatefulWidget {
   /// açılsın diye var; kullanıcı ay seçimini iki kez yapmasın.
   final int? baslangicAyIndex;
 
+  /// Başlıkta "?" gösterilecekse rehber sayfası (antrenör kendi hakedişinde).
+  final OgrenmeSayfasi? ogrenmeSayfasi;
+
   const HakedisAyPanosuPage({
     super.key,
     required this.kaynak,
@@ -50,6 +56,7 @@ class HakedisAyPanosuPage extends StatefulWidget {
     this.altBaslik = 'Hakediş saatleri',
     this.baslikVeridenGuncellensin = false,
     this.baslangicAyIndex,
+    this.ogrenmeSayfasi,
   });
 
   @override
@@ -154,6 +161,14 @@ class _HakedisAyPanosuPageState extends State<HakedisAyPanosuPage> {
             ),
           ],
         ),
+        actions: [
+          if (widget.ogrenmeSayfasi != null)
+            OgrenmeButonu(
+              sayfa: widget.ogrenmeSayfasi,
+              sssRotasi: routeEnums[SayfaAdi.antrenorYardim]!,
+            ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: SafeArea(
         top: false,

@@ -4,8 +4,13 @@
 // sayfasının "Karar bekleyenler" sekmesi). Ders bazında gruplu, en yeni üstte.
 // Kişiye dokununca karar formu açılır; ödeme alma ve üyeye aktarma web'de.
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
@@ -63,7 +68,16 @@ class _PlanDisiKararlarPageState extends State<PlanDisiKararlarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Plan Dışı Kararlar')),
+      appBar: AppBar(
+        title: const Text('Plan Dışı Kararlar'),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.ofisPlanDisi,
+            sssRotasi: routeEnums[SayfaAdi.ofisYardim]!,
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: PlanDisiKararlarGorunumu(
         dersler: _dersler,
         yukleniyor: _yukleniyor,
@@ -130,18 +144,21 @@ class PlanDisiKararlarGorunumu extends StatelessWidget {
             _DersBasligi(ders: d, tarih: _tarih.format(d.baslangic)),
             for (final (i, k) in d.kisiler.indexed) ...[
               if (i > 0) const ListeAyraci(),
-              ListeSatiri(
-                onGorsel: ListeAvatari(
-                  basHarfler: ListeAvatari.harfler(k.adSoyad),
-                  ton: k.misafirMi ? ListeTonu.uyari : ListeTonu.bilgi,
+              OgrenmeHedefi(
+                id: Hedef.planDisiKisi,
+                child: ListeSatiri(
+                  onGorsel: ListeAvatari(
+                    basHarfler: ListeAvatari.harfler(k.adSoyad),
+                    ton: k.misafirMi ? ListeTonu.uyari : ListeTonu.bilgi,
+                  ),
+                  baslik: k.adSoyad,
+                  altBaslik: [
+                    k.misafirMi ? 'Misafir' : 'Plan dışı üye',
+                    if (k.notMetni != null) k.notMetni!,
+                  ].join(' · '),
+                  okGoster: true,
+                  onTap: () => onKisiSec(d, k),
                 ),
-                baslik: k.adSoyad,
-                altBaslik: [
-                  k.misafirMi ? 'Misafir' : 'Plan dışı üye',
-                  if (k.notMetni != null) k.notMetni!,
-                ].join(' · '),
-                okGoster: true,
-                onTap: () => onKisiSec(d, k),
               ),
             ],
           ],

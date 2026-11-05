@@ -1,5 +1,7 @@
 // lib/screens/3_antrenor/takvim/widgets/katilim_not_dialog.dart
 
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:flutter/material.dart';
 
 /// Plan dışı üye için not girişi.
@@ -39,14 +41,17 @@ class _KatilimNotDialogState extends State<KatilimNotDialog> {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text('${widget.adSoyad} — Not'),
-      content: TextField(
-        controller: _ctrl,
-        autofocus: true,
-        maxLines: 3,
-        maxLength: 255,
-        decoration: const InputDecoration(
-          hintText: 'Örn. Misafir, telafi, deneme dersi...',
-          border: OutlineInputBorder(),
+      content: OgrenmeHedefi(
+        id: Hedef.katilimNot,
+        child: TextField(
+          controller: _ctrl,
+          autofocus: true,
+          maxLines: 3,
+          maxLength: 255,
+          decoration: const InputDecoration(
+            hintText: 'Örn. Misafir, telafi, deneme dersi...',
+            border: OutlineInputBorder(),
+          ),
         ),
       ),
       actions: [
@@ -54,9 +59,12 @@ class _KatilimNotDialogState extends State<KatilimNotDialog> {
           onPressed: () => Navigator.pop(context), // null = iptal
           child: const Text('Vazgeç'),
         ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, _ctrl.text.trim()),
-          child: const Text('Kaydet'),
+        OgrenmeHedefi(
+          id: Hedef.katilimNotKaydet,
+          child: FilledButton(
+            onPressed: () => Navigator.pop(context, _ctrl.text.trim()),
+            child: const Text('Kaydet'),
+          ),
         ),
       ],
     );

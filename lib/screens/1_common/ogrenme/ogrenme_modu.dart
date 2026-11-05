@@ -7,8 +7,12 @@
 // iner. Her giriş baştan başlar; rehber açıkken yazma istekleri ağa çıkmaz.
 // Bitince ya da "Kapat" denince rehber sırasında açılan her şey kapanır,
 // "?"ye dokunulan sayfaya dönülür; kapı ancak dönüş bitince kalkar.
+// Başlangıç sayfası bir kabuk sekmesiyse sekme de geri gelir; o sayfada
+// geri tuşu rehberi kapatır.
 
 import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 
 import 'package:fitcall/screens/1_common/ogrenme/hedef_bulucu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
@@ -17,6 +21,41 @@ import 'package:flutter/material.dart';
 
 /// [donus]: başlangıç sayfasına dönülüyor; dokunuşlar yutulur, kapı açık.
 enum RehberDurumu { kapali, adim, bitis, donus }
+
+/// Rehberin başladığı kabuk sekmesi. Sekmeler aynı rotada durduğu için
+/// sayfa dönüşü (`popUntil`) sekmeyi geri getirmez; bu bilgiyle getirilir.
+class RehberSekmesi {
+  final int sekme;
+  final int Function() aktif;
+  final ValueChanged<int> gec;
+
+  const RehberSekmesi({
+    required this.sekme,
+    required this.aktif,
+    required this.gec,
+  });
+}
+
+/// Başlangıç sayfasında geri tuşu: sayfayı (ya da kabuğu) kapatmaz,
+/// rehberi kapatır.
+class _GeriTusu extends PopEntry<Object?> {
+  final VoidCallback onGeri;
+
+  _GeriTusu(this.onGeri);
+
+  /// Hiç değişmez; her rehberde yenisini kurup sızdırmamak için ortak.
+  static final _hayir = ValueNotifier<bool>(false);
+
+  @override
+  ValueListenable<bool> get canPopNotifier => _hayir;
+
+  @override
+  void onPopInvokedWithResult(bool didPop, Object? result) {
+    // Navigator kayıtlı girişleri dolaşırken çağırır; kapatmak girişi
+    // kaydından siler, bu yüzden dolaşma bittikten sonra.
+    if (!didPop) scheduleMicrotask(onGeri);
+  }
+}
 
 class OgrenmeModu extends ChangeNotifier {
   OgrenmeModu._();
@@ -28,12 +67,23 @@ class OgrenmeModu extends ChangeNotifier {
 
   /// Hedef kaybolunca geçiş animasyonu için beklenen tur sayısı.
   static const _kayipSabri = 4;
+
+  /// Parlayan yere dokunulduktan sonra: sonraki ekran bir istek bekliyor
+  /// olabilir (ör. seçilen üyenin adı sorulurken not penceresi gecikir);
+  /// bu arada önceki adıma inilmez.
+  static const _dokunusSabri = 20;
   static const _tur = Duration(milliseconds: 100);
 
   RehberDurumu _durum = RehberDurumu.kapali;
   OgrenmeGorevi? _gorev;
   int _adim = 0;
   Rect? _delik;
+  Rect? _sonDelik;
+  bool _menuAcik = false;
+
+  /// Bu adımın hedefi bir kez yerine kaydırıldı mı (yarım görünüyorsa).
+  bool _yerlesti = false;
+  int _yanlisSayaci = 0;
   bool _dokunuldu = false;
   bool _yanlis = false;
   bool _denendi = false;
@@ -43,6 +93,8 @@ class OgrenmeModu extends ChangeNotifier {
   int _gorunmez = 0;
   NavigatorState? _navigator;
   Route<dynamic>? _baslangic;
+  RehberSekmesi? _sekme;
+  _GeriTusu? _geriTusu;
   Timer? _saat;
   Timer? _yanlisSaati;
 
@@ -54,8 +106,18 @@ class OgrenmeModu extends ChangeNotifier {
       ? null
       : _gorev!.adimlar[_adim];
 
-  /// Parlayan alan (katman koordinatı); hedef ekranda yoksa null.
+  /// Parlayan alan: hedefin görünen kısmı (katman koordinatı); hedef ekranda
+  /// yoksa null. Bitişte son adımın hedefi hâlâ görünüyorsa odur.
   Rect? get delik => _delik;
+
+  /// Son parlayan yer: bitiş kartı onun altında ya da üstünde çıkar.
+  Rect? get sonDelik => _sonDelik;
+
+  /// Açılır liste ya da menü açık: balon onun seçeneklerini örtmesin.
+  bool get menuAcik => _menuAcik;
+
+  /// Her yanlış dokunuşta artar (balon her seferinde yeniden sallanır).
+  int get yanlisSayaci => _yanlisSayaci;
 
   /// Adımın hedefi açık sayfada yok (kullanıcı başka ekrana geçti).
   bool get hedefYok => _hedefYok;
@@ -63,20 +125,28 @@ class OgrenmeModu extends ChangeNotifier {
   /// Kullanıcı parlayan yer dışına dokundu (kısa süre gösterilir).
   bool get yanlis => _yanlis;
 
-  /// Son butona dokunuldu ("Denemeydi, bir şey olmadı.").
+  /// Son butona dokunuldu ("Denemeydi, herhangi bir işlem yapılmadı.").
   bool get denendi => _denendi;
 
-  /// [gorev]'i [baslangic] sayfasında baştan başlatır.
+  /// [gorev]'i [baslangic] sayfasında baştan başlatır. [sekme]: başlangıç
+  /// sayfası kabuk sekmesiyse hangisi olduğu.
   void baslat(
     OgrenmeGorevi gorev, {
     required NavigatorState navigator,
     required Route<dynamic> baslangic,
+    RehberSekmesi? sekme,
   }) {
     _temizle();
     _gorev = gorev;
     _durum = RehberDurumu.adim;
     _navigator = navigator;
     _baslangic = baslangic;
+    _sekme = sekme;
+    if (baslangic is ModalRoute) {
+      final geri = _GeriTusu(() => kapat(geriDon: true));
+      baslangic.registerPopEntry(geri);
+      _geriTusu = geri;
+    }
     OgrenmeKapisi.engellenenler.clear();
     OgrenmeKapisi.acik = true;
     _saat = Timer.periodic(_tur, (_) => izle());
@@ -92,12 +162,15 @@ class OgrenmeModu extends ChangeNotifier {
     if (!acik || _durum == RehberDurumu.donus) return;
     final navigator = _navigator;
     final baslangic = _baslangic;
+    final sekme = _sekme;
+    if (geriDon) _cekmeceleriKapat();
     if (!geriDon ||
         navigator == null ||
         !navigator.mounted ||
         baslangic == null ||
         !baslangic.isActive ||
         baslangic.isCurrent) {
+      if (geriDon && (baslangic?.isActive ?? false)) _sekmeyiGetir(sekme);
       _temizle();
       OgrenmeKapisi.acik = false;
       notifyListeners();
@@ -115,6 +188,7 @@ class OgrenmeModu extends ChangeNotifier {
       if (r is TransitionRoute) kapananlar.add(r);
       return false;
     });
+    _sekmeyiGetir(sekme);
     // Engellenen isteklerin hata mesajları başlangıç sayfasında kalmasın.
     ScaffoldMessenger.maybeOf(navigator.context)?.clearSnackBars();
     await Future.wait([for (final r in kapananlar) r.completed])
@@ -127,7 +201,38 @@ class OgrenmeModu extends ChangeNotifier {
     notifyListeners();
   }
 
+  static void _sekmeyiGetir(RehberSekmesi? sekme) {
+    if (sekme != null && sekme.aktif() != sekme.sekme) sekme.gec(sekme.sekme);
+  }
+
+  /// Rehber sırasında açılan sol menü (çekmece) rota değildir, sayfa dönüşü
+  /// onu kapatmaz; kabuklarda çekmece dıştaki Scaffold'dadır. Açık her
+  /// çekmece kapanır.
+  void _cekmeceleriKapat() {
+    final kok = bulucu?.uygulama.currentContext ?? _navigator?.context;
+    if (kok is! Element) return;
+    void gez(Element e) {
+      if (e is StatefulElement) {
+        final durum = e.state;
+        if (durum is ScaffoldState) {
+          if (durum.isDrawerOpen) durum.closeDrawer();
+          if (durum.isEndDrawerOpen) durum.closeEndDrawer();
+        }
+      }
+      e.visitChildElements(gez);
+    }
+
+    kok.visitChildElements(gez);
+  }
+
   void _temizle() {
+    final geri = _geriTusu;
+    final baslangic = _baslangic;
+    if (geri != null && baslangic is ModalRoute) {
+      baslangic.unregisterPopEntry(geri);
+    }
+    _geriTusu = null;
+    _sekme = null;
     _saat?.cancel();
     _yanlisSaati?.cancel();
     _saat = null;
@@ -135,6 +240,8 @@ class OgrenmeModu extends ChangeNotifier {
     _gorev = null;
     _adim = 0;
     _delik = null;
+    _sonDelik = null;
+    _menuAcik = false;
     _dokunuldu = false;
     _yanlis = false;
     _denendi = false;
@@ -142,6 +249,7 @@ class OgrenmeModu extends ChangeNotifier {
     _bitisteUstteSayfa = false;
     _kayip = 0;
     _gorunmez = 0;
+    _yerlesti = false;
     _navigator = null;
     _baslangic = null;
   }
@@ -157,12 +265,22 @@ class OgrenmeModu extends ChangeNotifier {
       kapat();
       return;
     }
+    // Başlangıç sayfasında sekme değişti (kabuğun geri tuşu ya da menü):
+    // rehber biter, sekme geri gelir.
+    final sekme = _sekme;
+    if (sekme != null &&
+        (_baslangic?.isCurrent ?? false) &&
+        sekme.aktif() != sekme.sekme) {
+      kapat(geriDon: true);
+      return;
+    }
     final adim = gorev.adimlar[_adim];
-    final simdiki = b.bul(adim.hedef);
-    if (!adim.bilgi &&
-        _adim + 1 < gorev.adimlar.length &&
-        (adim.atlanabilir || _dokunuldu || simdiki == null)) {
-      final sonraki = b.bul(gorev.adimlar[_adim + 1].hedef);
+    final simdiki = b.adimHedefi(adim);
+    // Atlanabilir adım (okuma adımı da) sonraki hedef görününce geçilir.
+    if (_adim + 1 < gorev.adimlar.length &&
+        (adim.atlanabilir ||
+            (!adim.bilgi && (_dokunuldu || simdiki == null)))) {
+      final sonraki = b.adimHedefi(gorev.adimlar[_adim + 1]);
       if (sonraki != null) {
         _git(_adim + 1, sonraki);
         return;
@@ -173,9 +291,24 @@ class OgrenmeModu extends ChangeNotifier {
       _goster(simdiki);
       return;
     }
-    if (++_kayip < _kayipSabri) return;
+    // Açılır liste ya da menü açık: seçenekler deliğin dışında, perde
+    // kalkar; menü kapanınca hedef yeniden görünür ve adım sürer.
+    if (_menuUstte()) {
+      _kayip = 0;
+      if (_delik != null || !_menuAcik) {
+        _delik = null;
+        _menuAcik = true;
+        notifyListeners();
+      }
+      return;
+    }
+    if (_menuAcik) {
+      _menuAcik = false;
+      notifyListeners();
+    }
+    if (++_kayip < (_dokunuldu ? _dokunusSabri : _kayipSabri)) return;
     for (var j = _adim - 1; j >= 0; j--) {
-      final onceki = b.bul(gorev.adimlar[j].hedef);
+      final onceki = b.adimHedefi(gorev.adimlar[j]);
       if (onceki != null) {
         _git(j, onceki);
         return;
@@ -188,12 +321,30 @@ class OgrenmeModu extends ChangeNotifier {
     }
   }
 
+  /// En üstteki rota bir seçim menüsü mü (DropdownButton, showMenu)? İkisi
+  /// de PopupRoute'tur; diyalog ve alt sayfa da PopupRoute olduğu için
+  /// onlar ayrılır (onların içindeki öğeler hedef olarak aranır).
+  bool _menuUstte() {
+    final navigator = _navigator;
+    if (navigator == null || !navigator.mounted) return false;
+    Route<dynamic>? ust;
+    // Koşul en üstteki rotada hemen doğru döner: hiçbir şey kapanmaz.
+    navigator.popUntil((r) {
+      ust = r;
+      return true;
+    });
+    return ust is PopupRoute &&
+        ust is! RawDialogRoute &&
+        ust is! ModalBottomSheetRoute;
+  }
+
   void _git(int adim, HedefSonucu hedef) {
     _adim = adim;
     _dokunuldu = false;
     _yanlis = false;
     _kayip = 0;
     _gorunmez = 0;
+    _yerlesti = false;
     _goster(hedef, bildir: true);
   }
 
@@ -202,13 +353,20 @@ class OgrenmeModu extends ChangeNotifier {
     // kaydırma yetmezse yaklaşık saniyede bir yeniden denenir.
     if (hedef.gorunur) {
       _gorunmez = 0;
+      // Adımın ilk gösteriminde yarım görünen hedef (ör. sayfanın altındaki
+      // kart) bir kez ortaya kaydırılır; sonra kullanıcının kaydırmasına
+      // karışılmaz.
+      if (!_yerlesti && hedef.kesik) bulucu?.kaydir(hedef);
+      _yerlesti = true;
     } else if (_gorunmez++ % 10 == 0) {
       bulucu?.kaydir(hedef);
     }
-    final yeni = hedef.gorunur ? hedef.alan : null;
-    if (bildir || yeni != _delik || _hedefYok) {
+    final yeni = hedef.gorunur ? hedef.gorunen : null;
+    if (yeni != null) _sonDelik = yeni;
+    if (bildir || yeni != _delik || _hedefYok || _menuAcik) {
       _delik = yeni;
       _hedefYok = false;
+      _menuAcik = false;
       notifyListeners();
     }
   }
@@ -222,7 +380,9 @@ class OgrenmeModu extends ChangeNotifier {
       _denendi = true;
       _bitir();
     } else if (!adim.bilgi && _adim == gorev.adimlar.length - 1) {
-      _bitir();
+      // Dokunuş butona geçer; buton alt sayfayı kendisi kapatabilir (ör.
+      // filtreyi uygula), bu kapanış geri tuşu sayılmasın.
+      _bitir(geriIzle: false);
     } else {
       _dokunuldu = true;
     }
@@ -232,6 +392,7 @@ class OgrenmeModu extends ChangeNotifier {
   void yanlisDokunus() {
     if (_durum != RehberDurumu.adim) return;
     _yanlis = true;
+    _yanlisSayaci++;
     _yanlisSaati?.cancel();
     _yanlisSaati = Timer(const Duration(seconds: 2), () {
       _yanlis = false;
@@ -257,22 +418,40 @@ class OgrenmeModu extends ChangeNotifier {
     izle();
   }
 
-  void _bitir() {
+  /// [geriIzle]: bitişte üstte duran sayfanın kapanması geri tuşu sayılır
+  /// (rehber başlangıç sayfasına döner).
+  void _bitir({bool geriIzle = true}) {
     _durum = RehberDurumu.bitis;
-    _bitisteUstteSayfa = !(_baslangic?.isCurrent ?? true);
-    _delik = null;
+    _bitisteUstteSayfa = geriIzle && !(_baslangic?.isCurrent ?? true);
+    // Delik kalır: son parlayan yer hâlâ ekrandaysa bitiş kartı ona bağlanır
+    // (bkz. _bitisiIzle).
     _yanlis = false;
     notifyListeners();
   }
 
   /// Bitişte geri tuşu: üstteki alt sayfa geri tuşuyla kapandıysa dönüş
   /// butonu gibi davranılır; başlangıç sayfası kapandıysa rehber kapanır.
+  /// Son adımın hedefi görünürken parlamaya devam eder; kaybolursa (son
+  /// dokunuş alt sayfayı kapattı) delik kapanır, kart son yerinde kalır.
   void _bitisiIzle() {
     final baslangic = _baslangic;
     if (baslangic == null || !baslangic.isActive) {
       kapat();
-    } else if (_bitisteUstteSayfa && baslangic.isCurrent) {
+      return;
+    }
+    if (_bitisteUstteSayfa && baslangic.isCurrent) {
       kapat(geriDon: true);
+      return;
+    }
+    final gorev = _gorev;
+    final b = bulucu;
+    if (gorev == null || b == null) return;
+    final son = b.adimHedefi(gorev.adimlar[_adim]);
+    final yeni = son != null && son.gorunur ? son.gorunen : null;
+    if (yeni != _delik) {
+      _delik = yeni;
+      if (yeni != null) _sonDelik = yeni;
+      notifyListeners();
     }
   }
 }

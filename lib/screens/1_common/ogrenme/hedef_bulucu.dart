@@ -1,7 +1,8 @@
 // lib/screens/1_common/ogrenme/hedef_bulucu.dart
 //
 // Rehber adımının hedefini canlı ekranda bulur. Yalnız açık (en üstteki)
-// sayfadaki öğeler sayılır; "görünür" demek, öğenin ortasına dokunulsa
+// sayfadaki ve açık sekmedeki (IndexedStack'te gizli olmayan) öğeler
+// sayılır; "görünür" demek, öğenin ortasına dokunulsa
 // dokunuşun ona gideceği demektir (üstünde alt sayfa, klavye ya da başka bir
 // öğe yok, kaydırılıp ekran dışına çıkmamış).
 
@@ -14,10 +15,21 @@ import 'package:flutter/rendering.dart';
 class HedefSonucu {
   /// Katman koordinatında öğenin alanı.
   final Rect alan;
+
+  /// Öğenin ekranda görünen kısmı: kaydırma görünümü, alt sayfa ve ekran
+  /// (klavye hariç) kırpmaları düşülmüş alan. Delik bunun çevresinde açılır;
+  /// ekrandan uzun listede delik ekranın dışına taşmaz.
+  final Rect gorunen;
   final bool gorunur;
   final BuildContext baglam;
 
-  const HedefSonucu(this.alan, this.gorunur, this.baglam);
+  const HedefSonucu(this.alan, this.gorunur, this.baglam, {Rect? gorunen})
+      : gorunen = gorunen ?? alan;
+
+  /// Öğenin bir kısmı kırpılmış (ekranın altında yarım kalan kart, ekrandan
+  /// uzun liste).
+  bool get kesik =>
+      gorunen.height < alan.height - 1 || gorunen.width < alan.width - 1;
 }
 
 class HedefBulucu {
@@ -37,10 +49,12 @@ class HedefBulucu {
   });
 
   /// Seçiciye uyan, açık sayfadaki ilk öğe; görünür olan öne alınır.
-  HedefSonucu? bul(Secici secici) {
+  /// [pasifDahil]: yazıyla aranan buton kapalıysa da sayılır (son adımda
+  /// buton zaten basılmaz; ad yazılmadan kapalı duran «QR Oluştur» gibi).
+  HedefSonucu? bul(Secici secici, {bool pasifDahil = false}) {
     final adaylar = switch (secici) {
       HedefSecici(:final id) => OgrenmeHedefi.kayitlilar(id).toList(),
-      MetinSecici(:final metin) => _metinAdaylari(metin),
+      MetinSecici(:final metin) => _metinAdaylari(metin, pasifDahil),
     };
     HedefSonucu? yedek;
     for (final aday in adaylar) {
@@ -52,6 +66,10 @@ class HedefBulucu {
     return yedek;
   }
 
+  /// Adımın hedefi; son (kalıcı) adımda kapalı buton da sayılır.
+  HedefSonucu? adimHedefi(OgrenmeAdimi adim) =>
+      bul(adim.hedef, pasifDahil: adim.kalici);
+
   /// Sayfa hâlâ yükleniyor mu (ortak yükleme göstergesi ekranda mı)?
   bool yukleniyorMu() => bul(const Secici.hedef(Hedef.yukleniyor)) != null;
 
@@ -60,18 +78,31 @@ class HedefBulucu {
   bool baslatilabilir(OgrenmeGorevi gorev) {
     final adimlar = gorev.adimlar;
     if (adimlar.isEmpty) return false;
-    if (bul(adimlar.first.hedef) != null) return true;
+    // Okuma turu sayfadan çıkmaz: anlattığı her yer şimdi ekranda olmalı
+    // (ör. bekleyen iş yokken satırlar çizilmez).
+    if (adimlar.every((a) => a.bilgi)) {
+      return adimlar.every((a) => adimHedefi(a) != null);
+    }
+    if (adimHedefi(adimlar.first) != null) return true;
     return adimlar.first.atlanabilir &&
         adimlar.length > 1 &&
-        bul(adimlar[1].hedef) != null;
+        adimHedefi(adimlar[1]) != null;
   }
 
-  /// Ekran dışında kalan hedefi ortaya kaydırır.
+  /// Ekran dışında kalan hedefi ortaya kaydırır; görünümünden uzun hedefin
+  /// başı üste gelir (ortalansa başı da sonu da kesilirdi).
   void kaydir(HedefSonucu sonuc) {
     if (!sonuc.baglam.mounted) return;
+    final konum = Scrollable.maybeOf(sonuc.baglam)?.position;
+    final boy = konum == null || !konum.hasViewportDimension
+        ? null
+        : konum.viewportDimension;
+    final uzunluk = konum?.axis == Axis.horizontal
+        ? sonuc.alan.width
+        : sonuc.alan.height;
     Scrollable.ensureVisible(
       sonuc.baglam,
-      alignment: 0.5,
+      alignment: boy != null && uzunluk > boy * 0.8 ? 0.0 : 0.5,
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOutCubic,
     );
@@ -80,6 +111,9 @@ class HedefBulucu {
   HedefSonucu? _olc(BuildContext baglam) {
     if (!baglam.mounted) return null;
     if (!(ModalRoute.isCurrentOf(baglam) ?? true)) return null;
+    // Kabuğun gizli sekmesi: aynı yazı ("Bugün", "Kaydet") başka sekmede
+    // de durabilir; açık sekmedeki sayılır.
+    if (!Visibility.of(baglam)) return null;
     final kutu = baglam.findRenderObject();
     final kok = uygulama.currentContext?.findRenderObject();
     final katmanKutusu = katman.currentContext?.findRenderObject();
@@ -89,30 +123,59 @@ class HedefBulucu {
     if (!kutu.attached || !kutu.hasSize || !kok.hasSize) return null;
     final sol = katmanKutusu.globalToLocal(kutu.localToGlobal(Offset.zero));
     final alan = sol & kutu.size;
-    return HedefSonucu(alan, _dokunulur(kok, kutu), baglam);
+    final gorunen = _gorunenKisim(kutu, kok);
+    Rect katmanda(Rect r) => Rect.fromPoints(
+          katmanKutusu.globalToLocal(kok.localToGlobal(r.topLeft)),
+          katmanKutusu.globalToLocal(kok.localToGlobal(r.bottomRight)),
+        );
+    return HedefSonucu(
+      alan,
+      _dokunulur(kok, kutu, gorunen),
+      baglam,
+      gorunen: gorunen == null ? null : katmanda(gorunen),
+    );
   }
 
-  /// Öğenin ekrandaki kısmının ortasına dokunulsa dokunuş ona gider mi?
-  bool _dokunulur(RenderBox kok, RenderBox kutu) {
-    final ekran =
-        Rect.fromLTWH(0, 0, kok.size.width, kok.size.height - klavye());
-    final ust = kok.globalToLocal(kutu.localToGlobal(Offset.zero));
-    final gorunen = (ust & kutu.size).intersect(ekran);
-    if (gorunen.width < 1 || gorunen.height < 1) return false;
+  /// Öğenin görünen kısmı ([kok] koordinatında): atalarının kırptığı alanlar
+  /// (kaydırma görünümü, yapışkan başlık örtüşmesi, alt sayfa) ve ekran
+  /// (klavye hariç) düşülür. Hiç görünmüyorsa null.
+  Rect? _gorunenKisim(RenderBox kutu, RenderBox kok) {
+    var alan = MatrixUtils.transformRect(
+        kutu.getTransformTo(kok), Offset.zero & kutu.size);
+    RenderObject cocuk = kutu;
+    var ata = kutu.parent;
+    while (ata != null) {
+      final kirpma = ata.describeApproximatePaintClip(cocuk);
+      if (kirpma != null) {
+        alan = alan.intersect(
+            MatrixUtils.transformRect(ata.getTransformTo(kok), kirpma));
+      }
+      if (identical(ata, kok)) break;
+      cocuk = ata;
+      ata = ata.parent;
+    }
+    alan = alan.intersect(
+        Rect.fromLTWH(0, 0, kok.size.width, kok.size.height - klavye()));
+    return alan.width < 1 || alan.height < 1 ? null : alan;
+  }
+
+  /// Öğenin görünen kısmının ortasına dokunulsa dokunuş ona gider mi?
+  bool _dokunulur(RenderBox kok, RenderBox kutu, Rect? gorunen) {
+    if (gorunen == null) return false;
     final sonuc = BoxHitTestResult();
     kok.hitTest(sonuc, position: gorunen.center);
     return sonuc.path.any((giris) => giris.target == kutu);
   }
 
   /// Yazısı [metin] olan Text'lerin en yakın dokunulabilir ataları.
-  List<BuildContext> _metinAdaylari(String metin) {
+  List<BuildContext> _metinAdaylari(String metin, bool pasifDahil) {
     final kok = uygulama.currentContext;
     if (kok is! Element) return const [];
     final adaylar = <BuildContext>[];
     void gez(Element e) {
       final w = e.widget;
       if (w is Text && (w.data ?? w.textSpan?.toPlainText()) == metin) {
-        final ata = _dokunulabilirAta(e);
+        final ata = _dokunulabilirAta(e, pasifDahil);
         if (ata != null) adaylar.add(ata);
       }
       e.visitChildElements(gez);
@@ -122,12 +185,12 @@ class HedefBulucu {
     return adaylar;
   }
 
-  static Element? _dokunulabilirAta(Element e) {
+  static Element? _dokunulabilirAta(Element e, bool pasifDahil) {
     Element? bulunan;
     var derinlik = 0;
     e.visitAncestorElements((ata) {
       final w = ata.widget;
-      if (_dokunulabilir(w)) {
+      if (_dokunulabilir(w) || (pasifDahil && _pasifButon(w))) {
         bulunan = ata;
         return false;
       }
@@ -147,6 +210,12 @@ class HedefBulucu {
         InkResponse(:final onTap) => onTap != null,
         GestureDetector(:final onTap) => onTap != null,
         ListTile(:final onTap) => onTap != null,
+        _ => false,
+      };
+
+  static bool _pasifButon(Widget w) => switch (w) {
+        ButtonStyleButton(:final onPressed) => onPressed == null,
+        IconButton(:final onPressed) => onPressed == null,
         _ => false,
       };
 }

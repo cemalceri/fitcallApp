@@ -16,6 +16,10 @@ import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/sayfali_liste_parcalari.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -115,6 +119,7 @@ class DegerlendirmelerGorunumu extends StatelessWidget {
               ],
             ),
       actions: [
+        const OgrenmeButonu(sayfa: OgrenmeSayfasi.yoneticiDegerlendirmeler),
         if (o != null && o.adet > 0)
           Padding(
             padding: const EdgeInsets.only(right: Bosluk.l),
@@ -132,10 +137,13 @@ class DegerlendirmelerGorunumu extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.m),
           child: SizedBox(
             height: seciciYuksekligi,
-            child: BaslikSecici<String>(
-              secenekler: degerlendirmeSuzgecleri,
-              secili: filtre,
-              onSec: onFiltre,
+            child: OgrenmeHedefi(
+              id: Hedef.degerlendirmeSuzgec,
+              child: BaslikSecici<String>(
+                secenekler: degerlendirmeSuzgecleri,
+                secili: filtre,
+                onSec: onFiltre,
+              ),
             ),
           ),
         ),
@@ -225,7 +233,7 @@ class DegerlendirmelerGorunumu extends StatelessWidget {
   Widget _satir(BuildContext context, DersDegerlendirmesi d) {
     final yorum = d.yorum == null ? 'Yorum yok' : '“${d.yorum!}”';
 
-    return ListeSatiri(
+    final satir = ListeSatiri(
       onGorsel: ListeAvatari(
         basHarfler: ListeAvatari.harfler(d.degerlendiren.adSoyad),
         fotoUrl: d.degerlendiren.profilFotografi,
@@ -249,5 +257,6 @@ class DegerlendirmelerGorunumu extends StatelessWidget {
       ),
       onTap: () => onSec(d),
     );
+    return OgrenmeHedefi(id: Hedef.degerlendirmeSatiri, child: satir);
   }
 }

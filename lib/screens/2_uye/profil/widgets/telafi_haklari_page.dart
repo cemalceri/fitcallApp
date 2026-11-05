@@ -1,8 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/telafi_ders/telafi_ders_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
@@ -93,7 +98,16 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
     // Elle çizilmiş başlık yerine tema başlık çubuğu: takım renginde, diğer
     // sayfalarla aynı.
     return Scaffold(
-      appBar: AppBar(title: const Text('Telafi Haklarım')),
+      appBar: AppBar(
+        title: const Text('Telafi Haklarım'),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.uyeTelafi,
+            sssRotasi: routeEnums[SayfaAdi.yardim]!,
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: SafeArea(
         top: false,
         child: Column(
@@ -169,7 +183,10 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
         // İstatistik Kartı
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: _buildStatisticsCard(),
+          child: OgrenmeHedefi(
+            id: Hedef.uyeTelafiOzet,
+            child: _buildStatisticsCard(),
+          ),
         ),
 
         // Tab Bar
@@ -402,7 +419,10 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
         itemCount: list.length,
         itemBuilder: (context, index) {
           final telafi = list[index];
-          return _TelafiCard(telafi: telafi, durum: durum);
+          return ogrenmeHedefiSar(
+            index == 0 ? Hedef.uyeTelafiKart : null,
+            _TelafiCard(telafi: telafi, durum: durum),
+          );
         },
       ),
     );

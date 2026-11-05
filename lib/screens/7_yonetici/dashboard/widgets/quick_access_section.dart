@@ -1,6 +1,8 @@
 // lib/screens/7_yonetici/dashboard/widgets/quick_access_section.dart
 
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -54,16 +56,19 @@ class QuickAccessSection extends StatelessWidget {
           onTap: onAntrenorTap,
         ),
         const SizedBox(height: 10),
-        _QuickAccessItem(
-          title: 'Bugünün Dersleri',
-          subtitle:
-              '${data.hizliErisimDersler.toplamDers} ders • ${data.hizliErisimDersler.onayBekleyen} onay bekliyor',
-          icon: Icons.event_note,
-          iconColor: colorScheme.primary,
-          onTap: onDerslerTap,
-          badge: data.hizliErisimDersler.onayBekleyen > 0
-              ? data.hizliErisimDersler.onayBekleyen
-              : null,
+        OgrenmeHedefi(
+          id: Hedef.yoneticiBugunDersleri,
+          child: _QuickAccessItem(
+            title: 'Bugünün Dersleri',
+            subtitle:
+                '${data.hizliErisimDersler.toplamDers} ders • ${data.hizliErisimDersler.onayBekleyen} onay bekliyor',
+            icon: Icons.event_note,
+            iconColor: colorScheme.primary,
+            onTap: onDerslerTap,
+            badge: data.hizliErisimDersler.onayBekleyen > 0
+                ? data.hizliErisimDersler.onayBekleyen
+                : null,
+          ),
         ),
       ],
     );

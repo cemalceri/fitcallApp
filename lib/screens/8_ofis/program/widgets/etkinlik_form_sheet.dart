@@ -7,6 +7,8 @@
 // uyarmak için.
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/program/talep_notu_kutusu.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -323,7 +325,10 @@ class _EtkinlikFormSheetState extends State<EtkinlikFormSheet> {
                     ),
                     if (widget.talep != null) ...[
                       const SizedBox(height: 8),
-                      TalepNotuKutusu(talep: widget.talep!),
+                      OgrenmeHedefi(
+                        id: Hedef.formTalepNotu,
+                        child: TalepNotuKutusu(talep: widget.talep!),
+                      ),
                     ],
                     if (widget.veriler.etkinlik?.sabitPlanMi == true) ...[
                       const SizedBox(height: 8),
@@ -334,6 +339,11 @@ class _EtkinlikFormSheetState extends State<EtkinlikFormSheet> {
                       ),
                     ],
                     const SizedBox(height: 16),
+                    OgrenmeHedefi(
+                      id: Hedef.formZaman,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                     _etiket('Tarih', renk),
                     _secimSatiri(
                       metin: tarihBicim.format(_baslangic),
@@ -372,9 +382,14 @@ class _EtkinlikFormSheetState extends State<EtkinlikFormSheet> {
                         ),
                       ],
                     ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     _etiket('Kort', renk),
-                    _acilirListe<int>(
+                    OgrenmeHedefi(
+                      id: Hedef.formKort,
+                      child: _acilirListe<int>(
                       deger: _kortId,
                       secenekler: widget.veriler.kortlar
                           .map((k) => DropdownMenuItem(
@@ -384,24 +399,30 @@ class _EtkinlikFormSheetState extends State<EtkinlikFormSheet> {
                               ))
                           .toList(),
                       onChanged: (v) => setState(() => _kortId = v),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _etiket('Ürün', renk),
-                    _acilirListe<int>(
-                      deger: _urunId,
-                      etkin: !urunKilitli,
-                      secenekler: widget.veriler.urunler
-                          .map((u) => DropdownMenuItem(
-                                value: u.id,
-                                child: Text(u.adi,
-                                    overflow: TextOverflow.ellipsis),
-                              ))
-                          .toList(),
-                      onChanged: (v) => setState(() => _urunId = v),
+                    OgrenmeHedefi(
+                      id: Hedef.formUrun,
+                      child: _acilirListe<int>(
+                        deger: _urunId,
+                        etkin: !urunKilitli,
+                        secenekler: widget.veriler.urunler
+                            .map((u) => DropdownMenuItem(
+                                  value: u.id,
+                                  child: Text(u.adi,
+                                      overflow: TextOverflow.ellipsis),
+                                ))
+                            .toList(),
+                        onChanged: (v) => setState(() => _urunId = v),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _etiket('Antrenör', renk),
-                    _acilirListe<int>(
+                    OgrenmeHedefi(
+                      id: Hedef.formAntrenor,
+                      child: _acilirListe<int>(
                       deger: _antrenorId,
                       secenekler: widget.veriler.antrenorler
                           .map((a) => DropdownMenuItem(
@@ -413,6 +434,7 @@ class _EtkinlikFormSheetState extends State<EtkinlikFormSheet> {
                               ))
                           .toList(),
                       onChanged: (v) => setState(() => _antrenorId = v),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _etiket('Yardımcı antrenör (opsiyonel)', renk),
@@ -664,43 +686,48 @@ class _EtkinlikFormSheetState extends State<EtkinlikFormSheet> {
     final secililer =
         widget.veriler.uyeler.where((u) => _uyeIdler.contains(u.id)).toList();
 
-    return InkWell(
-      onTap: _uyeSec,
-      borderRadius: BorderRadius.circular(6),
-      child: InputDecorator(
-        decoration: const InputDecoration(
-          isDense: true,
-          border: OutlineInputBorder(),
-          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: secililer.isEmpty
-                  ? Text(
-                      'Üye seçiniz',
-                      style: TextStyle(color: renk.onSurfaceVariant),
-                    )
-                  : Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: secililer
-                          .map((u) => Chip(
-                                label: Text(
-                                  u.pasif ? '${u.adSoyad} (Pasif)' : u.adSoyad,
-                                  style: const TextStyle(fontSize: 11.5),
-                                ),
-                                visualDensity: VisualDensity.compact,
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                padding: EdgeInsets.zero,
-                              ))
-                          .toList(),
-                    ),
-            ),
-            const SizedBox(width: 4),
-            Icon(Icons.edit, size: 16, color: renk.primary),
-          ],
+    return OgrenmeHedefi(
+      id: Hedef.formUyeler,
+      child: InkWell(
+        onTap: _uyeSec,
+        borderRadius: BorderRadius.circular(6),
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            isDense: true,
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: secililer.isEmpty
+                    ? Text(
+                        'Üye seçiniz',
+                        style: TextStyle(color: renk.onSurfaceVariant),
+                      )
+                    : Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: secililer
+                            .map((u) => Chip(
+                                  label: Text(
+                                    u.pasif
+                                        ? '${u.adSoyad} (Pasif)'
+                                        : u.adSoyad,
+                                    style: const TextStyle(fontSize: 11.5),
+                                  ),
+                                  visualDensity: VisualDensity.compact,
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  padding: EdgeInsets.zero,
+                                ))
+                            .toList(),
+                      ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.edit, size: 16, color: renk.primary),
+            ],
+          ),
         ),
       ),
     );

@@ -14,6 +14,8 @@
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -53,6 +55,14 @@ class ProgramGorunumu extends StatelessWidget {
   /// Bu antrenörün dersleri vurgulanır (antrenörün tüm programı).
   final int? vurgulaAntrenorId;
 
+  /// Başlığın sağ ucu ("Bugün"ün yanı): sayfanın "?" düğmesi.
+  final Widget? sag;
+
+  /// Rehberin işaret edeceği ders bloğu / gün; null dönen kimliksiz sarılır (hedef olmaz).
+  final String? Function(ProgramDersi ders)? dersHedefi;
+  final String? Function(ProgramGunu gun)? gunHedefi;
+  final List<String> Function(ProgramGunu gun)? gunHedefleri;
+
   const ProgramGorunumu({
     super.key,
     required this.program,
@@ -69,6 +79,10 @@ class ProgramGorunumu extends StatelessWidget {
     this.baslik = 'Ders Programı',
     this.onTalepTap,
     this.vurgulaAntrenorId,
+    this.sag,
+    this.dersHedefi,
+    this.gunHedefi,
+    this.gunHedefleri,
   });
 
   String _gunAnahtari(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
@@ -81,21 +95,30 @@ class ProgramGorunumu extends StatelessWidget {
 
     return Column(
       children: [
-        ProgramBaslik(
-          haftaBaslangic: program.haftaBaslangic,
-          haftaBitis: program.haftaBitis,
-          onOnceki: onOncekiHafta,
-          onSonraki: onSonrakiHafta,
-          onBugun: onBugun,
-          onMenu: onMenuTap,
-          onGeri: onGeri,
-          baslik: baslik,
+        OgrenmeHedefi(
+          id: Hedef.programBaslik,
+          child: ProgramBaslik(
+            haftaBaslangic: program.haftaBaslangic,
+            haftaBitis: program.haftaBitis,
+            onOnceki: onOncekiHafta,
+            onSonraki: onSonrakiHafta,
+            onBugun: onBugun,
+            onMenu: onMenuTap,
+            onGeri: onGeri,
+            baslik: baslik,
+            sag: sag,
+          ),
         ),
-        ProgramGunSeridi(
-          gunler: program.gunler,
-          seciliTarih: _gunAnahtari(gunBasi),
-          bugunTarih: _gunAnahtari(program.bugun),
-          onGunSec: onGunSec,
+        OgrenmeHedefi(
+          id: Hedef.programGunSeridi,
+          child: ProgramGunSeridi(
+            gunler: program.gunler,
+            seciliTarih: _gunAnahtari(gunBasi),
+            bugunTarih: _gunAnahtari(program.bugun),
+            onGunSec: onGunSec,
+            gunHedefi: gunHedefi,
+            gunHedefleri: gunHedefleri,
+          ),
         ),
         const Divider(height: 1),
         Expanded(
@@ -110,6 +133,7 @@ class ProgramGorunumu extends StatelessWidget {
                 talepler: program.gununTalepleri(gunBasi),
                 onTalepTap: onTalepTap,
                 vurgulaAntrenorId: vurgulaAntrenorId,
+                dersHedefi: dersHedefi,
               ),
               if (islemDevamEdiyor)
                 const Positioned(
@@ -144,6 +168,9 @@ class ProgramBaslik extends StatelessWidget {
 
   final String baslik;
 
+  /// "Bugün"ün sağındaki ek düğme (sayfanın "?"si).
+  final Widget? sag;
+
   const ProgramBaslik({
     super.key,
     required this.haftaBaslangic,
@@ -154,6 +181,7 @@ class ProgramBaslik extends StatelessWidget {
     this.onMenu,
     this.onGeri,
     this.baslik = 'Ders Programı',
+    this.sag,
   });
 
   /// Takım renginde başlık bandı: durum çubuğunun arkasına uzanır, yazı ve
@@ -230,6 +258,7 @@ class ProgramBaslik extends StatelessWidget {
             ),
             child: const Text('Bugün', maxLines: 1),
           ),
+          if (sag != null) sag!,
           const SizedBox(width: 4),
         ],
       ),

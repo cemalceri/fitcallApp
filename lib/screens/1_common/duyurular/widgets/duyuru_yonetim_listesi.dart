@@ -1,6 +1,8 @@
 // lib/screens/1_common/duyurular/widgets/duyuru_yonetim_listesi.dart
 
 import 'package:fitcall/models/1_common/duyuru_okuma_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/duyurular/widgets/duyuru_bicim.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
@@ -102,7 +104,9 @@ class DuyuruYonetimListesi extends StatelessWidget {
       altDeger = '${d.gorenSayisi}/${d.hedefSayisi}';
     }
 
-    return ListeSatiri(
+    return ogrenmeHedefiSar(
+        Hedef.duyuruSatiri,
+        ListeSatiri(
       // Önemli sinyali yalnız renkte kalmasın diye alt satırda da yazılı.
       onGorsel: ListeAvatari(
         ikon: Icons.campaign_rounded,
@@ -121,6 +125,6 @@ class DuyuruYonetimListesi extends StatelessWidget {
       altDeger: altDeger,
       okGoster: true,
       onTap: () => onSec(d),
-    );
+    ));
   }
 }

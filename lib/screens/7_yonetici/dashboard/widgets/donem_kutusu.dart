@@ -6,6 +6,7 @@ import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 /// Panonun dönem kutusu: dönem seçimi + seçili günler + yalnız o seçimle
@@ -38,6 +39,9 @@ class DonemKutusu extends StatelessWidget {
   final String? baslik;
   final IconData? ikon;
 
+  /// Rehberin dönem seçicisini işaret ettiği kimlik.
+  final String? seciciHedefi;
+
   const DonemKutusu({
     super.key,
     required this.seciliDonem,
@@ -47,6 +51,7 @@ class DonemKutusu extends StatelessWidget {
     this.iskeletYukseklikleri,
     this.baslik,
     this.ikon,
+    this.seciciHedefi,
   });
 
   @override
@@ -76,10 +81,13 @@ class DonemKutusu extends StatelessWidget {
             ),
             const SizedBox(height: Bosluk.s),
           ],
-          PeriodFilterTabs(
-            seciliDonem: seciliDonem,
-            onDonemChanged: onDonemChanged,
-            yuzeyde: true,
+          ogrenmeHedefiSar(
+            seciciHedefi,
+            PeriodFilterTabs(
+              seciliDonem: seciliDonem,
+              onDonemChanged: onDonemChanged,
+              yuzeyde: true,
+            ),
           ),
           const SizedBox(height: Bosluk.s),
           Row(

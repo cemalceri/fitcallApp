@@ -16,6 +16,8 @@
 // Harici paket bağımlılığı yok: parıltı `ShaderMask` ile üretilir.
 
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 class _KayanGradyan extends GradientTransform {
@@ -79,24 +81,28 @@ class _PariltiState extends State<Parilti> with SingleTickerProviderStateMixin {
         ? cs.surfaceContainerHighest
         : cs.surfaceContainerLowest;
 
-    return AnimatedBuilder(
-      animation: _kontrol,
-      child: widget.child,
-      builder: (context, child) {
-        return ShaderMask(
-          blendMode: BlendMode.srcATop,
-          shaderCallback: (bounds) {
-            return LinearGradient(
-              colors: [zemin, parlak, zemin],
-              stops: const [0.1, 0.3, 0.4],
-              begin: Alignment.topLeft,
-              end: Alignment.centerRight,
-              transform: _KayanGradyan(_kontrol.value * 3 - 1.5),
-            ).createShader(bounds);
-          },
-          child: child,
-        );
-      },
+    // Rehber, sayfa yüklenirken "?" listesinde "Yükleniyor…" der.
+    return OgrenmeHedefi(
+      id: Hedef.yukleniyor,
+      child: AnimatedBuilder(
+        animation: _kontrol,
+        child: widget.child,
+        builder: (context, child) {
+          return ShaderMask(
+            blendMode: BlendMode.srcATop,
+            shaderCallback: (bounds) {
+              return LinearGradient(
+                colors: [zemin, parlak, zemin],
+                stops: const [0.1, 0.3, 0.4],
+                begin: Alignment.topLeft,
+                end: Alignment.centerRight,
+                transform: _KayanGradyan(_kontrol.value * 3 - 1.5),
+              ).createShader(bounds);
+            },
+            child: child,
+          );
+        },
+      ),
     );
   }
 }
@@ -164,7 +170,10 @@ class _IskeletGecikmeliState extends State<IskeletGecikmeli> {
 
   @override
   Widget build(BuildContext context) {
-    return _goster ? widget.child : const SizedBox.shrink();
+    // Gecikme sürerken de sayfa yükleniyor sayılır.
+    return _goster
+        ? widget.child
+        : const OgrenmeHedefi(id: Hedef.yukleniyor, child: SizedBox.shrink());
   }
 }
 

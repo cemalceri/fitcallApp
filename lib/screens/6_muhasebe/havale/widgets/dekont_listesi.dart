@@ -7,6 +7,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/6_muhasebe/dekont_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:flutter/material.dart';
@@ -101,11 +103,14 @@ class DekontlarimGorunumu extends StatelessWidget {
                 );
               }
               final d = dekontlar[i];
-              return DekontSatiri(
-                dekont: d,
-                vurgulu: d.id == vurgulananId,
-                onTap: () => onTap(d),
-                onGeriCek: () => onGeriCek(d),
+              return ogrenmeHedefiSar(
+                i == 0 ? Hedef.uyeDekontSatiri : null,
+                DekontSatiri(
+                  dekont: d,
+                  vurgulu: d.id == vurgulananId,
+                  onTap: () => onTap(d),
+                  onGeriCek: () => onGeriCek(d),
+                ),
               );
             },
           );

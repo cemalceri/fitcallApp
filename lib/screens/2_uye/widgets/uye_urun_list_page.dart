@@ -1,3 +1,6 @@
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_view.dart';
 import 'package:fitcall/services/urun/urun_api_service.dart';
@@ -50,6 +53,13 @@ class _UyeUrunListPageState extends State<UyeUrunListPage> {
           'Üyelik & Paket Bilgilerim',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.uyeUrunler,
+            sssRotasi: routeEnums[SayfaAdi.yardim]!,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,

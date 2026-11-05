@@ -4,8 +4,11 @@
 // testte doğrudan render edilir. Her satırda talep eden, istenen gün/saat/kort,
 // antrenörün notu ve üç eylem: Programda göster · Reddet · Kayıt oluştur.
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
@@ -47,7 +50,7 @@ class DersKayitTalepleriGorunumu extends StatelessWidget {
     return Column(
       children: [
         BaslikBandi(
-          padding: const EdgeInsets.fromLTRB(4, 4, 16, 6),
+          padding: const EdgeInsets.fromLTRB(4, 4, 8, 6),
           child: SizedBox(
             height: 44,
             child: Row(
@@ -71,6 +74,11 @@ class DersKayitTalepleriGorunumu extends StatelessWidget {
                           fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
+                ),
+                OgrenmeButonu(
+                  sayfa: OgrenmeSayfasi.ofisDersKayitTalepleri,
+                  sssRotasi: routeEnums[SayfaAdi.ofisYardim]!,
+                  kutulu: true,
                 ),
               ],
             ),

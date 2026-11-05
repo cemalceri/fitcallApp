@@ -3,6 +3,11 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'dart:math' as math;
 
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/models/1_common/event/event_model.dart';
 import 'package:fitcall/models/1_common/event/gecis_model.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
@@ -361,7 +366,10 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
                     _buildHeaderCard(ev),
                     const SizedBox(height: 20),
                     if (sp != null) ...[
-                      _buildSelfPassSection(colorScheme, sp),
+                      OgrenmeHedefi(
+                        id: Hedef.uyeEventKod,
+                        child: _buildSelfPassSection(colorScheme, sp),
+                      ),
                       const SizedBox(height: 24),
                     ],
                     _buildGuestSection(colorScheme, kotaDoldu),
@@ -440,6 +448,10 @@ Bu QR kod ile etkinliğe giriş yapabilirsiniz.
                 size: 22,
               ),
             ),
+          ),
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.uyeEvent,
+            sssRotasi: routeEnums[SayfaAdi.yardim]!,
           ),
         ],
       ),

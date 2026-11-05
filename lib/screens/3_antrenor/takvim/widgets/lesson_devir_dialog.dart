@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/models/3_antrenor/ders_devir_talebi_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -296,7 +298,9 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Devir talebi cevap bekliyor',
+                    _benTalepEden
+                        ? 'Devir talebi cevap bekliyor'
+                        : 'Size devir teklifi geldi',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -307,6 +311,17 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
               ],
             ),
           ),
+          if (!_benTalepEden) ...[
+            const SizedBox(height: 10),
+            Text(
+              'Teklifi kabul etmek ya da reddetmek için Bildirimler '
+              'sayfasındaki devir bildirimini açın.',
+              style: TextStyle(
+                fontSize: 12,
+                color: context.takvim.textSecondary,
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           _kvRow('Rol', t.rolLabel),
           _kvRow('Talep eden', t.talepEdenAntrenorAdi),
@@ -455,61 +470,66 @@ class _LessonDevirDialogState extends State<LessonDevirDialog> {
       }
     }
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: _antrenorSecimAc,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.grey.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: secili != null
-                  ? context.takvim.primary
-                  : Theme.of(context).colorScheme.outlineVariant,
-              width: secili != null ? 1.5 : 1,
+    return OgrenmeHedefi(
+      id: Hedef.devirAntrenorKutusu,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _antrenorSecimAc,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: secili != null
+                    ? context.takvim.primary
+                    : Theme.of(context).colorScheme.outlineVariant,
+                width: secili != null ? 1.5 : 1,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              if (secili != null) ...[
-                CircleAvatar(
-                  backgroundColor: renk!.withValues(alpha: 0.2),
-                  radius: 14,
-                  child: Text(
-                    secili.adi.isNotEmpty ? secili.adi[0].toUpperCase() : '?',
-                    style: TextStyle(
-                        color: renk, fontWeight: FontWeight.w700, fontSize: 12),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    secili.adSoyad,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ] else ...[
-                Icon(Icons.person_search_rounded,
-                    size: 20, color: context.takvim.textMuted),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Antrenör seçin...',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: context.takvim.textSecondary,
+            child: Row(
+              children: [
+                if (secili != null) ...[
+                  CircleAvatar(
+                    backgroundColor: renk!.withValues(alpha: 0.2),
+                    radius: 14,
+                    child: Text(
+                      secili.adi.isNotEmpty ? secili.adi[0].toUpperCase() : '?',
+                      style: TextStyle(
+                          color: renk,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12),
                     ),
                   ),
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      secili.adSoyad,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ] else ...[
+                  Icon(Icons.person_search_rounded,
+                      size: 20, color: context.takvim.textMuted),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Antrenör seçin...',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: context.takvim.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+                Icon(Icons.keyboard_arrow_down_rounded,
+                    color: context.takvim.textSecondary),
               ],
-              Icon(Icons.keyboard_arrow_down_rounded,
-                  color: context.takvim.textSecondary),
-            ],
+            ),
           ),
         ),
       ),
@@ -650,6 +670,8 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
         : widget.adaylar
             .where((a) => a.adSoyad.toLowerCase().contains(aramaLower))
             .toList();
+    // Rehber: devralabilen ilk hoca parlar.
+    final ilkUygun = filtreli.where((x) => x.devralabilirMi).firstOrNull;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
@@ -746,7 +768,9 @@ class _AntrenorSecimSheetState extends State<_AntrenorSecimSheet> {
                         separatorBuilder: (_, __) => const SizedBox(height: 4),
                         itemBuilder: (_, i) {
                           final a = filtreli[i];
-                          return _buildTile(a);
+                          return ogrenmeHedefiSar(
+                              identical(a, ilkUygun) ? Hedef.devirAday : null,
+                              _buildTile(a));
                         },
                       ),
               ),

@@ -113,13 +113,13 @@ const _tumBolumler = <_KapsamliBolum>[
           cevap:
               'Ayarlar sayfasındaki "Profil değiştir" ile profil seçim ekranına'
               ' dönersiniz; oradan diğer profilinizi seçtiğinizde uygulama o rolün'
-              ' kabuğuyla açılır. Aynı yere ana ekranın üst köşesindeki çift oklu'
-              ' (⇄) butonla da gidebilirsiniz: yöneticide ana sayfanın başlığında, ofiste'
-              ' haftalık programın başlığında, "Bugün"ün yanında. Her profil kendi'
-              ' oturum anahtarıyla çalışır, yani yönetici olarak gördüğünüz veri ofis'
-              ' profiline taşınmaz.',
+              ' kabuğuyla açılır. Aynı yere Ana Sayfa başlığındaki çift oklu (⇄)'
+              ' butonla da gidebilirsiniz; buton yalnız birden fazla profili olan'
+              ' hesaplarda görünür. Her profil kendi oturum anahtarıyla çalışır, yani'
+              ' yönetici olarak gördüğünüz veri ofis profiline taşınmaz.',
         ),
       ),
+      _KapsamliSoru(_Kapsam.ortak, rehberSorusu),
       _KapsamliSoru(
         _Kapsam.ortak,
         SssSoru(
@@ -202,7 +202,7 @@ const _tumBolumler = <_KapsamliBolum>[
           ikon: Icons.edit_calendar_outlined,
           soru: 'Var olan bir dersi nasıl düzenlerim?',
           cevap:
-              'Ders bloğuna dokunduğunuzda işlem sayfası açılır; oradaki "Düzenle" ile'
+              'Ders bloğuna dokunduğunuzda işlem sayfası açılır; oradaki "Dersi düzenle" ile'
               ' aynı form dolu olarak gelir. Saat, kort, antrenör veya katılımcı'
               ' değişikliği burada yapılır. Ders geçmişte kaldıysa ya da yönetici onayı'
               ' verilmişse sunucu değişikliği reddedebilir.',
@@ -287,13 +287,13 @@ const _tumBolumler = <_KapsamliBolum>[
         _Kapsam.yonetici,
         SssSoru(
           ikon: Icons.event_note_outlined,
-          soru: '"Dersler" sekmesi ile program ızgarası arasındaki fark ne?',
+          soru: '"Dersler" sekmesindeki süzgeçler neyi gösteriyor?',
           cevap:
-              'Izgara bir günün kort × saat yerleşimini gösterir — boş saatleri ve'
-              ' çakışmaları orada görürsünüz. "Dersler" ise seçilen günün düz listesidir'
-              ' ve duruma göre süzülür: Tümü, Tamamlandı, Bekliyor, İptal. Bir dersin'
-              ' yoklaması girildi mi, onayı verildi mi sorusunun cevabı listede daha'
-              ' hızlı bulunur.',
+              'Liste seçilen günün derslerini gösterir. Tümü günün bütün derslerini,'
+              ' Tamamlandı "Yapıldı" onayı verilmiş dersleri, Bekliyor henüz başlamamış'
+              ' dersleri, İptal iptal edilenleri getirir. Bitmiş ama onayı verilmemiş'
+              ' bir ders yalnız Tümü\'nde görünür. Ders açma, düzenleme ve onay ofis'
+              ' profilindedir; bu liste salt okunurdur.',
         ),
       ),
       _KapsamliSoru(
@@ -301,9 +301,11 @@ const _tumBolumler = <_KapsamliBolum>[
         SssSoru(
           ikon: Icons.home_outlined,
           soru: 'Ana Sayfa\'daki bekleyen işler neler?',
-          cevap: 'Üç iş listelenir, her birine dokununca ilgili ekran açılır:\n'
+          cevap: 'Dört iş listelenir, her birine dokununca ilgili ekran açılır:\n'
               '• Ders onayı — son 60 günde bitmiş ama "Yapıldı/Yapılmadı" kararı'
               ' verilmemiş dersler, gün gün. Daha eski dersler web panelinde.\n'
+              '• Ders kayıt talepleri — antrenörün programa eklenmesini istediği'
+              ' dersler.\n'
               '• Plan dışı / misafir kararı — antrenörün derse eklediği plan dışı'
               ' üyeler ve misafirler için borç, paket ya da ücretsiz kararı.\n'
               '• Katılım cevabı bekleyen — bugün ve yarınki derslerde katılım'
@@ -366,6 +368,19 @@ const _tumBolumler = <_KapsamliBolum>[
               ' hesabına yeniden katılım bildirimi gönderir.',
         ),
       ),
+      _KapsamliSoru(
+        _Kapsam.ofis,
+        SssSoru(
+          ikon: Icons.playlist_add_rounded,
+          soru: 'Antrenörün ders kayıt talebini nasıl programa eklerim?',
+          cevap:
+              'Ana Sayfa\'daki "Ders kayıt talepleri"ni açıp talepte "Kayıt'
+              ' oluştur"a dokunun. Ders formu gün, saat, kort ve antrenör talepten'
+              ' dolu olarak açılır; üstte antrenörün notu durur. Ürünü ve üyeleri'
+              ' seçip kaydettiğinizde ders programa eklenir, antrenöre haber gider.'
+              ' Talep uymuyorsa "Reddet" ile nedenini yazın; antrenöre o da bildirilir.',
+        ),
+      ),
     ],
   ),
 
@@ -393,12 +408,14 @@ const _tumBolumler = <_KapsamliBolum>[
         _Kapsam.ofis,
         SssSoru(
           ikon: Icons.person_search_outlined,
-          soru: 'Üye listesinde ne arayabilir, neye göre sıralayabilirim?',
+          soru: 'Üye listesinde nasıl arama yaparım?',
           cevap:
-              'Ad, soyad ve üye numarasıyla arama yapabilir; listeyi ada, üye numarasına'
-              ' ya da son ders tarihine göre sıralayabilirsiniz. Filtreler: tümü, aktif,'
-              ' pasif. Üyeye dokunduğunuzda detayda iletişim bilgileri, seviye, sorumlu'
-              ' hoca, kayıt tarihi, paketleri ve yaklaşan/geçmiş dersleri açılır.',
+              'İsim, telefon ya da üye numarasıyla arayabilirsiniz; liste ada göre'
+              ' sıralı gelir ve Tümü, Aktif, Pasif diye süzülür. Satırın sağında son'
+              ' ders tarihi yazar. Bir satırı yana kaydırınca Ara ve WhatsApp'
+              ' kısayolları açılır. Üyeye dokunduğunuzda detayda iletişim bilgileri,'
+              ' seviye, sorumlu hoca, kayıt tarihi, paketleri ve yaklaşan/geçmiş'
+              ' dersleri açılır.',
         ),
       ),
       _KapsamliSoru(
@@ -425,10 +442,33 @@ const _tumBolumler = <_KapsamliBolum>[
           soru:
               '"Borçlu Üyeler" sayfası ile üye listesindeki borçlu grubu aynı mı?',
           cevap:
-              'Aynı veriye iki farklı giriştir. Üye listesinde "Borçlu" kartı'
-              ' borçluları en borçlu önce süzer; drawer\'daki "Borçlu Üyeler" sayfası yalnız'
-              ' borçluları, toplam borç özetiyle birlikte listeler. Tahsilat turu'
-              ' yapıyorsanız ikincisi daha pratiktir.',
+              'Aynı listedir. Menüdeki "Borçlu Üyeler" ve Ana Sayfa\'daki "Toplam'
+              ' Alacak" kartı Üyeler sekmesini "Borçlu" kartı seçili, en borçlu önce'
+              ' açar; ayrı bir sayfa yoktur.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.receipt_long_outlined,
+          soru: 'Bir üyenin borcunun nereden geldiğini nasıl görürüm?',
+          cevap:
+              'Üyeye dokunup detayda "Borç Dökümü"nü açın: her satır bir hareket,'
+              ' + borç, − ödemedir. "Aylık Özet" her ayın borcunu, ödemesini ve ay'
+              ' sonu bakiyesini gösterir; "(B)" o ayın borçlu kapandığı demektir.'
+              ' Bakiye eksideyse üye borçludur.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.filter_list_rounded,
+          soru: 'Uzun süredir gelmeyen üyeleri nasıl bulurum?',
+          cevap:
+              'Üyeler sekmesinde "Filtrele"ye dokunun; "Durum"da Aktif\'i,'
+              ' "Derse gelmeyenler"de süreyi (ör. 30 gündür) seçip uygulayın. Hiç'
+              ' dersi olmayan üyeler de listeye girer. Seçili filtreler listenin'
+              ' üstünde görünür; "Tümünü temizle" hepsini kaldırır.',
         ),
       ),
     ],
@@ -510,9 +550,33 @@ const _tumBolumler = <_KapsamliBolum>[
               'En üstte bugünün özeti (yeni üye, ders, doluluk). Bugün / Bu Hafta / Bu Ay'
               ' seçimi yalnız ona bağlı kartlarla (ciro, tahsilat, ders, iptal) aynı'
               ' kutudadır; aktif üye ve alacak "Şu an", haftalık grafik bu haftanın'
-              ' günleridir. Bütün hesaplar sunucuda yapılır; uygulama kendi'
+              ' günleridir. Kartlardaki yüzde, önceki aynı uzunluktaki dönemle'
+              ' kıyastır. Bütün hesaplar sunucuda yapılır; uygulama kendi'
               ' başına toplama/çıkarma yapmaz. Bir bölümün verisi alınamazsa o bölüm'
               ' yanlış sayı göstermek yerine gizlenir.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.fact_check_outlined,
+          soru: 'Ders kartındaki "Onaylanan / Planlanan" ne demek?',
+          cevap:
+              'Planlanan, dönemde iptal edilmemiş bütün derslerdir. Onaylanan,'
+              ' bunlardan ofisin "Yapıldı" onayı verdikleridir. Aradaki fark henüz'
+              ' başlamamış ya da onay bekleyen derslerdir.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.payments_outlined,
+          soru: 'Ciro ile tahsilat neden farklı?',
+          cevap:
+              'Ciro, iptal edilmeyen derslerin ücretidir; onay beklemez, ders'
+              ' planlandığı an sayılır. Tahsilat, o günlere yazılan ödemelerdir.'
+              ' Ödemeler sonradan girilebildiği için tahsilat çoğu zaman ciroyu'
+              ' geriden izler.',
         ),
       ),
       _KapsamliSoru(
@@ -526,6 +590,32 @@ const _tumBolumler = <_KapsamliBolum>[
               ' doluluğu, antrenör performansı). En alttaki ısı haritası her zaman bu'
               ' haftayı (Pzt–Paz, planlı dersler dahil) saat saat gösterir. Rapor'
               ' ekranları salt okunurdur — buradan bir kayıt değiştirilmez.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.grid_on_rounded,
+          soru: 'Kort doluluğu nasıl hesaplanıyor?',
+          cevap:
+              'Yüzde, seçilen dönemde kortta ders olan saatin açık saate oranıdır;'
+              ' altında dolu ve açık saat ayrıca yazar. Açık saat her gün'
+              ' 07:00–23:00 arasıdır. Aynı saatte iki ders olsa da kort o saat bir'
+              ' kez dolu sayılır. Isı haritasındaki sayı ise o saatte başlayan'
+              ' ders sayısıdır.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.star_outline_rounded,
+          soru: 'Antrenörün puanı ve yorumları nereden geliyor?',
+          cevap:
+              'Antrenörler sekmesinde hocanın sağındaki "Yorumlar" üyelerin ders'
+              ' sonrası değerlendirmelerini açar. Puan, üyelerin bu hocanın derslerine'
+              ' verdiği puanların ortalamasıdır. "3 ve altı" düşük puanları ayırır;'
+              ' bir değerlendirmede aynı dersin diğer katılımcılarının puanı da'
+              ' görünür.',
         ),
       ),
       _KapsamliSoru(
@@ -569,8 +659,8 @@ const _tumBolumler = <_KapsamliBolum>[
           ikon: Icons.category_outlined,
           soru: 'Üç grup ne anlama geliyor?',
           cevap: '• Hakediş alacak — ders yapıldı ve hakedişe sayılıyor.\n'
-              '• Bekliyor — henüz karar verilmemiş dersler; yoklama ya da yönetici onayı'
-              ' tamamlanınca bir üst ya da alt gruba geçer.\n'
+              '• Bekliyor — henüz karar verilmemiş dersler; ofis "Yapıldı" ya da'
+              ' "Yapılmadı" deyince bir üst ya da alt gruba geçer.\n'
               '• Hakediş dışı — sayılmayacak dersler.\n\n'
               'Aynı saatte hem ana hem yardımcı antrenör olarak girilen dersler tekilleştirilir,'
               ' saat iki kez sayılmaz.',
@@ -603,11 +693,12 @@ const _tumBolumler = <_KapsamliBolum>[
           ikon: Icons.inbox_outlined,
           soru: 'Ofis profiline hangi bildirimler geliyor?',
           cevap:
-              'İki tür: (1) bir üye planlı derse "katılamayacağım" işaretlediğinde gelen'
+              'Üç tür: (1) bir üye planlı derse "katılamayacağım" işaretlediğinde gelen'
               ' ders teyit bildirimi — dersin iptal olup olmadığını da yazar; (2) bir'
               ' antrenör derse plan dışı katılımcı eklediğinde ya da çıkardığında gelen'
+              ' bildirim; (3) bir antrenör ders kayıt talebi gönderdiğinde gelen'
               ' bildirim. Bildirimler Ana Sayfa\'nın başlığındaki zilden ve menüden'
-              ' açılır; bildirime dokununca ilgili dersin detayı açılır. Plan dışı'
+              ' açılır; bildirime dokununca ilgili ders ya da talep açılır. Plan dışı'
               ' katılımın kararı "Plan dışı kararlar" ekranından verilir.',
         ),
       ),
@@ -619,7 +710,8 @@ const _tumBolumler = <_KapsamliBolum>[
           cevap:
               'Şu an yönetici rolüne otomatik gönderilen bir bildirim türü tanımlı'
               ' değil. Üyeye giden hatırlatmalar, antrenöre giden yoklama ve devir'
-              ' bildirimleri ile ofise giden teyit/plan dışı katılım bildirimlerinin'
+              ' bildirimleri ile ofise giden teyit, plan dışı katılım ve ders kayıt'
+              ' talebi bildirimlerinin'
               ' hepsinin alıcısı başka rollerdir. Ön büroya düşen bildirimleri görmek'
               ' istiyorsanız ofis profiliyle girmeniz gerekir.',
         ),

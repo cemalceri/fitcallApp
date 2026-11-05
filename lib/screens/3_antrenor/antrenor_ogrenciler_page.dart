@@ -3,9 +3,14 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
-import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/3_antrenor/ogrenci_detay/antrenor_ogrenci_detay_page.dart';
@@ -27,6 +32,10 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
   List<UyeModel> students = [];
   List<UyeModel> filteredStudents = [];
   bool isLoading = false;
+
+  /// Liste alınamadıysa: boş durumda "Tekrar dene" çıkar (başlıkta
+  /// yenileme düğmesi yok, aşağı çekme yalnız dolu listede).
+  String? _hata;
   String searchQuery = '';
   String? selectedSeviye;
 
@@ -46,24 +55,30 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
   }
 
   Future<void> _yukleOgrenciler() async {
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      _hata = null;
+    });
     try {
       final res = await AntrenorApiService.getirOgrencilerim();
       final data = res.data;
+      if (!mounted) return;
       if (data == null) {
+        _hata = res.mesaj;
         ShowMessage.error(context, res.mesaj);
         return;
       }
-      if (!mounted) return;
       setState(() {
         students = data;
         filteredStudents = data;
       });
     } on ApiException catch (e) {
       if (!mounted) return;
+      _hata = e.message;
       ShowMessage.error(context, e.message);
     } catch (e) {
       if (!mounted) return;
+      _hata = 'Öğrenciler alınamadı.';
       ShowMessage.error(context, 'Öğrenciler alınamadı: $e');
     } finally {
       if (mounted) setState(() => isLoading = false);
@@ -115,16 +130,28 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
 
     return Scaffold(
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
-            // Modern AppBar
-            _buildAppBar(colorScheme),
+            // Takım renginde sekme başlığı; yenileme aşağı çekerek.
+            SekmeBasligi(
+              baslik: 'Öğrencilerim',
+              sag: OgrenmeButonu(
+                sayfa: OgrenmeSayfasi.antrenorOgrenciler,
+                sssRotasi: routeEnums[SayfaAdi.antrenorYardim]!,
+                kutulu: true,
+              ),
+            ),
 
             // Arama ve Filtre
             _buildSearchAndFilter(colorScheme),
 
             // İstatistik Kartları
-            if (!isLoading && students.isNotEmpty) _buildStatsRow(colorScheme),
+            if (!isLoading && students.isNotEmpty)
+              OgrenmeHedefi(
+                id: Hedef.antrenorOgrenciSayilar,
+                child: _buildStatsRow(colorScheme),
+              ),
 
             // Öğrenci Listesi
             Expanded(
@@ -140,83 +167,6 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
     );
   }
 
-  Widget _buildAppBar(ColorScheme colorScheme) {
-    // Kabuk sekmesi olarak açıldığında geri okunun gideceği yer yok; pop
-    // kabuğun rotasını kapatıp siyah ekran bırakır (bkz. MuhasebePage).
-    final geriVar = Navigator.of(context).canPop();
-    // Sekmeyken geri oku yerine kabuğun menüsü.
-    final menuVar = !geriVar && KabukMenusu.of(context) != null;
-
-    return Container(
-      padding: EdgeInsets.fromLTRB(geriVar || menuVar ? 8 : 16, 8, 16, 8),
-      child: Row(
-        children: [
-          if (menuVar) const KabukMenuButonu(),
-          if (geriVar) ...[
-            IconButton(
-              tooltip: 'Geri',
-              onPressed: () => Navigator.pop(context),
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest
-                      .withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 20,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Öğrencilerim',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                if (students.isNotEmpty)
-                  Text(
-                    '${students.length} öğrenci',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          IconButton(
-            tooltip: 'Yenile',
-            onPressed: _yukleOgrenciler,
-            icon: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.refresh_rounded,
-                color: colorScheme.onPrimaryContainer,
-                size: 22,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSearchAndFilter(ColorScheme colorScheme) {
     final seviyeler = students.map((s) => s.seviyeRengi).toSet().toList();
 
@@ -225,30 +175,33 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
       child: Column(
         children: [
           // Arama Çubuğu
-          Container(
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-              ),
-            ),
-            child: TextField(
-              onChanged: (value) {
-                searchQuery = value;
-                _filterStudents();
-              },
-              decoration: InputDecoration(
-                hintText: 'Öğrenci ara...',
-                hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: colorScheme.onSurfaceVariant,
+          OgrenmeHedefi(
+            id: Hedef.antrenorOgrenciArama,
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.3),
                 ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
+              ),
+              child: TextField(
+                onChanged: (value) {
+                  searchQuery = value;
+                  _filterStudents();
+                },
+                decoration: InputDecoration(
+                  hintText: 'Öğrenci ara...',
+                  hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                 ),
               ),
             ),
@@ -258,30 +211,33 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
 
           // Seviye Filtreleri
           if (seviyeler.isNotEmpty)
-            SizedBox(
-              height: 40,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _buildFilterChip(
-                    label: 'Tümü',
-                    isSelected: selectedSeviye == null,
-                    color: colorScheme.primary,
-                    onTap: () {
-                      setState(() => selectedSeviye = null);
-                      _filterStudents();
-                    },
-                  ),
-                  ...seviyeler.map((seviye) => _buildFilterChip(
-                        label: seviye,
-                        isSelected: selectedSeviye == seviye,
-                        color: _getSeviyeColor(seviye),
-                        onTap: () {
-                          setState(() => selectedSeviye = seviye);
-                          _filterStudents();
-                        },
-                      )),
-                ],
+            OgrenmeHedefi(
+              id: Hedef.antrenorOgrenciSeviye,
+              child: SizedBox(
+                height: 40,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    _buildFilterChip(
+                      label: 'Tümü',
+                      isSelected: selectedSeviye == null,
+                      color: colorScheme.primary,
+                      onTap: () {
+                        setState(() => selectedSeviye = null);
+                        _filterStudents();
+                      },
+                    ),
+                    ...seviyeler.map((seviye) => _buildFilterChip(
+                          label: seviye,
+                          isSelected: selectedSeviye == seviye,
+                          color: _getSeviyeColor(seviye),
+                          onTap: () {
+                            setState(() => selectedSeviye = seviye);
+                            _filterStudents();
+                          },
+                        )),
+                  ],
+                ),
               ),
             ),
         ],
@@ -417,6 +373,17 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
 
   Widget _buildEmptyState() {
     final filtreVar = searchQuery.isNotEmpty || selectedSeviye != null;
+    final hata = _hata;
+    if (hata != null && students.isEmpty) {
+      return BosDurum(
+        ikon: Icons.cloud_off_rounded,
+        baslik: 'Liste alınamadı',
+        aciklama: hata,
+        eylemEtiketi: 'Tekrar dene',
+        eylemIkonu: Icons.refresh_rounded,
+        onEylem: _yukleOgrenciler,
+      );
+    }
 
     return BosDurum(
       ikon: filtreVar ? Icons.search_off_rounded : Icons.people_outline_rounded,
@@ -454,19 +421,22 @@ class _AntrenorOgrencilerPageState extends State<AntrenorOgrencilerPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (index > 0) const ListeAyraci(),
-              ListeSatiri(
-                onGorsel: _OgrenciAvatari(
-                  adSoyad: adSoyad,
-                  fotograf: ogrenci.profilFotografi,
+              OgrenmeHedefi(
+                id: index == 0 ? Hedef.antrenorOgrenciSatiri : null,
+                child: ListeSatiri(
+                  onGorsel: _OgrenciAvatari(
+                    adSoyad: adSoyad,
+                    fotograf: ogrenci.profilFotografi,
+                  ),
+                  baslik: adSoyad,
+                  altBaslik: [
+                    if (ogrenci.seviyeRengi.isNotEmpty)
+                      '${ogrenci.seviyeRengi} seviye',
+                    if (yas > 0) '$yas yaş',
+                  ].join(' · '),
+                  okGoster: true,
+                  onTap: () => _showStudentDetails(ogrenci),
                 ),
-                baslik: adSoyad,
-                altBaslik: [
-                  if (ogrenci.seviyeRengi.isNotEmpty)
-                    '${ogrenci.seviyeRengi} seviye',
-                  if (yas > 0) '$yas yaş',
-                ].join(' · '),
-                okGoster: true,
-                onTap: () => _showStudentDetails(ogrenci),
               ),
             ],
           );

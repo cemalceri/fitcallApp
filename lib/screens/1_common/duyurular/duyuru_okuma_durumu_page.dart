@@ -2,6 +2,8 @@
 
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/models/1_common/duyuru_okuma_models.dart';
 import 'package:fitcall/screens/1_common/duyurular/duyuru_yonetim_page.dart';
 import 'package:fitcall/screens/1_common/duyurular/widgets/okuma_durumu_gorunumu.dart';
@@ -130,10 +132,13 @@ class _DuyuruOkumaDurumuPageState extends State<DuyuruOkumaDurumuPage> {
         title: const Text('Okuma durumu'),
         actions: [
           if (webYolu.isNotEmpty)
-            IconButton(
+            OgrenmeHedefi(
+              id: Hedef.okumaWeb,
+              child: IconButton(
               tooltip: 'Web panelinde aç',
               icon: const Icon(Icons.open_in_new_rounded),
               onPressed: () => _webdeAc(webYolu),
+              ),
             ),
         ],
       ),

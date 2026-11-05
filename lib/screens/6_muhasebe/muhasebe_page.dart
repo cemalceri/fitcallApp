@@ -1,5 +1,9 @@
 // lib/screens/6_muhasebe/muhasebe_page.dart
 
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/models/6_muhasebe/muhasebe_ozet_model.dart';
 import 'package:fitcall/models/6_muhasebe/para_hareket_model.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -274,6 +278,11 @@ class _MuhasebePageState extends State<MuhasebePage> {
             ipucu: 'Yenile',
             onTap: _verileriYukle,
           ),
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.uyeHareketler,
+            sssRotasi: routeEnums[SayfaAdi.yardim]!,
+            kutulu: true,
+          ),
         ],
       ),
     );
@@ -294,84 +303,87 @@ class _MuhasebePageState extends State<MuhasebePage> {
 
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: KimlikYuzeyi(
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 21),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    borcVar
-                        ? 'Kalan borç'
-                        : fazlaVar
-                            ? 'Fazla ödeme'
-                            : 'Borç yok',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: yazi,
+      child: OgrenmeHedefi(
+        id: Hedef.uyeHareketBakiye,
+        child: KimlikYuzeyi(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 21),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      borcVar
+                          ? 'Kalan borç'
+                          : fazlaVar
+                              ? 'Fazla ödeme'
+                              : 'Borç yok',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: yazi,
+                      ),
                     ),
                   ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        borcVar
-                            ? Icons.error_outline_rounded
-                            : Icons.check_circle_outline_rounded,
-                        size: 14,
-                        color: durumRengi,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        borcVar
-                            ? 'Ödeme bekliyor'
-                            : fazlaVar
-                                ? 'Alacaklısınız'
-                                : 'Borcunuz yok. Teşekkürler!',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          borcVar
+                              ? Icons.error_outline_rounded
+                              : Icons.check_circle_outline_rounded,
+                          size: 14,
                           color: durumRengi,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        Text(
+                          borcVar
+                              ? 'Ödeme bekliyor'
+                              : fazlaVar
+                                  ? 'Alacaklısınız'
+                                  : 'Borcunuz yok. Teşekkürler!',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: durumRengi,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _currencyFormat.format(_kalanBakiye.abs()),
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w800,
+                    color: yazi,
+                    letterSpacing: -0.5,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                _currencyFormat.format(_kalanBakiye.abs()),
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: yazi,
-                  letterSpacing: -0.5,
-                ),
               ),
-            ),
-            const SizedBox(height: 14),
-            // Borç yokken de görünür: avans ödeme ve dekontlara erişim.
-            OdemeButonlari(
-              onHavale: _odemeSayfasiniAc,
-              onKrediKarti: () =>
-                  krediKartiYakindaGoster(context, onHavale: _odemeSayfasiniAc),
-            ),
-          ],
+              const SizedBox(height: 14),
+              // Borç yokken de görünür: avans ödeme ve dekontlara erişim.
+              OdemeButonlari(
+                onHavale: _odemeSayfasiniAc,
+                onKrediKarti: () =>
+                    krediKartiYakindaGoster(context, onHavale: _odemeSayfasiniAc),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -430,14 +442,17 @@ class _MuhasebePageState extends State<MuhasebePage> {
           }
 
           final hareket = _hareketler[index];
-          return _HareketSatiri(
-            hareket: hareket,
-            currencyFormat: _currencyFormat,
-            ilkMi: index == 0,
-            // Yükleme satırı varken çizgi devam etmeli
-            sonMu: index == _hareketler.length - 1 && ekSatir == 0,
-            sonSatirMi: index == _hareketler.length - 1,
-            onTap: () => _hareketDetayiniAc(hareket),
+          return ogrenmeHedefiSar(
+            index == 0 ? Hedef.uyeHareketSatiri : null,
+            _HareketSatiri(
+              hareket: hareket,
+              currencyFormat: _currencyFormat,
+              ilkMi: index == 0,
+              // Yükleme satırı varken çizgi devam etmeli
+              sonMu: index == _hareketler.length - 1 && ekSatir == 0,
+              sonSatirMi: index == _hareketler.length - 1,
+              onTap: () => _hareketDetayiniAc(hareket),
+            ),
           );
         },
       ),

@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:ui';
 import 'package:fitcall/models/1_common/qr_kod_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/widgets/qr_sonuc_gorunumu.dart';
 import 'package:fitcall/services/core/qr_code_api_service.dart';
 import 'package:flutter/material.dart';
@@ -267,6 +269,10 @@ class _QRKodDogrulaPageState extends State<QRKodDogrulaPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('QR Kod Doğrula'),
+        actions: const [
+          OgrenmeButonu(sayfa: OgrenmeSayfasi.qrDogrula),
+          SizedBox(width: 4),
+        ],
       ),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),

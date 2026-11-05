@@ -1,5 +1,7 @@
 // lib/screens/7_yonetici/uyeler/widgets/uye_borc_sheet.dart
 
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/models/9_yonetici/uye_detay_models.dart';
 import 'package:intl/intl.dart';
@@ -187,8 +189,11 @@ class _UyeBorcSheetState extends State<UyeBorcSheet> {
       ScrollController controller, ColorScheme colorScheme) {
     if (widget.paraHareketleri.isEmpty) {
       return Center(
-        child: Text('Para hareketi bulunamadı',
+        child: OgrenmeHedefi(
+          id: Hedef.borcHareketleri,
+          child: Text('Para hareketi bulunamadı',
             style: TextStyle(color: colorScheme.onSurfaceVariant)),
+        ),
       );
     }
 
@@ -209,7 +214,7 @@ class _UyeBorcSheetState extends State<UyeBorcSheet> {
             .where((e) => e != null && e.isNotEmpty)
             .join(' • ');
 
-        return Row(
+        final satir = Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
@@ -246,6 +251,10 @@ class _UyeBorcSheetState extends State<UyeBorcSheet> {
             ),
           ],
         );
+        return OgrenmeHedefi(
+          id: index == 0 ? Hedef.borcHareketleri : null,
+          child: satir,
+        );
       },
     );
   }
@@ -254,8 +263,11 @@ class _UyeBorcSheetState extends State<UyeBorcSheet> {
       ScrollController controller, ColorScheme colorScheme) {
     if (widget.aylikOzet.isEmpty) {
       return Center(
-        child: Text('Aylık özet bulunamadı',
+        child: OgrenmeHedefi(
+          id: Hedef.borcAylik,
+          child: Text('Aylık özet bulunamadı',
             style: TextStyle(color: colorScheme.onSurfaceVariant)),
+        ),
       );
     }
 
@@ -272,7 +284,7 @@ class _UyeBorcSheetState extends State<UyeBorcSheet> {
         final ayAdi = (o.ay >= 1 && o.ay <= 12) ? _aylar[o.ay] : '${o.ay}';
         final kapanisBorclu = o.kapanisBakiyesi < 0;
 
-        return Row(
+        final satir = Row(
           children: [
             SizedBox(
               width: 70,
@@ -312,6 +324,10 @@ class _UyeBorcSheetState extends State<UyeBorcSheet> {
               ),
             ),
           ],
+        );
+        return OgrenmeHedefi(
+          id: index == 0 ? Hedef.borcAylik : null,
+          child: satir,
         );
       },
     );

@@ -11,6 +11,7 @@
 // panosuna girilir.
 
 import 'package:fitcall/screens/1_common/hakedis/hakedis_ay_panosu_page.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/hakedis/hakedis_veri_kaynagi.dart';
 import 'package:flutter/material.dart';
 
@@ -23,6 +24,7 @@ class AntrenorHakedisPage extends StatelessWidget {
       kaynak: AntrenorHakedisKaynagi(),
       baslik: 'Hakediş Saatlerim',
       altBaslik: 'Son 12 ay',
+      ogrenmeSayfasi: OgrenmeSayfasi.antrenorHakedis,
     );
   }
 }

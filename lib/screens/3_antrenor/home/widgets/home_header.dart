@@ -1,8 +1,12 @@
 // lib/screens/3_antrenor/home/widgets/home_header.dart
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
-import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
@@ -42,10 +46,13 @@ class HomeHeader extends StatelessWidget {
           if (onMenuTap != null)
             Padding(
               padding: const EdgeInsets.only(right: Bosluk.s),
-              child: BaslikIkonButonu(
-                ikon: Icons.menu_rounded,
-                ipucu: 'Menü',
-                onTap: onMenuTap!,
+              child: OgrenmeHedefi(
+                id: Hedef.antrenorMenuDugmesi,
+                child: BaslikIkonButonu(
+                  ikon: Icons.menu_rounded,
+                  ipucu: 'Menü',
+                  onTap: onMenuTap!,
+                ),
               ),
             ),
 
@@ -84,15 +91,11 @@ class HomeHeader extends StatelessWidget {
             children: [
               const NotificationsBell(),
               if (hasMultipleProfiles) const ProfilDegistirButonu(),
-              // Çıkış — renkli başlıkta kırmızı değil; diğer butonlarla aynı.
-              BaslikIkonButonu(
-                ikon: Icons.logout_rounded,
-                ipucu: 'Çıkış yap',
-                onTap: () async {
-                  if (await cikisOnayla(context) && context.mounted) {
-                    AuthService.logout(context);
-                  }
-                },
+              // Çıkış Ayarlar'da; başlığın sağ ucu "?".
+              OgrenmeButonu(
+                sayfa: OgrenmeSayfasi.antrenorAnaSayfa,
+                sssRotasi: routeEnums[SayfaAdi.antrenorYardim]!,
+                kutulu: true,
               ),
             ],
           ),

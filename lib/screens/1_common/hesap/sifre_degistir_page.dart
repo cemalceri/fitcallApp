@@ -1,6 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/auth_service.dart';
@@ -113,6 +115,10 @@ class _SifreDegistirPageState extends State<SifreDegistirPage> {
                         const SizedBox(height: 32),
 
                         // Form Fields
+                        OgrenmeHedefi(
+                          id: Hedef.genelSifreAlanlari,
+                          child: Column(
+                            children: [
                         _ModernTextField(
                           controller: _eskiCtrl,
                           label: 'Mevcut Şifre',
@@ -165,6 +171,9 @@ class _SifreDegistirPageState extends State<SifreDegistirPage> {
                           ),
                           validator: (v) =>
                               (v == null || v.isEmpty) ? 'Zorunlu alan.' : null,
+                        ),
+                          ],
+                        ),
                         ),
 
                         const SizedBox(height: 32),

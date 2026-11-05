@@ -17,6 +17,8 @@
 // tanımlanır; roller karıştırılmaz.
 
 import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/8_ofis/ana_sayfa/ofis_ana_sayfa_page.dart';
@@ -28,6 +30,7 @@ import 'package:fitcall/screens/8_ofis/widgets/ofis_drawer.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:flutter/material.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_modu.dart';
 
 class OfisMainPage extends StatefulWidget {
   const OfisMainPage({super.key});
@@ -119,7 +122,8 @@ class _OfisMainPageState extends State<OfisMainPage>
     return PopScope(
       canPop: _selectedIndex == 0,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _goTab(0);
+        // Rehber açıkken geri tuşu yalnız rehberi kapatır.
+        if (!didPop && !OgrenmeModu.ornek.acik) _goTab(0);
       },
       child: Scaffold(
         key: _scaffoldKey,
@@ -131,14 +135,19 @@ class _OfisMainPageState extends State<OfisMainPage>
         // Menü her sekmenin başlığından açılır (KabukMenuButonu).
         body: KabukMenusu(
           menuyuAc: () => _scaffoldKey.currentState?.openDrawer(),
+          aktifSekme: () => _selectedIndex,
+          sekmeyeGec: _goTab,
           child: IndexedStack(
             index: _selectedIndex,
             children: _pages,
           ),
         ),
-        bottomNavigationBar: OfisBottomBar(
-          selectedIndex: _selectedIndex,
-          onTabSelected: _goTab,
+        bottomNavigationBar: OgrenmeHedefi(
+          id: Hedef.ofisAltBar,
+          child: OfisBottomBar(
+            selectedIndex: _selectedIndex,
+            onTabSelected: _goTab,
+          ),
         ),
       ),
     );

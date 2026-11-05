@@ -1,3 +1,4 @@
+import 'package:fitcall/common/constants.dart';
 import 'package:fitcall/screens/1_common/duyurular/duyuru_yonetim_page.dart';
 import 'package:fitcall/screens/1_common/yardim_page.dart';
 import 'package:fitcall/screens/1_common/yonetim_yardim_page.dart';
@@ -86,6 +87,16 @@ enum SayfaAdi {
   teyitBekleyen,
   yardim,
   ayarlar,
+}
+
+/// Rolün yardım (Sık sorulanlar) sayfası; Ayarlar ve başlıktaki "?" ortak.
+String yardimRotasi(String? rol) {
+  final sayfa = {
+    Roller.antrenor.name: SayfaAdi.antrenorYardim,
+    Roller.yonetici.name: SayfaAdi.yoneticiYardim,
+    Roller.ofis.name: SayfaAdi.ofisYardim,
+  }[rol];
+  return routeEnums[sayfa ?? SayfaAdi.yardim]!;
 }
 
 /* ------------------ 1) Enum -> String ------------------ */

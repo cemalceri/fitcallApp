@@ -5,6 +5,10 @@
 // dokununca mevcut Ders Teyidi ekranı (DersTeyitPage) uye_id + etkinlik_id ile açılır.
 
 import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_teyit_service.dart';
@@ -64,6 +68,13 @@ class _TeyitBekleyenlerPageState extends State<TeyitBekleyenlerPage> {
           'Ders Katılım Onayı',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.uyeTeyit,
+            sssRotasi: routeEnums[SayfaAdi.yardim]!,
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,
@@ -103,7 +114,10 @@ class TeyitBekleyenListesi extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       itemCount: dersler.length,
       itemBuilder: (context, i) =>
-          _TeyitKart(ders: dersler[i], onTap: () => onTap(dersler[i])),
+          ogrenmeHedefiSar(
+        i == 0 ? Hedef.uyeTeyitKarti : null,
+        _TeyitKart(ders: dersler[i], onTap: () => onTap(dersler[i])),
+      ),
     );
   }
 

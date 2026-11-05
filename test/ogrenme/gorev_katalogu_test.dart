@@ -15,15 +15,21 @@ int _kelime(String metin) => metin
     .where((k) => k.isNotEmpty)
     .length;
 
-/// Rehber klasörü dışındaki ekran kodu.
+/// Ekran kodu: rehber klasörü dışındakiler ve ekranlara konan "?" düğmesi
+/// (ana sayfa turlarının son adımı onu gösterir).
 String _ekranKodu() => [
       for (final dosya in Directory('lib/screens')
           .listSync(recursive: true)
           .whereType<File>()
-          .where((f) =>
-              f.path.endsWith('.dart') &&
-              !f.path.replaceAll(r'\', '/').contains('/ogrenme/')))
+          .where((f) {
+        final yol = f.path.replaceAll(r'\', '/');
+        return yol.endsWith('.dart') &&
+            (!yol.contains('/ogrenme/') ||
+                yol.endsWith('/ogrenme_butonu.dart'));
+      }))
         dosya.readAsStringSync(),
+      // Açık / koyu mod düğmelerinin yazısı tema servisinden gelir.
+      File('lib/services/core/tema_service.dart').readAsStringSync(),
     ].join('\n');
 
 /// hedefler.dart'taki sabitin adı ("takvim.ders" → "takvimDers").

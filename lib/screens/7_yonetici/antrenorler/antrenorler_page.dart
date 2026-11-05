@@ -2,6 +2,11 @@
 
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -98,6 +103,12 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
     );
   }
 
+  static const _filtreler = [
+    ('aktif', 'Aktif'),
+    ('pasif', 'Pasif'),
+    ('tumu', 'Tümü'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final sayi = _loading || _errorMessage != null
@@ -112,13 +123,17 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
           children: [
             SekmeBasligi(
               baslik: 'Antrenörler',
-              // Seçili süzgece uyan antrenör sayısı (Üyeler'deki "kayıt").
-              sag: sayi == null ? null : BaslikKapsulu('$sayi antrenör'),
+              sag: OgrenmeButonu(
+                sayfa: OgrenmeSayfasi.yoneticiAntrenorler,
+                sssRotasi: routeEnums[SayfaAdi.yoneticiYardim]!,
+                kutulu: true,
+              ),
+              // Seçili süzgece uyan antrenör sayısı seçili dilimde ("Aktif
+              // 12"): başlık satırına "?" ile kapsül birlikte sığmıyordu.
               alt: BaslikSecici<String>(
-                secenekler: const [
-                  ('aktif', 'Aktif'),
-                  ('pasif', 'Pasif'),
-                  ('tumu', 'Tümü'),
+                secenekler: [
+                  for (final (kod, ad) in _filtreler)
+                    (kod, kod == _filtre && sayi != null ? '$ad $sayi' : ad),
                 ],
                 secili: _filtre,
                 onSec: _onFiltreChanged,
@@ -180,18 +195,28 @@ class _AntrenorlerPageState extends State<AntrenorlerPage> {
             // Üstte de boşluk: kartlar başlık bandının kenarına yapışıyordu.
             return Padding(
               padding: const EdgeInsets.all(Bosluk.l),
-              child: AntrenorIstatistikKartlar(data: _data!.istatistikler),
+              child: OgrenmeHedefi(
+                id: Hedef.antrenorKartlari,
+                child: AntrenorIstatistikKartlar(data: _data!.istatistikler),
+              ),
             );
           }
           final antrenor = antrenorler[index - 1];
+          // Puan rehberi puanı olan ilk hocayı gösterir; hiç yoksa ilk hoca.
+          final puanli = antrenorler.indexWhere((a) =>
+              a.ortalamaPuan != null && a.degerlendirmeSayisi != 0);
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (index > 1) const ListeAyraci(),
-              AntrenorListeItemWidget(
+              ogrenmeHedefiSar(
+                index == 1 ? Hedef.antrenorSatiri : null,
+                AntrenorListeItemWidget(
                 antrenor: antrenor,
+                puanHedefi: index - 1 == (puanli < 0 ? 0 : puanli),
                 onHakedis: () => _hakedisAc(antrenor),
                 onDegerlendirmeler: () => _degerlendirmelerAc(antrenor),
+                ),
               ),
             ],
           );

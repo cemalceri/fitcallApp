@@ -2,6 +2,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -42,7 +44,11 @@ class UyeSiralamaSheet extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: Bosluk.l),
             children: [
               for (final s in UyeSiralama.secenekler)
-                ListTile(
+                ogrenmeHedefiSar(
+                  s.alan == UyeSiralamaAlani.borc && s.yon == SiralamaYonu.azalan
+                      ? Hedef.siralamaBorc
+                      : null,
+                  ListTile(
                   selected: s == secili,
                   leading: Icon(
                     s == secili
@@ -55,6 +61,7 @@ class UyeSiralamaSheet extends StatelessWidget {
                     HapticFeedback.selectionClick();
                     Navigator.pop(context, s);
                   },
+                  ),
                 ),
             ],
           ),

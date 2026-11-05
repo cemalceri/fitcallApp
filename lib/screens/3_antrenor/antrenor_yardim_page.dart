@@ -240,8 +240,7 @@ const _bolumler = <SssBolum>[
       ),
       SssSoru(
         ikon: Icons.do_not_disturb_on_outlined,
-        soru:
-            'Antrenör listesinde bazı isimler soluk ve seçilemiyor — neden?',
+        soru: 'Antrenör listesinde bazı isimler soluk ve seçilemiyor — neden?',
         cevap:
             'Aynı derste diğer rolde görevli olan antrenör devralamaz. Siz ana'
             ' antrenörseniz o dersin yardımcı antrenörü, yardımcı antrenörseniz ana'
@@ -261,9 +260,9 @@ const _bolumler = <SssBolum>[
         ikon: Icons.mark_email_unread_outlined,
         soru: 'Bana gelen devir teklifini nereden görüp cevaplarım?',
         cevap:
-            'Teklif geldiğinde bildirim alırsınız ve bildirime dokunarak doğrudan cevap'
-            ' ekranına gidebilirsiniz. Bildirimi kaçırdıysanız takvimde ilgili derse dokunup'
-            ' "Talebi Gör" ile aynı ekrana ulaşır, kabul veya reddedersiniz.',
+            'Teklif geldiğinde bildirim alırsınız; bildirime dokununca açılan ekrandan'
+            ' kabul veya reddedersiniz. Bildirimi kaçırdıysanız menüdeki Bildirimler'
+            ' listesinde teklif durur. Takvimdeki "Talebi Gör" teklifi yalnızca gösterir.',
       ),
       SssSoru(
         ikon: Icons.published_with_changes_rounded,
@@ -300,17 +299,9 @@ const _bolumler = <SssBolum>[
         ikon: Icons.gavel_rounded,
         soru: 'Dersi kendim iptal edebilir miyim?',
         cevap:
-            'Hayır. "Dersi İptal Et" butonu dersi iptal etmez, yöneticiye bir iptal talebi'
-            ' gönderir; iptal nedeni yazmanız zorunludur. Ders, yönetici talebi onaylayana'
-            ' kadar sizin ve üyelerin takviminde planlı görünmeye devam eder.',
-      ),
-      SssSoru(
-        ikon: Icons.undo_rounded,
-        soru: 'Gönderdiğim iptal talebini geri çekebilir miyim?',
-        cevap:
-            'Yönetici talebi henüz karara bağlamadıysa evet. Aynı derse tekrar dokunup'
-            ' açılan ekrandan "İptal Talebini Geri Çek" diyebilirsiniz. Talep işleme'
-            ' alındıktan sonra geri çekilemez.',
+            'Hayır, uygulamada ders iptali yoktur. Dersin iptal edilmesi gerekiyorsa ofise'
+            ' haber verin; iptali ofis programdan yapar. Ders iptal edilene kadar sizin'
+            ' ve üyelerin takviminde planlı görünmeye devam eder.',
       ),
       SssSoru(
         ikon: Icons.timer_off_outlined,
@@ -339,8 +330,7 @@ const _bolumler = <SssBolum>[
       ),
       SssSoru(
         ikon: Icons.hourglass_bottom_rounded,
-        soru:
-            'Dersi yaptım ve yoklamayı girdim, ama hâlâ "Bekliyor" — neden?',
+        soru: 'Dersi yaptım ve yoklamayı girdim, ama hâlâ "Bekliyor" — neden?',
         cevap:
             'Sizin verdiğiniz yoklama onayı dersi tek başına "hakediş alacak" yapmaz;'
             ' belirleyici olan yöneticinin o derse verdiği karardır. Yoklamayı girmeniz'
@@ -388,8 +378,7 @@ const _bolumler = <SssBolum>[
       ),
       SssSoru(
         ikon: Icons.calendar_view_month_rounded,
-        soru:
-            'Ay ızgarasındaki noktalar ne demek, neden 12 aydan eskisi yok?',
+        soru: 'Ay ızgarasındaki noktalar ne demek, neden 12 aydan eskisi yok?',
         cevap:
             'Nokta, o ayda kararı henüz verilmemiş, yani "Bekliyor" durumunda dersiniz'
             ' olduğunu gösterir. Ekran son 12 ayı kapsar ve en yeni ay en sonda, açılışta'
@@ -462,8 +451,7 @@ const _bolumler = <SssBolum>[
       SssSoru(
         ikon: Icons.visibility_outlined,
         soru: 'Kaydettiğim çalışma saatlerini kim görüyor?',
-        cevap:
-            'Kulüp yönetimi görüyor: saatler yöneticinin antrenör sayfasında'
+        cevap: 'Kulüp yönetimi görüyor: saatler yöneticinin antrenör sayfasında'
             ' müsaitliğiniz olarak listelenir ve program yapılırken dikkate alınır.'
             ' Üyeler bu saatleri görmez — uygulamada üyenin doğrudan ders talebi'
             ' oluşturduğu bir akış yok. Yani buraya girdiğiniz saatler otomatik ders'
@@ -486,7 +474,7 @@ const _bolumler = <SssBolum>[
         cevap:
             'Hayır. Çalışma saatleri yalnızca haftalık uygunluğunuzu kaydeder; planlanmış'
             ' dersleriniz olduğu gibi kalır ve yoklamalarını girmeye devam edersiniz. Var'
-            ' olan bir dersin kaldırılması ancak iptal talebiyle olur.',
+            ' olan bir dersin kaldırılması için ofise haber verin.',
       ),
     ],
   ),
@@ -583,6 +571,7 @@ const _bolumler = <SssBolum>[
             ' gün içinde düzenli aralıklarla kendiliğinden güncellenir. Kapatılabilen'
             ' kartların köşesinde çarpı işareti bulunur.',
       ),
+      rehberSorusu,
     ],
   ),
 ];

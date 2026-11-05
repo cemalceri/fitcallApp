@@ -231,10 +231,22 @@ class _DersListesiPageState extends State<DersListesiPage>
         ders.getTeyitBilgisi(uye.id)?.katilacakMi == null;
   }
 
-  String? _rehberGunu(DateTime gun) => _haftaDersleri.any((d) =>
-          TimeUtils.isSameDay(d.baslangicTarihSaat, gun) && _rehberDersi(d))
-      ? Hedef.takvimDersliGun
-      : null;
+  /// İptal edilmiş, bitmemiş ders: detayında "İptal Edildi" kartı çıkar.
+  bool _rehberIptali(EtkinlikModel ders) =>
+      ders.iptalMi && ders.bitisTarihSaat.isAfter(simdiKulup());
+
+  /// Ders bloğunun rehber kimliği: cevap bekleyen ders ya da iptalli ders.
+  String? _rehberBlogu(EtkinlikModel ders) => _rehberDersi(ders)
+      ? Hedef.takvimDers
+      : (_rehberIptali(ders) ? Hedef.uyeIptalDers : null);
+
+  String? _rehberGunu(DateTime gun) {
+    bool gunde(bool Function(EtkinlikModel) uygun) => _haftaDersleri.any((d) =>
+        TimeUtils.isSameDay(d.baslangicTarihSaat, gun) && uygun(d));
+    if (gunde(_rehberDersi)) return Hedef.takvimDersliGun;
+    if (gunde(_rehberIptali)) return Hedef.uyeIptalGunu;
+    return null;
+  }
 
   void _onLessonTap(EtkinlikModel ders) {
     // İPTAL EDİLDİ KONTROLÜ KALDIRILDI - Artık iptal edilen derslere de tıklanabilir
@@ -276,12 +288,16 @@ class _DersListesiPageState extends State<DersListesiPage>
         actions: [
           // Ajanda / Hafta anahtarı — ajanda "ne zaman", ızgara "günüm nasıl"
           // sorusuna cevap verir.
-          IconButton(
-            tooltip: _ajandaGorunumu ? 'Izgara görünümü' : 'Ajanda görünümü',
-            onPressed: () => setState(() => _ajandaGorunumu = !_ajandaGorunumu),
-            icon: Icon(_ajandaGorunumu
-                ? Icons.calendar_view_day_rounded
-                : Icons.view_agenda_rounded),
+          OgrenmeHedefi(
+            id: Hedef.uyeTakvimGorunum,
+            child: IconButton(
+              tooltip: _ajandaGorunumu ? 'Izgara görünümü' : 'Ajanda görünümü',
+              onPressed: () =>
+                  setState(() => _ajandaGorunumu = !_ajandaGorunumu),
+              icon: Icon(_ajandaGorunumu
+                  ? Icons.calendar_view_day_rounded
+                  : Icons.view_agenda_rounded),
+            ),
           ),
           OgrenmeButonu(
             sayfa: OgrenmeSayfasi.uyeTakvim,
@@ -312,14 +328,14 @@ class _DersListesiPageState extends State<DersListesiPage>
                             secilenGun: _selectedDay,
                             onLessonTap: _onLessonTap,
                             ogrenmeHedefi: (d) =>
-                                _rehberDersi(d) ? Hedef.takvimDers : null,
+                                _rehberBlogu(d),
                           )
                         : TakvimZamanCizelgesi(
                             dersler: _selectedDayDersler,
                             selectedDay: _selectedDay,
                             onLessonTap: _onLessonTap,
                             blokYapici: (ders, onTap) => ogrenmeHedefiSar(
-                              _rehberDersi(ders) ? Hedef.takvimDers : null,
+                              _rehberBlogu(ders),
                               LessonBlock(ders: ders, onTap: onTap),
                             ),
                           ),

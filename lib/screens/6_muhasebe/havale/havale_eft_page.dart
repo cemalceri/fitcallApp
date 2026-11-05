@@ -19,6 +19,10 @@ import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/6_muhasebe/banka_hesabi_model.dart';
 import 'package:fitcall/models/6_muhasebe/dekont_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -330,23 +334,31 @@ class _HavaleEftPageState extends State<HavaleEftPage> {
                         ],
                       ),
                     ),
+                    OgrenmeButonu(
+                      sayfa: OgrenmeSayfasi.uyeHavale,
+                      sssRotasi: routeEnums[SayfaAdi.yardim]!,
+                      kutulu: true,
+                    ),
                   ],
                 ),
                 const SizedBox(height: Bosluk.m),
                 Padding(
                   padding: const EdgeInsets.only(left: Bosluk.m),
-                  child: BaslikSecici<_Sekme>(
-                    secenekler: [
-                      (_Sekme.hesaplar, 'Hesaplar'),
-                      (
-                        _Sekme.dekontlar,
-                        _bekleyen > 0
-                            ? 'Dekontlarım · $_bekleyen'
-                            : 'Dekontlarım'
-                      ),
-                    ],
-                    secili: _sekme,
-                    onSec: (s) => setState(() => _sekme = s),
+                  child: OgrenmeHedefi(
+                    id: Hedef.uyeHavaleDekontlar,
+                    child: BaslikSecici<_Sekme>(
+                      secenekler: [
+                        (_Sekme.hesaplar, 'Hesaplar'),
+                        (
+                          _Sekme.dekontlar,
+                          _bekleyen > 0
+                              ? 'Dekontlarım · $_bekleyen'
+                              : 'Dekontlarım'
+                        ),
+                      ],
+                      secili: _sekme,
+                      onSec: (s) => setState(() => _sekme = s),
+                    ),
                   ),
                 ),
               ],

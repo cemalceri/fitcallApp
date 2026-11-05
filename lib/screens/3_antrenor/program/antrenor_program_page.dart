@@ -9,14 +9,18 @@
 // listeden geçer (iptal nedeni, onay durumu, misafir adları yok).
 // Takvim sayfasının başlığındaki ikondan, seçili günle açılır.
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/program/program_gorunumu.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_kayit_talebi_service.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -156,6 +160,13 @@ class _AntrenorProgramPageState extends State<AntrenorProgramPage> {
                       d.antrenorId == program.benimAntrenorId,
                 ),
                 onTalepTap: _talebeDokunuldu,
+                // Rehber dersi olan güne dokundurur (boş günde ders yok).
+                gunHedefi: (gun) => program.dersler.any(
+                        (d) => DateUtils.isSameDay(d.baslangic, gun.tarih))
+                    ? Hedef.programGun
+                    : null,
+                dersHedefi: (_) => Hedef.programDers,
+                sag: _rehberButonu,
               ),
       ),
       floatingActionButton: program == null
@@ -168,9 +179,15 @@ class _AntrenorProgramPageState extends State<AntrenorProgramPage> {
     );
   }
 
+  static final _rehberButonu = OgrenmeButonu(
+    sayfa: OgrenmeSayfasi.antrenorProgram,
+    sssRotasi: routeEnums[SayfaAdi.antrenorYardim]!,
+    kompakt: true,
+  );
+
   Widget _yuklenirkenBaslik() {
     return BaslikBandi(
-      padding: const EdgeInsets.fromLTRB(4, 4, 16, 6),
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 6),
       child: SizedBox(
         height: 44,
         child: Row(
@@ -188,6 +205,7 @@ class _AntrenorProgramPageState extends State<AntrenorProgramPage> {
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
             ),
+            _rehberButonu,
           ],
         ),
       ),

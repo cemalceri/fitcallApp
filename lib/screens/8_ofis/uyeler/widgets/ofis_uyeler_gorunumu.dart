@@ -1,7 +1,12 @@
 // lib/screens/8_ofis/uyeler/widgets/ofis_uyeler_gorunumu.dart
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_uye_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
@@ -113,12 +118,14 @@ class OfisUyelerGorunumu extends StatelessWidget {
       title: const Text('Üyeler'),
       actions: [
         if (!yukleniyor && hata == null)
-          Padding(
-            padding: const EdgeInsets.only(right: Bosluk.l),
-            child: Center(
-              child: BaslikKapsulu('${toplam ?? uyeler.length} kayıt'),
-            ),
+          Center(
+            child: BaslikKapsulu('${toplam ?? uyeler.length} kayıt'),
           ),
+        OgrenmeButonu(
+          sayfa: OgrenmeSayfasi.ofisUyeler,
+          sssRotasi: routeEnums[SayfaAdi.ofisYardim]!,
+        ),
+        const SizedBox(width: 4),
       ],
       bottom: PreferredSize(
         preferredSize: Size.fromHeight(_aramaSeridiYuksekligi(context)),
@@ -128,7 +135,9 @@ class OfisUyelerGorunumu extends StatelessWidget {
             Padding(
               padding:
                   const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.s),
-              child: TextField(
+              child: OgrenmeHedefi(
+                id: Hedef.ofisUyeArama,
+                child: TextField(
                 controller: aramaDenetleyicisi,
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
@@ -155,17 +164,21 @@ class OfisUyelerGorunumu extends StatelessWidget {
                     borderSide: BorderSide.none,
                   ),
                 ),
+                ),
               ),
             ),
             Padding(
               padding:
                   const EdgeInsets.fromLTRB(Bosluk.l, 0, Bosluk.l, Bosluk.m),
-              child: SizedBox(
-                height: BaslikSecici.yukseklik(context),
-                child: BaslikSecici<String>(
-                  secenekler: _filtreler,
-                  secili: filtre,
-                  onSec: onFiltre,
+              child: OgrenmeHedefi(
+                id: Hedef.ofisUyeFiltre,
+                child: SizedBox(
+                  height: BaslikSecici.yukseklik(context),
+                  child: BaslikSecici<String>(
+                    secenekler: _filtreler,
+                    secili: filtre,
+                    onSec: onFiltre,
+                  ),
                 ),
               ),
             ),
@@ -250,7 +263,9 @@ class OfisUyelerGorunumu extends StatelessWidget {
   Widget _satir(BuildContext context, OfisUyeListeItem uye) {
     final telVar = uye.telefon != null && uye.telefon!.isNotEmpty;
 
-    return ListeSatiri(
+    return OgrenmeHedefi(
+      id: Hedef.ofisUyeSatiri,
+      child: ListeSatiri(
       onGorsel: ListeAvatari(
         basHarfler: ListeAvatari.harfler(uye.adSoyad),
         fotoUrl: uye.profilFotografi,
@@ -279,6 +294,7 @@ class OfisUyelerGorunumu extends StatelessWidget {
             onSec: () => onWhatsapp(uye),
           ),
       ],
+      ),
     );
   }
 

@@ -7,6 +7,8 @@
 // borç işlemleri çalışır ve kayıt izlenebilir kalır. Silmede ders ve bağlı her
 // şey yok olur; bu derse verilmiş telafi hakları da (CASCADE) kaybolur.
 
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +40,9 @@ class DersSilDialog extends StatelessWidget {
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.5,
         ),
-        child: SingleChildScrollView(
+        child: OgrenmeHedefi(
+          id: Hedef.silEtkisi,
+          child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,6 +115,7 @@ class DersSilDialog extends StatelessWidget {
               ),
             ],
           ),
+        ),
         ),
       ),
       actions: [

@@ -6,6 +6,8 @@ import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -197,12 +199,12 @@ class _UyeFiltreSheetState extends State<UyeFiltreSheet> {
             padding: const EdgeInsets.fromLTRB(
                 Bosluk.l, 0, Bosluk.l, Bosluk.l),
             children: [
-              _durumBolumu(),
-              _borcBolumu(),
-              _kesinlesmeBolumu(),
+              OgrenmeHedefi(id: Hedef.filtreDurum, child: _durumBolumu()),
+              OgrenmeHedefi(id: Hedef.filtreBorc, child: _borcBolumu()),
+              OgrenmeHedefi(id: Hedef.filtreKesin, child: _kesinlesmeBolumu()),
               _kontrolBolumu(),
-              _odemeBolumu(),
-              _dersBolumu(),
+              OgrenmeHedefi(id: Hedef.filtreOdeme, child: _odemeBolumu()),
+              OgrenmeHedefi(id: Hedef.filtreDers, child: _dersBolumu()),
               _kayitBolumu(),
             ],
           ),
@@ -231,14 +233,17 @@ class _UyeFiltreSheetState extends State<UyeFiltreSheet> {
                   ),
                   const SizedBox(width: Bosluk.s),
                   Expanded(
-                    child: FilledButton(
-                      onPressed: hata != null
-                          ? null
-                          : () => Navigator.pop(context, _f),
-                      child: Text(
-                        _dugmeEtiketi(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    child: OgrenmeHedefi(
+                      id: Hedef.filtreUygula,
+                      child: FilledButton(
+                        onPressed: hata != null
+                            ? null
+                            : () => Navigator.pop(context, _f),
+                        child: Text(
+                          _dugmeEtiketi(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ),
                   ),

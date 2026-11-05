@@ -5,6 +5,10 @@ import 'dart:ui' as ui;
 import 'dart:math' as math;
 
 import 'package:fitcall/models/1_common/event/gecis_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/parlaklik_ipucu.dart';
 import 'package:fitcall/screens/1_common/widgets/qr_kod_gorseli.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
@@ -470,25 +474,29 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
               ],
             ),
           ),
-          IconButton(
-            tooltip: 'Yenile',
-            onPressed: _yukle,
-            icon: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.refresh_rounded,
-                color: Theme.of(context).colorScheme.primary,
-                size: 22,
+          OgrenmeHedefi(
+            id: Hedef.genelQrYenile,
+            child: IconButton(
+              tooltip: 'Yenile',
+              onPressed: _yukle,
+              icon: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.refresh_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 22,
+                ),
               ),
             ),
           ),
+          const OgrenmeButonu(sayfa: OgrenmeSayfasi.qrOlustur, kutulu: true),
         ],
       ),
     );
@@ -568,13 +576,16 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
               ),
               const SizedBox(height: 16),
               // QR boyutu kartın genişliğine uyar: dar ekranda taşmaz.
-              LayoutBuilder(
-                builder: (context, kisit) => AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (context, child) => QrKodGorseli(
-                    kod: sp.code,
-                    boyut: (kisit.maxWidth - 46).clamp(150.0, 260.0),
-                    nabiz: _pulseController.value,
+              OgrenmeHedefi(
+                id: Hedef.genelQrKisisel,
+                child: LayoutBuilder(
+                  builder: (context, kisit) => AnimatedBuilder(
+                    animation: _pulseController,
+                    builder: (context, child) => QrKodGorseli(
+                      kod: sp.code,
+                      boyut: (kisit.maxWidth - 46).clamp(150.0, 260.0),
+                      nabiz: _pulseController.value,
+                    ),
                   ),
                 ),
               ),
@@ -711,17 +722,20 @@ Bu QR kod ile tesise giriş yapabilirsiniz.
             separatorBuilder: (_, __) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final pass = _davetliler[index];
-              return _GuestCard(
-                pass: pass,
-                label: _kisiEtiketi(pass.label),
-                kalanSure: _kalanSureText(pass.expiresAt),
-                kalanRenk: _kalanSureRenk(pass.expiresAt),
-                bitisTarihi: _formatDateShort(pass.expiresAt),
-                onShare: () => _paylasQrKodu(
-                  pass.code,
-                  mesaj: _paylasMetni(pass.label, pass.expiresAt),
+              return ogrenmeHedefiSar(
+                index == 0 ? Hedef.genelQrDavetKarti : null,
+                _GuestCard(
+                  pass: pass,
+                  label: _kisiEtiketi(pass.label),
+                  kalanSure: _kalanSureText(pass.expiresAt),
+                  kalanRenk: _kalanSureRenk(pass.expiresAt),
+                  bitisTarihi: _formatDateShort(pass.expiresAt),
+                  onShare: () => _paylasQrKodu(
+                    pass.code,
+                    mesaj: _paylasMetni(pass.label, pass.expiresAt),
+                  ),
+                  onDelete: () => _silDavetli(pass),
                 ),
-                onDelete: () => _silDavetli(pass),
               );
             },
           ),
@@ -901,11 +915,14 @@ class _GuestCard extends StatelessWidget {
                 tooltip: 'Paylaş',
               ),
               const SizedBox(width: 6),
-              _ActionButton(
-                icon: Icons.delete_outline_rounded,
-                color: colorScheme.error,
-                onTap: onDelete,
-                tooltip: 'Sil',
+              OgrenmeHedefi(
+                id: Hedef.genelQrDavetSil,
+                child: _ActionButton(
+                  icon: Icons.delete_outline_rounded,
+                  color: colorScheme.error,
+                  onTap: onDelete,
+                  tooltip: 'Sil',
+                ),
               ),
             ],
           ),
@@ -1077,23 +1094,26 @@ class _DavetBottomSheetState extends State<_DavetBottomSheet> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: 'Örn: Ahmet Yılmaz',
-                      prefixIcon: const Icon(Icons.person_outline),
-                      filled: true,
-                      fillColor: colorScheme.surfaceContainerHighest
-                          .withValues(alpha: 0.3),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.primary,
-                            width: 2),
+                  OgrenmeHedefi(
+                    id: Hedef.qrMisafirAdi,
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        hintText: 'Örn: Ahmet Yılmaz',
+                        prefixIcon: const Icon(Icons.person_outline),
+                        filled: true,
+                        fillColor: colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.3),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 2),
+                        ),
                       ),
                     ),
                   ),
@@ -1110,53 +1130,56 @@ class _DavetBottomSheetState extends State<_DavetBottomSheet> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: widget.options.map((m) {
-                      final isSelected = m == _secili;
-                      return Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => setState(() => _secili = m),
-                          borderRadius: BorderRadius.circular(12),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
+                  OgrenmeHedefi(
+                    id: Hedef.qrSure,
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: widget.options.map((m) {
+                        final isSelected = m == _secili;
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => setState(() => _secili = m),
+                            borderRadius: BorderRadius.circular(12),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
                                 color: isSelected
                                     ? Theme.of(context).colorScheme.primary
                                     : Theme.of(context)
                                         .colorScheme
                                         .primary
-                                        .withValues(alpha: 0.3),
+                                        .withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withValues(alpha: 0.3),
+                                ),
                               ),
-                            ),
-                            child: Text(
-                              _minsToLabel(m),
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: isSelected
-                                    ? Theme.of(context).colorScheme.onPrimary
-                                    : Theme.of(context).colorScheme.primary,
+                              child: Text(
+                                _minsToLabel(m),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.onPrimary
+                                      : Theme.of(context).colorScheme.primary,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                        );
+                      }).toList(),
+                    ),
                   ),
 
                   const SizedBox(height: 28),

@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/2_uye/profil/widgets/profil_fotografi_secici.dart';
 import 'package:flutter/material.dart';
@@ -74,36 +76,39 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             Bosluk.l, kToolbarHeight + Bosluk.xs, Bosluk.l, Bosluk.m),
         child: Align(
           alignment: Alignment.bottomCenter,
-          child: KimlikBaslik(
-            // Renkli başlığın içinde: ayrı kart yüzeyi başlıkla aynı tonda
-            // kayboluyordu; başlığın kendisi kimlik alanı.
-            yuzeysiz: true,
-            baslik: ad,
-            basHarfler: basHarfleri(ad),
-            altBaslik: 'Üye No: ${uye.uyeNo} · ${uye.uyeTuru}',
-            onAvatarTap: widget.duzenlenebilir ? _fotografDegistir : null,
-            avatarYukleniyor: _yukleniyor,
-            avatarEtiketi: foto != null && foto.isNotEmpty
-                ? 'Profil fotoğrafını değiştir'
-                : 'Profil fotoğrafı ekle',
-            avatar: foto != null && foto.isNotEmpty
-                ? Image(
-                    image: CachedNetworkImageProvider(foto),
-                    width: 52,
-                    height: 52,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, _, __) => Center(
-                      child: Text(
-                        basHarfleri(ad),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: c.gecis.onKimlik,
+          child: OgrenmeHedefi(
+            id: Hedef.uyeProfilFoto,
+            child: KimlikBaslik(
+              // Renkli başlığın içinde: ayrı kart yüzeyi başlıkla aynı tonda
+              // kayboluyordu; başlığın kendisi kimlik alanı.
+              yuzeysiz: true,
+              baslik: ad,
+              basHarfler: basHarfleri(ad),
+              altBaslik: 'Üye No: ${uye.uyeNo} · ${uye.uyeTuru}',
+              onAvatarTap: widget.duzenlenebilir ? _fotografDegistir : null,
+              avatarYukleniyor: _yukleniyor,
+              avatarEtiketi: foto != null && foto.isNotEmpty
+                  ? 'Profil fotoğrafını değiştir'
+                  : 'Profil fotoğrafı ekle',
+              avatar: foto != null && foto.isNotEmpty
+                  ? Image(
+                      image: CachedNetworkImageProvider(foto),
+                      width: 52,
+                      height: 52,
+                      fit: BoxFit.cover,
+                      errorBuilder: (c, _, __) => Center(
+                        child: Text(
+                          basHarfleri(ad),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: c.gecis.onKimlik,
+                          ),
                         ),
                       ),
-                    ),
-                  )
-                : null,
+                    )
+                  : null,
+            ),
           ),
         ),
       ),

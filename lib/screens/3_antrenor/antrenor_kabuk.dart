@@ -11,6 +11,7 @@ import 'package:fitcall/screens/3_antrenor/home/widgets/antrenor_drawer.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/antrenor_takvim_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:flutter/material.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_modu.dart';
 
 /// Antrenörün kalıcı sekme kabuğu — üye kabuğuyla aynı yapı (bkz. `UyeKabuk`).
 ///
@@ -61,18 +62,26 @@ class _AntrenorKabukState extends State<AntrenorKabuk> {
     };
   }
 
+  void _sekmeyeGec(int i) => setState(() {
+        _aktif = i;
+        _acilanlar.add(i);
+      });
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: _aktif == 0,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) setState(() => _aktif = 0);
+        // Rehber açıkken geri tuşu yalnız rehberi kapatır.
+        if (!didPop && !OgrenmeModu.ornek.acik) setState(() => _aktif = 0);
       },
       child: Scaffold(
         key: _scaffoldKey,
         drawer: AntrenorDrawer(antrenorAdi: _antrenorAdi),
         body: KabukMenusu(
           menuyuAc: () => _scaffoldKey.currentState?.openDrawer(),
+          aktifSekme: () => _aktif,
+          sekmeyeGec: _sekmeyeGec,
           child: IndexedStack(
             index: _aktif,
             children: List.generate(4, _sayfa),
@@ -80,10 +89,7 @@ class _AntrenorKabukState extends State<AntrenorKabuk> {
         ),
         bottomNavigationBar: KabukAltBar(
           aktifIndeks: _aktif,
-          onSekme: (i) => setState(() {
-            _aktif = i;
-            _acilanlar.add(i);
-          }),
+          onSekme: _sekmeyeGec,
           onMerkez: () =>
               Navigator.pushNamed(context, routeEnums[SayfaAdi.qrKodKayit]!),
           sekmeler: const [

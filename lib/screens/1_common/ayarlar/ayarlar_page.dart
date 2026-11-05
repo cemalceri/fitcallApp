@@ -12,6 +12,10 @@ import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:fitcall/screens/1_common/neler_yeni_page.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/hesap/hesap_sil_page.dart';
 import 'package:fitcall/screens/1_common/hesap/sifre_degistir_page.dart';
 import 'package:fitcall/screens/1_common/widgets/kvkk.dart';
@@ -65,18 +69,11 @@ class _AyarlarPageState extends State<AyarlarPage> {
     });
   }
 
-  bool get _antrenorMu => _profil?.rol == Roller.antrenor.name;
   bool get _yoneticiMi => _profil?.rol == Roller.yonetici.name;
-  bool get _ofisMi => _profil?.rol == Roller.ofis.name;
 
   /// Yardım sayfası role göre seçilir: dört rolün de kendi SSS'i var, hepsini
   /// üye sayfasına yollamak antrenörde çözülen hatanın tekrarı olurdu.
-  String get _yardimRotasi {
-    if (_antrenorMu) return routeEnums[SayfaAdi.antrenorYardim]!;
-    if (_yoneticiMi) return routeEnums[SayfaAdi.yoneticiYardim]!;
-    if (_ofisMi) return routeEnums[SayfaAdi.ofisYardim]!;
-    return routeEnums[SayfaAdi.yardim]!;
-  }
+  String get _yardimRotasi => yardimRotasi(_profil?.rol);
 
   Future<void> _profilDegistir() async {
     final jsonStr =
@@ -114,13 +111,25 @@ class _AyarlarPageState extends State<AyarlarPage> {
     final cs = context.cs;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ayarlar')),
+      appBar: AppBar(
+        title: const Text('Ayarlar'),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.ayarlar,
+            sssRotasi: _yardimRotasi,
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: ListView(
         padding:
             const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.s, Bosluk.l, Bosluk.xxl),
         children: [
           const _BolumBasligi('Görünüm'),
-          const _Kart(children: [_RenkTemasiBolumu(), _TemaSecici()]),
+          const OgrenmeHedefi(
+            id: Hedef.genelAyarTema,
+            child: _Kart(children: [_RenkTemasiBolumu(), _TemaSecici()]),
+          ),
           const _BolumBasligi('Bildirimler'),
           _Kart(
             children: [

@@ -1,3 +1,5 @@
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -28,7 +30,10 @@ class EksikYoklamaListesi extends StatelessWidget {
     gruplar.forEach((gun, list) {
       widgets.add(_GunBasligi(gun: gun, adet: list.length));
       for (final d in list) {
-        widgets.add(_DersKarti(ders: d, onTap: () => onDersTap(d)));
+        // Rehber: listenin ilk dersi parlar.
+        widgets.add(ogrenmeHedefiSar(
+            identical(d, dersler.first) ? Hedef.eksikYoklamaDers : null,
+            _DersKarti(ders: d, onTap: () => onDersTap(d))));
       }
     });
 

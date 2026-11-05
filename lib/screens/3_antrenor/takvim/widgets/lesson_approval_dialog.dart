@@ -1,5 +1,7 @@
 // lib/screens/3_antrenor/takvim/widgets/lesson_approval_dialog.dart
 
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/models/5_etkinlik/ders_katilim_data.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/models/5_etkinlik/katilim_model.dart';
@@ -318,32 +320,35 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
                 const SizedBox(height: 16),
                 _buildKatilimOzeti(readonly: true),
                 const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: context.renkler.bilgiZemin,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: context.renkler.bilgi.withValues(alpha: 0.35)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.lock_rounded,
-                          color: context.renkler.bilgi, size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          durum == YoklamaDurumu.alinmadi
-                              ? 'Siz yoklama girmeden yönetici bu dersi sonuçlandırdığı için kayıt kilitlenmiştir. Değişiklik için yöneticinizle iletişime geçin.'
-                              : 'Yönetici onayı verildiği için bu ders kilitlenmiştir. Değişiklik için yöneticinizle iletişime geçin.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
+                OgrenmeHedefi(
+                  id: Hedef.antrenorYoklamaKilit,
+                  child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: context.renkler.bilgiZemin,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: context.renkler.bilgi.withValues(alpha: 0.35)),
                       ),
-                    ],
-                  ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.lock_rounded,
+                              color: context.renkler.bilgi, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              durum == YoklamaDurumu.alinmadi
+                                  ? 'Siz yoklama girmeden yönetici bu dersi sonuçlandırdığı için kayıt kilitlenmiştir. Değişiklik için yöneticinizle iletişime geçin.'
+                                  : 'Yönetici onayı verildiği için bu ders kilitlenmiştir. Değişiklik için yöneticinizle iletişime geçin.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ),
               ],
             ),
@@ -551,7 +556,10 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
             ),
           )
         else ...[
-          ...entries.map((k) => _buildKatilimRow(k)),
+          // Rehber: ilk satır "gelene tik, gelmeyene çarpı" adımında parlar.
+          for (final (i, k) in entries.indexed)
+            ogrenmeHedefiSar(
+                i == 0 ? Hedef.yoklamaKatilimci : null, _buildKatilimRow(k)),
           ..._misafirler.map((m) => _buildMisafirRow(m)),
         ],
       ],
@@ -566,8 +574,8 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
       decoration: BoxDecoration(
         color: ListeTonu.uyari.zemin(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: context.renkler.uyari.withValues(alpha: 0.45)),
+        border:
+            Border.all(color: context.renkler.uyari.withValues(alpha: 0.45)),
       ),
       child: Row(
         children: [
@@ -1043,26 +1051,29 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
           ),
         ),
         const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: aktifListe.map((n) {
-            final isSelected = _secilenNeden == n['code'];
-            return ChoiceChip(
-              label: Text(n['label']!),
-              selected: isSelected,
-              onSelected: (_) {
-                HapticFeedback.selectionClick();
-                setState(() => _secilenNeden = n['code']);
-              },
-              selectedColor: color.withValues(alpha: 0.15),
-              labelStyle: TextStyle(
-                color: isSelected ? color : null,
-                fontWeight: isSelected ? FontWeight.w600 : null,
-                fontSize: 13,
-              ),
-            );
-          }).toList(),
+        OgrenmeHedefi(
+          id: Hedef.yoklamaNeden,
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: aktifListe.map((n) {
+              final isSelected = _secilenNeden == n['code'];
+              return ChoiceChip(
+                label: Text(n['label']!),
+                selected: isSelected,
+                onSelected: (_) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _secilenNeden = n['code']);
+                },
+                selectedColor: color.withValues(alpha: 0.15),
+                labelStyle: TextStyle(
+                  color: isSelected ? color : null,
+                  fontWeight: isSelected ? FontWeight.w600 : null,
+                  fontSize: 13,
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );
@@ -1108,23 +1119,27 @@ class _LessonApprovalDialogState extends State<LessonApprovalDialog> {
           const SizedBox(width: 12),
           Expanded(
             flex: 2,
-            child: FilledButton(
-              onPressed: canSave ? _kaydet : null,
-              style: FilledButton.styleFrom(
-                backgroundColor: context.takvim.primary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            // Not penceresinin «Kaydet»inden ayrılsın diye kimlikli.
+            child: OgrenmeHedefi(
+              id: Hedef.yoklamaKaydet,
+              child: FilledButton(
+                onPressed: canSave ? _kaydet : null,
+                style: FilledButton.styleFrom(
+                  backgroundColor: context.takvim.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
+                child: _isSaving
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: ButonYukleniyorGostergesi(kalinlik: 2),
+                      )
+                    : const Text('Kaydet',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
               ),
-              child: _isSaving
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: ButonYukleniyorGostergesi(kalinlik: 2),
-                    )
-                  : const Text('Kaydet',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ),
         ],

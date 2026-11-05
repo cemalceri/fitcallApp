@@ -69,10 +69,14 @@ class AcilisPopupKayitlari {
   static const String dogumGunuAnahtari = 'acilis_popup_dogum_gunu';
   static const String duyuruAnahtari = 'acilis_popup_duyurular';
   static const String surumAnahtari = 'acilis_popup_surum';
+
+  /// Ana sayfadaki "Ekranları birlikte tanıyalım mı?" kartı.
+  static const String ilkGirisAnahtari = 'acilis_popup_ilk_giris';
   static const List<String> tumu = [
     dogumGunuAnahtari,
     duyuruAnahtari,
     surumAnahtari,
+    ilkGirisAnahtari,
   ];
 
   /// Cihazda tutulan duyuru kaydı sınırı; eskiler düşer.
@@ -93,13 +97,15 @@ class AcilisPopupKayitlari {
     await SecureStorageService.setValue(dogumGunuAnahtari, kayit);
   }
 
-  /// ["userId:duyuruId", ...] — aynı cihazda başka hesap açılırsa onun
-  /// popup'ını engellemesin diye kullanıcıya bağlı.
-  static Future<List<String>> _duyurular() async {
-    final liste =
-        await SecureStorageService.getValue<List<dynamic>>(duyuruAnahtari);
+  /// Metin listesi olarak saklanan kayıt (duyurular, ilk giriş kartı).
+  static Future<List<String>> _liste(String anahtar) async {
+    final liste = await SecureStorageService.getValue<List<dynamic>>(anahtar);
     return liste?.map((e) => e.toString()).toList() ?? <String>[];
   }
+
+  /// ["userId:duyuruId", ...] — aynı cihazda başka hesap açılırsa onun
+  /// popup'ını engellemesin diye kullanıcıya bağlı.
+  static Future<List<String>> _duyurular() => _liste(duyuruAnahtari);
 
   static Future<bool> duyuruGosterildiMi(int userId, int duyuruId) async =>
       (await _duyurular()).contains('$userId:$duyuruId');
@@ -119,6 +125,20 @@ class AcilisPopupKayitlari {
     final kayit = await _surumler();
     kayit['$rol:$userId'] = surum;
     await SecureStorageService.setValue(surumAnahtari, kayit);
+  }
+
+  /// ["rol:userId", ...] — tanıtım kartı rol başına bir kez; veli çocuğun
+  /// profiline geçince yeniden çıkmasın diye profile değil kullanıcıya bağlı.
+  static Future<List<String>> _ilkGirisler() => _liste(ilkGirisAnahtari);
+
+  static Future<bool> ilkGirisGosterildiMi(String rol, int userId) async =>
+      (await _ilkGirisler()).contains('$rol:$userId');
+
+  static Future<void> ilkGirisGosterildi(String rol, int userId) async {
+    final liste = await _ilkGirisler();
+    final anahtar = '$rol:$userId';
+    if (liste.contains(anahtar)) return;
+    await SecureStorageService.setValue(ilkGirisAnahtari, [...liste, anahtar]);
   }
 
   static Future<void> duyuruGosterildi(int userId, int duyuruId) async {

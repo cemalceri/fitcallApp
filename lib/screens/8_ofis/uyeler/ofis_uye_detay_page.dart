@@ -10,6 +10,8 @@ import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_uye_models.dart';
 import 'package:fitcall/models/9_yonetici/uye_detay_models.dart'
     show UyeDersItem, UyePaketItem;
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
@@ -135,22 +137,30 @@ class _OfisUyeDetayPageState extends State<OfisUyeDetayPage> {
           const SizedBox(height: Bosluk.l),
           _hizliAksiyonlar(data.profil),
           const SizedBox(height: Bosluk.l),
-          _bilgiler(data.profil),
+          OgrenmeHedefi(
+              id: Hedef.ofisUyeBilgi, child: _bilgiler(data.profil)),
           const SizedBox(height: Bosluk.l),
-          _paketler(data.paketler),
+          OgrenmeHedefi(
+              id: Hedef.ofisUyePaketler, child: _paketler(data.paketler)),
           const SizedBox(height: Bosluk.l),
-          _dersler(
-            baslik: 'Yaklaşan Dersler',
-            ikon: Icons.event_available_rounded,
-            dersler: data.yaklasanDersler,
-            bosMesaj: 'Yaklaşan ders yok',
+          OgrenmeHedefi(
+            id: Hedef.ofisUyeYaklasan,
+            child: _dersler(
+              baslik: 'Yaklaşan Dersler',
+              ikon: Icons.event_available_rounded,
+              dersler: data.yaklasanDersler,
+              bosMesaj: 'Yaklaşan ders yok',
+            ),
           ),
           const SizedBox(height: Bosluk.l),
-          _dersler(
-            baslik: 'Geçmiş Dersler',
-            ikon: Icons.history_rounded,
-            dersler: data.gecmisDersler,
-            bosMesaj: 'Geçmiş ders kaydı yok',
+          OgrenmeHedefi(
+            id: Hedef.ofisUyeGecmis,
+            child: _dersler(
+              baslik: 'Geçmiş Dersler',
+              ikon: Icons.history_rounded,
+              dersler: data.gecmisDersler,
+              bosMesaj: 'Geçmiş ders kaydı yok',
+            ),
           ),
         ],
       ),

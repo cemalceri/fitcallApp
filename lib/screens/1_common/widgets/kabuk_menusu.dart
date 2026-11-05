@@ -5,6 +5,8 @@
 // `Scaffold.of` kabuğa ulaşamaz, "menüyü aç" işlevi bu widget'la iner.
 
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,15 +19,26 @@ import 'package:flutter/services.dart';
 class KabukMenusu extends InheritedWidget {
   final VoidCallback menuyuAc;
 
+  /// Açık sekme ve sekmeye geçiş. "?" rehberi bitince başladığı sekmeye
+  /// döner (sekmeler aynı rotada; sayfa dönüşü sekmeyi geri getirmez).
+  final int Function()? aktifSekme;
+  final ValueChanged<int>? sekmeyeGec;
+
   const KabukMenusu({
     super.key,
     required this.menuyuAc,
+    this.aktifSekme,
+    this.sekmeyeGec,
     required super.child,
   });
 
   /// Kabuk sekmesindeyse menüyü açan işlev, değilse null.
   static VoidCallback? of(BuildContext context) =>
       context.getInheritedWidgetOfExactType<KabukMenusu>()?.menuyuAc;
+
+  /// Kabuk sekmesindeyse kabuğun kendisi, değilse null.
+  static KabukMenusu? kabuk(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<KabukMenusu>();
 
   @override
   bool updateShouldNotify(KabukMenusu oldWidget) => false;
@@ -42,10 +55,13 @@ class KabukMenuButonu extends StatelessWidget {
     if (ac == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(right: Bosluk.s),
-      child: BaslikIkonButonu(
-        ikon: Icons.menu_rounded,
-        ipucu: 'Menü',
-        onTap: ac,
+      child: OgrenmeHedefi(
+        id: Hedef.genelKabukMenu,
+        child: BaslikIkonButonu(
+          ikon: Icons.menu_rounded,
+          ipucu: 'Menü',
+          onTap: ac,
+        ),
       ),
     );
   }
@@ -56,12 +72,15 @@ class KabukMenuButonu extends StatelessWidget {
 Widget? kabukMenuLeading(BuildContext context) {
   final ac = KabukMenusu.of(context);
   if (ac == null) return null;
-  return IconButton(
-    tooltip: 'Menü',
-    icon: const Icon(Icons.menu_rounded),
-    onPressed: () {
-      HapticFeedback.lightImpact();
-      ac();
-    },
+  return OgrenmeHedefi(
+    id: Hedef.genelKabukMenu,
+    child: IconButton(
+      tooltip: 'Menü',
+      icon: const Icon(Icons.menu_rounded),
+      onPressed: () {
+        HapticFeedback.lightImpact();
+        ac();
+      },
+    ),
   );
 }

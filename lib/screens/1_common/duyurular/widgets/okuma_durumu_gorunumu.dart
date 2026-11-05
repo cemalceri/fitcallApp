@@ -3,6 +3,8 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/1_common/duyuru_okuma_models.dart';
 import 'package:fitcall/screens/1_common/duyurular/widgets/duyuru_bicim.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:flutter/material.dart';
@@ -72,7 +74,10 @@ class _OkumaDurumuGorunumuState extends State<OkumaDurumuGorunumu> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
                   Bosluk.l, Bosluk.m, Bosluk.l, Bosluk.s),
-              child: _OzetKarti(veri: veri, onIcerikGor: widget.onIcerikGor),
+              child: OgrenmeHedefi(
+                id: Hedef.okumaOzet,
+                child: _OzetKarti(veri: veri, onIcerikGor: widget.onIcerikGor),
+              ),
             ),
           ),
           if (planli)
@@ -102,7 +107,9 @@ class _OkumaDurumuGorunumuState extends State<OkumaDurumuGorunumu> {
   Widget _aramaKutusu(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.s, Bosluk.l, 0),
-      child: TextField(
+      child: OgrenmeHedefi(
+        id: Hedef.okumaArama,
+        child: TextField(
         controller: _arama,
         onChanged: (_) => setState(() {}),
         textInputAction: TextInputAction.search,
@@ -119,6 +126,7 @@ class _OkumaDurumuGorunumuState extends State<OkumaDurumuGorunumu> {
                 ),
         ),
       ),
+      ),
     );
   }
 
@@ -133,11 +141,17 @@ class _OkumaDurumuGorunumuState extends State<OkumaDurumuGorunumu> {
           segments: [
             ButtonSegment(
               value: _Segment.gordu,
-              label: Text('Gördü (${veri.gordu.length})', maxLines: 1),
+              label: OgrenmeHedefi(
+                id: Hedef.okumaGordu,
+                child: Text('Gördü (${veri.gordu.length})', maxLines: 1),
+              ),
             ),
             ButtonSegment(
               value: _Segment.gormedi,
-              label: Text('Görmedi (${veri.gormedi.length})', maxLines: 1),
+              label: OgrenmeHedefi(
+                id: Hedef.okumaGormedi,
+                child: Text('Görmedi (${veri.gormedi.length})', maxLines: 1),
+              ),
             ),
           ],
           selected: {_segment},
@@ -241,7 +255,9 @@ class _OkumaDurumuGorunumuState extends State<OkumaDurumuGorunumu> {
     final secim = widget.onHesapSec;
     // Ok yalnız gidilebilen satırda: antrenör/profilsiz satırda yanlış vaat olur.
     final gidilir = secim != null && h.uyeProfilleri.isNotEmpty;
-    return ListeSatiri(
+    return ogrenmeHedefiSar(
+        Hedef.okumaListe,
+        ListeSatiri(
       onGorsel: ListeAvatari(
         basHarfler: ListeAvatari.harfler(h.profiller.first.ad),
         ton: ListeTonu.notr,
@@ -252,7 +268,7 @@ class _OkumaDurumuGorunumuState extends State<OkumaDurumuGorunumu> {
       altDeger: altDeger,
       okGoster: gidilir,
       onTap: gidilir ? () => secim(h) : null,
-    );
+    ));
   }
 }
 
@@ -345,15 +361,18 @@ class _OzetKarti extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: Bosluk.s),
-              Text(
-                [
-                  'Ana sayfadan açan ${ozet.anaSayfa}',
-                  "Popup'ta gören ${ozet.popup}",
-                  'Detayı açan ${ozet.detayAcan}',
-                  if (ozet.kullanmayanSayisi > 0)
-                    '${ozet.kullanmayanSayisi} hesap uygulamayı kullanmıyor',
-                ].join(' · '),
-                style: metin.bodySmall,
+              OgrenmeHedefi(
+                id: Hedef.okumaKaynaklar,
+                child: Text(
+                  [
+                    'Ana sayfadan açan ${ozet.anaSayfa}',
+                    "Popup'ta gören ${ozet.popup}",
+                    'Detayı açan ${ozet.detayAcan}',
+                    if (ozet.kullanmayanSayisi > 0)
+                      '${ozet.kullanmayanSayisi} hesap uygulamayı kullanmıyor',
+                  ].join(' · '),
+                  style: metin.bodySmall,
+                ),
               ),
             ],
             const SizedBox(height: Bosluk.m),

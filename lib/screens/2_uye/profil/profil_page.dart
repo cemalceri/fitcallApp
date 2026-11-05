@@ -1,6 +1,8 @@
 // lib/screens/2_uye/profile_page.dart
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/2_uye/uye_model.dart';
 import 'package:fitcall/screens/2_uye/profil/widgets/menu_section.dart';
@@ -115,6 +117,11 @@ class _ProfileContent extends StatelessWidget {
                 onPressed: () =>
                     Navigator.pushNamed(context, routeEnums[SayfaAdi.ayarlar]!),
               ),
+              OgrenmeButonu(
+                sayfa: OgrenmeSayfasi.uyeProfil,
+                sssRotasi: routeEnums[SayfaAdi.yardim]!,
+              ),
+              const SizedBox(width: 4),
             ],
             flexibleSpace: FlexibleSpaceBar(
               // Başlık yalnız kapanınca görünsün: açıkken isim başlıkta da

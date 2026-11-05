@@ -8,6 +8,7 @@
 import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/ofis_ders_kayit_talepleri_page.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ilk_giris_karti.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
 import 'package:fitcall/screens/8_ofis/ana_sayfa/widgets/ofis_ana_sayfa_gorunumu.dart';
@@ -129,6 +130,7 @@ class OfisAnaSayfaPageState extends State<OfisAnaSayfaPage> {
         onBugununDersleri: widget.onDerslerSekmesi ??
             () => _ac(OfisDerslerPage(baslangicTarihi: bugunKulup())),
         onDersKayitTalepleri: () => _ac(const OfisDersKayitTalepleriPage()),
+        ilkGirisKarti: const IlkGirisKarti(gorevId: 'ofis.anaSayfa'),
       ),
     );
   }

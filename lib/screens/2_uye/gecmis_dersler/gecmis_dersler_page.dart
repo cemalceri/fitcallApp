@@ -1,3 +1,6 @@
+import 'package:fitcall/common/routes.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 // lib/screens/2_uye/gecmis_dersler/gecmis_dersler_page.dart
 // ignore_for_file: use_build_context_synchronously
 
@@ -127,6 +130,13 @@ class _GecmisDerslerPageState extends State<GecmisDerslerPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Geçmiş Derslerim'),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.uyeGecmisDersler,
+            sssRotasi: routeEnums[SayfaAdi.yardim]!,
+          ),
+          const SizedBox(width: 4),
+        ],
         centerTitle: true,
       ),
       body: _isLoading

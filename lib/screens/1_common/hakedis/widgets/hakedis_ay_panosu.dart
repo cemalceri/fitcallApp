@@ -11,6 +11,8 @@
 // bekliyor / hakediş dışı) ve dokunulunca o grubun ders listesi açılır.
 
 import 'package:fitcall/models/1_common/hakedis_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 import 'hakedis_ay_izgarasi.dart';
@@ -52,27 +54,30 @@ class HakedisAyPanosu extends StatelessWidget {
 
         // Seçili ayın başlığı — ızgarada hangi hücrede olduğumuz kaybolmasın.
         // Yan yana Row değil: büyük yazı ölçeğinde toplam metni taşırıyordu.
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              ay.etiket,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: renk.onSurface,
-              ),
-            ),
-            if (!ay.bos)
+        OgrenmeHedefi(
+          id: Hedef.antrenorHakedisBasligi,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                '${ay.dersSayisi} ders · ${saatMetni(ay.dakika)}',
+                ay.etiket,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 13, color: renk.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: renk.onSurface,
+                ),
               ),
-          ],
+              if (!ay.bos)
+                Text(
+                  '${ay.dersSayisi} ders · ${saatMetni(ay.dakika)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 13, color: renk.onSurfaceVariant),
+                ),
+            ],
+          ),
         ),
         const SizedBox(height: 12),
 
@@ -81,14 +86,20 @@ class HakedisAyPanosu extends StatelessWidget {
         else ...[
           _OzetKutulari(ay: ay),
           const SizedBox(height: 12),
-          _OranCubugu(ay: ay),
+          OgrenmeHedefi(
+            id: Hedef.antrenorHakedisOran,
+            child: _OranCubugu(ay: ay),
+          ),
           const SizedBox(height: 18),
           ...ay.doluRoller.map(
             (rol) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: _RolKarti(
-                rol: rol,
-                onGrupTap: (durum) => onGrupTap(ay, rol.rol, durum),
+              child: OgrenmeHedefi(
+                id: Hedef.antrenorHakedisRol,
+                child: _RolKarti(
+                  rol: rol,
+                  onGrupTap: (durum) => onGrupTap(ay, rol.rol, durum),
+                ),
               ),
             ),
           ),
@@ -120,18 +131,24 @@ class _OzetKutulari extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: _OzetKutusu(
-              durum: HakedisDurumu.hakedis,
-              dakika: ay.hakedisDakika,
-              dersSayisi: ay.hakedisDersSayisi,
+            child: OgrenmeHedefi(
+              id: Hedef.antrenorHakedisAlacak,
+              child: _OzetKutusu(
+                durum: HakedisDurumu.hakedis,
+                dakika: ay.hakedisDakika,
+                dersSayisi: ay.hakedisDersSayisi,
+              ),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: _OzetKutusu(
-              durum: HakedisDurumu.bekliyor,
-              dakika: ay.bekleyenDakika,
-              dersSayisi: ay.bekleyenDersSayisi,
+            child: OgrenmeHedefi(
+              id: Hedef.hakedisBekliyor,
+              child: _OzetKutusu(
+                durum: HakedisDurumu.bekliyor,
+                dakika: ay.bekleyenDakika,
+                dersSayisi: ay.bekleyenDersSayisi,
+              ),
             ),
           ),
         ],
@@ -400,10 +417,18 @@ class _RolKarti extends StatelessWidget {
                 endIndent: 14,
                 color: renk.outlineVariant.withValues(alpha: 0.35),
               ),
-            _GrupSatiri(
-              grup: gruplar[i],
-              sonMu: i == gruplar.length - 1,
-              onTap: () => onGrupTap(gruplar[i].durum),
+            ogrenmeHedefiSar(
+              gruplar[i].durum == HakedisDurumu.disi
+                  ? Hedef.antrenorHakedisDisiGrup
+                  : null,
+              OgrenmeHedefi(
+                id: Hedef.hakedisGrup,
+                child: _GrupSatiri(
+                  grup: gruplar[i],
+                  sonMu: i == gruplar.length - 1,
+                  onTap: () => onGrupTap(gruplar[i].durum),
+                ),
+              ),
             ),
           ],
         ],

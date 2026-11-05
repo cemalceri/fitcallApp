@@ -12,7 +12,11 @@
 // geçer, dolayısıyla iş kuralları (30 dk katları, telafi hakkı, 24 saat kuralı,
 // paket/borç işlemleri) iki tarafta da aynı çalışır.
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/yonetici/yonetici_etkinlik_service.dart';
@@ -314,6 +318,10 @@ class _OfisProgramPageState extends State<OfisProgramPage> {
                 onTalepTap: _talebeDokunuldu,
                 onBosSlotTap: (kort, baslangic) =>
                     _yeniDers(kortId: kort.id, baslangic: baslangic),
+                sag: _rehberButonu,
+                gunHedefi: _gunHedefi,
+                gunHedefleri: _gunHedefleri,
+                dersHedefi: _dersHedefi,
               ),
       ),
       floatingActionButton: _program == null
@@ -326,11 +334,49 @@ class _OfisProgramPageState extends State<OfisProgramPage> {
     );
   }
 
+  static final _rehberButonu = OgrenmeButonu(
+    sayfa: OgrenmeSayfasi.ofisProgram,
+    sssRotasi: routeEnums[SayfaAdi.ofisYardim]!,
+    kompakt: true,
+  );
+
+  /// İptal / düzenleme / silme rehberlerinin gün adımı: o gün gelecekte,
+  /// iptal edilmemiş ders olmalı; yoksa gün seçilse de ders adımı hiç gelmez.
+  String? _gunHedefi(ProgramGunu gun) {
+    final uygun = _program?.dersler.any((d) =>
+            DateUtils.isSameDay(d.baslangic, gun.tarih) &&
+            _dersHedefi(d) == Hedef.programDers) ??
+        false;
+    return uygun ? Hedef.programGun : null;
+  }
+
+  /// "İptali geri al" ve "talebi işle" rehberlerinin gün adımları: günde
+  /// iptalli ders / bekleyen ders kayıt talebi olmalı.
+  List<String> _gunHedefleri(ProgramGunu gun) {
+    final program = _program;
+    if (program == null) return const [];
+    return [
+      if (program.dersler.any((d) =>
+          d.iptalMi && DateUtils.isSameDay(d.baslangic, gun.tarih)))
+        Hedef.programIptalGun,
+      if (program.talepler
+          .any((t) => DateUtils.isSameDay(t.baslangic, gun.tarih)))
+        Hedef.programTalepGunu,
+    ];
+  }
+
+  /// İptalli ders → «İptali geri al» rehberi; başlamamış, iptal edilmemiş
+  /// ders → iptal / düzenleme / silme rehberleri.
+  static String? _dersHedefi(ProgramDersi ders) {
+    if (ders.iptalMi) return Hedef.programIptalDers;
+    return ders.baslangic.isAfter(simdiKulup()) ? Hedef.programDers : null;
+  }
+
   /// Program gelene kadar başlık bandı: menü ve başlık; hafta gezinmesi
-  /// program gelince çıkar.
+  /// program gelince çıkar. "?" yüklenirken de aynı yerde durur.
   Widget _yuklenirkenBaslik() {
     return BaslikBandi(
-      padding: const EdgeInsets.fromLTRB(4, 4, 16, 6),
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 6),
       child: SizedBox(
         height: 44,
         child: Row(
@@ -351,6 +397,8 @@ class _OfisProgramPageState extends State<OfisProgramPage> {
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               ),
             ),
+            _rehberButonu,
+            const SizedBox(width: 4),
           ],
         ),
       ),

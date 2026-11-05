@@ -269,9 +269,11 @@ class SekmeBasligi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final menuVar = KabukMenusu.of(context) != null;
+    // Kabuk dışında (rotayla açılınca) menü yerine geri.
+    final geriVar = !menuVar && (ModalRoute.of(context)?.canPop ?? false);
     return BaslikBandi(
       padding: EdgeInsets.fromLTRB(
-          menuVar ? Bosluk.s : Bosluk.l, Bosluk.s, Bosluk.l, 14),
+          menuVar || geriVar ? Bosluk.s : Bosluk.l, Bosluk.s, Bosluk.l, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -280,7 +282,17 @@ class SekmeBasligi extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 44),
             child: Row(
               children: [
-                const KabukMenuButonu(),
+                if (geriVar)
+                  Padding(
+                    padding: const EdgeInsets.only(right: Bosluk.s),
+                    child: BaslikIkonButonu(
+                      ikon: Icons.arrow_back_rounded,
+                      ipucu: 'Geri',
+                      onTap: () => Navigator.maybePop(context),
+                    ),
+                  )
+                else
+                  const KabukMenuButonu(),
                 Expanded(
                   child: Text(
                     baslik,
@@ -477,26 +489,4 @@ class KapaninciBaslik extends StatelessWidget {
     final opaklik = ((0.3 - acik) / 0.3).clamp(0.0, 1.0);
     return Opacity(opacity: opaklik, child: child);
   }
-}
-
-/// Çıkış onayı: başlıktaki çıkış düğmesi diğer ikon düğmelerine benziyor ve
-/// profil değiştirin hemen yanında; yanlışlıkla oturum kapanmasın.
-Future<bool> cikisOnayla(BuildContext context) async {
-  final onay = await showDialog<bool>(
-    context: context,
-    builder: (c) => AlertDialog(
-      title: const Text('Çıkış yapılsın mı?'),
-      content:
-          const Text('Yeniden girmek için kullanıcı adı ve şifre gerekecek.'),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(c, false),
-            child: const Text('Vazgeç')),
-        FilledButton(
-            onPressed: () => Navigator.pop(c, true),
-            child: const Text('Çıkış yap')),
-      ],
-    ),
-  );
-  return onay == true;
 }

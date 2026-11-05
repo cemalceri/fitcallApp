@@ -2,6 +2,9 @@
 
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ilk_giris_karti.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
@@ -194,32 +197,52 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Sayfa kenar boşluğu zaten var; kart yalnız alttan ayrılır.
+            const IlkGirisKarti(
+              gorevId: 'yonetici.anaSayfa',
+              margin: EdgeInsets.only(bottom: 16),
+            ),
             // Bugünün özeti en üstte (kullanıcı isteği 2026-10-16).
-            DailySummaryCard(
-              data: _data!.gununOzeti,
-              bugunkuDers: _data!.hizliErisimDersler.toplamDers,
+            OgrenmeHedefi(
+              id: Hedef.yoneticiBugun,
+              child: DailySummaryCard(
+                data: _data!.gununOzeti,
+                bugunkuDers: _data!.hizliErisimDersler.toplamDers,
+              ),
             ),
             const SizedBox(height: 20),
 
             // Seçilen döneme bağlı kartlar, seçiciyle aynı kutuda.
-            DonemKutusu(
-              seciliDonem: _seciliDonem,
-              onDonemChanged: _onDonemChanged,
-              yukleniyor: _donemYukleniyor,
-              child: StatCardsGrid(data: _data!, grup: PanoKartGrubu.donem),
+            OgrenmeHedefi(
+              id: Hedef.yoneticiDonem,
+              child: DonemKutusu(
+                seciliDonem: _seciliDonem,
+                onDonemChanged: _onDonemChanged,
+                yukleniyor: _donemYukleniyor,
+                seciciHedefi: Hedef.panoDonemSecici,
+                child: StatCardsGrid(data: _data!, grup: PanoKartGrubu.donem),
+              ),
             ),
             const SizedBox(height: 20),
 
             // Dönemden bağımsız: o anki durum.
-            const PanoBolumEtiketi(
-                ikon: Icons.schedule_rounded, etiket: 'Şu an'),
-            StatCardsGrid(
-              data: _data!,
-              grup: PanoKartGrubu.anlik,
-              onToplamAlacakTap: () {
-                HapticFeedback.lightImpact();
-                widget.onBorcluUyeler?.call();
-              },
+            OgrenmeHedefi(
+              id: Hedef.yoneticiSuAn,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const PanoBolumEtiketi(
+                      ikon: Icons.schedule_rounded, etiket: 'Şu an'),
+                  StatCardsGrid(
+                    data: _data!,
+                    grup: PanoKartGrubu.anlik,
+                    onToplamAlacakTap: () {
+                      HapticFeedback.lightImpact();
+                      widget.onBorcluUyeler?.call();
+                    },
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -235,12 +258,22 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
             ),
             const SizedBox(height: 20),
 
-            const PanoBolumEtiketi(ikon: Icons.today_rounded, etiket: 'Bugün'),
-            QuickAccessSection(
-              data: _data!,
-              onRaporlarTap: () => widget.onTabChange?.call(1), // Raporlar
-              onAntrenorTap: () => widget.onTabChange?.call(3), // Antrenörler
-              onDerslerTap: () => widget.onTabChange?.call(4), // Dersler
+            OgrenmeHedefi(
+              id: Hedef.yoneticiHizli,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const PanoBolumEtiketi(
+                      ikon: Icons.today_rounded, etiket: 'Bugün'),
+                  QuickAccessSection(
+                    data: _data!,
+                    onRaporlarTap: () => widget.onTabChange?.call(1), // Raporlar
+                    onAntrenorTap: () =>
+                        widget.onTabChange?.call(3), // Antrenörler
+                    onDerslerTap: () => widget.onTabChange?.call(4), // Dersler
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
           ],

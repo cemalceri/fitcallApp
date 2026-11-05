@@ -79,6 +79,7 @@ const _bolumler = <SssBolum>[
             ' sahibi görür. Ana hesaba geçmek için Ayarlar > Profil değiştir\'i'
             ' kullanın.',
       ),
+      rehberSorusu,
     ],
   ),
 

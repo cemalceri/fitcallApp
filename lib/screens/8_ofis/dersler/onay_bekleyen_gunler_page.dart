@@ -6,6 +6,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
@@ -142,19 +144,22 @@ class OnayBekleyenGunlerGorunumu extends StatelessWidget {
           ),
           for (final (i, g) in gunler.indexed) ...[
             if (i > 0) const ListeAyraci(),
-            ListeSatiri(
-              onGorsel: ListeAvatari(
-                basHarfler: '${g.tarih.day}',
-                ton: ListeTonu.uyari,
+            OgrenmeHedefi(
+              id: Hedef.ofisOnayGunu,
+              child: ListeSatiri(
+                onGorsel: ListeAvatari(
+                  basHarfler: '${g.tarih.day}',
+                  ton: ListeTonu.uyari,
+                ),
+                baslik: _gun.format(g.tarih),
+                altBaslik: g.antrenorOnayli > 0
+                    ? '${g.antrenorOnayli} tanesini antrenör onayladı'
+                    : 'Antrenör bildirimi yok',
+                deger: '${g.bekleyen}',
+                altDeger: 'ders',
+                okGoster: true,
+                onTap: () => onGunSec(g),
               ),
-              baslik: _gun.format(g.tarih),
-              altBaslik: g.antrenorOnayli > 0
-                  ? '${g.antrenorOnayli} tanesini antrenör onayladı'
-                  : 'Antrenör bildirimi yok',
-              deger: '${g.bekleyen}',
-              altDeger: 'ders',
-              okGoster: true,
-              onTap: () => onGunSec(g),
             ),
           ],
           const SizedBox(height: 24),

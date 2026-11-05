@@ -14,6 +14,8 @@ import 'package:fitcall/screens/1_common/takvim/iptal_taramasi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/ofis/ofis_ders_yonetimi_service.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -195,17 +197,21 @@ class _YapilmadiDiyaloguState extends State<_YapilmadiDiyalogu> {
             const SizedBox(height: 12),
             Text('Neden (isteğe bağlı)', style: context.metin.labelMedium),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final n in widget.nedenler)
-                  ChoiceChip(
-                    label: Text(n.etiket),
-                    selected: _kod == n.kod,
-                    onSelected: (s) => setState(() => _kod = s ? n.kod : null),
-                  ),
-              ],
+            OgrenmeHedefi(
+              id: Hedef.yapilmadiNeden,
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final n in widget.nedenler)
+                    ChoiceChip(
+                      label: Text(n.etiket),
+                      selected: _kod == n.kod,
+                      onSelected: (s) =>
+                          setState(() => _kod = s ? n.kod : null),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -305,7 +311,10 @@ class DersYonetimGovdesi extends StatelessWidget {
           _IptalBilgisi(ders: ders)
         else if (ders.kararVerilebilir) ...[
           _Bolum(baslik: 'Ders durumu'),
-          _AntrenorBildirimi(ders: ders),
+          OgrenmeHedefi(
+            id: Hedef.ofisAntrenorBildirimi,
+            child: _AntrenorBildirimi(ders: ders),
+          ),
           const SizedBox(height: 10),
           _OnaySecimi(
             karar: ders.yoneticiKarari,
@@ -329,20 +338,28 @@ class DersYonetimGovdesi extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 12),
-          _Bolum(baslik: 'Hakediş'),
-          _HakedisSatiri(
-            etiket: ders.antrenor ?? 'Antrenör',
-            deger: ders.hakedis,
-            mesgul: mesgul,
-            onSec: (d) => onHakedis(false, d),
-          ),
-          if (ders.yardimciAntrenor != null)
-            _HakedisSatiri(
-              etiket: '${ders.yardimciAntrenor} (yardımcı)',
-              deger: ders.yardimciHakedis,
-              mesgul: mesgul,
-              onSec: (d) => onHakedis(true, d),
+          OgrenmeHedefi(
+            id: Hedef.ofisHakedis,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Bolum(baslik: 'Hakediş'),
+                _HakedisSatiri(
+                  etiket: ders.antrenor ?? 'Antrenör',
+                  deger: ders.hakedis,
+                  mesgul: mesgul,
+                  onSec: (d) => onHakedis(false, d),
+                ),
+                if (ders.yardimciAntrenor != null)
+                  _HakedisSatiri(
+                    etiket: '${ders.yardimciAntrenor} (yardımcı)',
+                    deger: ders.yardimciHakedis,
+                    mesgul: mesgul,
+                    onSec: (d) => onHakedis(true, d),
+                  ),
+              ],
             ),
+          ),
         ],
         if (ders.planDisiBekleyen > 0) ...[
           const SizedBox(height: 12),
@@ -684,7 +701,11 @@ class _KatilimciSatiri extends StatelessWidget {
     final (durum, ton) = _durum();
     final eylemler = <Widget>[
       if (ders.baslamadiMi && !k.planDisiMi && k.teyit != TeyitDurumu.katilacak)
-        _KucukEylem(etiket: 'Katılacak', onTap: mesgul ? null : onKatilacak),
+        OgrenmeHedefi(
+          id: Hedef.ofisKatilacak,
+          child: _KucukEylem(
+              etiket: 'Katılacak', onTap: mesgul ? null : onKatilacak),
+        ),
       if (ders.baslamadiMi &&
           !k.planDisiMi &&
           (k.teyit == TeyitDurumu.bekliyor ||
