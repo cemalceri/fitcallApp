@@ -6,6 +6,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/uye_talep_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -30,6 +32,16 @@ class UygunlukHaritasi extends StatelessWidget {
     final gunler = harita.gunler;
     if (gunler.isEmpty) return const SizedBox.shrink();
     final saatler = gunler.first.saatler.map((s) => s.saat).toList();
+    // Rehber hedefi: en üst satırdaki ilk uygun kare (kaydırmadan görünür).
+    HaritaSaat? ilkUygun;
+    for (var r = 0; r < saatler.length && ilkUygun == null; r++) {
+      for (final g in gunler) {
+        if (r < g.saatler.length && g.saatler[r].uygun) {
+          ilkUygun = g.saatler[r];
+          break;
+        }
+      }
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -82,8 +94,14 @@ class UygunlukHaritasi extends StatelessWidget {
                 ),
                 for (final g in gunler)
                   Expanded(
-                      child: _hucre(context, g,
-                          r < g.saatler.length ? g.saatler[r] : null)),
+                    child: ogrenmeHedefiSar(
+                      r < g.saatler.length && identical(g.saatler[r], ilkUygun)
+                          ? Hedef.uyeTalepKare
+                          : null,
+                      _hucre(context, g,
+                          r < g.saatler.length ? g.saatler[r] : null),
+                    ),
+                  ),
               ],
             ),
           ),

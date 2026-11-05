@@ -73,6 +73,11 @@ const List<OgrenmeGorevi> uyeGorevleri = [
         metin: 'Soldaki ☰ düğmesine dokun.',
       ),
       OgrenmeAdimi(
+        hedef: Secici.metin('Ders Talebi ve Kort Kiralama'),
+        metin: 'Ders ya da kort istersin, talebini izlersin.',
+        bilgi: true,
+      ),
+      OgrenmeAdimi(
         hedef: Secici.metin('Üyelik & Paket Bilgilerim'),
         metin: 'Paketlerin ve kalan hakların burada.',
         bilgi: true,
@@ -849,5 +854,90 @@ const List<OgrenmeGorevi> uyeGorevleri = [
     ],
     kural: 'Davet hakkın kalmadıysa düğme «Kota Doldu» olur. '
         'Davetliyi listeden silebilirsin.',
+  ),
+
+  // -------------------------------------------- Ders talebi / kort kiralama
+  OgrenmeGorevi(
+    id: 'uye.talepAc',
+    sayfa: OgrenmeSayfasi.uyeTaleplerim,
+    baslik: 'Ders ya da kort nasıl isterim?',
+    kosulMetni: 'Taleplerim açılınca',
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.metin('Yeni talep'),
+        metin: 'Sağ alttaki «Yeni talep»e dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.uyeTalepTurleri),
+        metin: 'Ne istediğini seç.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.metin('Devam'),
+        metin: '«Devam»a dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.uyeTalepKare),
+        metin: 'Uygun bir kareye dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.uyeTalepSaatDevam),
+        metin: 'Alttaki «Devam»a dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.metin('Ofise gönder'),
+        metin: '«Ofise gönder»e dokun.',
+        kalici: true,
+        sonuc: 'talebin ofise gider',
+      ),
+    ],
+    kural: 'Ofis onaylayınca ders takvimine eklenir, sana haber gelir.',
+  ),
+  OgrenmeGorevi(
+    id: 'uye.talepOneri',
+    sayfa: OgrenmeSayfasi.uyeTaleplerim,
+    baslik: 'Ofisin önerisine nasıl cevap veririm?',
+    kosulMetni: 'Ofisten öneri gelince',
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.uyeTalepOnerili),
+        metin: '«Öneri:» yazan talebine dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.uyeTalepOneri),
+        metin: '«Ofisin önerisi» kısmını oku.',
+        bilgi: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.metin('Kabul et'),
+        metin: '«Kabul et»e dokun.',
+        kalici: true,
+        sonuc: 'ders takvimine eklenir',
+      ),
+    ],
+    kural: 'Son cevap saatine kadar cevap ver. '
+        '«Reddet» dersen talep kapanır.',
+  ),
+  OgrenmeGorevi(
+    id: 'uye.talepGeriCek',
+    sayfa: OgrenmeSayfasi.uyeTaleplerim,
+    baslik: 'Talebimi nasıl geri çekerim?',
+    kosulMetni: 'Açık talebin olunca',
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.uyeTalepGeriCekilir),
+        metin: 'Açık talebine dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.metin('Geri çek'),
+        metin: '«Geri çek»e dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.metin('Evet'),
+        metin: 'Pencerede «Evet»e dokun.',
+        kalici: true,
+        sonuc: 'talebin kapanır',
+      ),
+    ],
+    kural: 'Açık talep sınırın dolunca birini geri çekip yer açarsın.',
   ),
 ];

@@ -11,7 +11,7 @@ import 'package:flutter/services.dart';
 ///
 /// Alt bardaki dört sekme burada da listeleniyor — hangisinde olunduğu aktif
 /// satırla belli olur; drawer ofisin tüm ekranlarına açılan tek dizin (plan
-/// dışı kararlar ve bildirimler dahil).
+/// dışı kararlar, talepler ve bildirimler dahil).
 /// Ciro, bakiye, hakediş ve raporlar bilinçli olarak yok: onlar yönetici
 /// kabuğunda (bkz. lib/screens/7_yonetici/).
 class OfisDrawer extends StatelessWidget {
@@ -86,6 +86,12 @@ class OfisDrawer extends StatelessWidget {
                     ikon: Icons.person_add_alt_1_rounded,
                     baslik: 'Plan Dışı Kararlar',
                     onTap: () => _sayfa(context, const PlanDisiKararlarPage()),
+                  ),
+                  YanMenuOgesi(
+                    ikon: Icons.inbox_rounded,
+                    baslik: 'Talepler',
+                    onTap: () => _git(
+                        context, routeEnums[SayfaAdi.ofisDersKayitTalepleri]!),
                   ),
                   const YanMenuBolumu('Üyeler'),
                   YanMenuOgesi(

@@ -8,6 +8,8 @@
 
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/2_uye/uye_talep_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/2_uye/talep/widgets/taleplerim_gorunumu.dart';
 import 'package:fitcall/services/api_exception.dart';
@@ -70,7 +72,15 @@ class _TaleplerimPageState extends State<TaleplerimPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Taleplerim')),
+      appBar: AppBar(
+        title: const Text('Taleplerim'),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.uyeTaleplerim,
+            sssRotasi: routeEnums[SayfaAdi.yardim]!,
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _sihirbaz(),
         icon: const Icon(Icons.add_rounded),

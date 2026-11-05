@@ -297,6 +297,11 @@ const List<OgrenmeGorevi> ofisGorevleri = [
         bilgi: true,
       ),
       OgrenmeAdimi(
+        hedef: Secici.metin('Talepler'),
+        metin: '«Talepler»: üye ve hoca ders talepleri.',
+        bilgi: true,
+      ),
+      OgrenmeAdimi(
         hedef: Secici.metin('Duyurular'),
         metin: '«Duyurular»: yayınlananlar ve kimlerin gördüğü.',
         bilgi: true,
@@ -322,7 +327,7 @@ const List<OgrenmeGorevi> ofisGorevleri = [
         bilgi: true,
       ),
     ],
-    kural: 'Ders kayıt talepleri menüde değil, Ana Sayfa\'daki satırda.',
+    kural: 'Bekleyen talepler Ana Sayfa\'daki satırda da görünür.',
   ),
   OgrenmeGorevi(
     id: 'ofis.teyitGunleri',
@@ -834,6 +839,67 @@ const List<OgrenmeGorevi> ofisGorevleri = [
     ],
     kural: 'Çakışma varsa talebi programda görürsün. '
         'Kutuya dokunup kaydı oluşturabilirsin.',
+  ),
+
+  OgrenmeGorevi(
+    id: 'ofis.uyeTalepOneri',
+    sayfa: OgrenmeSayfasi.ofisDersKayitTalepleri,
+    baslik: 'Üyeye başka saat nasıl öneririm?',
+    kosulMetni: 'Öneri yapılabilen üye talebi olunca',
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.ofisTalepOnerilebilir),
+        metin: 'Bir üye talebine dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.metin('Değişiklik öner'),
+        metin: '«Değişiklik öner»e dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.ofisOneriZamani),
+        metin: 'Yeni günü ve saati seç.',
+        bilgi: true,
+        dokunulur: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.ofisOneriNotu),
+        metin: 'Üyeye kısa bir not yaz.',
+        bilgi: true,
+        dokunulur: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.metin('Üyeye gönder'),
+        metin: '«Üyeye gönder»e dokun.',
+        kalici: true,
+        sonuc: 'öneri üyeye gider, cevabını bekler',
+      ),
+    ],
+    kural: 'Üye son cevap saatine kadar cevap vermezse talep kapanır. '
+        '«Üye telefonda onayladı» işaretlersen ders hemen kaydedilir.',
+  ),
+  OgrenmeGorevi(
+    id: 'ofis.uyeTalepKayit',
+    sayfa: OgrenmeSayfasi.ofisDersKayitTalepleri,
+    baslik: 'Üyenin talebini nasıl programa eklerim?',
+    kosulMetni: 'Kaydedilebilen üye talebi olunca',
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.ofisTalepKaydedilir),
+        metin: 'Bir üye talebine dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.metin('Kayıt oluştur'),
+        metin: '«Kayıt oluştur»a dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.metin('Kaydet'),
+        metin: '«Kaydet»e dokun.',
+        kalici: true,
+        sonuc: 'ders programa eklenir, üyeye bildirim gider',
+      ),
+    ],
+    kural: 'Hocalı talepte önce hocanın onayını al: «Hocaya sor» ya da '
+        '«Telefonla onay aldım».',
   ),
 
   // ------------------------------------------------------- Plan dışı

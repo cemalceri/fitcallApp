@@ -94,6 +94,11 @@ const List<OgrenmeGorevi> antrenorGorevleri = [
         bilgi: true,
       ),
       OgrenmeAdimi(
+        hedef: Secici.metin('Ofis Soruyor'),
+        metin: 'Ofisin sorduğu ders saatlerine cevap verirsin.',
+        bilgi: true,
+      ),
+      OgrenmeAdimi(
         hedef: Secici.metin('Çalışma Saatlerim'),
         metin: 'Müsaitliğini buradan güncellersin.',
         bilgi: true,

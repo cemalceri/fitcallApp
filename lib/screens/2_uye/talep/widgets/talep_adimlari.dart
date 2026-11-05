@@ -12,6 +12,8 @@ import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/2_uye/talep/widgets/uygunluk_haritasi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -106,12 +108,20 @@ class TalepAdim1Gorunumu extends StatelessWidget {
         ],
         Text('Neyle?', style: context.metin.titleSmall),
         const SizedBox(height: Bosluk.s),
-        for (final s in veri.secenekler)
-          _SecenekSatiri(
-            secenek: s,
-            secili: s.tur == seciliTur,
-            onTap: s.uygun ? () => onTurSec(s.tur) : null,
+        OgrenmeHedefi(
+          id: Hedef.uyeTalepTurleri,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final s in veri.secenekler)
+                _SecenekSatiri(
+                  secenek: s,
+                  secili: s.tur == seciliTur,
+                  onTap: s.uygun ? () => onTurSec(s.tur) : null,
+                ),
+            ],
           ),
+        ),
         const SizedBox(height: Bosluk.m),
         if (veri.mesaiNotu.isNotEmpty) ...[
           _Bilgi(veri.mesaiNotu, ikon: Icons.schedule_rounded),
@@ -354,13 +364,16 @@ class TalepAdim2Gorunumu extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
                 Bosluk.l, Bosluk.s, Bosluk.l, Bosluk.m),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: onDevam,
-                child: Text(secili == null
-                    ? 'Saat seç'
-                    : '${DateFormat('d MMM EEE HH:mm', 'tr_TR').format(secili!)} · Devam'),
+            child: OgrenmeHedefi(
+              id: Hedef.uyeTalepSaatDevam,
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: onDevam,
+                  child: Text(secili == null
+                      ? 'Saat seç'
+                      : '${DateFormat('d MMM EEE HH:mm', 'tr_TR').format(secili!)} · Devam'),
+                ),
               ),
             ),
           ),

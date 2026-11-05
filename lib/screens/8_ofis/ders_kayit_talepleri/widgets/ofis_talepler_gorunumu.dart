@@ -5,9 +5,14 @@
 // burada), Beklemede (hocada / üyede), Kapanan (son 30 gün, üye adıyla arama).
 // Ofis para görmez: satırda yalnız "Paket yeterli / yetmiyor" gibi metin.
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_uye_talep_models.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
@@ -123,6 +128,11 @@ class OfisTaleplerGorunumu extends StatelessWidget {
                             fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
+                OgrenmeButonu(
+                  sayfa: OgrenmeSayfasi.ofisDersKayitTalepleri,
+                  sssRotasi: routeEnums[SayfaAdi.ofisYardim]!,
+                  kutulu: true,
+                ),
               ],
             ),
           ),
@@ -199,6 +209,9 @@ class OfisTaleplerGorunumu extends StatelessWidget {
       return const IskeletListe();
     }
     final bos = l.talepler.isEmpty && l.antrenorTalepleri.isEmpty;
+    // Rehber hedefleri: adımın gerektirdiği eylemi olan ilk satır.
+    final onerilebilir = l.talepler.where((t) => t.eylemler.oneri).firstOrNull;
+    final kaydedilir = l.talepler.where((t) => t.eylemler.kaydet).firstOrNull;
     return RefreshIndicator(
       onRefresh: onYenile,
       child: bos
@@ -223,7 +236,18 @@ class OfisTaleplerGorunumu extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 24),
               children: [
                 for (final t in l.talepler) ...[
-                  OfisUyeTalepSatiri(talep: t, onTap: () => onUyeTalepAc(t)),
+                  ogrenmeHedefiSar(
+                    identical(t, onerilebilir)
+                        ? Hedef.ofisTalepOnerilebilir
+                        : null,
+                    ogrenmeHedefiSar(
+                      identical(t, kaydedilir)
+                          ? Hedef.ofisTalepKaydedilir
+                          : null,
+                      OfisUyeTalepSatiri(
+                          talep: t, onTap: () => onUyeTalepAc(t)),
+                    ),
+                  ),
                   const ListeAyraci(),
                 ],
                 if (l.antrenorTalepleri.isNotEmpty) ...[

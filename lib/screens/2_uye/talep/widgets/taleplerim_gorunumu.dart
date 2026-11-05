@@ -5,6 +5,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/uye_talep_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
@@ -80,6 +82,14 @@ class TaleplerimGorunumu extends StatelessWidget {
       }
       return const IskeletListe();
     }
+    // Rehber hedefleri: adımın gerektirdiği durumdaki ilk talep.
+    final onerili =
+        liste.where((t) => t.cevapBekliyor && t.oneri != null).firstOrNull;
+    final geriCekilir = liste.where((t) => t.geriCekilebilir).firstOrNull;
+    List<String> hedefler(UyeTalep t) => [
+          if (identical(t, onerili)) Hedef.uyeTalepOnerili,
+          if (identical(t, geriCekilir)) Hedef.uyeTalepGeriCekilir,
+        ];
     return RefreshIndicator(
       onRefresh: onYenile,
       child: liste.isEmpty
@@ -101,22 +111,25 @@ class TaleplerimGorunumu extends StatelessWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.only(bottom: 88),
               children: [
-                ..._grup('Açık talepler', liste.where((t) => t.acik)),
-                ..._grup('Geçmiş talepler', liste.where((t) => !t.acik)),
+                ..._grup('Açık talepler', liste.where((t) => t.acik), hedefler),
+                ..._grup(
+                    'Geçmiş talepler', liste.where((t) => !t.acik), hedefler),
               ],
             ),
     );
   }
 
   /// Başlık + satırlar; boş grup hiç görünmez.
-  List<Widget> _grup(String baslik, Iterable<UyeTalep> talepler) {
+  List<Widget> _grup(String baslik, Iterable<UyeTalep> talepler,
+      List<String> Function(UyeTalep) hedefler) {
     final grup = talepler.toList();
     if (grup.isEmpty) return const [];
     return [
       ListeGrupBasligi(baslik: baslik, sayi: grup.length),
       for (var i = 0; i < grup.length; i++) ...[
         if (i > 0) const ListeAyraci(),
-        _satir(grup[i]),
+        hedefler(grup[i]).fold<Widget>(
+            _satir(grup[i]), (cocuk, id) => ogrenmeHedefiSar(id, cocuk)),
       ],
     ];
   }
@@ -206,56 +219,59 @@ class TalepDetayGorunumu extends StatelessWidget {
           if (t.redNedeni.isNotEmpty) satir('Neden', t.redNedeni),
           if (o != null && t.cevapBekliyor) ...[
             const SizedBox(height: Bosluk.m),
-            Container(
-              padding: const EdgeInsets.all(Bosluk.m),
-              decoration: BoxDecoration(
-                color: ListeTonu.uyari.zemin(context),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Ofisin önerisi', style: context.metin.titleSmall),
-                  const SizedBox(height: Bosluk.xs),
-                  Text(o.dersTanimi,
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w600)),
-                  Text(sureMetni(o.sureDk),
-                      style:
-                          TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
-                  if (o.kisiSayisi != null)
-                    Text('${o.kisiSayisi} kişi',
-                        style: const TextStyle(fontSize: 13)),
-                  if (o.urunAdi.isNotEmpty)
-                    Text(o.urunAdi, style: const TextStyle(fontSize: 13)),
-                  if (o.ozet.isNotEmpty)
-                    Text(o.ozet, style: const TextStyle(fontSize: 13)),
-                  if (o.degisenler.isNotEmpty) ...[
+            OgrenmeHedefi(
+              id: Hedef.uyeTalepOneri,
+              child: Container(
+                padding: const EdgeInsets.all(Bosluk.m),
+                decoration: BoxDecoration(
+                  color: ListeTonu.uyari.zemin(context),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Ofisin önerisi', style: context.metin.titleSmall),
                     const SizedBox(height: Bosluk.xs),
-                    Text('Değişenler',
+                    Text(o.dersTanimi,
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w600)),
+                    Text(sureMetni(o.sureDk),
                         style: TextStyle(
-                            fontSize: 12, color: cs.onSurfaceVariant)),
-                    for (final d in o.degisenler)
-                      Text('• $d',
+                            fontSize: 13, color: cs.onSurfaceVariant)),
+                    if (o.kisiSayisi != null)
+                      Text('${o.kisiSayisi} kişi',
+                          style: const TextStyle(fontSize: 13)),
+                    if (o.urunAdi.isNotEmpty)
+                      Text(o.urunAdi, style: const TextStyle(fontSize: 13)),
+                    if (o.ozet.isNotEmpty)
+                      Text(o.ozet, style: const TextStyle(fontSize: 13)),
+                    if (o.degisenler.isNotEmpty) ...[
+                      const SizedBox(height: Bosluk.xs),
+                      Text('Değişenler',
+                          style: TextStyle(
+                              fontSize: 12, color: cs.onSurfaceVariant)),
+                      for (final d in o.degisenler)
+                        Text('• $d',
+                            style: const TextStyle(
+                                fontSize: 13, fontWeight: FontWeight.w600)),
+                    ],
+                    if (o.ekstraUcretMetni.isNotEmpty && o.degisenler.isEmpty)
+                      Text(o.ekstraUcretMetni,
                           style: const TextStyle(
                               fontSize: 13, fontWeight: FontWeight.w600)),
+                    if (o.notu.isNotEmpty) ...[
+                      const SizedBox(height: Bosluk.xs),
+                      Text('“${o.notu}”', style: const TextStyle(fontSize: 13)),
+                    ],
+                    if (o.sonCevapMetni.isNotEmpty) ...[
+                      const SizedBox(height: Bosluk.xs),
+                      Text(
+                          'Son cevap: ${o.sonCevapMetni}. Cevap vermezsen talep kapanır.',
+                          style: TextStyle(
+                              fontSize: 12, color: cs.onSurfaceVariant)),
+                    ],
                   ],
-                  if (o.ekstraUcretMetni.isNotEmpty && o.degisenler.isEmpty)
-                    Text(o.ekstraUcretMetni,
-                        style: const TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w600)),
-                  if (o.notu.isNotEmpty) ...[
-                    const SizedBox(height: Bosluk.xs),
-                    Text('“${o.notu}”', style: const TextStyle(fontSize: 13)),
-                  ],
-                  if (o.sonCevapMetni.isNotEmpty) ...[
-                    const SizedBox(height: Bosluk.xs),
-                    Text(
-                        'Son cevap: ${o.sonCevapMetni}. Cevap vermezsen talep kapanır.',
-                        style: TextStyle(
-                            fontSize: 12, color: cs.onSurfaceVariant)),
-                  ],
-                ],
+                ),
               ),
             ),
             const SizedBox(height: Bosluk.m),

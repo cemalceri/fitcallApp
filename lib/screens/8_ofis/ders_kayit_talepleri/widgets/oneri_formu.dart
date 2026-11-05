@@ -10,6 +10,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/10_ofis/ofis_uye_talep_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -188,59 +190,69 @@ class _OneriFormuSheetState extends State<OneriFormuSheet> {
           Text('${_t.uyeAdi} · ${_t.turAdi} · ${_t.dersTanimi}',
               style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
           const SizedBox(height: Bosluk.m),
-          OutlinedButton.icon(
-            onPressed: _gunSec,
-            icon: const Icon(Icons.calendar_today_rounded, size: 18),
-            label: Text(DateFormat('d MMMM y EEEE', 'tr_TR').format(_gun)),
-          ),
-          const SizedBox(height: Bosluk.s),
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButtonFormField<String>(
-                  key: ValueKey('ac1-$_saat'),
-                  initialValue: _saat,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
-                      labelText: 'Saat',
-                      isDense: true,
-                      border: OutlineInputBorder()),
-                  items: [
-                    for (final s in saatler)
-                      DropdownMenuItem(value: s, child: Text(s))
-                  ],
-                  onChanged: (v) {
-                    if (v == null) return;
-                    setState(() => _saat = v);
-                    _yenile();
-                  },
+          OgrenmeHedefi(
+            id: Hedef.ofisOneriZamani,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: _gunSec,
+                  icon: const Icon(Icons.calendar_today_rounded, size: 18),
+                  label:
+                      Text(DateFormat('d MMMM y EEEE', 'tr_TR').format(_gun)),
                 ),
-              ),
-              const SizedBox(width: Bosluk.s),
-              Expanded(
-                child: DropdownButtonFormField<int>(
-                  key: ValueKey(
-                      'ac2-${sureler.contains(_sure) ? _sure : sureler.first}'),
-                  initialValue: sureler.contains(_sure) ? _sure : sureler.first,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                      labelText: telafi ? 'Süre (telafi)' : 'Süre',
-                      isDense: true,
-                      border: const OutlineInputBorder()),
-                  items: [
-                    for (final s in sureler)
-                      DropdownMenuItem(value: s, child: Text('$s dk'))
-                  ],
-                  onChanged: telafi
-                      ? null
-                      : (v) {
+                const SizedBox(height: Bosluk.s),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        key: ValueKey('ac1-$_saat'),
+                        initialValue: _saat,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                            labelText: 'Saat',
+                            isDense: true,
+                            border: OutlineInputBorder()),
+                        items: [
+                          for (final s in saatler)
+                            DropdownMenuItem(value: s, child: Text(s))
+                        ],
+                        onChanged: (v) {
                           if (v == null) return;
-                          setState(() => _sure = v);
+                          setState(() => _saat = v);
                           _yenile();
                         },
+                      ),
+                    ),
+                    const SizedBox(width: Bosluk.s),
+                    Expanded(
+                      child: DropdownButtonFormField<int>(
+                        key: ValueKey(
+                            'ac2-${sureler.contains(_sure) ? _sure : sureler.first}'),
+                        initialValue:
+                            sureler.contains(_sure) ? _sure : sureler.first,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                            labelText: telafi ? 'Süre (telafi)' : 'Süre',
+                            isDense: true,
+                            border: const OutlineInputBorder()),
+                        items: [
+                          for (final s in sureler)
+                            DropdownMenuItem(value: s, child: Text('$s dk'))
+                        ],
+                        onChanged: telafi
+                            ? null
+                            : (v) {
+                                if (v == null) return;
+                                setState(() => _sure = v);
+                                _yenile();
+                              },
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           if (_yukleniyor) const LinearProgressIndicator(minHeight: 2),
           if (!_d.uyeBos)
@@ -342,17 +354,20 @@ class _OneriFormuSheetState extends State<OneriFormuSheet> {
             ),
           ],
           const SizedBox(height: Bosluk.s),
-          TextField(
-            controller: _not,
-            minLines: 2,
-            maxLines: 4,
-            maxLength: 500,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(
-              labelText: 'Üyeye not (zorunlu)',
-              hintText: 'Örn. 17:00 dolu, 18:00 olur mu?',
-              errorText: _hata,
-              border: const OutlineInputBorder(),
+          OgrenmeHedefi(
+            id: Hedef.ofisOneriNotu,
+            child: TextField(
+              controller: _not,
+              minLines: 2,
+              maxLines: 4,
+              maxLength: 500,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                labelText: 'Üyeye not (zorunlu)',
+                hintText: 'Örn. 17:00 dolu, 18:00 olur mu?',
+                errorText: _hata,
+                border: const OutlineInputBorder(),
+              ),
             ),
           ),
           if (_t.hocali)

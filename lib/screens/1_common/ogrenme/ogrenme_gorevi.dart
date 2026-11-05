@@ -19,6 +19,7 @@ enum OgrenmeSayfasi {
   uyeProfil('Hesabıma dön'),
   uyeTeyit('Katılım sayfasına dön'),
   uyeEvent('Davet sayfasına dön'),
+  uyeTaleplerim('Taleplerime dön'),
 
   /// Bütün rollerde aynı sayfalar; rol bağımlı rehberde `roller` verilir.
   qrOlustur('QR ekranına dön'),

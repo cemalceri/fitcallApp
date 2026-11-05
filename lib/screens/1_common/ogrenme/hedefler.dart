@@ -295,6 +295,23 @@ abstract final class Hedef {
   static const talepRedNedeni = 'ofis.talepRedNedeni';
   static const planDisiPaket = 'ofis.planDisiPaket';
 
+  /// Talepler: öneri yapılabilen / kaydedilebilen ilk üye talebi; öneri
+  /// formunda gün-saat alanları ve üyeye not.
+  static const ofisTalepOnerilebilir = 'ofis.talepOnerilebilir';
+  static const ofisTalepKaydedilir = 'ofis.talepKaydedilir';
+  static const ofisOneriZamani = 'ofis.oneriZamani';
+  static const ofisOneriNotu = 'ofis.oneriNotu';
+
+  /// Üye Taleplerim: öneri bekleyen ilk talep ve detaydaki öneri kutusu,
+  /// geri çekilebilir ilk talep. Sihirbaz: tür seçenekleri, haritada ilk
+  /// uygun kare, saat adımının «Devam»ı (yazısında seçilen saat var).
+  static const uyeTalepOnerili = 'uye.talepOnerili';
+  static const uyeTalepOneri = 'uye.talepOneri';
+  static const uyeTalepGeriCekilir = 'uye.talepGeriCekilir';
+  static const uyeTalepTurleri = 'uye.talepTurleri';
+  static const uyeTalepKare = 'uye.talepKare';
+  static const uyeTalepSaatDevam = 'uye.talepSaatDevam';
+
   /// Üyeler: arama kutusu, durum seçici, liste satırı; üye detayında bölümler.
   static const ofisUyeArama = 'ofis.uyeArama';
   static const ofisUyeFiltre = 'ofis.uyeFiltre';

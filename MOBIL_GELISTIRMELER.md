@@ -11,7 +11,7 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 | | |
 |---|---|
 | Mobil | **3.13.1+47** iki mağazada yayında. **3.14.0+48 tag'lendi** (2026-10-30; menü, geçmiş ders etiketleri, App Check, AGP 9): doğrudan üretim, zorunlu güncelleme yok; backend Heroku v350'de canlı. Mağazada görülünce admin'den sürüm notu `yayinda`. |
-| Testler | `flutter test` **4340 geçiyor** (2026-11-05), `flutter analyze` temiz; backend `guvenlik-guncellemeleri` **1572 geçiyor** (yerel Postgres, 2026-10-23). |
+| Testler | `flutter test` **4515 geçiyor** (2026-11-05), `flutter analyze` temiz; backend `guvenlik-guncellemeleri` **1572 geçiyor** (yerel Postgres, 2026-10-23). |
 | Backend | Canlı, GitHub master canlıyla eşit. Son migration'lar `0097_ders_kayit_talebi`, `0098_dekont`, `0099_uye_borc_kontrol`. Canlıda bir banka hesabı girili (işletme 1). |
 | Mağaza | 3.13.0 mağaza metni yalnız 3.12.0'dan sonraki üye yenilikleri. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20, turuncu tonu değişti — 2.3.3 riski kabul). |
 
@@ -78,7 +78,7 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 - **İptal signal'ları:** 2026-09-29'dan beri çalışıyor; veri kontrolü için
   `heroku run python manage.py veri_tutarlilik_kontrol --ders-basi 2026-07-23 --kategori paket,tekders,telafi,onay,ekstra`.
 
-- **"?" öğrenme rehberi (2026-11-05, main'de, push edildi):** 143 rehber dört profilde. Sahip telefonda
+- **"?" öğrenme rehberi (2026-11-05, main'de; ders talebi rehberleri push bekliyor):** 148 rehber dört profilde. Sahip telefonda
   gözden geçiriyor, hata gördükçe ekran adını söyler; kontrol kuralı CLAUDE.md'de. Ders talebi rehberleri
   eklendi (üye Taleplerim, ofis talepler).
 
