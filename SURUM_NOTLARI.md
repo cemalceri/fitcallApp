@@ -46,8 +46,8 @@ görüyor (tam ekran popup; kalıcı erişim Ayarlar › "Neler yeni").
 
 ### Mağaza metni (tr-TR)
 
-`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (478 karakter). 3.14.0 iki mağazada onaylandı ama
-yayına alınmadı; canlıdaki 3.13.1'den bu yana tüm üye yenilikleri (3.14.0 dahil).
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (478 karakter). 3.14.0 iki mağazada yayında ama
+güncelleme uyarısı açılmadı, üyelerin çoğu 3.13.1'de; bu yüzden metin 3.14.0 maddelerini de taşır.
 
 - Ders talebi ve kort kiralama: menüden uygun saati seçip talep açın; ofisin cevabı Taleplerim'de.
 - Rehber: başlıktaki ? simgesi ekranı adım adım tanıtır. Çıkış Ayarlar'a taşındı.
@@ -58,8 +58,8 @@ yayına alınmadı; canlıdaki 3.13.1'den bu yana tüm üye yenilikleri (3.14.0 
 
 ### "Neler yeni?" popup'ı
 
-Backend `surum_notlari.json`'da 3.15.0 bloğu 3.14.0 maddelerini de taşır; yayınlanmayan 3.14.0 bloğu
-dosyadan çıkarıldı (DB'deki kaydı `yayinda=False` kalır). Üye: ders talebi, "?" rehberi, başka işletmeye
+Backend `surum_notlari.json`'da 3.15.0 bloğu 3.14.0 maddelerini de taşır; `yayinda`'sı hiç açılmayan 3.14.0
+bloğu dosyadan çıkarıldı (DB kaydı kapalı kalır). Üye: ders talebi, "?" rehberi, başka işletmeye
 üyelik, Geçmiş Dersler (menü maddesi "Tümünü gör"de). Antrenör: rehber, Ofis Soruyor, menü. Ofis:
 Talepler, plan dışı Telafi, rehber, bildirim listesi (ders silme uyarısı ve menü "Tümünü gör"de).
 Yönetici: Ana Sayfa adı, rehber, menü. Yeni ikon yok.
@@ -68,8 +68,7 @@ Yönetici: Ana Sayfa adı, rehber, menü. Yeni ikon yok.
 
 1. Backend push + deploy (önce backend): 0104 hoca katsayısı, 0105 kullanılmayan modeller, 0106 işletme
    başvurusu, 0107 plan dışı telafi. Hepsi eklemeli; 3.13.1/3.14.0 istemcileri etkilenmez.
-2. Mobil `perf/mobil-acilis` → `main`, tag `v3.15.0` → doğrudan üretim. App Store'da "yayın bekliyor"
-   duran 3.14.0, yeni sürüm gönderilmeden önce geri çekilmeli (Developer Reject) ya da yayınlanmalı.
+2. Mobil `perf/mobil-acilis` → `main`, tag `v3.15.0` → doğrudan üretim.
 3. Mağazada canlı görülünce admin'den 3.15.0 sürüm notunun `yayinda`'sını aç.
 
 ### Teknik

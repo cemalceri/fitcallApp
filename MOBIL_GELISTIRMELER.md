@@ -10,7 +10,7 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 | | |
 |---|---|
-| Mobil | **3.13.1+47** iki mağazada yayında. 3.14.0+48 mağazalarda onaylandı, yayına alınmadı. **3.15.0+49 hazır, tag'lenmedi** (2026-11-05; ders talebi, rehber, başka işletme, plan dışı telafi + 3.14.0): sıra [SURUM_NOTLARI.md](SURUM_NOTLARI.md)'de, önce backend. |
+| Mobil | **3.14.0+48** iki mağazada yayında (güncelleme uyarısı açılmadı, üyelerin çoğu 3.13.1'de). **3.15.0+49 hazır, tag'lenmedi** (2026-11-05; ders talebi, rehber, başka işletme, plan dışı telafi + 3.14.0): sıra [SURUM_NOTLARI.md](SURUM_NOTLARI.md)'de, önce backend. |
 | Testler | `flutter test` **4549 geçiyor** (2026-11-05), `flutter analyze` temiz; backend **1729 geçiyor** (yerel Postgres, 2026-11-05). |
 | Backend | Heroku v351 (`040ebb7`). Bekleyen deploy: 0104–0107 (hoca katsayısı, kullanılmayan modeller, işletme başvurusu, plan dışı telafi). |
 | Mağaza | 3.13.0 mağaza metni yalnız 3.12.0'dan sonraki üye yenilikleri. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20, turuncu tonu değişti — 2.3.3 riski kabul). |
