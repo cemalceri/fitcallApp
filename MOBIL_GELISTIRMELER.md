@@ -30,6 +30,14 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ## 🔴 Açık işler
 
+### Başka işletmeye üyelik (Pilates ayrı işletme, 2026-11-05; iki repoda commit'li, push/deploy yok)
+- Kod tamam: üye Ayarlar > "Başka işletmeye üyelik" (`2_uye/isletme_basvuru/`, yalnız ana hesap) →
+  hedef işletmede onay bekleyen kopya üye; onay web "Üye onayla"da, onayda profil mevcut hesaba bağlanır
+  (yeni kullanıcı/şifre SMS'i yok), bildirim `isletme_basvurulari`. Backend migration `0106`.
+  Rehber "Başka işletmeye nasıl üye olurum?" (Ayarlar), üye SSS'i.
+- Kalan (kullanıcı): backend deploy, prod'da Pilates `IsletmeModel` + kort/hoca + hocalara yönetici ve ofis
+  profili. Mobil ofiste üye onay ekranı yok (onay web'de); istenirse ayrı iş.
+
 ### Üye ders / kort kiralama talebi (2026-10-31; backend CANLI Heroku v351, mobil 2026-11-05'te main'e alındı ve push edildi)
 - Kod tamam: üye sihirbazı + Taleplerim (`2_uye/talep/`; giriş yan menüde "Ders Talebi ve Kort Kiralama", ana sayfada yok), ofis sekmeli Talepler + detay/öneri
   (`8_ofis/ders_kayit_talepleri/`), hoca "Ofis Soruyor" (`3_antrenor/talep_sorulari/`), web aynı sayfada.

@@ -63,6 +63,9 @@ const String uyeTalepHaritaUrl = "$baseUrl/uyeTalepHarita";
 const String uyeTalepSecenekleriUrl = "$baseUrl/uyeTalepSecenekleri";
 const String uyeTalepOlusturUrl = "$baseUrl/uyeTalepOlustur";
 const String uyeTaleplerimUrl = "$baseUrl/uyeTaleplerim";
+// Başka işletmeye üyelik başvurusu (backend api/uye/isletme_basvuru.py)
+const String isletmeBasvurulariUrl = "$baseUrl/isletmeBasvurulari";
+const String isletmeBasvurUrl = "$baseUrl/isletmeBasvur";
 const String uyeTalepOneriCevapUrl = "$baseUrl/uyeTalepOneriCevap";
 const String antrenorTalepSorulariUrl = "$baseUrl/antrenorTalepSorulari";
 const String antrenorTalepCevapUrl = "$baseUrl/antrenorTalepCevap";

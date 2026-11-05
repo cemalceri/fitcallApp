@@ -54,6 +54,11 @@ class AuthService {
     );
   }
 
+  /// Oturum açıkken gelen güncel profil listesini önbelleğe yazar (ör. başka
+  /// işletme başvurusu onaylanınca yeni profil "Profil değiştir"de görünsün).
+  static Future<void> profilleriTazele(List<KullaniciProfilModel> profiller) =>
+      _profilleriOnbellekleAt(profiller);
+
   /// Profilleri güvenli depoya yazar. Uygulama içi "profil değiştir" akışı
   /// (header butonları) API'yi tekrar çağıramadığı için buradan okur; bu yüzden
   /// her profil çekiminde tazelenmesi gerekir. Aksi halde önbellek, alanların

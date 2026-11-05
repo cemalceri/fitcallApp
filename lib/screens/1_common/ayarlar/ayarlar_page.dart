@@ -71,6 +71,10 @@ class _AyarlarPageState extends State<AyarlarPage> {
 
   bool get _yoneticiMi => _profil?.rol == Roller.yonetici.name;
 
+  /// Başka işletmeye başvuru yalnız üye ana hesabında (sunucu da ister).
+  bool get _uyeAnaHesapMi =>
+      _profil?.rol == Roller.uye.name && (_profil?.anaHesap ?? false);
+
   /// Yardım sayfası role göre seçilir: dört rolün de kendi SSS'i var, hepsini
   /// üye sayfasına yollamak antrenörde çözülen hatanın tekrarı olurdu.
   String get _yardimRotasi => yardimRotasi(_profil?.rol);
@@ -168,6 +172,18 @@ class _AyarlarPageState extends State<AyarlarPage> {
                   MaterialPageRoute(builder: (_) => const SifreDegistirPage()),
                 ),
               ),
+              if (_uyeAnaHesapMi)
+                _AyarSatiri(
+                  ikon: Icons.storefront_rounded,
+                  baslik: 'Başka işletmeye üyelik',
+                  altBaslik: 'Başvur, durumunu takip et',
+                  onTap: () async {
+                    await Navigator.pushNamed(
+                        context, routeEnums[SayfaAdi.isletmeBasvurulari]!);
+                    // Onaylanan başvuru profil sayısını değiştirmiş olabilir.
+                    if (mounted) _yukle();
+                  },
+                ),
               if (_profilSayisi > 1)
                 _AyarSatiri(
                   ikon: Icons.swap_horiz_rounded,

@@ -3,6 +3,7 @@
 // Rollerle ortak sayfaların rehberleri (QR Oluştur, Bildirimler, Ayarlar). Rol
 // bağımlı rehberde `roller` verilir. Yazım kuralları gorevler.dart'ta.
 
+import 'package:fitcall/common/constants.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 
@@ -212,6 +213,45 @@ const List<OgrenmeGorevi> genelGorevler = [
     ],
     kural: 'Çocuğunun profilini seçince onun takvimini görürsün. '
         'Bakiye ve paket ana hesapta kalır.',
+  ),
+  OgrenmeGorevi(
+    id: 'ayar.isletmeBasvurusu',
+    sayfa: OgrenmeSayfasi.ayarlar,
+    baslik: 'Başka işletmeye nasıl üye olurum?',
+    kosulMetni: 'Ana hesapla girince',
+    roller: {Roller.uye},
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.metin('Başka işletmeye üyelik'),
+        metin: '«Başka işletmeye üyelik» satırına dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.isletmeBasvuruIsletmeler),
+        metin: 'Listeden başvuracağın işletmeyi seç.',
+        bilgi: true,
+        dokunulur: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.isletmeBasvuruBilgiler),
+        metin: 'Aktarılacak bilgilerini kontrol et.',
+        bilgi: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.isletmeBasvuruKvkk),
+        metin: 'KVKK kutusunu işaretle.',
+        bilgi: true,
+        dokunulur: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.metin('Başvur'),
+        metin: '«Başvur»a dokun.',
+        kalici: true,
+        sonuc: 'başvurun işletmenin ofisine gider',
+      ),
+    ],
+    kural: 'Ofis onaylayınca sana haber gelir. '
+        'Yeni profile «Profil değiştir» ile geçersin. '
+        'Ödemeler her işletmede ayrı tutulur.',
   ),
   OgrenmeGorevi(
     id: 'ayar.cikis',

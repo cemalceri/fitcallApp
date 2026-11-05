@@ -97,6 +97,12 @@ class NotificationRouter {
       NotificationFCMService.instance.notifyDismissed();
       return;
     }
+    // 4c) Başka işletme başvurusu onaylandı: başvurular sayfası (profile geçiş)
+    if (notification.actionScreen == 'isletme_basvurulari') {
+      nav.pushNamed(routeEnums[SayfaAdi.isletmeBasvurulari]!);
+      NotificationFCMService.instance.notifyDismissed();
+      return;
+    }
     if (notification.actionScreen == 'antrenor_talep_sorulari') {
       // "Yeni ders" (talep derse dönüştü): soruları değil takvimde o günü aç.
       final params = notification.actionParams;

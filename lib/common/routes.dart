@@ -46,6 +46,7 @@ import 'package:fitcall/screens/1_common/ayarlar/ayarlar_page.dart';
 import 'package:fitcall/screens/3_antrenor/program/antrenor_program_page.dart';
 import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/ofis_ders_kayit_talepleri_page.dart';
 import 'package:fitcall/screens/2_uye/talep/taleplerim_page.dart';
+import 'package:fitcall/screens/2_uye/isletme_basvuru/isletme_basvuru_page.dart';
 import 'package:fitcall/screens/2_uye/talep/uye_talep_page.dart';
 import 'package:fitcall/screens/3_antrenor/talep_sorulari/antrenor_talep_sorulari_page.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
@@ -86,6 +87,7 @@ enum SayfaAdi {
   ofisUyeler,
   uyeTalepOlustur,
   uyeTaleplerim,
+  isletmeBasvurulari,
   antrenorTalepSorulari,
   yoneticiDuyurular,
   ofisDuyurular,
@@ -141,6 +143,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.ofisUyeler: '/ofisUyeler',
   SayfaAdi.uyeTalepOlustur: '/uyeTalep',
   SayfaAdi.uyeTaleplerim: '/uyeTaleplerim',
+  SayfaAdi.isletmeBasvurulari: '/isletmeBasvurulari',
   SayfaAdi.antrenorTalepSorulari: '/antrenorTalepSorulari',
   SayfaAdi.yoneticiDuyurular: '/yoneticiDuyurular',
   SayfaAdi.ofisDuyurular: '/ofisDuyurular',
@@ -191,6 +194,7 @@ final Map<String, WidgetBuilder> routes = {
   // Düzenle / Benzerini aç: taslak route argümanıyla gelir (UyeTalepPage okur).
   routeEnums[SayfaAdi.uyeTalepOlustur]!: (c) => const UyeTalepPage(),
   routeEnums[SayfaAdi.uyeTaleplerim]!: (c) => const TaleplerimPage(),
+  routeEnums[SayfaAdi.isletmeBasvurulari]!: (c) => const IsletmeBasvuruPage(),
   routeEnums[SayfaAdi.antrenorTalepSorulari]!: (c) =>
       const AntrenorTalepSorulariPage(),
   // Aynı ekran; kabuklar yalnız üye satırının açtığı detay sayfasında ayrılır.
@@ -231,6 +235,7 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.havaleEft]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.dekontYukle]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.bildirimler]!: AccessRule.anaHesapOnly,
+  routeEnums[SayfaAdi.isletmeBasvurulari]!: AccessRule.anaHesapOnly,
 
   // Örnekler (şimdilik serbest):
   routeEnums[SayfaAdi.dersler]!: AccessRule.anyone,

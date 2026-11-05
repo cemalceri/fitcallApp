@@ -397,6 +397,11 @@ abstract final class Hedef {
   static const genelAyarTema = 'genel.ayarTema';
   static const genelSifreAlanlari = 'genel.sifreAlanlari';
 
+  /// Başka işletmeye üyelik: işletme listesi, aktarılacak bilgiler, KVKK kutusu.
+  static const isletmeBasvuruIsletmeler = 'isletmeBasvuru.isletmeler';
+  static const isletmeBasvuruBilgiler = 'isletmeBasvuru.bilgiler';
+  static const isletmeBasvuruKvkk = 'isletmeBasvuru.kvkk';
+
   // ── Duyurular ──
 
   /// Liste: ilk duyuru satırı. Okuma durumu: özet kartı,

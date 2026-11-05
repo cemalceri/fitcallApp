@@ -37,6 +37,8 @@ import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_yukle_govdesi.d
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/havale_bilgi_satiri.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/hesaplar_gorunumu.dart';
 import 'package:fitcall/models/2_uye/gecmis_ders_model.dart';
+import 'package:fitcall/models/2_uye/isletme_basvuru_models.dart';
+import 'package:fitcall/screens/2_uye/isletme_basvuru/widgets/isletme_basvuru_gorunumu.dart';
 import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
 import 'package:fitcall/models/2_uye/uye_odul_model.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
@@ -810,6 +812,51 @@ void _uyeTalebiTestleri() {
         onKisi: (_) {},
         onYenidenDene: () {},
         onGonder: () {},
+      ),
+    );
+    tasmaTesti(
+      'IsletmeBasvuruGorunumu',
+      () => IsletmeBasvuruGorunumu(
+        veri: IsletmeBasvuruVerisi(
+          isletmeler: const [
+            IsletmeSecenegi(
+                id: 2, adi: 'Binay Pilates ve Reformer Stüdyosu Merkez'),
+            IsletmeSecenegi(
+                id: 3, adi: 'Binay Yüzme', durum: BasvuruDurumu.bekliyor),
+            IsletmeSecenegi(
+                id: 4, adi: 'Binay Yoga', durum: BasvuruDurumu.reddedildi),
+          ],
+          basvurular: [
+            IsletmeBasvurusu(
+                id: 1,
+                isletmeAdi: 'Binay Yüzme',
+                durum: BasvuruDurumu.bekliyor,
+                tarih: DateTime(2026, 11, 5)),
+            const IsletmeBasvurusu(
+                id: 2,
+                isletmeAdi: 'Binay Pilates ve Reformer Stüdyosu Merkez',
+                durum: BasvuruDurumu.uye,
+                profilId: 9),
+            IsletmeBasvurusu(
+                id: 3,
+                isletmeAdi: 'Binay Yoga',
+                durum: BasvuruDurumu.reddedildi,
+                tarih: DateTime(2026, 11, 1)),
+          ],
+          bilgiler: const AktarilanBilgiler(
+              adSoyad: 'Ayşegül Karaosmanoğlu YILDIRIMOĞLU',
+              telefon: '5551112233',
+              email: 'aysegul.karaosmanoglu.uzun@ornekalanadi.com.tr'),
+        ),
+        seciliIsletmeId: 2,
+        kvkkOnay: true,
+        onYenile: () async {},
+        onYenidenDene: () {},
+        onSec: (_) {},
+        onKvkk: (_) {},
+        onKvkkMetni: () {},
+        onBasvur: () {},
+        onOnaylanan: (_) {},
       ),
     );
     tasmaTesti(

@@ -79,6 +79,19 @@ const _bolumler = <SssBolum>[
             ' sahibi görür. Ana hesaba geçmek için Ayarlar > Profil değiştir\'i'
             ' kullanın.',
       ),
+      SssSoru(
+        ikon: Icons.storefront_outlined,
+        soru: 'Kulüpteki başka bir işletmeye (ör. Pilates) nasıl üye olurum?',
+        cevap:
+            'Ayarlar sayfasındaki "Başka işletmeye üyelik" satırından işletmeyi'
+            ' seçip başvurursunuz; yeni hesap açmanız gerekmez. Ad, telefon ve'
+            ' e-posta gibi bilgileriniz mevcut profilinizden aktarılır ve yalnız'
+            ' seçtiğiniz işletme görür. O işletmenin ofisi onaylayınca bildirim'
+            ' gelir; yeni profile Ayarlar > "Profil değiştir" ile geçersiniz.'
+            ' Ödemeler her işletmede ayrı tutulur. Bekleyen başvurunuz varken aynı'
+            ' işletmeye yeniden başvuramazsınız, reddedilirse tekrar başvurabilirsiniz.'
+            ' Satır yalnız ana hesapta görünür.',
+      ),
       rehberSorusu,
     ],
   ),
