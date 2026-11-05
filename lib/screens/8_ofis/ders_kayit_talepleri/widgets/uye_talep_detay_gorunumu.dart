@@ -10,6 +10,8 @@ import 'package:fitcall/models/10_ofis/ofis_uye_talep_models.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/widgets/ofis_talepler_gorunumu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 
 class OfisUyeTalepDetayGorunumu extends StatelessWidget {
@@ -144,11 +146,14 @@ class OfisUyeTalepDetayGorunumu extends StatelessWidget {
           ),
         if (e.kaydet) ...[
           const SizedBox(height: Bosluk.s),
-          FilledButton(
-            onPressed: isleniyor ? null : onKaydet,
-            child: isleniyor
-                ? const ButonYukleniyorGostergesi()
-                : const Text('Kayıt oluştur'),
+          OgrenmeHedefi(
+            id: Hedef.ofisUyeTalepKayitDugmesi,
+            child: FilledButton(
+              onPressed: isleniyor ? null : onKaydet,
+              child: isleniyor
+                  ? const ButonYukleniyorGostergesi()
+                  : const Text('Kayıt oluştur'),
+            ),
           ),
         ],
         if (e.oneri) ...[

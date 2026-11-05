@@ -364,9 +364,11 @@ class TalepAdim2Gorunumu extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
                 Bosluk.l, Bosluk.s, Bosluk.l, Bosluk.m),
-            child: OgrenmeHedefi(
-              id: Hedef.uyeTalepSaatDevam,
-              child: SizedBox(
+            // Saat seçilmeden hedef yok: kare kaybolunca (hafta değişti)
+            // rehber pasif düğmeye atlamasın.
+            child: ogrenmeHedefiSar(
+              onDevam == null ? null : Hedef.uyeTalepSaatDevam,
+              SizedBox(
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: onDevam,

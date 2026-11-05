@@ -302,6 +302,10 @@ abstract final class Hedef {
   static const ofisOneriZamani = 'ofis.oneriZamani';
   static const ofisOneriNotu = 'ofis.oneriNotu';
 
+  /// Üye talebi detayındaki «Kayıt oluştur» (listedeki antrenör talebi
+  /// satırlarında da aynı yazı var; rehber oraya kaymasın).
+  static const ofisUyeTalepKayitDugmesi = 'ofis.uyeTalepKayitDugmesi';
+
   /// Üye Taleplerim: öneri bekleyen ilk talep ve detaydaki öneri kutusu,
   /// geri çekilebilir ilk talep. Sihirbaz: tür seçenekleri, haritada ilk
   /// uygun kare, saat adımının «Devam»ı (yazısında seçilen saat var).

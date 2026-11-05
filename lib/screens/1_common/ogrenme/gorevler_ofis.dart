@@ -888,7 +888,7 @@ const List<OgrenmeGorevi> ofisGorevleri = [
         metin: 'Bir üye talebine dokun.',
       ),
       OgrenmeAdimi(
-        hedef: Secici.metin('Kayıt oluştur'),
+        hedef: Secici.hedef(Hedef.ofisUyeTalepKayitDugmesi),
         metin: '«Kayıt oluştur»a dokun.',
       ),
       OgrenmeAdimi(
