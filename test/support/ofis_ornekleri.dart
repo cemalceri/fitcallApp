@@ -36,6 +36,9 @@ Map<String, dynamic> dersJson({
   bool? antrenor,
   bool yardimci = false,
   int planDisiBekleyen = 0,
+  String? antrenorNotu,
+  String? yardimciNotu,
+  String? yoneticiNotu,
   List<Map<String, dynamic>>? katilimcilar,
 }) {
   final bas = simdiKulup().add(Duration(hours: saatSonra));
@@ -54,8 +57,11 @@ Map<String, dynamic> dersJson({
     'iptal_eden': iptal ? 'Ofis Çalışanı' : null,
     'yonetici_tamamlandi': yonetici,
     'yonetici_neden': yonetici == false ? 'Hava şartları' : null,
+    'yonetici_aciklama': yoneticiNotu,
     'antrenor_tamamlandi': antrenor,
     'antrenor_neden': antrenor == false ? 'Öğrenci gelmedi' : null,
+    'antrenor_aciklama': antrenorNotu,
+    'yardimci_aciklama': yardimciNotu,
     'hakedis': null,
     'yardimci_hakedis': yardimci ? true : null,
     'plan_disi_bekleyen': planDisiBekleyen,
@@ -74,10 +80,21 @@ Map<String, dynamic> dersJson({
 DersYonetimiGun ornekGun() => DersYonetimiGun.fromJson({
       'tarih': formatApiGun(bugunKulup()),
       'dersler': [
-        dersJson(id: 1, antrenor: true, planDisiBekleyen: 2),
-        dersJson(id: 2, antrenor: false),
-        dersJson(id: 3, yonetici: true, antrenor: true, yardimci: true),
-        dersJson(id: 4, iptal: true),
+        dersJson(
+            id: 1,
+            antrenor: true,
+            planDisiBekleyen: 2,
+            antrenorNotu: 'Ders yarım saat geç başladı, öğrenci servis '
+                'atışlarında çok gelişti; gelecek hafta ikinci servise geçeceğiz.'),
+        dersJson(id: 2, antrenor: false, antrenorNotu: '   '),
+        dersJson(
+            id: 3,
+            yonetici: true,
+            antrenor: true,
+            yardimci: true,
+            yardimciNotu: 'Top toplama ve ısınmada destek oldum',
+            yoneticiNotu: 'Kort değişikliği ofise bildirildi'),
+        dersJson(id: 4, iptal: true, antrenorNotu: 'Kort su bastı'),
         dersJson(id: 5, saatSonra: 20, katilimcilar: [
           katilimciJson(20, 'Cevap Vermeyen Üye', teyit: 'bekliyor'),
           katilimciJson(21, 'Bildirim Gitmeyen Üye', teyit: 'bildirim_yok'),

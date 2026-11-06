@@ -71,6 +71,9 @@ Yönetici: Ana Sayfa adı, rehber, menü. Yeni ikon yok.
 2. Mobil `perf/mobil-acilis` → `main`, tag `v3.15.0` → doğrudan üretim.
 3. Mağazada canlı görülünce admin'den 3.15.0 sürüm notunun `yayinda`'sını aç.
 
+2026-11-06: iki mağazada yayında; sürüm notu açıldı, konfig `onerilen`/`en_son` 3.15.0+49 (yumuşak uyarı,
+`min_destekli` 3.13.1+47).
+
 ### Teknik
 
 - **Üye ders / kort kiralama talebi.** Menü › Ders Talebi ve Kort Kiralama → Taleplerim; ofiste

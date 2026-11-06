@@ -146,7 +146,8 @@ sürümü (`flutter: 3.x.y`) sabitlenmeli — o zaman alt sınırlar da sabit ka
   Konfigurasyonlari): `onerilen` ve `en_son` yeni sürüme çekilir. Bu tablo
   uygulama içindeki güncelleme uyarısını sürüyor — güncellenmezse eski sürümdeki
   kullanıcıya uygulama "yeni sürüm var" demez (mağazadan elle güncelleme yine
-  çalışır). Kayıtları **kullanıcı yönetiyor**, prod DB'ye yazılmaz.
+  çalışır). Kayıtları **kullanıcı yönetiyor**; Claude prod DB'ye yalnız açıkça
+  istenince yazar. `mesaj_baslik`/`mesaj` yumuşak uyarıda da görünür, sürüme göre güncellenir.
 - Ekran görüntüsü, açıklama, kategori, gizlilik bilgileri değişecekse mağaza
   konsolları.
 - Apple/Google inceleme reddi gelirse cevaplamak.

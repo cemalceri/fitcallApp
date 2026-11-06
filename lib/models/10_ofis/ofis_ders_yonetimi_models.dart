@@ -191,9 +191,16 @@ class YonetimDersi {
   final String? yoneticiNeden;
   final String? yoneticiOnaylayan;
 
+  /// Ders onayına yazılan serbest notlar (web Ders Yönetimi'nde de görünür).
+  final String? yoneticiAciklama;
+
   /// Antrenörün bildirimi: true yapıldı, false yapılmadı, null bildirmedi.
   final bool? antrenorKarari;
   final String? antrenorNeden;
+  final String? antrenorAciklama;
+
+  /// Yardımcı antrenörün hakediş işaretindeki notu.
+  final String? yardimciAciklama;
 
   final bool? hakedis;
   final bool? yardimciHakedis;
@@ -217,8 +224,11 @@ class YonetimDersi {
     this.yoneticiKarari,
     this.yoneticiNeden,
     this.yoneticiOnaylayan,
+    this.yoneticiAciklama,
     this.antrenorKarari,
     this.antrenorNeden,
+    this.antrenorAciklama,
+    this.yardimciAciklama,
     this.hakedis,
     this.yardimciHakedis,
     this.katilimcilar = const [],
@@ -284,8 +294,11 @@ class YonetimDersi {
       yoneticiKarari: _bool(j['yonetici_tamamlandi']),
       yoneticiNeden: _metin(j['yonetici_neden']),
       yoneticiOnaylayan: _metin(j['yonetici_onaylayan']),
+      yoneticiAciklama: _metin(j['yonetici_aciklama']),
       antrenorKarari: _bool(j['antrenor_tamamlandi']),
       antrenorNeden: _metin(j['antrenor_neden']),
+      antrenorAciklama: _metin(j['antrenor_aciklama']),
+      yardimciAciklama: _metin(j['yardimci_aciklama']),
       hakedis: _bool(j['hakedis']),
       yardimciHakedis: _bool(j['yardimci_hakedis']),
       katilimcilar: (j['katilimcilar'] as List? ?? [])

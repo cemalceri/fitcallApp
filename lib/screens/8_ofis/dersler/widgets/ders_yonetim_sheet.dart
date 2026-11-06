@@ -328,6 +328,8 @@ class DersYonetimGovdesi extends StatelessWidget {
               child: Text('Neden: ${ders.yoneticiNeden}',
                   style: context.metin.bodySmall),
             ),
+          if (ders.yoneticiAciklama != null)
+            _DersNotu(kimden: 'Yönetici notu', metin: ders.yoneticiAciklama!),
           if (ders.yoneticiKarari != null)
             Align(
               alignment: Alignment.centerLeft,
@@ -413,6 +415,8 @@ class _IptalBilgisi extends StatelessWidget {
       if (ders.iptalSebebi != null) 'Neden: ${ders.iptalSebebi}',
       if (ders.iptalAciklamasi != null) ders.iptalAciklamasi!,
       if (ders.iptalEden != null) 'İptal eden: ${ders.iptalEden}',
+      if (ders.antrenorAciklama != null)
+        'Antrenör notu: ${ders.antrenorAciklama}',
     ];
     return IptalTaramasi(
       yaricap: BorderRadius.circular(Yaricap.m),
@@ -465,12 +469,55 @@ class _AntrenorBildirimi extends StatelessWidget {
           Icons.hourglass_empty_rounded
         ),
     };
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(ikon, size: 18, color: ton.on(context)),
-        const SizedBox(width: 6),
-        Expanded(child: Text(metin, style: context.metin.bodyMedium)),
+        Row(
+          children: [
+            Icon(ikon, size: 18, color: ton.on(context)),
+            const SizedBox(width: 6),
+            Expanded(child: Text(metin, style: context.metin.bodyMedium)),
+          ],
+        ),
+        if (ders.antrenorAciklama != null)
+          _DersNotu(kimden: 'Antrenör notu', metin: ders.antrenorAciklama!),
+        if (ders.yardimciAciklama != null)
+          _DersNotu(kimden: 'Yardımcı notu', metin: ders.yardimciAciklama!),
       ],
+    );
+  }
+}
+
+/// Ders onayına yazılmış serbest not: "Antrenör notu: …".
+class _DersNotu extends StatelessWidget {
+  final String kimden;
+  final String metin;
+  const _DersNotu({required this.kimden, required this.metin});
+
+  @override
+  Widget build(BuildContext context) {
+    final stil = context.metin.bodySmall;
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.format_quote_rounded,
+              size: 18, color: context.cs.onSurfaceVariant),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text.rich(
+              TextSpan(children: [
+                TextSpan(
+                    text: '$kimden: ',
+                    style: stil?.copyWith(fontWeight: FontWeight.w600)),
+                TextSpan(text: metin),
+              ]),
+              style: stil,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

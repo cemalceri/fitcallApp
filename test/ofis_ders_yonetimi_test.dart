@@ -67,6 +67,15 @@ void main() {
       expect(ders.planDisiBekleyen, 2);
     });
 
+    test('ders notları: antrenör, yardımcı, yönetici; boş not yok sayılır', () {
+      final d = ornekGun().dersler;
+      expect(d[0].antrenorAciklama, startsWith('Ders yarım saat'));
+      expect(d[1].antrenorAciklama, isNull);
+      expect(d[2].yardimciAciklama, 'Top toplama ve ısınmada destek oldum');
+      expect(d[2].yoneticiAciklama, 'Kort değişikliği ofise bildirildi');
+      expect(d[3].antrenorAciklama, 'Kort su bastı');
+    });
+
     test('bekleyen işler', () {
       final v = ornekBekleyenIsler();
       expect(v.onayBekleyen, 137);
@@ -175,6 +184,10 @@ void main() {
         onPaketDusum: (k) => paket = k,
       )));
       expect(find.text('Antrenör: yapıldı dedi'), findsOneWidget);
+      expect(
+          find.textContaining('Antrenör notu: Ders yarım saat',
+              findRichText: true),
+          findsOneWidget);
       expect(find.text('Hakediş'), findsOneWidget);
       await tester.tap(find.text('Yapıldı'));
       expect(yapildi, 1);
@@ -194,6 +207,12 @@ void main() {
       expect(find.text('Kararı kaldır'), findsOneWidget);
       // Yardımcı antrenör satırı da var.
       expect(find.textContaining('(yardımcı)'), findsWidgets);
+      expect(find.textContaining('Yardımcı notu: Top', findRichText: true),
+          findsOneWidget);
+      expect(find.textContaining('Yönetici notu: Kort', findRichText: true),
+          findsOneWidget);
+      expect(find.textContaining('Antrenör notu', findRichText: true),
+          findsNothing);
     });
 
     testWidgets('gelecek derste katılacak / hatırlat yalnız cevapsızlarda',
@@ -219,6 +238,7 @@ void main() {
       expect(find.text('Ders iptal edildi'), findsOneWidget);
       expect(find.text('Yapıldı'), findsNothing);
       expect(find.textContaining('Hava koşulları'), findsOneWidget);
+      expect(find.text('Antrenör notu: Kort su bastı'), findsOneWidget);
     });
 
     // Sayfa açıkken ders bitince sunucunun `baglam`ı bayatlıyor. Satır
