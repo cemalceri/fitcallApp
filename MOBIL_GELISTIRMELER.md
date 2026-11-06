@@ -30,6 +30,13 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ## 🔴 Açık işler
 
+### Üye bildirim tercihleri (2026-11-06; iki repoda commit'li, push/deploy yok)
+- Kod tamam: Ayarlar > "Bildirim tercihleri" (`2_uye/bildirim_tercihleri/`, yalnız üye ana hesabı). Dört
+  grup (ders hatırlatma/teyit, ders değişiklikleri, ödeme-paket-haklar, talepler); kapatılan grubun push'u
+  gitmez, Bildirimlerim'de durur. Gruplar ve metinler sunucuda (`notification.py` `UYE_BILDIRIM_GRUPLARI`),
+  filtre gönderimde (`notification_tasks`, durum `ATLANDI`). Backend migration `0108`.
+- Kalan (kullanıcı): backend deploy (önce), sonra mobil sürüm. Ofis "Hatırlat" push kapalıysa bunu söyler.
+
 ### Başka işletmeye üyelik (Pilates ayrı işletme, 2026-11-05; iki repoda commit'li, push/deploy yok)
 - Kod tamam: üye Ayarlar > "Başka işletmeye üyelik" (`2_uye/isletme_basvuru/`, yalnız ana hesap) →
   hedef işletmede onay bekleyen kopya üye; onay web "Üye onayla"da, onayda profil mevcut hesaba bağlanır
@@ -130,7 +137,6 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ### Platform
 - Offline cache (stale-while-revalidate ile hızlı açılış).
-- Bildirim tercihleri — kullanıcı hangi bildirim türlerini alacağını seçsin.
 - Üye ↔ antrenör ↔ yönetim iletişim kısayolu (mesaj / WhatsApp deep-link).
 - Ana sayfa kart yerleşimi ve görsel tasarımı (üye + antrenör) — tasarım turlarında kullanıcı kararıyla
   kapsam dışı bırakıldı.

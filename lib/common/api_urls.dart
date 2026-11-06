@@ -66,6 +66,10 @@ const String uyeTaleplerimUrl = "$baseUrl/uyeTaleplerim";
 // Başka işletmeye üyelik başvurusu (backend api/uye/isletme_basvuru.py)
 const String isletmeBasvurulariUrl = "$baseUrl/isletmeBasvurulari";
 const String isletmeBasvurUrl = "$baseUrl/isletmeBasvur";
+// Üye bildirim tercihleri (backend api/uye/bildirim_tercihi.py; yalnız ana hesap)
+const String uyeBildirimTercihleriUrl = "$baseUrl/uyeBildirimTercihleri";
+const String uyeBildirimTercihiKaydetUrl =
+    "$baseUrl/uyeBildirimTercihiKaydet";
 const String uyeTalepOneriCevapUrl = "$baseUrl/uyeTalepOneriCevap";
 const String antrenorTalepSorulariUrl = "$baseUrl/antrenorTalepSorulari";
 const String antrenorTalepCevapUrl = "$baseUrl/antrenorTalepCevap";

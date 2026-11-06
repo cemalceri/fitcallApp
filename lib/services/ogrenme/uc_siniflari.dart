@@ -71,6 +71,7 @@ const Set<String> okumaUclari = {
   // talep rehberleri detayı açamaz (2026-11-05 kararı).
   'ofisUyeTalepDetay',
   'uyeBankaHesaplari',
+  'uyeBildirimTercihleri',
   'uyeDekontDosya',
   'uyeDekontlarim',
   'uyeTalepBaslangic',
@@ -152,6 +153,7 @@ const Set<String> yazmaUclari = {
   'silEventMisafirPass',
   'silTesisMisafirPass',
   'uyeBasvuru',
+  'uyeBildirimTercihiKaydet',
   'uyeDekontGeriCek',
   'uyeDekontYukle',
   'uyeKullaniciSil',

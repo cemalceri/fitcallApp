@@ -143,8 +143,8 @@ class _AyarlarPageState extends State<AyarlarPage> {
                     : Icons.notifications_off_rounded,
                 baslik: 'Bildirim izni',
                 altBaslik: _bildirimIzni
-                    ? 'Açık — ders ve duyuru bildirimleri geliyor'
-                    : 'Kapalı — ders hatırlatmaları ulaşmıyor',
+                    ? 'Açık — bildirimler telefonuna geliyor'
+                    : 'Kapalı — bildirimler telefonuna gelmiyor',
                 renk: _bildirimIzni ? context.renkler.basari : cs.error,
                 onTap: () async {
                   await openAppSettings();
@@ -158,6 +158,14 @@ class _AyarlarPageState extends State<AyarlarPage> {
                 onTap: () => Navigator.pushNamed(
                     context, routeEnums[SayfaAdi.bildirimler]!),
               ),
+              if (_uyeAnaHesapMi)
+                _AyarSatiri(
+                  ikon: Icons.tune_rounded,
+                  baslik: 'Bildirim tercihleri',
+                  altBaslik: 'Hangi bildirimler telefonuna gelsin',
+                  onTap: () => Navigator.pushNamed(
+                      context, routeEnums[SayfaAdi.bildirimTercihleri]!),
+                ),
             ],
           ),
           const _BolumBasligi('Hesap'),

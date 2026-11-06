@@ -135,6 +135,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'support/degerlendirme_ornekleri.dart';
 import 'support/duyuru_ornekleri.dart';
 import 'support/ofis_ornekleri.dart';
+import 'support/bildirim_tercihi_ornekleri.dart';
 import 'support/tasma_yardimcisi.dart';
 
 import 'package:fitcall/screens/3_antrenor/eksik_yoklama/widgets/eksik_yoklama_listesi.dart';
@@ -154,6 +155,8 @@ import 'package:fitcall/models/10_ofis/ofis_ders_yonetimi_models.dart';
 import 'package:fitcall/screens/8_ofis/ana_sayfa/widgets/ofis_ana_sayfa_gorunumu.dart';
 import 'package:fitcall/screens/8_ofis/dersler/onay_bekleyen_gunler_page.dart';
 import 'package:fitcall/screens/8_ofis/dersler/widgets/ders_yonetim_sheet.dart';
+import 'package:fitcall/models/2_uye/bildirim_tercihi_models.dart';
+import 'package:fitcall/screens/2_uye/bildirim_tercihleri/widgets/bildirim_tercihleri_gorunumu.dart';
 import 'package:fitcall/screens/8_ofis/dersler/widgets/ofis_dersler_gorunumu.dart';
 import 'package:fitcall/screens/8_ofis/plan_disi/plan_disi_kararlar_page.dart';
 import 'package:fitcall/screens/8_ofis/plan_disi/widgets/plan_disi_karar_sheet.dart';
@@ -2874,6 +2877,33 @@ void main() {
   });
 
   group('Bildirimler', () {
+    BildirimTercihleriGorunumu tercihler({
+      BildirimTercihleri? veri,
+      String? hata,
+    }) =>
+        BildirimTercihleriGorunumu(
+          veri: veri,
+          hata: hata,
+          kaydedilenler: const {'talep'},
+          onYenile: () async {},
+          onYenidenDene: () {},
+          onDegistir: (_, __) {},
+        );
+
+    tasmaTesti('BildirimTercihleriGorunumu (çok profil, biri kapalı)',
+        () => tercihler(
+            veri: ornekBildirimTercihleri(
+                profilSayisi: 3, kapali: {'ders_teyit'})));
+    tasmaTesti(
+        'BildirimTercihleriGorunumu (yükleniyor)', () => tercihler());
+    tasmaTesti('BildirimTercihleriGorunumu (hata)',
+        () => tercihler(hata: 'Sunucuya şu anda ulaşılamıyor, birazdan dene.'));
+    tasmaTesti(
+      'BildirimKapatmaOnayi (ders değişiklikleri)',
+      () => BildirimKapatmaOnayi(
+          grup: ornekBildirimTercihleri().gruplar[1]),
+    );
+
     tasmaTesti(
       'PlanDisiBildirimOzeti (ekleme)',
       () => PlanDisiBildirimOzeti(displayData: _planDisiVeri()),

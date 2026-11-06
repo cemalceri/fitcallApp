@@ -47,6 +47,7 @@ import 'package:fitcall/screens/3_antrenor/program/antrenor_program_page.dart';
 import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/ofis_ders_kayit_talepleri_page.dart';
 import 'package:fitcall/screens/2_uye/talep/taleplerim_page.dart';
 import 'package:fitcall/screens/2_uye/isletme_basvuru/isletme_basvuru_page.dart';
+import 'package:fitcall/screens/2_uye/bildirim_tercihleri/bildirim_tercihleri_page.dart';
 import 'package:fitcall/screens/2_uye/talep/uye_talep_page.dart';
 import 'package:fitcall/screens/3_antrenor/talep_sorulari/antrenor_talep_sorulari_page.dart';
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
@@ -88,6 +89,7 @@ enum SayfaAdi {
   uyeTalepOlustur,
   uyeTaleplerim,
   isletmeBasvurulari,
+  bildirimTercihleri,
   antrenorTalepSorulari,
   yoneticiDuyurular,
   ofisDuyurular,
@@ -144,6 +146,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.uyeTalepOlustur: '/uyeTalep',
   SayfaAdi.uyeTaleplerim: '/uyeTaleplerim',
   SayfaAdi.isletmeBasvurulari: '/isletmeBasvurulari',
+  SayfaAdi.bildirimTercihleri: '/bildirimTercihleri',
   SayfaAdi.antrenorTalepSorulari: '/antrenorTalepSorulari',
   SayfaAdi.yoneticiDuyurular: '/yoneticiDuyurular',
   SayfaAdi.ofisDuyurular: '/ofisDuyurular',
@@ -195,6 +198,8 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.uyeTalepOlustur]!: (c) => const UyeTalepPage(),
   routeEnums[SayfaAdi.uyeTaleplerim]!: (c) => const TaleplerimPage(),
   routeEnums[SayfaAdi.isletmeBasvurulari]!: (c) => const IsletmeBasvuruPage(),
+  routeEnums[SayfaAdi.bildirimTercihleri]!: (c) =>
+      const BildirimTercihleriPage(),
   routeEnums[SayfaAdi.antrenorTalepSorulari]!: (c) =>
       const AntrenorTalepSorulariPage(),
   // Aynı ekran; kabuklar yalnız üye satırının açtığı detay sayfasında ayrılır.
@@ -236,6 +241,8 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.dekontYukle]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.bildirimler]!: AccessRule.anaHesapOnly,
   routeEnums[SayfaAdi.isletmeBasvurulari]!: AccessRule.anaHesapOnly,
+  // Üye bildirimleri ana hesaba gider; tercih de orada (sunucu da ister).
+  routeEnums[SayfaAdi.bildirimTercihleri]!: AccessRule.anaHesapOnly,
 
   // Örnekler (şimdilik serbest):
   routeEnums[SayfaAdi.dersler]!: AccessRule.anyone,

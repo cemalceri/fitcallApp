@@ -312,7 +312,19 @@ const _bolumler = <SssBolum>[
             ' kapalıysa dokunduğunuzda telefonun uygulama ayarları açılır. İzin'
             ' kapalıyken ders hatırlatması, katılım isteği ve duyuru bildirimleri size'
             ' ulaşmaz. İzni açtıktan sonra Bildirimler sayfasını bir kez açın; cihaz'
-            ' kaydınız orada tazelenir.',
+            ' kaydınız orada tazelenir. İzin açık ama bazı bildirimler gelmiyorsa'
+            ' Ayarlar > Bildirim tercihleri\'nde o grubun kapalı olup olmadığına bakın.',
+      ),
+      SssSoru(
+        ikon: Icons.tune_rounded,
+        soru: 'Bazı bildirimleri kapatabilir miyim?',
+        cevap:
+            'Ayarlar > Bildirim tercihleri\'nden ders hatırlatma ve teyit, ders'
+            ' değişiklikleri, ödeme ve paket, talepler gibi grupları ayrı ayrı'
+            ' kapatabilirsiniz (yalnız ana hesapta). Kapattığınız bildirimler'
+            ' telefonunuza gelmez ama Bildirimler sayfasında görünmeye devam eder;'
+            ' uygulama simgesindeki sayı bu yüzden gelen bildirimlerden fazla'
+            ' olabilir. Ayar hesabınızdaki tüm üye profillerine uygulanır.',
       ),
       SssSoru(
         ikon: Icons.dark_mode_outlined,
