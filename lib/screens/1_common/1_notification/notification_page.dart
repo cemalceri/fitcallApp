@@ -54,8 +54,12 @@ class _NotificationPageState extends State<NotificationPage> {
   @override
   void dispose() {
     // Sayfadan çıkınca "Bildirim silindi" uyarısı ekranda kalmasın; kapanınca
-    // bekleyen silme sunucuya gönderilir.
-    _messenger?.hideCurrentSnackBar();
+    // bekleyen silme sunucuya gönderilir. Kare sonrasına ertelenir: dispose
+    // sırasında ScaffoldMessenger'ın setState'i ağaç kilitliyken çalışmasın.
+    final messenger = _messenger;
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => messenger?.removeCurrentSnackBar(),
+    );
     super.dispose();
   }
 
@@ -405,7 +409,15 @@ class _NotificationPageState extends State<NotificationPage> {
   /// "Tümünü sil" menüsü geri alınamaz bir işlemdi ve tek bir bildirimden
   /// kurtulmanın başka yolu yoktu.
   Future<void> _bildirimSil(NotificationModel notif) async {
-    final eskiListe = _notifications;
+    final eskiSira = _notifications.indexWhere((n) => n.id == notif.id);
+    void geriEkle() {
+      if (!mounted || _notifications.any((n) => n.id == notif.id)) return;
+      setState(() {
+        _notifications = [..._notifications]
+          ..insert(eskiSira.clamp(0, _notifications.length), notif);
+      });
+    }
+
     setState(() {
       _notifications = [
         for (final n in _notifications)
@@ -413,21 +425,26 @@ class _NotificationPageState extends State<NotificationPage> {
       ];
     });
 
-    // Arka arkaya silmede uyarılar kuyrukta birikmesin: öncekini kapat
+    // Arka arkaya silmede uyarılar kuyrukta birikmesin: öncekini hemen kaldır
     // (kapanınca onun silmesi sunucuya gider), yalnız sonuncusu görünsün.
-    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    // hide yerine remove: kapanma animasyonu sürerken gelen silme yine
+    // kuyruğa giriyordu.
+    final messenger = ScaffoldMessenger.of(context)..removeCurrentSnackBar();
     final sonuc = await messenger
         .showSnackBar(
           SnackBar(
             content: const Text('Bildirim silindi'),
             action: SnackBarAction(label: 'Geri al', onPressed: () {}),
             duration: const Duration(seconds: 4),
+            // Eylemli SnackBar varsayılan olarak kendiliğinden kapanmıyor;
+            // uyarı ekranda kalıyor ve silme sunucuya gitmiyordu.
+            persist: false,
           ),
         )
         .closed;
 
     if (sonuc == SnackBarClosedReason.action) {
-      if (mounted) setState(() => _notifications = eskiListe);
+      geriEkle();
       return;
     }
 
@@ -439,7 +456,8 @@ class _NotificationPageState extends State<NotificationPage> {
       await NotificationService.refreshUnreadCount();
     } catch (e) {
       if (!mounted) return;
-      setState(() => _notifications = eskiListe);
+      // Yalnız bu bildirim geri gelir; arada silinen başkaları geri dönmez.
+      geriEkle();
       ShowMessage.error(context, 'Bildirim silinemedi');
     }
   }
