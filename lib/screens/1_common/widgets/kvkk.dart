@@ -96,6 +96,8 @@ class _KvkkAydinlatmaSheet extends StatelessWidget {
                   bullet(
                       'Müşteri İşlem: Başvuru/üyelik kayıtları, tercih/katılım bilgileri'),
                   bullet('Görsel (opsiyonel): Profil fotoğrafı'),
+                  bullet(
+                      'İşlem Güvenliği: Uygulama ve web sitesinde yaptığınız işlemlerin IP adresi, zamanı ve hangi hesapla yapıldığı (otomatik kaydedilir)'),
                   h6('3) Toplanma Yöntemi ve Hukuki Sebep'),
                   Text(
                       'Veriler; web başvuru formu, telefon/e-posta ve sözleşme/üyelik süreçleri sırasında elektronik/manuel yollarla toplanır.'),
@@ -121,6 +123,8 @@ class _KvkkAydinlatmaSheet extends StatelessWidget {
                       'Hukuki ve mali yükümlülüklerin yerine getirilmesi, kayıtların saklanması'),
                   bullet(
                       'İletişim, talep/şikâyet yönetimi ve operasyonel süreçler'),
+                  bullet(
+                      'Bilgi güvenliğinin sağlanması, yetkisiz erişim ve kötüye kullanımın önlenmesi, işlemlerin kim tarafından yapıldığının tespiti'),
                   h6('5) Aktarım Yapılan Taraflar ve Amaçları'),
                   Text(
                       'Yasal zorunluluklar ve sözleşmesel gereklilikler dâhilinde; kamu kurumları, bağımsız denetçiler; bilişim/hosting, SMS/e-posta sağlayıcıları; hukuki/finansal danışmanlar ve iş ortaklarıyla sınırlı amaçlarla paylaşılabilir.'),
@@ -156,7 +160,7 @@ class _KvkkAydinlatmaSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Yürürlük Tarihi: 18.09.2025  •  Metin, mevzuat ve iç süreçlere göre güncellenebilir; güncel sürüm web sitemizde yayımlanır.',
+                    'Yürürlük Tarihi: 08.11.2026  •  Metin, mevzuat ve iç süreçlere göre güncellenebilir; güncel sürüm web sitemizde yayımlanır.',
                     style: text.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
