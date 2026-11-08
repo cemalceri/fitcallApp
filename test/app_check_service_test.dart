@@ -166,7 +166,7 @@ void main() {
       AppCheckServisi.tanilama = (o, b) => olaylar.add((o, b));
     });
 
-    test('hata türü ve mesajıyla bir kez bildirilir', () async {
+    test('hata mesajıyla bir kez bildirilir', () async {
       AppCheckServisi.tokenAl = () async => throw StateError('DCError 2');
       await AppCheckServisi.token();
       an = an.add(const Duration(minutes: 2)); // deneme yasağı bitti
@@ -174,7 +174,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       expect(olaylar.length, 1);
       expect(olaylar.single.$1, 'hata');
-      expect(olaylar.single.$2['hata_tipi'], 'StateError');
+      expect(olaylar.single.$2.containsKey('hata_tipi'), isFalse);
       expect(olaylar.single.$2['hata'], contains('DCError 2'));
     });
 

@@ -126,7 +126,8 @@ class AppCheckServisi {
     final bilgi = <String, dynamic>{
       'sure_ms': sayac.elapsedMilliseconds,
       'bekleme_ms': beklemeSuresi.inMilliseconds,
-      if (hata != null) 'hata_tipi': hata.runtimeType.toString(),
+      // runtimeType yazılmaz: --obfuscate'li sürümde sınıf adı anlamsızlaşır;
+      // toString() mesajı (FirebaseException'da [eklenti/kod]) karartılmaz.
       if (hata != null) 'hata': hata.toString(),
     };
     // Log isteği de ApiClient'tan geçip token ister; bu alma işlemi
