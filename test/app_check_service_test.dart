@@ -158,4 +158,49 @@ void main() {
     expect(cagri, 1);
     AppCheckServisi.almaSiniri = const Duration(seconds: 10);
   });
+
+  group('tanılama logu', () {
+    late List<(String, Map<String, dynamic>)> olaylar;
+    setUp(() {
+      olaylar = [];
+      AppCheckServisi.tanilama = (o, b) => olaylar.add((o, b));
+    });
+
+    test('hata türü ve mesajıyla bir kez bildirilir', () async {
+      AppCheckServisi.tokenAl = () async => throw StateError('DCError 2');
+      await AppCheckServisi.token();
+      an = an.add(const Duration(minutes: 2)); // deneme yasağı bitti
+      await AppCheckServisi.token();
+      await Future<void>.delayed(Duration.zero);
+      expect(olaylar.length, 1);
+      expect(olaylar.single.$1, 'hata');
+      expect(olaylar.single.$2['hata_tipi'], 'StateError');
+      expect(olaylar.single.$2['hata'], contains('DCError 2'));
+    });
+
+    test('bekleme süresinden geç gelen token "gec" olarak bildirilir',
+        () async {
+      AppCheckServisi.tokenAl = () async {
+        await Future<void>.delayed(const Duration(milliseconds: 90));
+        return _jwt(iat: 0, exp: 3600);
+      };
+      expect(await AppCheckServisi.token(), isNull); // istek beklemedi
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+      expect(olaylar.map((e) => e.$1), ['gec']);
+      expect(olaylar.single.$2['sure_ms'], greaterThanOrEqualTo(50));
+    });
+
+    test('zamanında gelen token bildirilmez, boş token "bos" sayılır',
+        () async {
+      AppCheckServisi.tokenAl = () async => _jwt(iat: 0, exp: 3600);
+      await AppCheckServisi.token();
+      AppCheckServisi.sifirla();
+      AppCheckServisi.simdi = () => an;
+      AppCheckServisi.tanilama = (o, b) => olaylar.add((o, b));
+      AppCheckServisi.tokenAl = () async => '';
+      await AppCheckServisi.token();
+      await Future<void>.delayed(Duration.zero);
+      expect(olaylar.map((e) => e.$1), ['bos']);
+    });
+  });
 }

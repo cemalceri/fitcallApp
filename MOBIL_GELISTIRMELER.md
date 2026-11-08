@@ -89,6 +89,10 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
   3. Sayaçlarda güncel sürümde `yok`/`gecersiz` kalmadığında (GMS'siz Huawei, Play Integrity günlük
      10.000 kotası burada görünür) zorunlu güncelleme aç, sonra (anahtar yenileme bittiyse) Heroku'da
      `APP_CHECK_MODU=zorunlu`.
+     **2026-11-08 durumu:** iOS isteklerinin ~%25'i token'sız (Android ~%7), geçersiz neredeyse yok; izin
+     ve kayıt doğru. Şüphe: token 2 sn beklemeyi aşıyor. Sonraki sürüm token alınamayınca/geç gelince
+     sebebi mobil loga yazar (`[MOBİL] ... Sayfa=AppCheckServisi`, olay `hata`/`bos`/`gec`, açılış başına
+     bir kez). Yayından sonra log tablosundan oku, sonra karar ver.
   root/Frida tespiti için ücretsiz freeRASP sonra eklenebilir.
 
 ### Doğrulanacaklar

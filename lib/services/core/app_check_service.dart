@@ -41,6 +41,15 @@ class AppCheckServisi {
   static DateTime? _denemeYasagiBitis;
   static Future<String?>? _suren;
 
+  /// Token alınamadığında ya da [beklemeSuresi]'nden geç geldiğinde (o
+  /// sırada istekler başlıksız gider) çağrılır; main.dart mobil loga bağlar.
+  /// Sunucu sayaçlarında iOS isteklerinin ~%25'i token'sızdı (2026-11),
+  /// sebebi buradan okunur. Olay türü (`hata`, `bos`, `gec`) başına uygulama
+  /// açılışında bir kez gönderilir; alma işlemi zaten arka planda olduğundan
+  /// istekleri beklemez.
+  static void Function(String olay, Map<String, dynamic> bilgi)? tanilama;
+  static final Set<String> _bildirilenler = {};
+
   @visibleForTesting
   static Future<String?> Function() tokenAl =
       () => FirebaseAppCheck.instance.getToken();
@@ -54,6 +63,8 @@ class AppCheckServisi {
     _yenilemeZamani = null;
     _denemeYasagiBitis = null;
     _suren = null;
+    _bildirilenler.clear();
+    tanilama = null;
   }
 
   /// Firebase başlatıldıktan sonra bir kez çağrılır (main.dart).
@@ -90,19 +101,41 @@ class AppCheckServisi {
   }
 
   static Future<String?> _al() async {
+    final sayac = Stopwatch()..start();
     try {
       final t = await tokenAl().timeout(almaSiniri);
       if (t == null || t.isEmpty) {
         _denemeYasagiBitis = simdi().add(_denemeArasi);
+        _bildir('bos', sayac);
         return null;
       }
       _kaydet(t);
+      if (sayac.elapsed > beklemeSuresi) _bildir('gec', sayac);
       return t;
     } catch (e) {
       debugPrint('App Check token alınamadı: $e');
       _denemeYasagiBitis = simdi().add(_denemeArasi);
+      _bildir('hata', sayac, hata: e);
       return null;
     }
+  }
+
+  static void _bildir(String olay, Stopwatch sayac, {Object? hata}) {
+    final geri = tanilama;
+    if (geri == null || !_bildirilenler.add(olay)) return;
+    final bilgi = <String, dynamic>{
+      'sure_ms': sayac.elapsedMilliseconds,
+      'bekleme_ms': beklemeSuresi.inMilliseconds,
+      if (hata != null) 'hata_tipi': hata.runtimeType.toString(),
+      if (hata != null) 'hata': hata.toString(),
+    };
+    // Log isteği de ApiClient'tan geçip token ister; bu alma işlemi
+    // bitmeden başlamasın.
+    scheduleMicrotask(() {
+      try {
+        geri(olay, bilgi);
+      } catch (_) {}
+    });
   }
 
   static void _kaydet(String? t) {

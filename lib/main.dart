@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_katmani.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_modu.dart';
 import 'package:fitcall/services/api_client.dart';
+import 'package:fitcall/services/core/api_log_service.dart';
 import 'package:fitcall/services/core/app_check_service.dart';
 import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/fcm_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_fcm_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -32,6 +36,12 @@ void main() async {
         .then((b) => ApiClient.istemciBasliklari = b),
   ]);
   // App Check token'ı her API isteğine eklenir (bkz. app_check_service.dart).
+  // Token alınamazsa sebebi mobil loga düşer (debug sağlayıcısı hariç).
+  if (!kDebugMode) {
+    AppCheckServisi.tanilama = (olay, bilgi) => unawaited(mobileLogError(
+        'AppCheckServisi', '_al', 0, 'App Check token: $olay',
+        hata: bilgi['hata'] ?? olay, ekstraBilgi: bilgi));
+  }
   await AppCheckServisi.baslat();
   ApiClient.appCheckTokeni = AppCheckServisi.token;
   await NotificationFCMService.instance.initialize();
