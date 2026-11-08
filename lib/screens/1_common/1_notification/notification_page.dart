@@ -43,6 +43,22 @@ class _NotificationPageState extends State<NotificationPage> {
     _checkNotificationPermission();
   }
 
+  ScaffoldMessengerState? _messenger;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _messenger = ScaffoldMessenger.of(context);
+  }
+
+  @override
+  void dispose() {
+    // Sayfadan çıkınca "Bildirim silindi" uyarısı ekranda kalmasın; kapanınca
+    // bekleyen silme sunucuya gönderilir.
+    _messenger?.hideCurrentSnackBar();
+    super.dispose();
+  }
+
   Future<void> _checkNotificationPermission() async {
     final status = await Permission.notification.status;
 
@@ -397,7 +413,10 @@ class _NotificationPageState extends State<NotificationPage> {
       ];
     });
 
-    final sonuc = await ScaffoldMessenger.of(context)
+    // Arka arkaya silmede uyarılar kuyrukta birikmesin: öncekini kapat
+    // (kapanınca onun silmesi sunucuya gider), yalnız sonuncusu görünsün.
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    final sonuc = await messenger
         .showSnackBar(
           SnackBar(
             content: const Text('Bildirim silindi'),
@@ -407,12 +426,13 @@ class _NotificationPageState extends State<NotificationPage> {
         )
         .closed;
 
-    if (!mounted) return;
-
     if (sonuc == SnackBarClosedReason.action) {
-      setState(() => _notifications = eskiListe);
+      if (mounted) setState(() => _notifications = eskiListe);
       return;
     }
+
+    // Sayfa kapanmış olsa da silme gönderilir; önceden burada dönülüyordu ve
+    // sayfadan erken çıkınca bildirim sunucuda silinmeden kalıyordu.
 
     try {
       await NotificationService.deleteNotifications([notif.id]);
