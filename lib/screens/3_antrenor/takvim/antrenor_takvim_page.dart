@@ -338,7 +338,11 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
     final simdi = simdiKulup();
     if (ders.bitisTarihSaat.isBefore(simdi)) {
       if (ders.yoneticiOnayi != null) {
-        sarili = ogrenmeHedefiSar(Hedef.antrenorKilitliDers, sarili);
+        // «Onaylanmış bir derse dokun» derken "Yapılmadı" yazan blok
+        // parlıyordu; kilit rehberi yapılmış dersi gösterir.
+        if (ders.antrenorOnayi?.tamamlandi != false) {
+          sarili = ogrenmeHedefiSar(Hedef.antrenorKilitliDers, sarili);
+        }
       } else if (ders.antrenorOnayi != null) {
         // Düzeltme rehberi katılımcı satırını parlatır; "yapılmadı" girilmiş
         // derste satır yok.

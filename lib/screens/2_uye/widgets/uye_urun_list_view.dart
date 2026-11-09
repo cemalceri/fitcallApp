@@ -88,6 +88,12 @@ class _UyeUrunListViewState extends State<UyeUrunListView> {
   }) {
     if (items.isEmpty) return const SizedBox.shrink();
     final acik = _acikGruplar.contains(key);
+    // Gruplar birlikte açık kalabilir: her rehber kendi grubunun kartına.
+    final kartHedefi = switch (key) {
+      'PAKET' => Hedef.uyeUrunKart,
+      'ABONELIK' => Hedef.uyeAidatKart,
+      _ => null,
+    };
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
@@ -185,9 +191,7 @@ class _UyeUrunListViewState extends State<UyeUrunListView> {
                       // Kapalı grubun kartı AnimatedCrossFade'de görünmez
                       // ama ağaçta durur; rehber onu açık sanmasın.
                       child: ogrenmeHedefiSar(
-                        acik && identical(u, items.first)
-                            ? Hedef.uyeUrunKart
-                            : null,
+                        acik && identical(u, items.first) ? kartHedefi : null,
                         _UrunKart(urun: u, renk: renk),
                       ),
                     ),

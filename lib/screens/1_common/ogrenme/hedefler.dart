@@ -192,6 +192,10 @@ abstract final class Hedef {
   static const uyeDekontSatiri = 'uye.dekontSatiri';
   static const uyeBekleyenDekont = 'uye.bekleyenDekont';
 
+  /// Sekme seçici, yalnız kontrol bekleyen dekont varken: geri çekme rehberi
+  /// dekontsuz hesapta başlamaz.
+  static const uyeHavaleBekleyenSekme = 'uye.havaleBekleyenSekme';
+
   /// Takvim ders detayı: iptal edilen dersin kim/neden kartı.
   static const uyeIptalKarti = 'uye.iptalKarti';
 
@@ -199,13 +203,20 @@ abstract final class Hedef {
   static const uyeProfilFoto = 'uye.profilFoto';
   static const uyeBilgiSayfasi = 'uye.bilgiSayfasi';
 
-  /// Üyelik & Paket: ilk kart.
+  /// Üyelik & Paket: açık «Paketler» / «Aidatlar» grubunun ilk kartı. Ayrı
+  /// kimlik: iki grup birden açıkken aidat rehberi paket kartını gösteriyordu.
   static const uyeUrunKart = 'uye.urunKart';
+  static const uyeAidatKart = 'uye.aidatKart';
 
   /// Telafi Derslerim: özet kartı, «Aktif» ve «Yapılan» sekmesinin ilk kartı.
   static const uyeTelafiOzet = 'uye.telafiOzet';
   static const uyeTelafiKart = 'uye.telafiKart';
   static const uyeTelafiYapilanKart = 'uye.telafiYapilanKart';
+
+  /// «Aktif» / «Yapılan» sekmesi, yalnız o sekmede kart varken: boş sekmeye
+  /// götüren rehber başlamaz (sekmeye dokunulunca takılıyordu).
+  static const uyeTelafiAktifSekme = 'uye.telafiAktifSekme';
+  static const uyeTelafiYapilanSekme = 'uye.telafiYapilanSekme';
 
   /// Geçmiş Dersler: ilk satır; değerlendirme penceresinde yıldızlar ve yorum.
   static const uyeGecmisDers = 'uye.gecmisDers';

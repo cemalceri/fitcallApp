@@ -344,20 +344,23 @@ class _HavaleEftPageState extends State<HavaleEftPage> {
                 const SizedBox(height: Bosluk.m),
                 Padding(
                   padding: const EdgeInsets.only(left: Bosluk.m),
-                  child: OgrenmeHedefi(
-                    id: Hedef.uyeHavaleDekontlar,
-                    child: BaslikSecici<_Sekme>(
-                      secenekler: [
-                        (_Sekme.hesaplar, 'Hesaplar'),
-                        (
-                          _Sekme.dekontlar,
-                          _bekleyen > 0
-                              ? 'Dekontlarım · $_bekleyen'
-                              : 'Dekontlarım'
-                        ),
-                      ],
-                      secili: _sekme,
-                      onSec: (s) => setState(() => _sekme = s),
+                  child: ogrenmeHedefiSar(
+                    _bekleyen > 0 ? Hedef.uyeHavaleBekleyenSekme : null,
+                    OgrenmeHedefi(
+                      id: Hedef.uyeHavaleDekontlar,
+                      child: BaslikSecici<_Sekme>(
+                        secenekler: [
+                          (_Sekme.hesaplar, 'Hesaplar'),
+                          (
+                            _Sekme.dekontlar,
+                            _bekleyen > 0
+                                ? 'Dekontlarım · $_bekleyen'
+                                : 'Dekontlarım'
+                          ),
+                        ],
+                        secili: _sekme,
+                        onSec: (s) => setState(() => _sekme = s),
+                      ),
                     ),
                   ),
                 ),

@@ -637,7 +637,7 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.uyeDetayPaketler),
-        metin: '«Kalan hak» kullanılmamış ders sayısıdır.',
+        metin: 'Varsa «Kalan hak» kullanılmamış ders sayısıdır.',
         bilgi: true,
       ),
       OgrenmeAdimi(

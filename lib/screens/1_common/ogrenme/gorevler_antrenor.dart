@@ -222,9 +222,11 @@ const List<OgrenmeGorevi> antrenorGorevleri = [
         bilgi: true,
       ),
     ],
-    kural: 'Onay Bekliyor: yoklamanı girmedin. '
-        'Tamamlandı: ders onaylandı ve kilitlendi. '
-        'Yapılmadı: ders yapılmadı girildi.',
+    // Kural en çok üç cümle; blokta kısaltılmış "Yön." burada açık yazılır.
+    kural: 'Onay Bekliyor: yoklamanı girmedin; '
+        'Yönetici Onayı Bekliyor: girdin, yönetici onaylayacak. '
+        'Tamamlandı: onaylandı ve kilitlendi; Yapılmadı: yapılmadı girildi. '
+        'İptal Edildi: ders iptal oldu.',
   ),
   OgrenmeGorevi(
     id: 'antrenor.katilimcilar',

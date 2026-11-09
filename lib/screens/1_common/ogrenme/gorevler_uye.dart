@@ -553,8 +553,9 @@ const List<OgrenmeGorevi> uyeGorevleri = [
     baslik: 'Yanlış dekontu nasıl geri çekerim?',
     kosulMetni: 'Bekleyen dekontun olunca',
     adimlar: [
+      // Seçici yalnız bekleyen dekont varken hedeftir: yoksa rehber başlamaz.
       OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.uyeHavaleDekontlar),
+        hedef: Secici.hedef(Hedef.uyeHavaleBekleyenSekme),
         metin: '«Dekontlarım» sekmesine dokun.',
         atlanabilir: true,
       ),
@@ -673,7 +674,7 @@ const List<OgrenmeGorevi> uyeGorevleri = [
         atlanabilir: true,
       ),
       OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.uyeUrunKart),
+        hedef: Secici.hedef(Hedef.uyeAidatKart),
         metin: 'Aidat dönemin kartta yazar.',
         bilgi: true,
       ),
@@ -700,7 +701,7 @@ const List<OgrenmeGorevi> uyeGorevleri = [
         bilgi: true,
       ),
       OgrenmeAdimi(
-        hedef: Secici.metin('Aktif'),
+        hedef: Secici.hedef(Hedef.uyeTelafiAktifSekme),
         metin: '«Aktif» sekmesine dokun.',
         atlanabilir: true,
       ),
@@ -727,7 +728,7 @@ const List<OgrenmeGorevi> uyeGorevleri = [
     kosulMetni: 'Telafi dersi yaptıysan',
     adimlar: [
       OgrenmeAdimi(
-        hedef: Secici.metin('Yapılan'),
+        hedef: Secici.hedef(Hedef.uyeTelafiYapilanSekme),
         metin: '«Yapılan» sekmesine dokun.',
       ),
       OgrenmeAdimi(

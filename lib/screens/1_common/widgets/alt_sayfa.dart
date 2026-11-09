@@ -31,7 +31,11 @@ Future<T?> altSayfaGoster<T>(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
         ),
-        child: cocuk,
+        // Uygulama kenardan kenara çizer (MainActivity enableEdgeToEdge);
+        // `useSafeArea` alt kenarı korumaz, en alttaki buton üç tuşlu
+        // gezinme çubuğunun arkasında kalıyordu. Klavye açıkken alt boşluk
+        // sıfırlanır, çift sayılmaz.
+        child: SafeArea(top: false, child: cocuk),
       ),
     ),
   );

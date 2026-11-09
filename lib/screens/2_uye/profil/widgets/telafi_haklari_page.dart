@@ -216,60 +216,68 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
             ),
             dividerColor: Colors.transparent,
             tabs: [
-              Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Aktif'),
-                    if (_aktifSayisi > 0) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: TemaGecisleri.kapsulZemini,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '$_aktifSayisi',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
+              // Sekme yalnız kartı varken rehber hedefidir: boş sekmeye
+              // götüren rehber başlamaz.
+              ogrenmeHedefiSar(
+                _aktifSayisi > 0 ? Hedef.uyeTelafiAktifSekme : null,
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Aktif'),
+                      if (_aktifSayisi > 0) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: TemaGecisleri.kapsulZemini,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '$_aktifSayisi',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
-              Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('Yapılan'),
-                    if (_yapilanSayisi > 0) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: TemaGecisleri.kapsulZemini,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '$_yapilanSayisi',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
+              ogrenmeHedefiSar(
+                _yapilanSayisi > 0 ? Hedef.uyeTelafiYapilanSekme : null,
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Yapılan'),
+                      if (_yapilanSayisi > 0) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: TemaGecisleri.kapsulZemini,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '$_yapilanSayisi',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
               Tab(
