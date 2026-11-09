@@ -48,6 +48,7 @@ const _gunAdimi = OgrenmeAdimi(
   bilgi: true,
   dokunulur: true,
   atlanabilir: true,
+  yoksa: 'Bu günde uygun ders yok; başka gün seç.',
 );
 
 const List<OgrenmeGorevi> antrenorGorevleri = [
@@ -229,12 +230,12 @@ const List<OgrenmeGorevi> antrenorGorevleri = [
     id: 'antrenor.katilimcilar',
     sayfa: OgrenmeSayfasi.antrenorTakvim,
     baslik: 'Derse kimlerin geleceğini nerede görürüm?',
-    kosulMetni: 'Takviminde gelecek bir ders olunca',
+    kosulMetni: 'Takviminde öğrencisi olan gelecek bir ders olunca',
     adimlar: [
       _gunAdimi,
       OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.antrenorGelecekDers),
-        metin: 'Gelecek bir derse dokun.',
+        hedef: Secici.hedef(Hedef.antrenorKatilimciliDers),
+        metin: 'Öğrencisi olan gelecek bir derse dokun.',
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.antrenorDetayKatilimcilar),
@@ -562,6 +563,11 @@ const List<OgrenmeGorevi> antrenorGorevleri = [
     kosulMetni: 'Bekleyen ders kayıt talebin olunca',
     adimlar: [
       OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.programTalepGunu),
+        metin: 'Talebi olan güne dokun.',
+        atlanabilir: true,
+      ),
+      OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.programTalep),
         metin: 'Bekleyen talep kutusuna dokun.',
       ),
@@ -666,10 +672,14 @@ const List<OgrenmeGorevi> antrenorGorevleri = [
         metin: 'Çalışmadığın günün anahtarını kapat.',
         bilgi: true,
         dokunulur: true,
+        // Saat yalnız açık günde çıkar; hepsi kapatıldıysa sonraki adım yok.
+        yoksa: 'Önce bir günün anahtarını aç.',
       ),
+      // Okuma adımı: parlayan saate dokunuş rehberde geçmez, yazı da
+      // dokunmayı istemez.
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.antrenorCalismaSaat),
-        metin: 'Saate dokunup başlangıç ve bitişi seç.',
+        metin: 'Saate dokunarak başlangıç ve bitişi seçersin.',
         bilgi: true,
       ),
       OgrenmeAdimi(

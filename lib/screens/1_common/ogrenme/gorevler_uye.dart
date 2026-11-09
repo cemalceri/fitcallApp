@@ -273,7 +273,7 @@ const List<OgrenmeGorevi> uyeGorevleri = [
     kosulMetni: 'Planlı dersin olunca',
     adimlar: [
       OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.uyeSonrakiDers),
+        hedef: Secici.hedef(Hedef.uyeSonrakiDersKarti),
         metin: 'Sonraki ders kartına dokun.',
       ),
       OgrenmeAdimi(
@@ -435,7 +435,7 @@ const List<OgrenmeGorevi> uyeGorevleri = [
         metin: '«İPTAL» etiketli derse dokun.',
       ),
       OgrenmeAdimi(
-        hedef: Secici.metin('İptal Edildi'),
+        hedef: Secici.hedef(Hedef.uyeIptalKarti),
         metin: 'Kimin iptal ettiği burada yazar.',
         bilgi: true,
       ),
@@ -558,9 +558,14 @@ const List<OgrenmeGorevi> uyeGorevleri = [
         metin: '«Dekontlarım» sekmesine dokun.',
         atlanabilir: true,
       ),
+      // «Geri çek» listede yalnız kaydırınca çıkar; rehber detaydan gider.
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.uyeBekleyenDekont),
+        metin: 'Bekleyen dekontuna dokun.',
+      ),
       OgrenmeAdimi(
         hedef: Secici.metin('Geri çek'),
-        metin: 'Dekontun yanındaki «Geri çek»e dokun.',
+        metin: '«Geri çek»e dokun.',
         kalici: true,
         sonuc: 'onay sorulur, dekont geri çekilir',
       ),
@@ -726,7 +731,7 @@ const List<OgrenmeGorevi> uyeGorevleri = [
         metin: '«Yapılan» sekmesine dokun.',
       ),
       OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.uyeTelafiKart),
+        hedef: Secici.hedef(Hedef.uyeTelafiYapilanKart),
         metin: 'Yaptığın telafi dersi kartta yazar.',
         bilgi: true,
       ),

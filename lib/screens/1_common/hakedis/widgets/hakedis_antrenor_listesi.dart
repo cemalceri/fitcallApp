@@ -69,8 +69,13 @@ class HakedisAntrenorListesiGorunumu extends StatelessWidget {
           ),
           const SizedBox(height: 20),
         ],
+        // Rehber boş ayda (ve o ay dersi olmayan hocada) başlamasın: hocanın
+        // panosundaki kutular o ayda çıkmaz.
         if (ay != null)
-          OgrenmeHedefi(id: Hedef.hakedisAyBasligi, child: _AyBasligi(ay: ay)),
+          OgrenmeHedefi(
+            id: ay.donem.bos ? null : Hedef.hakedisAyBasligi,
+            child: _AyBasligi(ay: ay),
+          ),
         const SizedBox(height: 12),
         if (sirali.isEmpty)
           _BosListe(mesaj: bosMesaj)
@@ -78,12 +83,17 @@ class HakedisAntrenorListesiGorunumu extends StatelessWidget {
           ...sirali.map(
             (antrenor) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: OgrenmeHedefi(
-                id: Hedef.hakedisAntrenor,
+              child: ogrenmeHedefiSar(
+                antrenor.ay(seciliIndex).disiDersSayisi > 0
+                    ? Hedef.hakedisDisiAntrenor
+                    : null,
+                OgrenmeHedefi(
+                id: antrenor.ay(seciliIndex).bos ? null : Hedef.hakedisAntrenor,
                 child: _AntrenorSatiri(
                   antrenor: antrenor,
                   donem: antrenor.ay(seciliIndex),
                   onTap: () => onAntrenorTap(antrenor),
+                ),
                 ),
               ),
             ),

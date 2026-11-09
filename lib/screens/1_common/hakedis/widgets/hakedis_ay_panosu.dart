@@ -54,8 +54,9 @@ class HakedisAyPanosu extends StatelessWidget {
 
         // Seçili ayın başlığı — ızgarada hangi hücrede olduğumuz kaybolmasın.
         // Yan yana Row değil: büyük yazı ölçeğinde toplam metni taşırıyordu.
+        // Boş ayda rehber başlıkta kalmasın: sonraki kutular o ayda yok.
         OgrenmeHedefi(
-          id: Hedef.antrenorHakedisBasligi,
+          id: ay.bos ? null : Hedef.antrenorHakedisBasligi,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

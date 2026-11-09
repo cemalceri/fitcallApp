@@ -110,22 +110,22 @@ class _OkumaDurumuGorunumuState extends State<OkumaDurumuGorunumu> {
       child: OgrenmeHedefi(
         id: Hedef.okumaArama,
         child: TextField(
-        controller: _arama,
-        onChanged: (_) => setState(() {}),
-        textInputAction: TextInputAction.search,
-        decoration: InputDecoration(
-          hintText: 'İsimle ara',
-          prefixIcon: const Icon(Icons.search_rounded),
-          isDense: true,
-          suffixIcon: _arama.text.isEmpty
-              ? null
-              : IconButton(
-                  tooltip: 'Aramayı temizle',
-                  icon: const Icon(Icons.close_rounded),
-                  onPressed: () => setState(_arama.clear),
-                ),
+          controller: _arama,
+          onChanged: (_) => setState(() {}),
+          textInputAction: TextInputAction.search,
+          decoration: InputDecoration(
+            hintText: 'İsimle ara',
+            prefixIcon: const Icon(Icons.search_rounded),
+            isDense: true,
+            suffixIcon: _arama.text.isEmpty
+                ? null
+                : IconButton(
+                    tooltip: 'Aramayı temizle',
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => setState(_arama.clear),
+                  ),
+          ),
         ),
-      ),
       ),
     );
   }
@@ -163,16 +163,22 @@ class _OkumaDurumuGorunumuState extends State<OkumaDurumuGorunumu> {
 
   List<Widget> _gorduListesi(List<GorenHesap> liste) {
     if (liste.isEmpty) {
+      // Boş liste de rehberin liste adımına hedef: kimse görmemişken (yeni
+      // duyuru) rehber burada takılmasın.
       return [
         SliverToBoxAdapter(
-          child: _arama.text.isNotEmpty
-              ? const _AramaSonucYok()
-              : const BosDurum(
-                  ikon: Icons.visibility_off_outlined,
-                  baslik: 'Henüz kimse görmedi',
-                  aciklama: 'Duyuruyu ana sayfada açan ya da açılış popup\'ında '
-                      'gören hesaplar burada, en yenisi üstte listelenir.',
-                ),
+          child: ogrenmeHedefiSar(
+            Hedef.okumaListe,
+            _arama.text.isNotEmpty
+                ? const _AramaSonucYok()
+                : const BosDurum(
+                    ikon: Icons.visibility_off_outlined,
+                    baslik: 'Henüz kimse görmedi',
+                    aciklama:
+                        'Duyuruyu ana sayfada açan ya da açılış popup\'ında '
+                        'gören hesaplar burada, en yenisi üstte listelenir.',
+                  ),
+          ),
         ),
       ];
     }
@@ -201,15 +207,19 @@ class _OkumaDurumuGorunumuState extends State<OkumaDurumuGorunumu> {
   List<Widget> _gormediListesi(
       BuildContext context, List<GormeyenHesap> liste) {
     if (liste.isEmpty) {
+      // Herkes gördüyse «Görmedi»den sonraki liste adımı boş kutuda sürer.
       return [
         SliverToBoxAdapter(
-          child: _arama.text.isNotEmpty
-              ? const _AramaSonucYok()
-              : const BosDurum(
-                  ikon: Icons.done_all_rounded,
-                  baslik: 'Hedef kitledeki herkes gördü',
-                  aciklama: 'Görmeyen hesap kalmadı.',
-                ),
+          child: ogrenmeHedefiSar(
+            Hedef.okumaListe,
+            _arama.text.isNotEmpty
+                ? const _AramaSonucYok()
+                : const BosDurum(
+                    ikon: Icons.done_all_rounded,
+                    baslik: 'Hedef kitledeki herkes gördü',
+                    aciklama: 'Görmeyen hesap kalmadı.',
+                  ),
+          ),
         ),
       ];
     }
@@ -258,17 +268,17 @@ class _OkumaDurumuGorunumuState extends State<OkumaDurumuGorunumu> {
     return ogrenmeHedefiSar(
         Hedef.okumaListe,
         ListeSatiri(
-      onGorsel: ListeAvatari(
-        basHarfler: ListeAvatari.harfler(h.profiller.first.ad),
-        ton: ListeTonu.notr,
-      ),
-      baslik: h.adlar,
-      altBaslik: altBaslik,
-      deger: deger,
-      altDeger: altDeger,
-      okGoster: gidilir,
-      onTap: gidilir ? () => secim(h) : null,
-    ));
+          onGorsel: ListeAvatari(
+            basHarfler: ListeAvatari.harfler(h.profiller.first.ad),
+            ton: ListeTonu.notr,
+          ),
+          baslik: h.adlar,
+          altBaslik: altBaslik,
+          deger: deger,
+          altDeger: altDeger,
+          okGoster: gidilir,
+          onTap: gidilir ? () => secim(h) : null,
+        ));
   }
 }
 

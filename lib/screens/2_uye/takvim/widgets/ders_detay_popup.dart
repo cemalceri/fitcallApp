@@ -161,7 +161,10 @@ class _DersDetayPopupState extends State<DersDetayPopup> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (iptalEdildi) ...[
-                    _buildIptalDurumuCard(),
+                    OgrenmeHedefi(
+                      id: Hedef.uyeIptalKarti,
+                      child: _buildIptalDurumuCard(),
+                    ),
                     const SizedBox(height: 16),
                     _buildIletisimNotu(),
                     const SizedBox(height: 20),

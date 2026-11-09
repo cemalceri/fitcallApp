@@ -117,7 +117,7 @@ const List<OgrenmeGorevi> genelGorevler = [
     kosulMetni: 'Okunmamış bildirimin olunca',
     adimlar: [
       OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.genelBildirimMenu),
+        hedef: Secici.hedef(Hedef.genelBildirimMenuOkunmamis),
         metin: 'Sağ üstteki ⋮ düğmesine dokun.',
       ),
       OgrenmeAdimi(

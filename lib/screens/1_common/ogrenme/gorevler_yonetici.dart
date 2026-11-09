@@ -831,8 +831,8 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
         metin: 'Izgarada dersi olan bir aya dokun.',
       ),
       OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.hakedisAntrenor),
-        metin: 'Listeden bir hocaya dokun.',
+        hedef: Secici.hedef(Hedef.hakedisDisiAntrenor),
+        metin: 'Hakediş dışı dersi olan hocaya dokun.',
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.antrenorHakedisDisiGrup),

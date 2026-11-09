@@ -66,6 +66,8 @@ class DekontlarimGorunumu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Geri çekme rehberi bekleyen dekontu açtırır: «Geri çek» detayda çıkar.
+    final ilkBekleyen = dekontlar.indexWhere((d) => d.bekliyor);
     final liste = dekontlar.isEmpty
         ? ListView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -104,12 +106,15 @@ class DekontlarimGorunumu extends StatelessWidget {
               }
               final d = dekontlar[i];
               return ogrenmeHedefiSar(
-                i == 0 ? Hedef.uyeDekontSatiri : null,
-                DekontSatiri(
-                  dekont: d,
-                  vurgulu: d.id == vurgulananId,
-                  onTap: () => onTap(d),
-                  onGeriCek: () => onGeriCek(d),
+                i == ilkBekleyen ? Hedef.uyeBekleyenDekont : null,
+                ogrenmeHedefiSar(
+                  i == 0 ? Hedef.uyeDekontSatiri : null,
+                  DekontSatiri(
+                    dekont: d,
+                    vurgulu: d.id == vurgulananId,
+                    onTap: () => onTap(d),
+                    onGeriCek: () => onGeriCek(d),
+                  ),
                 ),
               );
             },

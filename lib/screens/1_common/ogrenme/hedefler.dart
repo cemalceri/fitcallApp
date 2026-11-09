@@ -23,6 +23,9 @@ abstract final class Hedef {
   static const uyeOzet = 'uye.ozet';
   static const uyeSonrakiDers = 'uye.sonrakiDers';
 
+  /// Sonraki ders kartının dokunulabilen (ders olan) hâli.
+  static const uyeSonrakiDersKarti = 'uye.sonrakiDersKarti';
+
   /// QR Oluştur: misafir davetindeki ad kutusu ve süre seçenekleri.
   static const qrMisafirAdi = 'qr.misafirAdi';
   static const qrSure = 'qr.sure';
@@ -87,6 +90,9 @@ abstract final class Hedef {
   static const planDisiTutar = 'planDisi.tutar';
   static const planDisiAciklama = 'planDisi.aciklama';
 
+  /// Karar seçicideki «Telafi» etiketi (hakkı yokken kapalı da olsa).
+  static const planDisiTelafi = 'planDisi.telafi';
+
   /// Yönetici ana sayfası: bugünün özeti, dönem kutusu ve seçicisi, "Şu an"
   /// grubu, ciro / tahsilat kartları, haftalık grafik ve düğmesi.
   static const yoneticiBugun = 'pano.bugun';
@@ -125,6 +131,9 @@ abstract final class Hedef {
   static const hakedisAy = 'hakedis.ay';
   static const hakedisAyBasligi = 'hakedis.ayBasligi';
   static const hakedisAntrenor = 'hakedis.antrenor';
+
+  /// Seçili ayda hakediş dışı dersi olan hoca satırı.
+  static const hakedisDisiAntrenor = 'hakedis.disiAntrenor';
   static const hakedisBekliyor = 'hakedis.bekliyor';
   static const hakedisGrup = 'hakedis.grup';
   static const hakedisDers = 'hakedis.ders';
@@ -176,10 +185,15 @@ abstract final class Hedef {
   static const uyeHareketBakiye = 'uye.hareketBakiye';
   static const uyeHareketSatiri = 'uye.hareketSatiri';
 
-  /// Havale / EFT: Dekontlarım sekmesi, IBAN kopyalama, ilk dekont satırı.
+  /// Havale / EFT: Dekontlarım sekmesi, IBAN kopyalama, ilk dekont satırı ve
+  /// ilk kontrol bekleyen dekont.
   static const uyeHavaleDekontlar = 'uye.havaleDekontlar';
   static const uyeIbanKopyala = 'uye.ibanKopyala';
   static const uyeDekontSatiri = 'uye.dekontSatiri';
+  static const uyeBekleyenDekont = 'uye.bekleyenDekont';
+
+  /// Takvim ders detayı: iptal edilen dersin kim/neden kartı.
+  static const uyeIptalKarti = 'uye.iptalKarti';
 
   /// Hesabım: başlıktaki fotoğraf ve bilgi penceresi.
   static const uyeProfilFoto = 'uye.profilFoto';
@@ -188,9 +202,10 @@ abstract final class Hedef {
   /// Üyelik & Paket: ilk kart.
   static const uyeUrunKart = 'uye.urunKart';
 
-  /// Telafi Derslerim: özet kartı ve ilk telafi kartı.
+  /// Telafi Derslerim: özet kartı, «Aktif» ve «Yapılan» sekmesinin ilk kartı.
   static const uyeTelafiOzet = 'uye.telafiOzet';
   static const uyeTelafiKart = 'uye.telafiKart';
+  static const uyeTelafiYapilanKart = 'uye.telafiYapilanKart';
 
   /// Geçmiş Dersler: ilk satır; değerlendirme penceresinde yıldızlar ve yorum.
   static const uyeGecmisDers = 'uye.gecmisDers';
@@ -218,8 +233,10 @@ abstract final class Hedef {
   static const antrenorYoklamaKilit = 'antrenor.yoklamaKilit';
   static const antrenorMisafirAd = 'antrenor.misafirAd';
 
-  /// Gelecek ders detayı: katılımcı cevapları.
+  /// Gelecek ders detayı: katılımcı cevapları; cevap listesi çıkan (üyesi
+  /// olan) gelecek ders.
   static const antrenorDetayKatilimcilar = 'antrenor.detayKatilimcilar';
+  static const antrenorKatilimciliDers = 'antrenor.katilimciliDers';
 
   /// Ana sayfa: menü düğmesi ve eksik yoklama uyarısı.
   static const antrenorMenuDugmesi = 'antrenor.menuDugmesi';
@@ -260,6 +277,11 @@ abstract final class Hedef {
 
   /// Onay bekleyen dersler listesindeki gün satırı.
   static const ofisOnayGunu = 'ofis.onayGunu';
+
+  /// Ana sayfa iş satırları, yalnız bekleyen iş varken: «Ders onayı» ve
+  /// «Katılım cevabı bekleyenler».
+  static const ofisOnaySatiri = 'ofis.onaySatiri';
+  static const ofisTeyitSatiri = 'ofis.teyitSatiri';
 
   /// Program: gün şeridi, hafta başlığı, ızgara, ızgaradaki bir boş saat;
   /// iptalli ders / gün; talep bloğu ve talep olan gün.
@@ -393,6 +415,9 @@ abstract final class Hedef {
   static const genelBildirimSatiri = 'genel.bildirimSatiri';
   static const genelBildirimMenu = 'genel.bildirimMenu';
 
+  /// Okunmamış bildirim varken ⋮ menüsü («Tümünü okundu yap» o zaman çıkar).
+  static const genelBildirimMenuOkunmamis = 'genel.bildirimMenuOkunmamis';
+
   /// Ayarlar: tema bölümü; Şifreyi Değiştir sayfasında alanlar.
   static const genelAyarTema = 'genel.ayarTema';
   static const genelSifreAlanlari = 'genel.sifreAlanlari';
@@ -407,6 +432,10 @@ abstract final class Hedef {
   /// Liste: ilk duyuru satırı. Okuma durumu: özet kartı,
   /// kaynak dağılımı, arama, iki segment etiketi, ilk hesap satırı, web simgesi.
   static const duyuruSatiri = 'duyuru.satir';
+
+  /// Yayına girmiş ve okunması ölçülen duyurunun satırı (gören listesi,
+  /// kaynak dökümü yalnız onda var).
+  static const duyuruOlculenSatiri = 'duyuru.olculenSatir';
   static const okumaOzet = 'duyuru.okumaOzet';
   static const okumaKaynaklar = 'duyuru.okumaKaynaklar';
   static const okumaArama = 'duyuru.okumaArama';

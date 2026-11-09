@@ -316,8 +316,12 @@ class _NotificationPageState extends State<NotificationPage> {
               ),
             ),
           ),
+          // «Tümünü okundu yap» menüde yalnız okunmamış varken çıkar; o
+          // rehber ayrı kimlikle yalnız o zaman başlar.
           if (_notifications.isNotEmpty)
-            OgrenmeHedefi(
+            ogrenmeHedefiSar(
+              _unreadCount > 0 ? Hedef.genelBildirimMenuOkunmamis : null,
+              OgrenmeHedefi(
               id: Hedef.genelBildirimMenu,
               child: PopupMenuButton<String>(
                 icon: Icon(Icons.more_vert_rounded, size: 22, color: on),
@@ -355,6 +359,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     ),
                   ),
                 ],
+              ),
               ),
             ),
           // Rollerle ortak sayfa: Sık sorulanlar açık profilin rolünden.

@@ -240,9 +240,13 @@ class _PlanDisiKararFormuState extends State<PlanDisiKararFormu> {
               const ButtonSegment(value: 'BORC', label: Text('Borç yaz')),
               const ButtonSegment(value: 'PAKET', label: Text('Paketten')),
               // Hep görünür (rehber hedefi); hakkı yoksa ya da misafirse kapalı.
+              // Kapalı buton yazıyla bulunmaz: rehber etiketi kimlikle bulur.
               ButtonSegment(
                 value: 'TELAFI',
-                label: const Text('Telafi'),
+                label: const OgrenmeHedefi(
+                  id: Hedef.planDisiTelafi,
+                  child: Text('Telafi'),
+                ),
                 enabled: _telafiHakki > 0,
               ),
               const ButtonSegment(value: 'UCRETSIZ', label: Text('Ücretsiz')),

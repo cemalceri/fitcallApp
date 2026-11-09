@@ -219,7 +219,7 @@ const List<OgrenmeGorevi> ofisGorevleri = [
     kosulMetni: 'Onay bekleyen ders olunca',
     adimlar: [
       OgrenmeAdimi(
-        hedef: Secici.metin('Ders onayı'),
+        hedef: Secici.hedef(Hedef.ofisOnaySatiri),
         metin: '«Ders onayı»na dokun.',
       ),
       OgrenmeAdimi(
@@ -336,7 +336,7 @@ const List<OgrenmeGorevi> ofisGorevleri = [
     kosulMetni: 'Cevap bekleyen üye olunca',
     adimlar: [
       OgrenmeAdimi(
-        hedef: Secici.metin('Katılım cevabı bekleyenler'),
+        hedef: Secici.hedef(Hedef.ofisTeyitSatiri),
         metin: '«Katılım cevabı bekleyenler»e dokun.',
       ),
       OgrenmeAdimi(
@@ -924,7 +924,7 @@ const List<OgrenmeGorevi> ofisGorevleri = [
         bilgi: true,
       ),
       OgrenmeAdimi(
-        hedef: Secici.metin('Telafi'),
+        hedef: Secici.hedef(Hedef.planDisiTelafi),
         metin: '«Telafi»: üyenin telafi hakkı varsa ondan düşülür.',
         bilgi: true,
       ),
@@ -961,6 +961,8 @@ const List<OgrenmeGorevi> ofisGorevleri = [
         metin: '«Ücreti üstlenen»i kontrol et.',
         bilgi: true,
         dokunulur: true,
+        // Paket kutusu yalnız üstlenenin aktif paketi varsa çıkar.
+        yoksa: 'Bu kişinin paketi yok; başka kişi seç.',
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.planDisiPaket),

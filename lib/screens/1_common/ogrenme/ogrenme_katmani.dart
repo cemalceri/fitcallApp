@@ -215,6 +215,7 @@ class _OgrenmeKatmaniState extends State<OgrenmeKatmani>
             no: _modu.adimNo + 1,
             toplam: _modu.gorev!.adimlar.length,
             hedefYok: _modu.hedefYok,
+            sonrakiYok: _modu.sonrakiYok,
             yanlis: _modu.yanlis,
             onKapat: () => _modu.kapat(geriDon: true),
             onAnladim: _modu.anladim,
@@ -339,6 +340,9 @@ class RehberAdimPaneli extends StatelessWidget {
   final int no;
   final int toplam;
   final bool hedefYok;
+
+  /// «Anladım»a basıldı, sonraki adımın hedefi ekranda yok.
+  final bool sonrakiYok;
   final bool yanlis;
   final VoidCallback onKapat;
   final VoidCallback onAnladim;
@@ -349,6 +353,7 @@ class RehberAdimPaneli extends StatelessWidget {
     required this.no,
     required this.toplam,
     this.hedefYok = false,
+    this.sonrakiYok = false,
     this.yanlis = false,
     required this.onKapat,
     required this.onAnladim,
@@ -394,6 +399,12 @@ class RehberAdimPaneli extends StatelessWidget {
               _EkSatir(
                 ikon: Icons.info_outline_rounded,
                 metin: sonucCumlesi(adim.sonuc!),
+              ),
+            if (sonrakiYok && !hedefYok)
+              _EkSatir(
+                ikon: Icons.info_outline_rounded,
+                metin: adim.yoksaMetni,
+                kalin: true,
               ),
             if (hedefYok)
               const _EkSatir(

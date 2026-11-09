@@ -104,27 +104,32 @@ class DuyuruYonetimListesi extends StatelessWidget {
       altDeger = '${d.gorenSayisi}/${d.hedefSayisi}';
     }
 
+    // Gören listesi ve kaynak dökümü yalnız yayına girmiş, ölçülen duyuruda
+    // var; o rehberler planlı ya da ölçülmeyen satıra götürmez.
+    final olculen = d.olculuyor && d.durum != DuyuruYayinDurumu.planli;
     return ogrenmeHedefiSar(
-        Hedef.duyuruSatiri,
-        ListeSatiri(
-      // Önemli sinyali yalnız renkte kalmasın diye alt satırda da yazılı.
-      onGorsel: ListeAvatari(
-        ikon: Icons.campaign_rounded,
-        ton: d.onemliMi ? ListeTonu.vurgu : ListeTonu.bilgi,
-      ),
-      baslik: d.baslik,
-      altBaslik: duyuruAltSatiri(
-        hedefKitle: d.hedefKitle,
-        yayinBaslangic: d.yayinBaslangic,
-        yayinBitis: d.yayinBitis,
-        aktifMi: d.aktifMi,
-        popupGoster: d.popupGoster,
-        onemliMi: d.onemliMi,
-      ),
-      deger: deger,
-      altDeger: altDeger,
-      okGoster: true,
-      onTap: () => onSec(d),
-    ));
+        olculen ? Hedef.duyuruOlculenSatiri : null,
+        ogrenmeHedefiSar(
+            Hedef.duyuruSatiri,
+            ListeSatiri(
+              // Önemli sinyali yalnız renkte kalmasın diye alt satırda da yazılı.
+              onGorsel: ListeAvatari(
+                ikon: Icons.campaign_rounded,
+                ton: d.onemliMi ? ListeTonu.vurgu : ListeTonu.bilgi,
+              ),
+              baslik: d.baslik,
+              altBaslik: duyuruAltSatiri(
+                hedefKitle: d.hedefKitle,
+                yayinBaslangic: d.yayinBaslangic,
+                yayinBitis: d.yayinBitis,
+                aktifMi: d.aktifMi,
+                popupGoster: d.popupGoster,
+                onemliMi: d.onemliMi,
+              ),
+              deger: deger,
+              altDeger: altDeger,
+              okGoster: true,
+              onTap: () => onSec(d),
+            )));
   }
 }

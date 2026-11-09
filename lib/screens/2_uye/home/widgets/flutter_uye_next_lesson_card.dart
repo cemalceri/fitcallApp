@@ -2,6 +2,8 @@
 
 import 'package:fitcall/common/cihaz_takvimi.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/common/tema.dart';
@@ -42,8 +44,12 @@ class UyeNextLessonCard extends StatelessWidget {
         ),
 
         // Kart: ders varsa ekranın kimlik yüzeyi; yüklenirken ve boşken nötr.
+        // Rehberin "karta dokun" adımı yalnız açılabilen (dersli) kartta.
         if (!isLoading && nextLesson != null)
-          _LessonContent(lesson: nextLesson!)
+          OgrenmeHedefi(
+            id: Hedef.uyeSonrakiDersKarti,
+            child: _LessonContent(lesson: nextLesson!),
+          )
         else
           Container(
             decoration: BoxDecoration(

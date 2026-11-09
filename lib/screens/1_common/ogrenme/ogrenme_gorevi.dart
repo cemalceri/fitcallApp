@@ -106,6 +106,20 @@ class OgrenmeAdimi {
   /// açıyorsa dokunuş rehberi yolundan çıkarmasın.
   final bool dokunulur;
 
+  /// Okuma adımında «Anladım»a basıldı ama sonraki adımın hedefi ekranda
+  /// yok: adım geçmez, balonda bu yazı çıkar (ör. seçili günde uygun ders
+  /// yok). Verilmezse dokunulur adımda [varsayilanYoksa], yalnız okunan
+  /// adımda [varsayilanYoksaOkuma] (orada seçilecek bir şey yok).
+  final String? yoksa;
+
+  static const varsayilanYoksa = 'Önce parlayan yerde seçimini yap.';
+  static const varsayilanYoksaOkuma =
+      'Burada gösterecek bir şey yok; «Kapat»a dokun.';
+
+  /// Sonraki hedef yokken balonda çıkan yazı.
+  String get yoksaMetni =>
+      yoksa ?? (dokunulur ? varsayilanYoksa : varsayilanYoksaOkuma);
+
   const OgrenmeAdimi({
     required this.hedef,
     required this.metin,
@@ -114,6 +128,7 @@ class OgrenmeAdimi {
     this.atlanabilir = false,
     this.bilgi = false,
     this.dokunulur = false,
+    this.yoksa,
   });
 }
 

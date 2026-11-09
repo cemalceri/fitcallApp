@@ -67,6 +67,11 @@ class TakvimAjanda extends StatefulWidget {
   /// bazında verilir, null dönen ders hedef olmaz.
   final String? Function(EtkinlikModel ders)? ogrenmeHedefi;
 
+  /// Satırı birden çok rehber hedefiyle saran yapıcı (antrenör: kilitli,
+  /// yoklaması girilmiş, devir rozetli ders). Verilirse [ogrenmeHedefi]
+  /// yerine kullanılır; ızgaradaki blokla aynı hedefler ajandada da olur.
+  final Widget Function(EtkinlikModel ders, Widget satir)? rehberSarici;
+
   const TakvimAjanda({
     super.key,
     required this.dersler,
@@ -77,6 +82,7 @@ class TakvimAjanda extends StatefulWidget {
     this.durumRengi,
     this.altSatir,
     this.ogrenmeHedefi,
+    this.rehberSarici,
   });
 
   @override
@@ -184,6 +190,10 @@ class _TakvimAjandaState extends State<TakvimAjanda> {
     return gunler;
   }
 
+  Widget _rehberSar(EtkinlikModel ders, Widget satir) =>
+      widget.rehberSarici?.call(ders, satir) ??
+      ogrenmeHedefiSar(widget.ogrenmeHedefi?.call(ders), satir);
+
   @override
   Widget build(BuildContext context) {
     _gunler = _gunleriGrupla();
@@ -224,8 +234,8 @@ class _TakvimAjandaState extends State<TakvimAjanda> {
                   separatorBuilder: (_, __) => const SizedBox(height: Bosluk.s),
                   itemBuilder: (context, i) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Bosluk.l),
-                    child: ogrenmeHedefiSar(
-                      widget.ogrenmeHedefi?.call(giris.value[i]),
+                    child: _rehberSar(
+                      giris.value[i],
                       _AjandaSatiri(
                         ders: giris.value[i],
                         yukseklik: satir,

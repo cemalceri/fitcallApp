@@ -42,7 +42,7 @@ const List<OgrenmeGorevi> duyuruGorevleri = [
     kosulMetni: 'Yayında duyuru olunca',
     adimlar: [
       OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.duyuruSatiri),
+        hedef: Secici.hedef(Hedef.duyuruOlculenSatiri),
         metin: 'Bir duyuruya dokun.',
       ),
       OgrenmeAdimi(
@@ -57,7 +57,7 @@ const List<OgrenmeGorevi> duyuruGorevleri = [
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.okumaListe),
-        metin: 'Satırda nereden gördüğü ve saati yazar.',
+        metin: 'Varsa satırda nereden gördüğü ve saati yazar.',
         bilgi: true,
       ),
       OgrenmeAdimi(
@@ -66,7 +66,7 @@ const List<OgrenmeGorevi> duyuruGorevleri = [
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.okumaListe),
-        metin: 'Görmeyenler uygulamayı kullananlar diye ayrılır.',
+        metin: 'Varsa görmeyenler uygulamayı kullananlar diye ayrılır.',
         bilgi: true,
       ),
       OgrenmeAdimi(
@@ -86,7 +86,7 @@ const List<OgrenmeGorevi> duyuruGorevleri = [
     kosulMetni: 'Yayında duyuru olunca',
     adimlar: [
       OgrenmeAdimi(
-        hedef: Secici.hedef(Hedef.duyuruSatiri),
+        hedef: Secici.hedef(Hedef.duyuruOlculenSatiri),
         metin: 'Bir duyuruya dokun.',
       ),
       OgrenmeAdimi(

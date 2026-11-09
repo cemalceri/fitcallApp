@@ -419,8 +419,16 @@ class _TelafiHaklariPageState extends State<TelafiHaklariPage>
         itemCount: list.length,
         itemBuilder: (context, index) {
           final telafi = list[index];
+          // Sekmeye göre ayrı hedef: süre rehberi yapılan telafi kartında,
+          // yapılan rehberi aktif kartta başlamasın.
           return ogrenmeHedefiSar(
-            index == 0 ? Hedef.uyeTelafiKart : null,
+            index != 0
+                ? null
+                : switch (durum) {
+                    'aktif' => Hedef.uyeTelafiKart,
+                    'yapildi' => Hedef.uyeTelafiYapilanKart,
+                    _ => null,
+                  },
             _TelafiCard(telafi: telafi, durum: durum),
           );
         },

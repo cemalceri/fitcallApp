@@ -165,6 +165,12 @@ class _AntrenorProgramPageState extends State<AntrenorProgramPage> {
                         (d) => DateUtils.isSameDay(d.baslangic, gun.tarih))
                     ? Hedef.programGun
                     : null,
+                // Talebi geri çekme rehberi önce talebi olan güne götürür.
+                gunHedefleri: (gun) => [
+                  if (program.talepler.any(
+                      (t) => DateUtils.isSameDay(t.baslangic, gun.tarih)))
+                    Hedef.programTalepGunu,
+                ],
                 dersHedefi: (_) => Hedef.programDers,
                 sag: _rehberButonu,
               ),

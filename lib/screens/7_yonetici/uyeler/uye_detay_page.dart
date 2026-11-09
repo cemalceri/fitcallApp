@@ -10,6 +10,7 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter/services.dart';
 import 'package:fitcall/models/9_yonetici/uye_detay_models.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
@@ -174,6 +175,9 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        // Bölüm sayısı sabit; hepsi baştan kurulsun ki "?" rehberi alttaki
+        // ders bölümlerini de bulsun (tembel liste ekran dışını kurmaz).
+        scrollCacheExtent: const ScrollCacheExtent.pixels(10000),
         children: [
           _UyeDetayHeader(profil: data.profil),
           const SizedBox(height: 16),

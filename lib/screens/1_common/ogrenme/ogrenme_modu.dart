@@ -88,6 +88,7 @@ class OgrenmeModu extends ChangeNotifier {
   bool _yanlis = false;
   bool _denendi = false;
   bool _hedefYok = false;
+  bool _sonrakiYok = false;
   bool _bitisteUstteSayfa = false;
   int _kayip = 0;
   int _gorunmez = 0;
@@ -121,6 +122,10 @@ class OgrenmeModu extends ChangeNotifier {
 
   /// Adımın hedefi açık sayfada yok (kullanıcı başka ekrana geçti).
   bool get hedefYok => _hedefYok;
+
+  /// «Anladım»a basıldı ama sonraki adımın hedefi ekranda yok; adım
+  /// değişince ya da sonraki hedef belirince kalkar.
+  bool get sonrakiYok => _sonrakiYok;
 
   /// Kullanıcı parlayan yer dışına dokundu (kısa süre gösterilir).
   bool get yanlis => _yanlis;
@@ -246,6 +251,7 @@ class OgrenmeModu extends ChangeNotifier {
     _yanlis = false;
     _denendi = false;
     _hedefYok = false;
+    _sonrakiYok = false;
     _bitisteUstteSayfa = false;
     _kayip = 0;
     _gorunmez = 0;
@@ -280,9 +286,9 @@ class OgrenmeModu extends ChangeNotifier {
     if (_adim + 1 < gorev.adimlar.length &&
         (adim.atlanabilir ||
             (!adim.bilgi && (_dokunuldu || simdiki == null)))) {
-      final sonraki = b.adimHedefi(gorev.adimlar[_adim + 1]);
+      final sonraki = _ilerideki(b, gorev, _adim + 1);
       if (sonraki != null) {
-        _git(_adim + 1, sonraki);
+        _git(sonraki.$1, sonraki.$2);
         return;
       }
     }
@@ -321,6 +327,20 @@ class OgrenmeModu extends ChangeNotifier {
     }
   }
 
+  /// [i]. adımdan başlayarak ekranda hedefi olan ilk adım ve hedefi;
+  /// hedefi olmayan atlanabilir adımın üstünden geçilir (yoklaması girilmiş
+  /// derste pencere doğrudan ayrıntıda açılır, «Eksik ya da fazla var»
+  /// adımı hiç görünmez). Atlanabilir olmayan adımda hedef yoksa null.
+  (int, HedefSonucu)? _ilerideki(HedefBulucu b, OgrenmeGorevi gorev, int i) {
+    for (var j = i; j < gorev.adimlar.length; j++) {
+      final adim = gorev.adimlar[j];
+      final hedef = b.adimHedefi(adim);
+      if (hedef != null) return (j, hedef);
+      if (!adim.atlanabilir) return null;
+    }
+    return null;
+  }
+
   /// En üstteki rota bir seçim menüsü mü (DropdownButton, showMenu)? İkisi
   /// de PopupRoute'tur; diyalog ve alt sayfa da PopupRoute olduğu için
   /// onlar ayrılır (onların içindeki öğeler hedef olarak aranır).
@@ -342,6 +362,7 @@ class OgrenmeModu extends ChangeNotifier {
     _adim = adim;
     _dokunuldu = false;
     _yanlis = false;
+    _sonrakiYok = false;
     _kayip = 0;
     _gorunmez = 0;
     _yerlesti = false;
@@ -401,7 +422,10 @@ class OgrenmeModu extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Okuma adımını geçer.
+  /// Okuma adımını geçer. Sonraki adımın hedefi açık sayfada yoksa geçmez:
+  /// geçseydi motor hedefsiz adımdan hemen bu adıma geri inerdi (antrenör
+  /// takviminde seçili günde yoklaması girilmiş ders yokken 2/4 → 1/4).
+  /// Bunun yerine balon sallanır, adımın [OgrenmeAdimi.yoksa] yazısı çıkar.
   void anladim() {
     final gorev = _gorev;
     if (gorev == null || _durum != RehberDurumu.adim) return;
@@ -409,9 +433,22 @@ class OgrenmeModu extends ChangeNotifier {
       _bitir();
       return;
     }
+    final b = bulucu;
+    final sonraki = b == null ? null : _ilerideki(b, gorev, _adim + 1);
+    if (b != null && sonraki == null) {
+      _sonrakiYok = true;
+      _yanlisSayaci++;
+      notifyListeners();
+      return;
+    }
+    if (sonraki != null) {
+      _git(sonraki.$1, sonraki.$2);
+      return;
+    }
     _adim++;
     _dokunuldu = false;
     _yanlis = false;
+    _sonrakiYok = false;
     _kayip = 0;
     _gorunmez = 0;
     notifyListeners();

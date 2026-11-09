@@ -26,6 +26,7 @@ import 'package:fitcall/services/core/tema_service.dart';
 import 'package:fitcall/screens/1_common/ayarlar/widgets/renk_temasi_secici.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -128,6 +129,10 @@ class _AyarlarPageState extends State<AyarlarPage> {
       body: ListView(
         padding:
             const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.s, Bosluk.l, Bosluk.xxl),
+        // Satır sayısı sabit; hepsi baştan kurulsun ki "?" rehberi alttaki
+        // «Çıkış yap» gibi satırları da bulsun (tembel liste ekran dışını
+        // kurmaz).
+        scrollCacheExtent: const ScrollCacheExtent.pixels(10000),
         children: [
           const _BolumBasligi('Görünüm'),
           const OgrenmeHedefi(

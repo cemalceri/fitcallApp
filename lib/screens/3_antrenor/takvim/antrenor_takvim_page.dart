@@ -312,11 +312,16 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
   /// "?" rehberinin parlattığı ders: bitmiş ders yoklama (plan dışı
   /// ekleme), başlamamış ve devir talebi olmayan ders devir rehberinde.
   /// Yönetici kilitlediyse yoklama değişmez: yoklama rehberleri onu seçmez.
+  /// "Ders yapılmadı" girilmiş derste pencere katılımcısız açılır («Üye» /
+  /// «Misafir» yok); plan dışı rehberi orada takılırdı, o da seçilmez.
   String? _rehberHedefi(EtkinlikModel ders) {
     if (ders.iptalMi) return null;
     final simdi = simdiKulup();
     if (ders.bitisTarihSaat.isBefore(simdi)) {
-      return ders.yoneticiOnayi == null ? Hedef.antrenorBitmisDers : null;
+      return ders.yoneticiOnayi == null &&
+              ders.antrenorOnayi?.tamamlandi != false
+          ? Hedef.antrenorBitmisDers
+          : null;
     }
     if (ders.baslangicTarihSaat.isAfter(simdi) &&
         ders.aktifDevirTalebi == null) {
@@ -335,12 +340,20 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
       if (ders.yoneticiOnayi != null) {
         sarili = ogrenmeHedefiSar(Hedef.antrenorKilitliDers, sarili);
       } else if (ders.antrenorOnayi != null) {
-        sarili = ogrenmeHedefiSar(Hedef.antrenorYoklamaGirilmisDers, sarili);
+        // Düzeltme rehberi katılımcı satırını parlatır; "yapılmadı" girilmiş
+        // derste satır yok.
+        if (ders.antrenorOnayi!.tamamlandi) {
+          sarili = ogrenmeHedefiSar(Hedef.antrenorYoklamaGirilmisDers, sarili);
+        }
       } else {
         sarili = ogrenmeHedefiSar(Hedef.antrenorYoklamasizDers, sarili);
       }
     } else if (ders.aktifDevirTalebi?.benTalepEdenim == true) {
       sarili = ogrenmeHedefiSar(Hedef.antrenorDevirliDers, sarili);
+    }
+    // Katılımcı cevapları detayda yalnız üyesi olan derste listelenir.
+    if (ders.baslangicTarihSaat.isAfter(simdi) && ders.uyeList.isNotEmpty) {
+      sarili = ogrenmeHedefiSar(Hedef.antrenorKatilimciliDers, sarili);
     }
     return sarili;
   }
@@ -417,7 +430,7 @@ class _AntrenorTakvimPageState extends State<AntrenorTakvimPage> {
                         onLessonTap: _onLessonTap,
                         onLessonLongPress: _dersMenusu,
                         altSatir: _katilimcilar,
-                        ogrenmeHedefi: _rehberHedefi,
+                        rehberSarici: _rehberSar,
                       )
                     : TakvimZamanCizelgesi(
                         dersler: selectedDersler,

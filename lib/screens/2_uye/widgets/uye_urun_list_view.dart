@@ -182,8 +182,12 @@ class _UyeUrunListViewState extends State<UyeUrunListView> {
                   for (final u in items)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
+                      // Kapalı grubun kartı AnimatedCrossFade'de görünmez
+                      // ama ağaçta durur; rehber onu açık sanmasın.
                       child: ogrenmeHedefiSar(
-                        identical(u, items.first) ? Hedef.uyeUrunKart : null,
+                        acik && identical(u, items.first)
+                            ? Hedef.uyeUrunKart
+                            : null,
                         _UrunKart(urun: u, renk: renk),
                       ),
                     ),

@@ -189,17 +189,22 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
           ),
         )
       else ...[
-        _IsSatiri(
-          ikon: Icons.fact_check_rounded,
-          ton: v.onayBekleyen > 0 ? ListeTonu.uyari : ListeTonu.notr,
-          baslik: 'Ders onayı',
-          alt: v.onayBekleyen == 0
-              ? 'Onay bekleyen ders yok'
-              : 'Son ${v.pencereGun} gün · ${v.onayBekleyenAntrenorOnayli} '
-                  'tanesini antrenör onayladı',
-          sayi: v.onayBekleyen,
-          birim: 'ders',
-          onTap: onOnay,
+        // Onay / cevap rehberleri yalnız bekleyen iş varken başlar: boş
+        // satır boş listeye götürür, rehber orada takılır.
+        ogrenmeHedefiSar(
+          v.onayBekleyen > 0 ? Hedef.ofisOnaySatiri : null,
+          _IsSatiri(
+            ikon: Icons.fact_check_rounded,
+            ton: v.onayBekleyen > 0 ? ListeTonu.uyari : ListeTonu.notr,
+            baslik: 'Ders onayı',
+            alt: v.onayBekleyen == 0
+                ? 'Onay bekleyen ders yok'
+                : 'Son ${v.pencereGun} gün · ${v.onayBekleyenAntrenorOnayli} '
+                    'tanesini antrenör onayladı',
+            sayi: v.onayBekleyen,
+            birim: 'ders',
+            onTap: onOnay,
+          ),
         ),
         const ListeAyraci(),
         _IsSatiri(
@@ -226,16 +231,19 @@ class OfisAnaSayfaGorunumu extends StatelessWidget {
           onTap: onPlanDisi,
         ),
         const ListeAyraci(),
-        _IsSatiri(
-          ikon: Icons.how_to_reg_rounded,
-          ton: v.teyitKisi > 0 ? ListeTonu.bilgi : ListeTonu.notr,
-          baslik: 'Katılım cevabı bekleyenler',
-          alt: v.teyitKisi == 0
-              ? 'Bugün ve yarın herkes cevap verdi'
-              : _teyitAlt(v),
-          sayi: v.teyitKisi,
-          birim: 'kişi',
-          onTap: onTeyit,
+        ogrenmeHedefiSar(
+          v.teyitKisi > 0 ? Hedef.ofisTeyitSatiri : null,
+          _IsSatiri(
+            ikon: Icons.how_to_reg_rounded,
+            ton: v.teyitKisi > 0 ? ListeTonu.bilgi : ListeTonu.notr,
+            baslik: 'Katılım cevabı bekleyenler',
+            alt: v.teyitKisi == 0
+                ? 'Bugün ve yarın herkes cevap verdi'
+                : _teyitAlt(v),
+            sayi: v.teyitKisi,
+            birim: 'kişi',
+            onTap: onTeyit,
+          ),
         ),
       ],
     ];
