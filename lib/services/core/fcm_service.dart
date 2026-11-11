@@ -28,6 +28,11 @@ void initFCMTokenListener() {
     (fcmToken) async {
       final log = LogFlowBuilder('FCMService', 'onTokenRefresh', 24);
       try {
+        // Oturum yokken (giriş öncesi/çıkış sonrası) istek 401 alıp hata
+        // logu basıyordu; token girişte sendFCMDevice ile zaten gönderilir.
+        final oturumTokeni = await StorageService.getToken();
+        if (oturumTokeni == null || oturumTokeni.isEmpty) return;
+
         log.adimEkle('Token yenileme tetiklendi');
         log.bilgiEkle('token_preview', fcmToken.substring(0, 20));
 
