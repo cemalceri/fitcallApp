@@ -494,7 +494,8 @@ enum TakimTemasi {
   binay('binay', 'Turuncu', 'Varsayılan'),
   mavi('mavi', 'Mavi', 'Pantone 801C'),
   yesil('yesil', 'Yeşil', 'Pantone 802C'),
-  siyah('siyah', 'Siyah', 'Tek renk');
+  siyah('siyah', 'Siyah', 'Tek renk'),
+  civit('civit', 'Çivit', 'Mor-mavi');
 
   const TakimTemasi(this.kod, this.etiket, this.altEtiket);
 
@@ -825,6 +826,77 @@ TakimPaleti takimPaleti(TakimTemasi takim, Brightness parlaklik) {
                 ]),
                 qr: _Gradyan.qr([Color(0xFF43B02A), Color(0xFF338520)]),
                 onQr: Color(0xFF081C04),
+              ),
+            );
+
+    // Çivit: yönetici ekranı maketinden (2026-11-12) gelen mor-mavi. Marka
+    // kılavuzunda yok; kullanıcının isteğiyle beşinci seçenek.
+    case TakimTemasi.civit:
+      return koyu
+          ? _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFF8B93FF),
+              anaUzeri: const Color(0xFF14124A),
+              anaKap: const Color(0xFF27236F),
+              anaKapUzeri: const Color(0xFFE4E3FB),
+              ikincil: Marka.turuncuAcik,
+              zemin: const Color(0xFF121722),
+              yazi: const Color(0xFFF1F5F9),
+              ikincilYazi: const Color(0xFFB4BED0),
+              kap: const Color(0xFF1A2130),
+              kapYuksek: const Color(0xFF232C3D),
+              cizgi: const Color(0xFF364154),
+              tersAna: const Color(0xFF4338CA),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF1B1850),
+                  Color(0xFF27236F),
+                  Color(0xFF3730A3),
+                ]),
+                onKimlik: Colors.white,
+                sayfaRengi: Color(0xFF0B0F1E),
+                baslik: Color(0xFF3730A3),
+                altBar: Color(0xFF1B1850),
+                serit: _Gradyan.serit([
+                  Color(0xFF8B93FF),
+                  Color(0xFF8B93FF),
+                  Color(0xFF8B93FF),
+                ]),
+                qr: _Gradyan.qr([Color(0xFFA5ABFF), Color(0xFF8B93FF)]),
+                onQr: Color(0xFF14124A),
+              ),
+            )
+          : _takimPaleti(
+              parlaklik: parlaklik,
+              ana: const Color(0xFF4F46E5),
+              anaUzeri: Colors.white,
+              anaKap: const Color(0xFFE4E3FB),
+              anaKapUzeri: const Color(0xFF27236F),
+              ikincil: const Color(0xFFC63E00),
+              zemin: Colors.white,
+              yazi: const Color(0xFF0F172A),
+              ikincilYazi: const Color(0xFF55607A),
+              kap: const Color(0xFFF3F5F9),
+              kapYuksek: const Color(0xFFE9EDF4),
+              cizgi: const Color(0xFFD9DFEA),
+              tersAna: const Color(0xFF8B93FF),
+              gecisler: const TemaGecisleri(
+                kimlik: _Gradyan.kimlik([
+                  Color(0xFF27236F),
+                  Color(0xFF3A32A8),
+                  Color(0xFF4F46E5),
+                ]),
+                onKimlik: Colors.white,
+                sayfaRengi: Color(0xFFEEF0FB),
+                baslik: Color(0xFF4F46E5),
+                altBar: Color(0xFF27236F),
+                serit: _Gradyan.serit([
+                  Color(0xFFE4E3FB),
+                  Color(0xFFE4E3FB),
+                  Color(0xFFE4E3FB),
+                ]),
+                qr: _Gradyan.qr([Color(0xFF5B4FF0), Color(0xFF4338CA)]),
+                onQr: Colors.white,
               ),
             );
 

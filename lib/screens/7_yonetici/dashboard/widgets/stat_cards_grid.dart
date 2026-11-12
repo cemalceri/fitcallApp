@@ -6,6 +6,7 @@ import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
+import 'package:fitcall/screens/7_yonetici/widgets/pano_parcalari.dart';
 import 'package:intl/intl.dart';
 
 /// Panodaki kart grupları. Dönem seçimi yalnız [donem] grubunu değiştirir;
@@ -67,9 +68,9 @@ class StatCardsGrid extends StatelessWidget {
         OgrenmeHedefi(
           id: Hedef.yoneticiCiro,
           child: StatCard(
-            baslik: 'Ciro',
+            baslik: 'Ders bedeli',
             deger: _formatCurrency(data.ciro.toplamCiro),
-            altBaslik: '${data.ciro.dersSayisi} ders',
+            altBaslik: '${data.ciro.dersSayisi} dersin bedeli',
             ikon: Icons.trending_up,
             ikonRenk: ana,
             degisimYuzdesi: data.ciro.degisimYuzdesi,
@@ -80,9 +81,11 @@ class StatCardsGrid extends StatelessWidget {
         OgrenmeHedefi(
           id: Hedef.yoneticiTahsilat,
           child: StatCard(
-            baslik: 'Tahsilat',
+            baslik: 'Kasaya giren',
             deger: _formatCurrency(data.tahsilat.toplamTahsilat),
-            altBaslik: '${data.tahsilat.islemSayisi} işlem',
+            altBaslik: data.tahsilat.sonGiris == null
+                ? '${data.tahsilat.islemSayisi} ödeme'
+                : 'Son giriş ${sonGirisYaz(data.tahsilat.sonGiris!)}',
             ikon: Icons.attach_money,
             ikonRenk: ana,
             degisimYuzdesi: data.tahsilat.degisimYuzdesi,

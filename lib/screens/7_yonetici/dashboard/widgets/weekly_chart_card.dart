@@ -44,7 +44,7 @@ class _WeeklyChartCardState extends State<WeeklyChartCard> {
     final data = isCiro ? widget.ciroData : widget.tahsilatData;
     // Grafik tek renk: temanın ana rengi.
     final barColor = colorScheme.primary;
-    final title = isCiro ? 'Haftalık Ciro' : 'Haftalık Tahsilat';
+    final title = isCiro ? 'Haftalık ders bedeli' : 'Haftalık kasaya giren';
 
     // Değerleri al
     final values = isCiro
@@ -216,7 +216,7 @@ class _WeeklyChartCardState extends State<WeeklyChartCard> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildToggleItem(
-            label: 'Ciro',
+            label: 'Ders bedeli',
             isSelected: _seciliTip == GrafikTipi.ciro,
             onTap: () {
               HapticFeedback.lightImpact();
@@ -228,7 +228,7 @@ class _WeeklyChartCardState extends State<WeeklyChartCard> {
           OgrenmeHedefi(
             id: Hedef.grafikTahsilat,
             child: _buildToggleItem(
-              label: 'Tahsilat',
+              label: 'Kasaya giren',
               isSelected: _seciliTip == GrafikTipi.tahsilat,
               onTap: () {
                 HapticFeedback.lightImpact();

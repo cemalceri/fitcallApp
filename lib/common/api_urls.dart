@@ -194,6 +194,10 @@ const String yoneticiUyeDetay = "$baseUrl/yoneticiUyeDetay";
 const String yoneticiAntrenorler = "$baseUrl/yoneticiAntrenorler";
 const String yoneticiDersler = "$baseUrl/yoneticiDersler";
 const String yoneticiDolulukHaritasi = "$baseUrl/yoneticiDolulukHaritasi";
+const String yoneticiDersDetay = "$baseUrl/yoneticiDersDetay";
+// Ofis çalışanı (ekip) takibi: kim, ne yaptı, kaçta geldi.
+const String yoneticiEkip = "$baseUrl/yoneticiEkip";
+const String yoneticiEkipDetay = "$baseUrl/yoneticiEkipDetay";
 
 // Yönetici - ders (etkinlik) yönetimi
 const String yoneticiHaftalikProgramUrl = "$baseUrl/yoneticiHaftalikProgram";

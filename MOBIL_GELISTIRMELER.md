@@ -30,6 +30,14 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ## 🔴 Açık işler
 
+### Yönetici yeniden tasarım + Ekip takibi (2026-11-12; iki repoda commit'li, push/deploy yok)
+- Ana Sayfa: bugün bloğu (kasaya giren + son giriş saati, biten/toplam ders, doluluk) ve "Dikkat isteyenler" kartı (onay bekleyen, dekont, iptal, 14 gündür gelmeyen, ders/tahsilat silen çalışan). Etiketler: Ciro → "Ders bedeli", Tahsilat → "Kasaya giren". Hızlı erişim kalktı. Alt bar, başlık ve sol menü yapısı aynı; menüye yalnız "Ekip" eklendi.
+- Raporlar: dönem özeti (günlük ders bedeli çubukları, ürün kırılımı, kasaya giren), doluluk özeti, ısı haritası altında "en sakin saatler" notu. Eski tablolar altında duruyor.
+- Ekip (`7_yonetici/ekip/`): ofis çalışanı başına işlem sayıları ve bugünün turnike girişi; kişiye dokununca günlük akış. Dersler'de satıra dokununca dersin işlem geçmişi. **Çıkış turnikeden okunmuyor: içeride/süre/geç kalma yok.**
+- Yeni renk teması "Çivit" (`TakimTemasi.civit`).
+- Sunucu eskiyse ekranlar önceki görünüme düşer (yeni alanlar null); Ekip sayfası backend deploy'undan sonra çalışır. Sıra: önce backend deploy, sonra sürüm. Kararlar ve veri kaynakları: backend `api/yonetici/ekip_metots.py` başlığı.
+- Kalan: sürüm notu + `version:` bump, yeni ekranlar için "?" rehberi, emülatörde göz kontrolü.
+
 ### Üye bildirim tercihleri (2026-11-06; iki repoda commit'li, push/deploy yok)
 - Kod tamam: Ayarlar > "Bildirim tercihleri" (`2_uye/bildirim_tercihleri/`, yalnız üye ana hesabı). Dört
   grup (ders hatırlatma/teyit, ders değişiklikleri, ödeme-paket-haklar, talepler); kapatılan grubun push'u

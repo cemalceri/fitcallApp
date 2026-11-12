@@ -22,7 +22,19 @@ import 'package:url_launcher/url_launcher.dart';
 class UyeOnAyarIstegi {
   final UyeOnAyari onAyar;
 
-  UyeOnAyarIstegi(this.onAyar);
+  /// Sayılı kartlarda olmayan hazır süzgeç (ör. Ana Sayfa'nın "14 gündür
+  /// gelmeyen" maddesi); verilirse [onAyar]'ın yerine geçer.
+  final UyeFiltreleri? ozelFiltre;
+
+  UyeOnAyarIstegi(this.onAyar) : ozelFiltre = null;
+  UyeOnAyarIstegi.filtre(UyeFiltreleri this.ozelFiltre)
+      : onAyar = UyeOnAyari.tumu;
+
+  UyeFiltreleri filtreler(DateTime bugun) =>
+      ozelFiltre ?? onAyar.filtreler(bugun);
+
+  UyeSiralama get siralama =>
+      ozelFiltre != null ? UyeSiralama.varsayilan : onAyar.siralama;
 }
 
 /// Yönetici üye listesi — veri katmanı.
@@ -69,8 +81,8 @@ class _UyelerPageState extends State<UyelerPage> {
     // doğrudan o ön ayarla yapılır.
     final istek = widget.onAyarIstegi?.value;
     if (istek != null) {
-      _filtreler = istek.onAyar.filtreler(bugunKulup());
-      _siralama = istek.onAyar.siralama;
+      _filtreler = istek.filtreler(bugunKulup());
+      _siralama = istek.siralama;
       _liste.yenile(getir: _getirici());
     } else {
       _liste.yenile();
@@ -103,8 +115,8 @@ class _UyelerPageState extends State<UyelerPage> {
     _aramaZamanlayici?.cancel();
     _sonArama = '';
     _uygula(
-      istek.onAyar.filtreler(bugunKulup()),
-      istek.onAyar.siralama,
+      istek.filtreler(bugunKulup()),
+      istek.siralama,
       zorla: aramaVardi,
     );
   }

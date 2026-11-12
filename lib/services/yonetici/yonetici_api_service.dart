@@ -1,10 +1,12 @@
 // lib/services/yonetici/yonetici_api_service.dart
 
 import 'package:fitcall/common/api_urls.dart';
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:fitcall/models/9_yonetici/uye_detay_models.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
+import 'package:fitcall/models/9_yonetici/ekip_models.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
@@ -148,6 +150,44 @@ class YoneticiApiService {
         if (antrenorId != null) 'antrenor_id': antrenorId,
       },
       (json) => DerslerData.fromJson(json as Map<String, dynamic>),
+      auth: true,
+    );
+  }
+
+  // ==================== EKİP ====================
+
+  /// Ofis çalışanlarının dönem özeti (işlem sayıları + bugünün giriş saati).
+  static Future<ApiResult<EkipData>> getEkip({required DonemFiltresi donem}) {
+    return ApiClient.postParsed<EkipData>(
+      yoneticiEkip,
+      {'donem': donem.apiValue},
+      (json) => EkipData.fromJson(json as Map<String, dynamic>),
+      auth: true,
+    );
+  }
+
+  /// Bir çalışanın bir günü: işlem sayıları, zaman sıralı akış, giriş saatleri.
+  static Future<ApiResult<EkipDetayData>> getEkipDetay({
+    required int kullaniciId,
+    required DateTime gun,
+  }) {
+    return ApiClient.postParsed<EkipDetayData>(
+      yoneticiEkipDetay,
+      {'kullanici_id': kullaniciId, 'gun': formatApiGun(gun)},
+      (json) => EkipDetayData.fromJson(json as Map<String, dynamic>),
+      auth: true,
+    );
+  }
+
+  /// Dersin işlem geçmişi: kim kaydetti, onayladı, değiştirdi, iptal etti.
+  /// Eski sunucu alanı vermez; liste boş döner.
+  static Future<ApiResult<List<IslemGecmisiSatiri>>> getDersGecmisi(
+      int dersId) {
+    return ApiClient.postParsed<List<IslemGecmisiSatiri>>(
+      yoneticiDersDetay,
+      {'ders_id': dersId},
+      (json) => IslemGecmisiSatiri.liste(
+          (json as Map<String, dynamic>)['islem_gecmisi']),
       auth: true,
     );
   }

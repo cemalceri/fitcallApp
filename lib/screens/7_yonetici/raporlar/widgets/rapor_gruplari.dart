@@ -8,6 +8,7 @@ import 'package:fitcall/screens/7_yonetici/raporlar/widgets/ciro_raporu_section.
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_haritasi_section.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/doluluk_raporu_section.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_ozet_kartlar.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_ozetleri.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/tahsilat_raporu_section.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
@@ -36,7 +37,7 @@ class RaporDonemGrubu extends StatelessWidget {
   Widget build(BuildContext context) {
     return DonemKutusu(
       ikon: Icons.payments_rounded,
-      baslik: 'Ciro ve tahsilat',
+      baslik: 'Ders bedeli ve kasa',
       seciciHedefi: Hedef.raporCiroSecici,
       seciliDonem: donem,
       onDonemChanged: onDonemChanged,
@@ -46,11 +47,20 @@ class RaporDonemGrubu extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Aktif üye (o anki sayı, dönemden bağımsız) panoda "Şu an" altında.
+          // Yeni sunucu sayısal özet verir (kıyas + grafik); eskisinde metin
+          // kartlar çizilir.
           OgrenmeHedefi(
             id: Hedef.raporOzetKartlar,
-            child: RaporOzetKartlar(
-              data: data.ozetKartlar.where((k) => !k.anlikMi).toList(),
-            ),
+            child: data.ciroOzet != null
+                ? RaporDonemOzeti(
+                    ciro: data.ciroOzet!,
+                    tahsilat: data.tahsilatOzet,
+                    gunler: data.ciroRaporu,
+                    urunler: data.urunKirilimi,
+                  )
+                : RaporOzetKartlar(
+                    data: data.ozetKartlar.where((k) => !k.anlikMi).toList(),
+                  ),
           ),
           const SizedBox(height: 16),
           OgrenmeHedefi(
@@ -97,6 +107,10 @@ class RaporKortAntrenorGrubu extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (data.dolulukOzet != null) ...[
+            RaporDolulukKarti(ozet: data.dolulukOzet!),
+            const SizedBox(height: 16),
+          ],
           DolulukRaporuSection(data: data.dolulukRaporu),
           const SizedBox(height: 16),
           AntrenorPerformansSection(data: data.antrenorPerformans),
@@ -143,6 +157,8 @@ class RaporHaftalikYogunluk extends StatelessWidget {
           id: Hedef.raporIsiHaritasi,
           child: DolulukHaritasiSection(data: data),
         ),
+        const SizedBox(height: 12),
+        SakinSaatlerNotu(harita: data),
       ],
     );
   }

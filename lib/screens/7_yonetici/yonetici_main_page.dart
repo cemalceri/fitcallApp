@@ -20,6 +20,7 @@ import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_bottom_bar.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
 import 'package:fitcall/services/core/storage_service.dart';
+import 'package:fitcall/common/routes.dart';
 
 class YoneticiMainPage extends StatefulWidget {
   const YoneticiMainPage({super.key});
@@ -50,6 +51,8 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
           onTabChange: _goTab,
           onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
           onBorcluUyeler: _borcluUyeler,
+          onGelmeyenUyeler: _gelmeyenUyeler,
+          onEkip: _ekip,
         ),
       1 => const RaporlarPage(),
       2 => UyelerPage(onAyarIstegi: _uyeOnAyari),
@@ -93,6 +96,20 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
   void _borcluUyeler() {
     _uyeOnAyari.value = UyeOnAyarIstegi(UyeOnAyari.borclu);
     _goTab(2);
+  }
+
+  /// Ana Sayfa "Dikkat isteyenler": aktif olup [dersOnce]'den beri dersi
+  /// olmayan üyeler (sunucunun saydığı kümeyle aynı süzgeç).
+  void _gelmeyenUyeler(DateTime dersOnce) {
+    _uyeOnAyari.value = UyeOnAyarIstegi.filtre(
+      UyeFiltreleri(durum: UyeDurumFiltresi.aktif, dersOnce: dersOnce),
+    );
+    _goTab(2);
+  }
+
+  /// Ana Sayfa "Dikkat isteyenler": Ekip sayfası.
+  void _ekip() {
+    Navigator.pushNamed(context, routeEnums[SayfaAdi.yoneticiEkip]!);
   }
 
   @override

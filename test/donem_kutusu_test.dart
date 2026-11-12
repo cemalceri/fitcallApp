@@ -41,7 +41,7 @@ void main() {
     ])));
 
     final ayracY = tester.getTopLeft(find.byKey(const Key('ayrac'))).dy;
-    for (final b in ['Ciro', 'Tahsilat', 'İptal Edilen']) {
+    for (final b in ['Ders bedeli', 'Kasaya giren', 'İptal Edilen']) {
       expect(tester.getTopLeft(find.text(b)).dy, lessThan(ayracY), reason: b);
     }
     for (final b in ['Aktif Üye', 'Toplam Alacak']) {
@@ -77,7 +77,7 @@ void main() {
 
     final dolu = await yukseklik(false);
     final bos = await yukseklik(true);
-    expect(find.text('Ciro'), findsNothing);
+    expect(find.text('Ders bedeli'), findsNothing);
     expect(bos, closeTo(dolu, 1));
   });
 

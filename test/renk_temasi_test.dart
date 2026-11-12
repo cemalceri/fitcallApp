@@ -46,8 +46,8 @@ void main() {
       expect(TakimTemasi.cozumle('bilinmeyen'), TakimTemasi.binay);
     });
 
-    test('dört kurumsal tema; kaldırılan takım temaları varsayılana düşer', () {
-      expect(TakimTemasi.values.length, 4);
+    test('dört kurumsal tema ve Çivit; kaldırılan takım temaları varsayılana düşer', () {
+      expect(TakimTemasi.values.length, 5);
       for (final t in TakimTemasi.values) {
         expect(t.etiket, isNotEmpty);
         expect(t.altEtiket, isNotEmpty);
@@ -366,7 +366,7 @@ void main() {
   });
 
   group('RenkTemasiSecici', () {
-    testWidgets('dört tema listelenir, dokununca seçilir', (tester) async {
+    testWidgets('tüm temalar listelenir, dokununca seçilir', (tester) async {
       TakimTemasi? secilen;
       await tester.pumpWidget(_uygulama(
         SingleChildScrollView(

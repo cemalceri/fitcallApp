@@ -15,7 +15,7 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
     adimlar: [
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.yoneticiBugun),
-        metin: 'Üstteki kart yalnız bugünü gösterir.',
+        metin: 'Üstteki kartlar yalnız bugünü gösterir.',
         bilgi: true,
       ),
       OgrenmeAdimi(
@@ -41,22 +41,22 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
   OgrenmeGorevi(
     id: 'yonetici.ciroTahsilat',
     sayfa: OgrenmeSayfasi.yoneticiAnaSayfa,
-    baslik: 'Ciro ile tahsilat neden farklı?',
+    baslik: 'Ders bedeli ile kasaya giren neden farklı?',
     kosulMetni: 'Ana sayfa açılınca',
     adimlar: [
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.yoneticiCiro),
-        metin: '«Ciro»: iptal edilmeyen derslerin ücreti.',
+        metin: '«Ders bedeli»: iptal edilmeyen derslerin ücreti.',
         bilgi: true,
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.yoneticiTahsilat),
-        metin: '«Tahsilat»: o günlere yazılan ödemeler.',
+        metin: '«Kasaya giren»: o günlere yazılan ödemeler.',
         bilgi: true,
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.grafikTahsilat),
-        metin: 'Alttaki grafikte «Tahsilat»a dokun.',
+        metin: 'Alttaki grafikte «Kasaya giren»e dokun.',
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.grafikAlani),
@@ -64,8 +64,8 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
         bilgi: true,
       ),
     ],
-    kural: 'Ciro onay beklemez; iptal edilmeyen her ders sayılır. '
-        'Ödemeler sonradan girilebildiği için tahsilat geriden gelir.',
+    kural: 'Ders bedeli onay beklemez; iptal edilmeyen her ders sayılır. '
+        'Ödemeler sonradan girilebildiği için kasaya giren geriden gelir.',
   ),
   OgrenmeGorevi(
     id: 'yonetici.kortDoluluk',
@@ -315,7 +315,7 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
       ),
       OgrenmeAdimi(
         hedef: Secici.metin('Raporlar'),
-        metin: '«Raporlar» ciro ve doluluk tablolarıdır.',
+        metin: '«Raporlar» ders bedeli ve doluluk tablolarıdır.',
         bilgi: true,
       ),
       OgrenmeAdimi(
@@ -351,12 +351,12 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
     adimlar: [
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.yoneticiBugun),
-        metin: '«Yeni Üye» bugün kaydı açılanlardır.',
+        metin: '«Kasaya giren» bugün yazılan ödemelerdir.',
         bilgi: true,
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.yoneticiBugun),
-        metin: '«Ders» bugünkü iptal edilmeyen derstir.',
+        metin: '«Bugünkü ders»: biten ve toplam ders.',
         bilgi: true,
       ),
       OgrenmeAdimi(
@@ -365,7 +365,8 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
         bilgi: true,
       ),
     ],
-    kural: 'Bu kart dönem seçiciden etkilenmez. Yalnız bugünü gösterir.',
+    kural: 'Bu kartlar dönem seçiciden etkilenmez. Kasaya girenin yanındaki '
+        'saat, son ödemenin sisteme girildiği andır.',
   ),
   OgrenmeGorevi(
     id: 'yonetici.hizliErisim',
@@ -375,17 +376,17 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
     adimlar: [
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.yoneticiHizli),
-        metin: '«Bugün» altında üç kısayol var.',
+        metin: '«Dikkat isteyenler» bakılacak konuları toplar.',
         bilgi: true,
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.yoneticiBugunDersleri),
-        metin: 'Onay bekleyen ders varsa kırmızı sayı çıkar.',
+        metin: 'Onay bekleyen ders varsa kartta yazar.',
         bilgi: true,
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.yoneticiBugunDersleri),
-        metin: '«Bugünün Dersleri»ne dokun.',
+        metin: '«Bugünkü ders» kartına dokun.',
         kalici: true,
         sonuc: 'Dersler sekmesi bugünün listesiyle açılır',
       ),
@@ -398,12 +399,12 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
   OgrenmeGorevi(
     id: 'yonetici.ciroRaporu',
     sayfa: OgrenmeSayfasi.yoneticiRaporlar,
-    baslik: 'Ciro ve tahsilat tablosu nasıl okunur?',
+    baslik: 'Ders bedeli ve kasa tabloları nasıl okunur?',
     kosulMetni: 'Raporlar açılınca',
     adimlar: [
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.raporCiroSecici),
-        metin: '«Ciro ve tahsilat» kutusunda «Bu Ay»ı seç.',
+        metin: '«Ders bedeli ve kasa» kutusunda «Bu Ay»ı seç.',
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.raporOzetKartlar),
@@ -412,16 +413,17 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.raporCiroTablosu),
-        metin: '«Ciro Raporu» günlük ders ücretini gösterir.',
+        metin: '«Gün gün ders bedeli» günlük ders ücretidir.',
         bilgi: true,
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.raporTahsilatTablosu),
-        metin: '«Tahsilat Raporu» günlük ödemeleri gösterir.',
+        metin: '«Gün gün kasaya giren» günlük ödemelerdir.',
         bilgi: true,
       ),
     ],
-    kural: 'Ciro ders ücretidir, tahsilat ödemedir; aynı güne denk gelmez. '
+    kural: 'Ders bedeli ders ücretidir, kasaya giren ödemedir; '
+        'aynı güne denk gelmez. '
         'Boş dönemde «veri bulunamadı» yazar.',
   ),
   OgrenmeGorevi(
@@ -1012,7 +1014,8 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
       ),
     ],
     kural: 'Bitmiş dersin onayını ofis verir. '
-        'Onay bekleyenler ana sayfadaki «Bugünün Dersleri» rozetinde de görünür.',
+        'Onay bekleyenler ana sayfadaki «Bugünkü ders» kartında da yazar. '
+        'Satıra dokununca dersin işlem geçmişi açılır.',
   ),
   OgrenmeGorevi(
     id: 'yonetici.dersFiltre',

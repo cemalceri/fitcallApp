@@ -114,6 +114,12 @@ class YoneticiDrawer extends StatelessWidget {
                         _git(context, routeEnums[SayfaAdi.yoneticiHakedis]!),
                   ),
                   YanMenuOgesi(
+                    ikon: Icons.badge_rounded,
+                    baslik: 'Ekip',
+                    onTap: () =>
+                        _git(context, routeEnums[SayfaAdi.yoneticiEkip]!),
+                  ),
+                  YanMenuOgesi(
                     ikon: Icons.account_balance_wallet_rounded,
                     baslik: 'Borçlu Üyeler',
                     onTap: () => _borcluUyeler(context),

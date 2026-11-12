@@ -6,6 +6,7 @@ import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:flutter/material.dart';
+import 'package:fitcall/screens/7_yonetici/ekip/ders_gecmisi_sheet.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/1_common/ders_listesi/widgets/ders_istatistik_kartlar.dart';
@@ -326,7 +327,10 @@ class _DerslerPageState extends State<DerslerPage> {
               if (index > 1) const ListeAyraci(solBosluk: 78),
               ogrenmeHedefiSar(
                 index == 1 ? Hedef.yoneticiDersSatiri : null,
-                DersListeItemWidget(ders: dersler[index - 1]),
+                DersListeItemWidget(
+                  ders: dersler[index - 1],
+                  onTap: () => dersGecmisiGoster(context, dersler[index - 1]),
+                ),
               ),
             ],
           );

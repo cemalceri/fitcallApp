@@ -5,6 +5,7 @@ import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ilk_giris_karti.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
+import 'package:fitcall/common/tarih_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
@@ -15,7 +16,8 @@ import 'package:fitcall/screens/7_yonetici/dashboard/widgets/donem_kutusu.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/weekly_chart_card.dart';
-import 'package:fitcall/screens/7_yonetici/dashboard/widgets/quick_access_section.dart';
+import 'package:fitcall/screens/7_yonetici/dashboard/widgets/bugun_ozeti.dart';
+import 'package:fitcall/screens/7_yonetici/dashboard/widgets/dikkat_karti.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/daily_summary_card.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 
@@ -31,11 +33,20 @@ class YoneticiDashboardPage extends StatefulWidget {
   /// ayarıyla açılır (ayrı Borçlu Üyeler sayfası kaldırıldı).
   final VoidCallback? onBorcluUyeler;
 
+  /// "Dikkat isteyenler"de gelmeyen üyeler maddesi: Üyeler sekmesi, sunucunun
+  /// verdiği süzgeçle (aktif + şu günden beri dersi yok) açılır.
+  final void Function(DateTime dersOnce)? onGelmeyenUyeler;
+
+  /// "Dikkat isteyenler"de ekip maddesi: Ekip sayfası.
+  final VoidCallback? onEkip;
+
   const YoneticiDashboardPage({
     super.key,
     this.onTabChange,
     this.onMenuTap,
     this.onBorcluUyeler,
+    this.onGelmeyenUyeler,
+    this.onEkip,
   });
 
   @override
@@ -130,6 +141,24 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
     }
   }
 
+  /// Dikkat maddesinin açtığı yer; hedefi olmayan madde (ör. dekont: yönetici
+  /// kabuğunda dekont ekranı yok) dokunulmaz kalır.
+  VoidCallback? _dikkatHedefi(DikkatMaddesi madde) {
+    switch (madde.kod) {
+      case 'onay_bekleyen':
+      case 'bugun_iptal':
+        if (widget.onTabChange == null) return null;
+        return () => widget.onTabChange!(4); // Dersler
+      case 'gelmeyen_uye':
+        final gun = parseApiTarih(madde.filtre?['ders_once']);
+        if (gun == null || widget.onGelmeyenUyeler == null) return null;
+        return () => widget.onGelmeyenUyeler!(gun);
+      case 'ekip':
+        return widget.onEkip;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     // Başlık bandında yalnız karşılama; dönem seçimi etkilediği kartlarla
@@ -202,15 +231,35 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
               gorevId: 'yonetici.anaSayfa',
               margin: EdgeInsets.only(bottom: 16),
             ),
-            // Bugünün özeti en üstte (kullanıcı isteği 2026-10-16).
+            // Bugün en üstte ve dönemden bağımsız. Eski sunucu bugünün
+            // kasasını vermez; o zaman önceki özet kartı çizilir.
             OgrenmeHedefi(
               id: Hedef.yoneticiBugun,
-              child: DailySummaryCard(
-                data: _data!.gununOzeti,
-                bugunkuDers: _data!.hizliErisimDersler.toplamDers,
-              ),
+              child: _data!.gununOzeti.bugunTahsilat == null
+                  ? DailySummaryCard(
+                      data: _data!.gununOzeti,
+                      bugunkuDers: _data!.hizliErisimDersler.toplamDers,
+                    )
+                  : BugunOzeti(
+                      ozet: _data!.gununOzeti,
+                      onayBekleyen: _data!.hizliErisimDersler.onayBekleyen,
+                      onDersler: widget.onTabChange == null
+                          ? null
+                          : () => widget.onTabChange!(4), // Dersler
+                    ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+
+            if (_data!.dikkat != null) ...[
+              OgrenmeHedefi(
+                id: Hedef.yoneticiHizli,
+                child: DikkatKarti(
+                  maddeler: _data!.dikkat!,
+                  hedef: _dikkatHedefi,
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
 
             // Seçilen döneme bağlı kartlar, seçiciyle aynı kutuda.
             OgrenmeHedefi(
@@ -258,23 +307,6 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
             ),
             const SizedBox(height: 20),
 
-            OgrenmeHedefi(
-              id: Hedef.yoneticiHizli,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const PanoBolumEtiketi(
-                      ikon: Icons.today_rounded, etiket: 'Bugün'),
-                  QuickAccessSection(
-                    data: _data!,
-                    onRaporlarTap: () => widget.onTabChange?.call(1), // Raporlar
-                    onAntrenorTap: () =>
-                        widget.onTabChange?.call(3), // Antrenörler
-                    onDerslerTap: () => widget.onTabChange?.call(4), // Dersler
-                  ),
-                ],
-              ),
-            ),
             const SizedBox(height: 24),
           ],
         ),

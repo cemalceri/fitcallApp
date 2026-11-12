@@ -48,7 +48,7 @@ class CiroRaporuSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ciro Raporu',
+                      'Gün gün ders bedeli',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -116,7 +116,7 @@ class CiroRaporuSection extends StatelessWidget {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      'Ciro',
+                      'Ders bedeli',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,

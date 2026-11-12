@@ -117,11 +117,15 @@ class DashboardTahsilatKarti {
   final double oncekiDonemTahsilat;
   final double? degisimYuzdesi;
 
+  /// Dönemin ödemelerinden sisteme en son girilenin giriş anı.
+  final DateTime? sonGiris;
+
   DashboardTahsilatKarti({
     required this.toplamTahsilat,
     required this.islemSayisi,
     required this.oncekiDonemTahsilat,
     this.degisimYuzdesi,
+    this.sonGiris,
   });
 
   factory DashboardTahsilatKarti.fromJson(Map<String, dynamic> json) {
@@ -135,6 +139,7 @@ class DashboardTahsilatKarti {
       degisimYuzdesi: json['degisim_yuzdesi'] != null
           ? double.tryParse(json['degisim_yuzdesi'].toString())
           : null,
+      sonGiris: parseApiTarih(json['son_giris']),
     );
   }
 }
@@ -173,6 +178,9 @@ class DashboardDersKarti {
   final int oncekiDonemIptal;
   final double? iptalDegisimYuzdesi;
 
+  /// Önceki eş uzunluktaki dönemin doluluğu (eski sunucuda yok).
+  final double? oncekiDolulukYuzdesi;
+
   DashboardDersKarti({
     required this.toplamDers,
     required this.tamamlananDers,
@@ -180,6 +188,7 @@ class DashboardDersKarti {
     required this.dolulukYuzdesi,
     required this.oncekiDonemIptal,
     this.iptalDegisimYuzdesi,
+    this.oncekiDolulukYuzdesi,
   });
 
   factory DashboardDersKarti.fromJson(Map<String, dynamic> json) {
@@ -192,6 +201,9 @@ class DashboardDersKarti {
       oncekiDonemIptal: json['onceki_donem_iptal'] ?? 0,
       iptalDegisimYuzdesi: json['iptal_degisim_yuzdesi'] != null
           ? double.tryParse(json['iptal_degisim_yuzdesi'].toString())
+          : null,
+      oncekiDolulukYuzdesi: json['onceki_doluluk_yuzdesi'] != null
+          ? double.tryParse(json['onceki_doluluk_yuzdesi'].toString())
           : null,
     );
   }
@@ -271,10 +283,29 @@ class GununOzeti {
   final int telafiDers;
   final double dolulukYuzdesi;
 
+  /// Bugünün iptal edilmemiş dersleri; eski sunucuda null (kart o zaman
+  /// hizliErisimDersler.toplamDers değerine düşer).
+  final int? bugunToplamDers;
+
+  /// Saati geçmiş (biten) dersler; yönetici onayı aranmaz.
+  final int bugunBitenDers;
+  final int bugunIptalDers;
+
+  /// Bugün kasaya giren: seçili dönemden bağımsız, kıyassız.
+  final double? bugunTahsilat;
+  final int bugunTahsilatIslem;
+  final DateTime? bugunSonGiris;
+
   GununOzeti({
     required this.yeniKayit,
     required this.telafiDers,
     required this.dolulukYuzdesi,
+    this.bugunToplamDers,
+    this.bugunBitenDers = 0,
+    this.bugunIptalDers = 0,
+    this.bugunTahsilat,
+    this.bugunTahsilatIslem = 0,
+    this.bugunSonGiris,
   });
 
   factory GununOzeti.fromJson(Map<String, dynamic> json) {
@@ -283,6 +314,56 @@ class GununOzeti {
       telafiDers: json['telafi_ders'] ?? 0,
       dolulukYuzdesi:
           double.tryParse(json['doluluk_yuzdesi']?.toString() ?? '0') ?? 0,
+      bugunToplamDers: json['bugun_toplam_ders'],
+      bugunBitenDers: json['bugun_biten_ders'] ?? 0,
+      bugunIptalDers: json['bugun_iptal_ders'] ?? 0,
+      bugunTahsilat: json['bugun_tahsilat'] != null
+          ? double.tryParse(json['bugun_tahsilat'].toString())
+          : null,
+      bugunTahsilatIslem: json['bugun_tahsilat_islem'] ?? 0,
+      bugunSonGiris: parseApiTarih(json['bugun_son_giris']),
+    );
+  }
+}
+
+/// Ana sayfanın "Dikkat isteyenler" listesindeki bir madde. Metin sunucudan
+/// gelir; [kod] ikonu ve dokununca açılacak sayfayı seçer (tanınmayan kod
+/// düz satır olarak gösterilir).
+class DikkatMaddesi {
+  final String kod;
+  final int sayi;
+  final String baslik;
+  final String? aciklama;
+
+  /// uyari | olumsuz | bilgi
+  final String ton;
+
+  /// gelmeyen_uye: Üyeler sekmesinin açılacağı filtre (API biçiminde).
+  final Map<String, dynamic>? filtre;
+
+  /// ekip: ilgili ofis çalışanı.
+  final int? kullaniciId;
+
+  const DikkatMaddesi({
+    required this.kod,
+    required this.sayi,
+    required this.baslik,
+    this.aciklama,
+    this.ton = 'bilgi',
+    this.filtre,
+    this.kullaniciId,
+  });
+
+  factory DikkatMaddesi.fromJson(Map<String, dynamic> json) {
+    final filtre = json['filtre'];
+    return DikkatMaddesi(
+      kod: json['kod']?.toString() ?? '',
+      sayi: json['sayi'] ?? 0,
+      baslik: json['baslik']?.toString() ?? '',
+      aciklama: json['aciklama']?.toString(),
+      ton: json['ton']?.toString() ?? 'bilgi',
+      filtre: filtre is Map ? Map<String, dynamic>.from(filtre) : null,
+      kullaniciId: json['kullanici_id'],
     );
   }
 }
@@ -308,6 +389,9 @@ class DashboardData {
   final HizliErisimAntrenor hizliErisimAntrenor;
   final GununOzeti gununOzeti;
 
+  /// "Dikkat isteyenler"; eski sunucuda null (kart o zaman çizilmez).
+  final List<DikkatMaddesi>? dikkat;
+
   DashboardData({
     required this.ciro,
     required this.aylikCiro,
@@ -321,6 +405,7 @@ class DashboardData {
     required this.hizliErisimDersler,
     required this.hizliErisimAntrenor,
     required this.gununOzeti,
+    this.dikkat,
   });
 
   factory DashboardData.fromJson(Map<String, dynamic> json) {
@@ -350,6 +435,9 @@ class DashboardData {
       hizliErisimAntrenor:
           HizliErisimAntrenor.fromJson(json['hizli_erisim_antrenor'] ?? {}),
       gununOzeti: GununOzeti.fromJson(json['gunun_ozeti'] ?? {}),
+      dikkat: (json['dikkat'] as List?)
+          ?.map((e) => DikkatMaddesi.fromJson(e))
+          .toList(),
     );
   }
 }
@@ -503,12 +591,22 @@ class RaporlarData {
   final List<DolulukRaporuItem> dolulukRaporu;
   final List<AntrenorPerformansItem> antrenorPerformans;
 
+  /// Yeni özet alanları; eski sunucuda null.
+  final RaporCiroOzeti? ciroOzet;
+  final RaporTahsilatOzeti? tahsilatOzet;
+  final List<UrunKirilimi> urunKirilimi;
+  final RaporDolulukOzeti? dolulukOzet;
+
   RaporlarData({
     required this.ozetKartlar,
     required this.ciroRaporu,
     required this.tahsilatRaporu,
     required this.dolulukRaporu,
     required this.antrenorPerformans,
+    this.ciroOzet,
+    this.tahsilatOzet,
+    this.urunKirilimi = const [],
+    this.dolulukOzet,
   });
 
   factory RaporlarData.fromJson(Map<String, dynamic> json) {
@@ -528,8 +626,98 @@ class RaporlarData {
       antrenorPerformans: (json['antrenor_performans'] as List? ?? [])
           .map((e) => AntrenorPerformansItem.fromJson(e))
           .toList(),
+      ciroOzet: json['ciro_ozet'] is Map
+          ? RaporCiroOzeti.fromJson(json['ciro_ozet'])
+          : null,
+      tahsilatOzet: json['tahsilat_ozet'] is Map
+          ? RaporTahsilatOzeti.fromJson(json['tahsilat_ozet'])
+          : null,
+      urunKirilimi: (json['urun_kirilimi'] as List? ?? [])
+          .map((e) => UrunKirilimi.fromJson(e))
+          .toList(),
+      dolulukOzet: json['doluluk_ozet'] is Map
+          ? RaporDolulukOzeti.fromJson(json['doluluk_ozet'])
+          : null,
     );
   }
+}
+
+double _sayi(dynamic deger) => double.tryParse(deger?.toString() ?? '') ?? 0;
+
+/// Dönemin ders bedeli (ciro) ve önceki eş uzunluktaki dönemle kıyası.
+class RaporCiroOzeti {
+  final double toplam;
+  final int dersSayisi;
+  final double oncekiToplam;
+  final double? degisimYuzdesi;
+
+  const RaporCiroOzeti({
+    required this.toplam,
+    required this.dersSayisi,
+    required this.oncekiToplam,
+    this.degisimYuzdesi,
+  });
+
+  factory RaporCiroOzeti.fromJson(Map<String, dynamic> json) => RaporCiroOzeti(
+        toplam: _sayi(json['toplam']),
+        dersSayisi: json['ders_sayisi'] ?? 0,
+        oncekiToplam: _sayi(json['onceki_toplam']),
+        degisimYuzdesi: json['degisim_yuzdesi'] != null
+            ? double.tryParse(json['degisim_yuzdesi'].toString())
+            : null,
+      );
+}
+
+/// Dönemde kasaya giren. Kıyas yok: ödemeler gecikmeli giriliyor.
+class RaporTahsilatOzeti {
+  final double toplam;
+  final int islemSayisi;
+  final DateTime? sonGiris;
+
+  const RaporTahsilatOzeti({
+    required this.toplam,
+    required this.islemSayisi,
+    this.sonGiris,
+  });
+
+  factory RaporTahsilatOzeti.fromJson(Map<String, dynamic> json) =>
+      RaporTahsilatOzeti(
+        toplam: _sayi(json['toplam']),
+        islemSayisi: json['islem_sayisi'] ?? 0,
+        sonGiris: parseApiTarih(json['son_giris']),
+      );
+}
+
+/// Ders bedelinin ürüne göre bir dilimi.
+class UrunKirilimi {
+  final String ad;
+  final double tutar;
+  final int dersSayisi;
+
+  const UrunKirilimi({
+    required this.ad,
+    required this.tutar,
+    required this.dersSayisi,
+  });
+
+  factory UrunKirilimi.fromJson(Map<String, dynamic> json) => UrunKirilimi(
+        ad: json['ad']?.toString() ?? '',
+        tutar: _sayi(json['tutar']),
+        dersSayisi: json['ders_sayisi'] ?? 0,
+      );
+}
+
+class RaporDolulukOzeti {
+  final double yuzde;
+  final double oncekiYuzde;
+
+  const RaporDolulukOzeti({required this.yuzde, required this.oncekiYuzde});
+
+  factory RaporDolulukOzeti.fromJson(Map<String, dynamic> json) =>
+      RaporDolulukOzeti(
+        yuzde: _sayi(json['yuzde']),
+        oncekiYuzde: _sayi(json['onceki_yuzde']),
+      );
 }
 
 // ==================== ÜYELER MODELLERİ ====================

@@ -100,6 +100,11 @@ import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/misafir_ekle_sheet.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/widgets/yoklama_hizli_secim.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/daily_summary_card.dart';
+import 'package:fitcall/screens/7_yonetici/dashboard/widgets/bugun_ozeti.dart';
+import 'package:fitcall/screens/7_yonetici/dashboard/widgets/dikkat_karti.dart';
+import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_ozetleri.dart';
+import 'package:fitcall/screens/7_yonetici/ekip/widgets/ekip_gorunumu.dart';
+import 'package:fitcall/models/9_yonetici/ekip_models.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
@@ -2387,6 +2392,268 @@ void main() {
         onBorcluUyeler: () {},
       );
     });
+
+    // ---- 2026-11 yeniden tasarım: bugün özeti, dikkat listesi, rapor özetleri
+    for (final dolu in [true, false]) {
+      tasmaTesti('BugunOzeti (${dolu ? 'dolu' : 'boş gün'})', () {
+        return BugunOzeti(
+          ozet: GununOzeti(
+            yeniKayit: dolu ? 12 : 0,
+            telafiDers: 0,
+            dolulukYuzdesi: dolu ? 100 : 0,
+            bugunToplamDers: dolu ? 148 : 0,
+            bugunBitenDers: dolu ? 111 : 0,
+            bugunIptalDers: dolu ? 12 : 0,
+            bugunTahsilat: dolu ? 1234567 : 0,
+            bugunTahsilatIslem: dolu ? 128 : 0,
+            bugunSonGiris: dolu ? DateTime(2026, 11, 12, 23, 59) : null,
+          ),
+          onayBekleyen: dolu ? 27 : 0,
+          onDersler: () {},
+        );
+      }, sar: kaydirmali);
+    }
+
+    tasmaTesti('DikkatKarti', () {
+      return DikkatKarti(
+        hedef: (m) => m.kod == 'dekont_bekleyen' ? null : () {},
+        maddeler: const [
+          DikkatMaddesi(
+              kod: 'onay_bekleyen',
+              sayi: 1234,
+              baslik: '1234 ders onay bekliyor',
+              aciklama: 'En eskisi 30 gündür bekliyor',
+              ton: 'uyari'),
+          DikkatMaddesi(
+              kod: 'dekont_bekleyen',
+              sayi: 3,
+              baslik: '3 ödeme onay bekliyor',
+              aciklama: 'Üyenin gönderdiği dekont'),
+          DikkatMaddesi(
+              kod: 'ekip',
+              sayi: 12,
+              baslik: 'Muhammed Abdurrahman Yılmazoğulları bugün 12 ders sildi',
+              aciklama: 'Ekip sayfasında ayrıntısı',
+              ton: 'olumsuz'),
+          DikkatMaddesi(kod: 'bilinmeyen', sayi: 1, baslik: 'Yeni bir madde'),
+        ],
+      );
+    }, sar: kaydirmali);
+    tasmaTesti('DikkatKarti (boş)',
+        () => DikkatKarti(maddeler: const [], hedef: (_) => null));
+
+    for (final gunSayisi in [7, 31]) {
+      tasmaTesti('RaporDonemOzeti ($gunSayisi gün)', () {
+        return RaporDonemOzeti(
+          ciro: const RaporCiroOzeti(
+            toplam: 12345678,
+            dersSayisi: 1880,
+            oncekiToplam: 9876543,
+            degisimYuzdesi: 25.0,
+          ),
+          tahsilat: RaporTahsilatOzeti(
+            toplam: 9876543,
+            islemSayisi: 1234,
+            sonGiris: DateTime(2026, 11, 12, 23, 59),
+          ),
+          gunler: [
+            for (var i = 0; i < gunSayisi; i++)
+              CiroRaporuItem(
+                tarih: DateTime(2026, 10, 1 + i),
+                ciro: 1000.0 * ((i * 7) % 13),
+                dersSayisi: 10 + i,
+              ),
+          ],
+          urunler: const [
+            UrunKirilimi(
+                ad: 'Yetişkin Özel Ders Paketi (8 Ders, Kapalı Kort)',
+                tutar: 5234567,
+                dersSayisi: 800),
+            UrunKirilimi(ad: 'Grup dersi', tutar: 3234567, dersSayisi: 700),
+            UrunKirilimi(ad: 'Kort kirası', tutar: 1234567, dersSayisi: 300),
+            UrunKirilimi(ad: 'Diğer', tutar: 234567, dersSayisi: 80),
+            UrunKirilimi(ad: 'Ekstra ücretler', tutar: 34567, dersSayisi: 0),
+          ],
+        );
+      }, sar: kaydirmali);
+    }
+
+    tasmaTesti(
+      'RaporDolulukKarti',
+      () => const RaporDolulukKarti(
+          ozet: RaporDolulukOzeti(yuzde: 100, oncekiYuzde: 3.4)),
+    );
+
+    // ---- Ekip takibi
+    EkipData ekip() => EkipData.fromJson({
+          'gruplar': [
+            {'kod': 'ders', 'etiket': 'Dersler'},
+            {'kod': 'para', 'etiket': 'Para'},
+            {'kod': 'uye', 'etiket': 'Üyeler'},
+            {'kod': 'diger', 'etiket': 'Diğer'},
+          ],
+          'ozet': {
+            'kisi_sayisi': 12,
+            'gelen_sayisi': 11,
+            'toplam_islem': 12345,
+            'kritik_islem': 1234,
+          },
+          'kisiler': [
+            {
+              'id': 1,
+              'ad_soyad': 'Muhammed Abdurrahman Yılmazoğulları',
+              'bugun_giris': '2026-11-12T08:55:00+03:00',
+              'toplam_islem': 1234,
+              'kritik_islem': 321,
+              'islemler': [
+                for (final (kod, grup, etiket, kritik) in const [
+                  ('ders_kaydi', 'ders', 'Ders kaydı', false),
+                  ('ders_onayi', 'ders', 'Ders onayı', false),
+                  ('ders_iptali', 'ders', 'Ders iptali', true),
+                  ('ders_silme', 'ders', 'Ders silme', true),
+                  ('tahsilat', 'para', 'Tahsilat', true),
+                  ('tahsilat_duzeltme', 'para', 'Tahsilat düzeltme', true),
+                  ('tahsilat_silme', 'para', 'Tahsilat silme', true),
+                  ('dekont', 'para', 'Ödeme belgesi', true),
+                  ('paket_degisikligi', 'uye', 'Paket değişikliği', true),
+                  ('uye_kaydi', 'uye', 'Yeni üye', false),
+                  ('uye_guncelleme', 'uye', 'Üye güncelleme', false),
+                  ('duyuru', 'diger', 'Duyuru', false),
+                ])
+                  {
+                    'kod': kod,
+                    'grup': grup,
+                    'etiket': etiket,
+                    'kritik': kritik,
+                    'sayi': 123,
+                  },
+              ],
+            },
+            {
+              'id': 2,
+              'ad_soyad': 'Ece Su',
+              'bugun_giris': null,
+              'toplam_islem': 0,
+              'kritik_islem': 0,
+              'islemler': [],
+            },
+          ],
+        });
+    tasmaTesti('EkipGorunumu',
+        () => EkipGorunumu(data: ekip(), onKisi: (_) {}),
+        sar: kaydirmali);
+    tasmaTesti(
+      'EkipGorunumu (çalışan yok)',
+      () => EkipGorunumu(
+          data: EkipData.fromJson(const {}), onKisi: (_) {}),
+    );
+
+    EkipDetayData ekipDetay({bool bos = false}) => EkipDetayData.fromJson({
+          'kisi': {'id': 1, 'ad_soyad': 'Muhammed Abdurrahman Yılmazoğulları'},
+          'gun': '2026-11-12',
+          'giris': bos ? null : '2026-11-12T08:55:00+03:00',
+          'girisler': [
+            for (var i = 0; i < 7; i++)
+              {
+                'gun': '2026-11-${(6 + i).toString().padLeft(2, '0')}',
+                'ilk_giris': i.isEven && !bos
+                    ? '2026-11-${(6 + i).toString().padLeft(2, '0')}T10:45:00+03:00'
+                    : null,
+              },
+          ],
+          'gruplar': [
+            {'kod': 'ders', 'etiket': 'Dersler'},
+            {'kod': 'para', 'etiket': 'Para'},
+            {'kod': 'uye', 'etiket': 'Üyeler'},
+            {'kod': 'diger', 'etiket': 'Diğer'},
+          ],
+          'toplam_islem': bos ? 0 : 1234,
+          'kritik_islem': bos ? 0 : 321,
+          'islemler': bos
+              ? []
+              : [
+                  {
+                    'kod': 'ders_onayi',
+                    'grup': 'ders',
+                    'etiket': 'Ders onayı',
+                    'kritik': false,
+                    'sayi': 1200,
+                  },
+                  {
+                    'kod': 'tahsilat_duzeltme',
+                    'grup': 'para',
+                    'etiket': 'Tahsilat düzeltme',
+                    'kritik': true,
+                    'sayi': 34,
+                  },
+                ],
+          'akis': bos
+              ? []
+              : [
+                  {
+                    'zaman': '2026-11-12T16:30:00+03:00',
+                    'saat': '16:30',
+                    'kod': 'tahsilat_silme',
+                    'grup': 'para',
+                    'etiket': 'Tahsilat silme',
+                    'kritik': true,
+                    'metin': 'Tahsilat sildi',
+                    'ayrinti':
+                        'Muhammed Abdurrahman YILMAZOĞULLARI · 1.234.567 TL · Tutar, Tarih',
+                  },
+                  {
+                    'zaman': '2026-11-12T14:20:00+03:00',
+                    'saat': '14:20',
+                    'kod': 'ders_onayi',
+                    'grup': 'ders',
+                    'etiket': 'Ders onayı',
+                    'kritik': false,
+                    'metin': '1200 ders onayladı',
+                    'ayrinti': '08:05–14:20 arası',
+                  },
+                  {
+                    'zaman': '2026-11-12T09:10:00+03:00',
+                    'saat': '09:10',
+                    'kod': 'uye_kaydi',
+                    'grup': 'uye',
+                    'etiket': 'Yeni üye',
+                    'kritik': false,
+                    'metin': 'Yeni üye kaydetti',
+                    'ayrinti': null,
+                  },
+                ],
+        });
+    for (final bos in [false, true]) {
+      tasmaTesti(
+        'EkipDetayGorunumu${bos ? ' (işlem yok)' : ''}',
+        () => EkipDetayGorunumu(
+            data: ekipDetay(bos: bos), bugun: DateTime(2026, 11, 12)),
+        sar: kaydirmali,
+      );
+    }
+
+    tasmaTesti(
+      'IslemGecmisiListesi',
+      () => IslemGecmisiListesi(
+        satirlar: IslemGecmisiSatiri.liste([
+          for (final (ton, metin) in const [
+            ('iptal', 'Dersi iptal etti'),
+            ('guncelleme', 'Güncelledi: Kort, Başlangıç, Bitiş, Antrenör'),
+            ('onay', 'Yönetici onayı: yapıldı'),
+            ('ekleme', 'Dersi kaydetti'),
+          ])
+            {
+              'zaman': '2026-11-12T16:30:00+03:00',
+              'kim': 'Muhammed Abdurrahman Yılmazoğulları',
+              'metin': metin,
+              'ton': ton,
+            },
+        ]),
+      ),
+      sar: kaydirmali,
+    );
+    tasmaTesti('IslemGecmisiListesi (boş)',
+        () => const IslemGecmisiListesi(satirlar: []));
   });
 
   /* ===================== ANTRENÖR ===================== */

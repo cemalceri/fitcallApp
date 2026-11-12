@@ -50,7 +50,7 @@ class TahsilatRaporuSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Tahsilat Raporu',
+                      'Gün gün kasaya giren',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -118,7 +118,7 @@ class TahsilatRaporuSection extends StatelessWidget {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      'Tahsilat',
+                      'Kasaya giren',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -146,7 +146,7 @@ class TahsilatRaporuSection extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Bu dönem için tahsilat verisi bulunamadı',
+                  'Bu dönemde kasaya giren ödeme yok',
                   style: TextStyle(color: colorScheme.onSurfaceVariant),
                 ),
               ),
