@@ -40,6 +40,10 @@ class YoneticiDashboardPage extends StatefulWidget {
   /// "Dikkat isteyenler"de ekip maddesi: Ekip sayfası.
   final VoidCallback? onEkip;
 
+  /// "Dikkat isteyenler"de ödeme onay bekliyor maddesi: bekleyen dekontlar
+  /// (yalnız görüntüleme).
+  final VoidCallback? onDekontlar;
+
   const YoneticiDashboardPage({
     super.key,
     this.onTabChange,
@@ -47,6 +51,7 @@ class YoneticiDashboardPage extends StatefulWidget {
     this.onBorcluUyeler,
     this.onGelmeyenUyeler,
     this.onEkip,
+    this.onDekontlar,
   });
 
   @override
@@ -141,8 +146,7 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
     }
   }
 
-  /// Dikkat maddesinin açtığı yer; hedefi olmayan madde (ör. dekont: yönetici
-  /// kabuğunda dekont ekranı yok) dokunulmaz kalır.
+  /// Dikkat maddesinin açtığı yer; hedefi olmayan madde dokunulmaz kalır.
   VoidCallback? _dikkatHedefi(DikkatMaddesi madde) {
     switch (madde.kod) {
       case 'onay_bekleyen':
@@ -155,6 +159,8 @@ class _YoneticiDashboardPageState extends State<YoneticiDashboardPage> {
         return () => widget.onGelmeyenUyeler!(gun);
       case 'ekip':
         return widget.onEkip;
+      case 'dekont_bekleyen':
+        return widget.onDekontlar;
     }
     return null;
   }

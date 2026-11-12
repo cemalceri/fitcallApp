@@ -7,6 +7,9 @@ import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:fitcall/models/9_yonetici/uye_detay_models.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
 import 'package:fitcall/models/9_yonetici/ekip_models.dart';
+import 'package:fitcall/models/9_yonetici/bekleyen_dekont_models.dart';
+import 'package:fitcall/services/muhasebe/dekont_service.dart';
+import 'dart:convert';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 
@@ -190,5 +193,36 @@ class YoneticiApiService {
           (json as Map<String, dynamic>)['islem_gecmisi']),
       auth: true,
     );
+  }
+
+  // ==================== DEKONT (salt okunur) ====================
+
+  /// Ofisin henüz işlemediği dekontlar, en eski önce.
+  static Future<ApiResult<List<BekleyenDekont>>> getBekleyenDekontlar() {
+    return ApiClient.postParsed<List<BekleyenDekont>>(
+      yoneticiDekontlar,
+      const {},
+      BekleyenDekont.liste,
+      auth: true,
+    );
+  }
+
+  /// Dekontun dosyası (görsel ya da PDF).
+  static Future<DekontDosyasi> getDekontDosya(int dekontId) async {
+    final res = await ApiClient.postParsed<DekontDosyasi>(
+      yoneticiDekontDosya,
+      {'dekont_id': dekontId},
+      (json) {
+        final m = (json as Map).cast<String, dynamic>();
+        return DekontDosyasi(
+          ad: (m['dosya_adi'] ?? 'dekont').toString(),
+          tur: (m['dosya_turu'] ?? '').toString(),
+          baytlar: base64Decode((m['icerik_b64'] ?? '').toString()),
+        );
+      },
+      auth: true,
+      timeout: const Duration(seconds: 45),
+    );
+    return res.data!;
   }
 }

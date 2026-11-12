@@ -1,11 +1,11 @@
 // lib/screens/7_yonetici/dashboard/widgets/bugun_ozeti.dart
 //
 // Ana sayfanın en üstü: seçili dönemden bağımsız, hep BUGÜN.
-//   - kimlik yüzeyinde bugün kasaya giren (kıyassız; yanında son giriş saati)
+//   - kimlik yüzeyinde bugün tahsil edilen (kıyassız; yanında son giriş saati)
 //   - bugünkü ders (biten / toplam, iptal ve onay bekleyen)
 //   - bugünkü doluluk
 //
-// Kasaya girenin yüzdesi yok: ödemeler sisteme gecikmeli girildiği için günün
+// Tahsil edilenin yüzdesi yok: ödemeler sisteme gecikmeli girildiği için günün
 // kıyası yanıltıyor; "son giriş" rakamın ne kadar güncel olduğunu söyler.
 
 import 'package:fitcall/common/tema.dart';
@@ -81,7 +81,7 @@ class _KasaKarti extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Kasaya giren · bugün',
+            'Tahsil edilen · bugün',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -153,21 +153,31 @@ class _DersKarti extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           TutarYazisi('$biten', birim: '/ $toplam'),
+          // "x / y" tek başına anlaşılmıyordu: x saati geçen (yönetici onayı
+          // aranmaz), y bugünün iptal edilmeyen dersleri.
+          Text(
+            'Saati biten / bugünkü toplam ders (iptaller hariç)',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 11, color: context.cs.onSurfaceVariant),
+          ),
           const SizedBox(height: 8),
           IlerlemeCizgisi(toplam == 0 ? 0 : biten / toplam),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              if (ozet.bugunIptalDers > 0)
-                DurumHapi('${ozet.bugunIptalDers} iptal', ton: ListeTonu.hata),
-              if (onayBekleyen > 0)
-                DurumHapi('$onayBekleyen onay bekliyor', ton: ListeTonu.uyari),
-              if (ozet.bugunIptalDers == 0 && onayBekleyen == 0)
-                const DurumHapi('biten / toplam'),
-            ],
-          ),
+          if (ozet.bugunIptalDers > 0 || onayBekleyen > 0) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                if (ozet.bugunIptalDers > 0)
+                  DurumHapi('${ozet.bugunIptalDers} iptal',
+                      ton: ListeTonu.hata),
+                if (onayBekleyen > 0)
+                  DurumHapi('$onayBekleyen onay bekliyor',
+                      ton: ListeTonu.uyari),
+              ],
+            ),
+          ],
         ],
       ),
     );

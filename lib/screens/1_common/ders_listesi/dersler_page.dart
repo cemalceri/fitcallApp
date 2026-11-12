@@ -246,13 +246,14 @@ class _DerslerPageState extends State<DerslerPage> {
           ),
           const SizedBox(width: 8),
           BaslikCipi(
-            etiket: 'Tamamlandı',
+            etiket: 'Yönetici onayı yapıldı',
             secili: _filtre == 'tamamlandi',
             onSec: () => _onFiltreChanged('tamamlandi'),
           ),
           const SizedBox(width: 8),
+          // Saati bitmiş, yönetici kararı verilmemiş dersler (sunucu süzer).
           BaslikCipi(
-            etiket: 'Bekliyor',
+            etiket: 'Onay bekliyor',
             secili: _filtre == 'bekliyor',
             onSec: () => _onFiltreChanged('bekliyor'),
           ),

@@ -104,6 +104,8 @@ import 'package:fitcall/screens/7_yonetici/dashboard/widgets/bugun_ozeti.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/dikkat_karti.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_ozetleri.dart';
 import 'package:fitcall/screens/7_yonetici/ekip/widgets/ekip_gorunumu.dart';
+import 'package:fitcall/screens/7_yonetici/dekont/bekleyen_dekontlar_gorunumu.dart';
+import 'package:fitcall/models/9_yonetici/bekleyen_dekont_models.dart';
 import 'package:fitcall/models/9_yonetici/ekip_models.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_card.dart';
@@ -1099,9 +1101,9 @@ void main() {
             children: [
               BaslikCipi(etiket: 'Tümü', secili: true, onSec: () {}),
               const SizedBox(width: 8),
-              BaslikCipi(etiket: 'Tamamlandı', secili: false, onSec: () {}),
+              BaslikCipi(etiket: 'Yönetici onayı yapıldı', secili: false, onSec: () {}),
               const SizedBox(width: 8),
-              BaslikCipi(etiket: 'Bekliyor', secili: false, onSec: () {}),
+              BaslikCipi(etiket: 'Onay bekliyor', secili: false, onSec: () {}),
               const SizedBox(width: 8),
               BaslikCipi(etiket: 'İptal', secili: false, onSec: () {}),
             ],
@@ -2538,6 +2540,26 @@ void main() {
               'islemler': [],
             },
           ],
+          'antrenorler': [
+            {
+              'id': 7,
+              'ad_soyad': 'Muhammed Abdurrahman Yılmazoğulları',
+              'bugun_giris': '2026-11-12T07:40:00+03:00',
+              'ders_sayisi': 1234,
+              'yapilmadi': 123,
+              'yoklama_girilen': 1200,
+              'yoklama_bekleyen': 157,
+            },
+            {
+              'id': 8,
+              'ad_soyad': 'Ece Su',
+              'bugun_giris': null,
+              'ders_sayisi': 0,
+              'yapilmadi': 0,
+              'yoklama_girilen': 0,
+              'yoklama_bekleyen': 0,
+            },
+          ],
         });
     tasmaTesti('EkipGorunumu',
         () => EkipGorunumu(data: ekip(), onKisi: (_) {}),
@@ -2636,17 +2658,24 @@ void main() {
       'IslemGecmisiListesi',
       () => IslemGecmisiListesi(
         satirlar: IslemGecmisiSatiri.liste([
-          for (final (ton, metin) in const [
-            ('iptal', 'Dersi iptal etti'),
-            ('guncelleme', 'Güncelledi: Kort, Başlangıç, Bitiş, Antrenör'),
-            ('onay', 'Yönetici onayı: yapıldı'),
-            ('ekleme', 'Dersi kaydetti'),
+          for (final (ton, metin, ayrinti) in const [
+            ('iptal', 'Dersi iptal etti', null),
+            ('guncelleme', 'Güncelledi: Kort, Başlangıç, Bitiş, Antrenör', null),
+            ('onay', 'Yönetici onayı: yapıldı', null),
+            (
+              'yoklama',
+              'Yoklamayı girdi: ders yapıldı',
+              '12 üyeden 9 geldi · Gelmedi: Muhammed Abdurrahman '
+                  'YILMAZOĞULLARI, Ayşe KAYA · Plan dışı: Can EK · 3 misafir',
+            ),
+            ('ekleme', 'Dersi kaydetti', null),
           ])
             {
               'zaman': '2026-11-12T16:30:00+03:00',
               'kim': 'Muhammed Abdurrahman Yılmazoğulları',
               'metin': metin,
               'ton': ton,
+              'ayrinti': ayrinti,
             },
         ]),
       ),
@@ -2654,6 +2683,42 @@ void main() {
     );
     tasmaTesti('IslemGecmisiListesi (boş)',
         () => const IslemGecmisiListesi(satirlar: []));
+
+    tasmaTesti(
+      'BekleyenDekontlarGorunumu',
+      () => BekleyenDekontlarGorunumu(
+        onDekont: (_) {},
+        dekontlar: BekleyenDekont.liste({
+          'dekontlar': [
+            {
+              'id': 1,
+              'uye_adi': 'Muhammed Abdurrahman YILMAZOĞULLARI',
+              'hesap_sahibi_adi': 'Fatma Zehra Yılmazoğulları Karaosmanoğlu',
+              'beyan_tutar': '1234567.00',
+              'uye_aciklamasi': 'Ekim ve Kasım aidatı ile özel ders paketi',
+              'olusturulma_zamani': '2026-11-02T09:15:00+03:00',
+              'bekleme_gun': 10,
+              'bekleme_metni': '10 gün',
+              'pdf_mi': true,
+              'ayni_dosya': true,
+            },
+            {
+              'id': 2,
+              'uye_adi': 'Ece Su',
+              'hesap_sahibi_adi': 'Ece Su',
+              'beyan_tutar': null,
+              'olusturulma_zamani': '2026-11-12T16:30:00+03:00',
+              'bekleme_gun': 0,
+              'bekleme_metni': 'bugün',
+              'yeniden_kontrol': true,
+            },
+          ],
+        }),
+      ),
+      sar: kaydirmali,
+    );
+    tasmaTesti('BekleyenDekontlarGorunumu (boş)',
+        () => const BekleyenDekontlarGorunumu(dekontlar: []));
   });
 
   /* ===================== ANTRENÖR ===================== */

@@ -35,12 +35,12 @@ void main() {
       expect(DersListeItemWidget.tonu(ders.gorunenDurum), ListeTonu.hata);
     });
 
-    test('kararı verilmemiş geçmiş ders "Onay Bekliyor" kalır', () {
+    test('kararı verilmemiş geçmiş ders "Onay bekliyor" kalır', () {
       final ders =
           DersListeItem.fromJson(_dersJson('onay_bekliyor', 'bekliyor'));
 
       expect(ders.gorunenDurum, 'onay_bekliyor');
-      expect(ders.durumText, 'Onay Bekliyor');
+      expect(ders.durumText, 'Onay bekliyor');
     });
 
     test('iptal ve tamamlanan dersin durumu değişmez', () {
@@ -49,7 +49,7 @@ void main() {
       expect(
           DersListeItem.fromJson(_dersJson('tamamlandi', 'onaylandi'))
               .durumText,
-          'Tamamlandı');
+          'Onaylandı');
     });
   });
 

@@ -41,7 +41,7 @@ void main() {
     ])));
 
     final ayracY = tester.getTopLeft(find.byKey(const Key('ayrac'))).dy;
-    for (final b in ['Ders bedeli', 'Kasaya giren', 'İptal Edilen']) {
+    for (final b in ['Ders bedeli', 'Tahsil edilen', 'İptal Edilen']) {
       expect(tester.getTopLeft(find.text(b)).dy, lessThan(ayracY), reason: b);
     }
     for (final b in ['Aktif Üye', 'Toplam Alacak']) {

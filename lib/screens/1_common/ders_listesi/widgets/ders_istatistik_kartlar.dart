@@ -18,9 +18,10 @@ class DersIstatistikKartlar extends StatelessWidget {
   Widget build(BuildContext context) {
     final kartlar = <(String, String, ListeTonu)>[
       ('Toplam', data.bugunDers.toString(), ListeTonu.bilgi),
-      ('Tamamlandı', data.tamamlanan.toString(), ListeTonu.basari),
+      ('Onaylandı', data.tamamlanan.toString(), ListeTonu.basari),
       ('Devam', data.devamEden.toString(), ListeTonu.uyari),
-      ('Bekliyor', data.bekleyen.toString(), ListeTonu.vurgu),
+      // Sunucu 2026-11'den beri onay bekleyeni sayar (eskiden başlamamış ders).
+      ('Onay bekliyor', data.bekleyen.toString(), ListeTonu.uyari),
       ('İptal', data.iptal.toString(), ListeTonu.hata),
     ];
 
@@ -73,8 +74,11 @@ class _MiniStatCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
             style: TextStyle(
               fontSize: 9,
+              height: 1.15,
               color: colorScheme.onSurfaceVariant,
             ),
             overflow: TextOverflow.ellipsis,

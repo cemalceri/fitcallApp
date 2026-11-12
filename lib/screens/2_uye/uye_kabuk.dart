@@ -9,6 +9,7 @@ import 'package:fitcall/screens/1_common/widgets/erisim_kisitli.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
+import 'package:fitcall/screens/1_common/widgets/sekme_gecmisi.dart';
 import 'package:fitcall/screens/2_uye/home/uye_home_page.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_drawer.dart';
 import 'package:fitcall/screens/2_uye/profil/profil_page.dart';
@@ -45,6 +46,9 @@ class _UyeKabukState extends State<UyeKabuk> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   late int _aktif = widget.baslangicSekmesi;
+
+  /// Geri tuşu bir önceki sekmeye döner; geçmiş yoksa uygulama kapanır.
+  final _gecmis = SekmeGecmisi();
 
   // Sol menünün bilgileri.
   String _uyeAdi = '';
@@ -126,19 +130,25 @@ class _UyeKabukState extends State<UyeKabuk> {
     };
   }
 
-  void _sekmeyeGec(int i) => setState(() {
-        _aktif = i;
-        _acilanlar.add(i);
-      });
+  void _sekmeyeGec(int i, {bool geri = false}) {
+    if (!geri) _gecmis.kaydet(_aktif, i);
+    setState(() {
+      _aktif = i;
+      _acilanlar.add(i);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Geri tuşu bir önceki sekmeye döner; önceki yoksa uygulama kapanır
+    // (tüm kabuklarda aynı, SekmeGecmisi).
     return PopScope(
-      // Alt sekmelerdeyken geri tuşu uygulamadan çıkmasın, ana sayfaya dönsün.
-      canPop: _aktif == 0,
+      canPop: _gecmis.kapatabilir(_aktif),
       onPopInvokedWithResult: (didPop, _) {
         // Rehber açıkken geri tuşu yalnız rehberi kapatır.
-        if (!didPop && !OgrenmeModu.ornek.acik) setState(() => _aktif = 0);
+        if (!didPop && !OgrenmeModu.ornek.acik) {
+          _sekmeyeGec(_gecmis.geriHedefi(), geri: true);
+        }
       },
       child: Scaffold(
         key: _scaffoldKey,

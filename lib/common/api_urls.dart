@@ -198,6 +198,9 @@ const String yoneticiDersDetay = "$baseUrl/yoneticiDersDetay";
 // Ofis çalışanı (ekip) takibi: kim, ne yaptı, kaçta geldi.
 const String yoneticiEkip = "$baseUrl/yoneticiEkip";
 const String yoneticiEkipDetay = "$baseUrl/yoneticiEkipDetay";
+// Kontrol bekleyen dekontlar: yönetici yalnız görür (işleme web'de).
+const String yoneticiDekontlar = "$baseUrl/yoneticiDekontlar";
+const String yoneticiDekontDosya = "$baseUrl/yoneticiDekontDosya";
 
 // Yönetici - ders (etkinlik) yönetimi
 const String yoneticiHaftalikProgramUrl = "$baseUrl/yoneticiHaftalikProgram";

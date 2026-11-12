@@ -1,6 +1,7 @@
 // lib/models/9_yonetici/ekip_models.dart
 //
-// Yönetici "Ekip" takibi: ofis çalışanı kim, ne yaptı, kaçta geldi.
+// Yönetici "Ekip" takibi: ofis çalışanı kim, ne yaptı, kaçta geldi; altında
+// antrenörlerin ders ve yoklama sayıları.
 // Turnike yalnız girişi okutur; çıkış saati ve süre yoktur.
 
 import 'package:fitcall/common/tarih_util.dart';
@@ -87,6 +88,43 @@ class EkipKisi {
       .fold(0, (toplam, i) => toplam + i.sayi);
 }
 
+/// Ekip sayfasında ofisin altındaki antrenör satırı (seçili dönem).
+class EkipAntrenor {
+  final int id;
+  final String adSoyad;
+
+  /// Bugünün ilk turnike girişi; okutmadıysa null.
+  final DateTime? bugunGiris;
+
+  /// Saati bitmiş, iptal edilmemiş ve "yapılmadı" denmemiş ders.
+  final int dersSayisi;
+
+  /// Antrenörün "ders yapılmadı" dediği ders.
+  final int yapilmadi;
+  final int yoklamaGirilen;
+  final int yoklamaBekleyen;
+
+  const EkipAntrenor({
+    required this.id,
+    required this.adSoyad,
+    required this.dersSayisi,
+    required this.yapilmadi,
+    required this.yoklamaGirilen,
+    required this.yoklamaBekleyen,
+    this.bugunGiris,
+  });
+
+  factory EkipAntrenor.fromJson(Map<String, dynamic> json) => EkipAntrenor(
+        id: json['id'] ?? 0,
+        adSoyad: json['ad_soyad']?.toString() ?? '',
+        bugunGiris: parseApiTarih(json['bugun_giris']),
+        dersSayisi: json['ders_sayisi'] ?? 0,
+        yapilmadi: json['yapilmadi'] ?? 0,
+        yoklamaGirilen: json['yoklama_girilen'] ?? 0,
+        yoklamaBekleyen: json['yoklama_bekleyen'] ?? 0,
+      );
+}
+
 class EkipData {
   final DateTime? baslangic;
   final DateTime? bitis;
@@ -97,6 +135,9 @@ class EkipData {
   final int kritikIslem;
   final List<EkipKisi> kisiler;
 
+  /// Eski sunucu göndermez: boş liste, bölüm çizilmez.
+  final List<EkipAntrenor> antrenorler;
+
   const EkipData({
     required this.gruplar,
     required this.kisiSayisi,
@@ -104,6 +145,7 @@ class EkipData {
     required this.toplamIslem,
     required this.kritikIslem,
     required this.kisiler,
+    this.antrenorler = const [],
     this.baslangic,
     this.bitis,
   });
@@ -120,6 +162,9 @@ class EkipData {
       kritikIslem: ozet['kritik_islem'] ?? 0,
       kisiler: (json['kisiler'] as List? ?? [])
           .map((e) => EkipKisi.fromJson(e))
+          .toList(),
+      antrenorler: (json['antrenorler'] as List? ?? [])
+          .map((e) => EkipAntrenor.fromJson(e))
           .toList(),
     );
   }
@@ -232,14 +277,18 @@ class IslemGecmisiSatiri {
   final String kim;
   final String metin;
 
-  /// ekleme | onay | iptal | guncelleme | silme
+  /// ekleme | onay | yoklama | iptal | guncelleme | silme
   final String ton;
+
+  /// Yoklamada katılım özeti ("4 üyeden 3 geldi · Gelmedi: …"), onayda not.
+  final String? ayrinti;
 
   const IslemGecmisiSatiri({
     required this.kim,
     required this.metin,
     required this.ton,
     this.zaman,
+    this.ayrinti,
   });
 
   factory IslemGecmisiSatiri.fromJson(Map<String, dynamic> json) =>
@@ -248,6 +297,7 @@ class IslemGecmisiSatiri {
         kim: json['kim']?.toString() ?? '',
         metin: json['metin']?.toString() ?? '',
         ton: json['ton']?.toString() ?? 'guncelleme',
+        ayrinti: json['ayrinti']?.toString(),
       );
 
   static List<IslemGecmisiSatiri> liste(dynamic json) =>

@@ -291,7 +291,7 @@ class GununOzeti {
   final int bugunBitenDers;
   final int bugunIptalDers;
 
-  /// Bugün kasaya giren: seçili dönemden bağımsız, kıyassız.
+  /// Bugün tahsil edilen: seçili dönemden bağımsız, kıyassız.
   final double? bugunTahsilat;
   final int bugunTahsilatIslem;
   final DateTime? bugunSonGiris;
@@ -668,7 +668,7 @@ class RaporCiroOzeti {
       );
 }
 
-/// Dönemde kasaya giren. Kıyas yok: ödemeler gecikmeli giriliyor.
+/// Dönemde tahsil edilen. Kıyas yok: ödemeler gecikmeli giriliyor.
 class RaporTahsilatOzeti {
   final double toplam;
   final int islemSayisi;
@@ -1126,7 +1126,7 @@ class DersListeItem {
   String get durumText {
     switch (gorunenDurum) {
       case 'tamamlandi':
-        return 'Tamamlandı';
+        return 'Onaylandı';
       case 'devam_ediyor':
         return 'Devam Ediyor';
       case 'iptal':
@@ -1134,7 +1134,7 @@ class DersListeItem {
       case 'yapilmadi':
         return 'Yapılmadı';
       case 'onay_bekliyor':
-        return 'Onay Bekliyor';
+        return 'Onay bekliyor';
       default:
         return 'Planlı';
     }

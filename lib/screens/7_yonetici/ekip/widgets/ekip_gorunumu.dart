@@ -3,7 +3,8 @@
 // Ekip ekranlarının veriyle beslenen görünümleri (API yok; sayfa ve taşma
 // testi aynı widget'ları çizer).
 //
-//   EkipGorunumu       ekip özeti + çalışan kartları
+//   EkipGorunumu       ofis: ekip özeti + çalışan kartları; altında antrenörler
+//                      (dönemde yaptığı ders, yoklama girilen / bekleyen)
 //   EkipDetayGorunumu  bir çalışanın günü: giriş saatleri, işlem dağılımı, akış
 //
 // Turnike yalnız girişi okutur: "içeride", çıkış ve süre gösterilmez.
@@ -13,6 +14,7 @@ import 'package:fitcall/models/9_yonetici/ekip_models.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
+import 'package:fitcall/screens/7_yonetici/dashboard/widgets/donem_kutusu.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/pano_parcalari.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -54,7 +56,7 @@ class EkipGorunumu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (data.kisiler.isEmpty) {
+    if (data.kisiler.isEmpty && data.antrenorler.isEmpty) {
       return const BosDurum(
         ikon: Icons.badge_outlined,
         baslik: 'Ofis çalışanı yok',
@@ -64,13 +66,176 @@ class EkipGorunumu extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _EkipOzeti(data: data),
-        const SizedBox(height: Bosluk.l),
-        for (final kisi in data.kisiler) ...[
-          _KisiKarti(kisi: kisi, gruplar: data.gruplar, onTap: () => onKisi(kisi)),
-          const SizedBox(height: Bosluk.m),
+        // Önce ofis, altında antrenörler.
+        const PanoBolumEtiketi(ikon: Icons.badge_outlined, etiket: 'Ofis'),
+        if (data.kisiler.isEmpty)
+          PanoKarti(
+            child: Text(
+              'Ofis rolünde tanımlı kullanıcı yok.',
+              style: TextStyle(fontSize: 13, color: context.cs.onSurfaceVariant),
+            ),
+          )
+        else ...[
+          _EkipOzeti(data: data),
+          const SizedBox(height: Bosluk.l),
+          for (final kisi in data.kisiler) ...[
+            _KisiKarti(
+                kisi: kisi, gruplar: data.gruplar, onTap: () => onKisi(kisi)),
+            const SizedBox(height: Bosluk.m),
+          ],
+        ],
+        if (data.antrenorler.isNotEmpty) ...[
+          const SizedBox(height: Bosluk.l),
+          const PanoBolumEtiketi(
+              ikon: Icons.sports_tennis_rounded, etiket: 'Antrenörler'),
+          _AntrenorOzeti(antrenorler: data.antrenorler),
+          const SizedBox(height: Bosluk.l),
+          for (final a in data.antrenorler) ...[
+            _AntrenorKarti(antrenor: a),
+            const SizedBox(height: Bosluk.m),
+          ],
         ],
       ],
+    );
+  }
+}
+
+/// Üç sayılık özet hücresi (antrenör özeti).
+Widget _ozetHucresi(BuildContext context, String deger, String etiket) =>
+    Expanded(
+      child: Column(
+        children: [
+          TutarYazisi(deger, boyut: 20),
+          const SizedBox(height: 2),
+          Text(
+            etiket,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 11, color: context.cs.onSurfaceVariant),
+          ),
+        ],
+      ),
+    );
+
+class _AntrenorOzeti extends StatelessWidget {
+  final List<EkipAntrenor> antrenorler;
+  const _AntrenorOzeti({required this.antrenorler});
+
+  @override
+  Widget build(BuildContext context) {
+    final gelen = antrenorler.where((a) => a.bugunGiris != null).length;
+    final ders = antrenorler.fold<int>(0, (t, a) => t + a.dersSayisi);
+    final bekleyen = antrenorler.fold<int>(0, (t, a) => t + a.yoklamaBekleyen);
+    return PanoKarti(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _ozetHucresi(
+              context, '$gelen/${antrenorler.length}', 'Bugün giriş yapan'),
+          _ozetHucresi(context, '$ders', 'Yapılan ders'),
+          _ozetHucresi(context, '$bekleyen', 'Yoklama bekleyen'),
+        ],
+      ),
+    );
+  }
+}
+
+class _AntrenorKarti extends StatelessWidget {
+  final EkipAntrenor antrenor;
+  const _AntrenorKarti({required this.antrenor});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = context.cs;
+    final a = antrenor;
+    final giris = a.bugunGiris;
+    final dersYok =
+        a.dersSayisi == 0 && a.yapilmadi == 0 && a.yoklamaBekleyen == 0;
+
+    return PanoKarti(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              ListeAvatari(
+                basHarfler: basHarfleri(a.adSoyad),
+                ton: ListeTonu.bilgi,
+              ),
+              const SizedBox(width: Bosluk.m),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      a.adSoyad,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: cs.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    DurumHapi(
+                      giris == null
+                          ? 'Bugün giriş yok'
+                          : 'Giriş ${saatYaz(giris)}',
+                      ton: giris == null ? ListeTonu.notr : ListeTonu.basari,
+                      ikon: giris == null
+                          ? Icons.remove_circle_outline_rounded
+                          : Icons.login_rounded,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: Bosluk.s),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  TutarYazisi('${a.dersSayisi}', boyut: 20),
+                  Text(
+                    'ders yaptı',
+                    style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: Bosluk.m),
+          if (dersYok)
+            Text(
+              'Bu dönemde biten dersi yok.',
+              style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
+            )
+          else
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                DurumHapi(
+                  '${a.yoklamaGirilen} yoklamayı tamamladı',
+                  ton: ListeTonu.basari,
+                  ikon: Icons.fact_check_outlined,
+                ),
+                if (a.yoklamaBekleyen > 0)
+                  DurumHapi(
+                    '${a.yoklamaBekleyen} yoklama bekliyor',
+                    ton: ListeTonu.uyari,
+                    ikon: Icons.pending_actions_rounded,
+                  ),
+                if (a.yapilmadi > 0)
+                  DurumHapi(
+                    '${a.yapilmadi} ders yapılmadı',
+                    ton: ListeTonu.hata,
+                    ikon: Icons.event_busy_rounded,
+                  ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }
@@ -589,6 +754,7 @@ class IslemGecmisiListesi extends StatelessWidget {
   static (IconData, ListeTonu) _gorunum(String ton) => switch (ton) {
         'ekleme' => (Icons.add_rounded, ListeTonu.vurgu),
         'onay' => (Icons.task_alt_rounded, ListeTonu.basari),
+        'yoklama' => (Icons.fact_check_outlined, ListeTonu.bilgi),
         'iptal' => (Icons.event_busy_rounded, ListeTonu.hata),
         'silme' => (Icons.delete_outline_rounded, ListeTonu.hata),
         _ => (Icons.edit_outlined, ListeTonu.uyari),
@@ -631,6 +797,15 @@ class IslemGecmisiListesi extends StatelessWidget {
                           color: cs.onSurface,
                         ),
                       ),
+                      if ((satirlar[i].ayrinti ?? '').isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2, bottom: 2),
+                          child: Text(
+                            satirlar[i].ayrinti!,
+                            style:
+                                TextStyle(fontSize: 13, color: cs.onSurface),
+                          ),
+                        ),
                       Text(
                         [
                           satirlar[i].kim,

@@ -83,6 +83,8 @@ const Set<String> okumaUclari = {
   'yoneticiDersler',
   'yoneticiDolulukHaritasi',
   'yoneticiDersDetay',
+  'yoneticiDekontDosya',
+  'yoneticiDekontlar',
   'yoneticiEkip',
   'yoneticiEkipDetay',
   'yoneticiDuyurular',

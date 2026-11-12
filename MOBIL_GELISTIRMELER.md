@@ -30,13 +30,13 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ## 🔴 Açık işler
 
-### Yönetici yeniden tasarım + Ekip takibi (2026-11-12; iki repoda commit'li, push/deploy yok)
-- Ana Sayfa: bugün bloğu (kasaya giren + son giriş saati, biten/toplam ders, doluluk) ve "Dikkat isteyenler" kartı (onay bekleyen, dekont, iptal, 14 gündür gelmeyen, ders/tahsilat silen çalışan). Etiketler: Ciro → "Ders bedeli", Tahsilat → "Kasaya giren". Hızlı erişim kalktı. Alt bar, başlık ve sol menü yapısı aynı; menüye yalnız "Ekip" eklendi.
-- Raporlar: dönem özeti (günlük ders bedeli çubukları, ürün kırılımı, kasaya giren), doluluk özeti, ısı haritası altında "en sakin saatler" notu. Eski tablolar altında duruyor.
-- Ekip (`7_yonetici/ekip/`): ofis çalışanı başına işlem sayıları ve bugünün turnike girişi; kişiye dokununca günlük akış. Dersler'de satıra dokununca dersin işlem geçmişi. **Çıkış turnikeden okunmuyor: içeride/süre/geç kalma yok.**
+### Yönetici yeniden tasarım + Ekip takibi (2026-11-12; backend canlı; mobil main'de, sürüm yok)
+- Ana Sayfa: bugün bloğu (tahsil edilen + son giriş saati, "saati biten / bugünkü toplam ders (iptaller hariç)", doluluk) ve "Dikkat isteyenler" (onay bekleyen, ödeme onay bekliyor → salt okunur dekont listesi, iptal, 14 gündür gelmeyen, "Ekip bugün N işlem yaptı" → Ekip). Etiketler: Ciro → "Ders bedeli", Tahsilat → "Tahsil edilen". Alt bar, başlık ve sol menü yapısı aynı; menüye yalnız "Ekip" eklendi.
+- Raporlar: dönem özeti (günlük ders bedeli çubukları, ürün kırılımı, tahsil edilen), doluluk özeti, ısı haritası altında "en sakin saatler" notu.
+- Ekip (`7_yonetici/ekip/`): önce ofis (işlem sayıları, bugünkü giriş; kişiye dokununca günlük akış), altında antrenörler (dönemde yaptığı ders, yoklama girilen/bekleyen, bugünkü giriş). Dersler'de satıra dokununca işlem geçmişi; antrenör yoklaması katılım özetiyle görünür. Dersler süzgeci "Onay bekliyor" artık onay bekleyenleri getirir. **Çıkış turnikeden okunmuyor: içeride/süre/geç kalma yok.**
+- Geri tuşu (tüm kabuklar, `SekmeGecmisi`): bir önceki sekmeye döner, önceki yoksa uygulama kapanır.
 - Yeni renk teması "Çivit" (`TakimTemasi.civit`).
-- Sunucu eskiyse ekranlar önceki görünüme düşer (yeni alanlar null); Ekip sayfası backend deploy'undan sonra çalışır. Sıra: önce backend deploy, sonra sürüm. Kararlar ve veri kaynakları: backend `api/yonetici/ekip_metots.py` başlığı.
-- Kalan: sürüm notu + `version:` bump, yeni ekranlar için "?" rehberi, emülatörde göz kontrolü.
+- Kalan: sürüm notu + `version:` bump, yeni ekranlar için "?" rehberi, telefonda göz kontrolü.
 
 ### Üye bildirim tercihleri (2026-11-06; iki repoda commit'li, push/deploy yok)
 - Kod tamam: Ayarlar > "Bildirim tercihleri" (`2_uye/bildirim_tercihleri/`, yalnız üye ana hesabı). Dört

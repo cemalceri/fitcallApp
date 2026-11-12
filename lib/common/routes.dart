@@ -11,6 +11,7 @@ import 'package:fitcall/screens/4_auth/forgot_password_page.dart';
 import 'package:fitcall/screens/5_etkinlik/ders_teyit_page.dart';
 import 'package:fitcall/screens/5_etkinlik/teyit_bekleyenler_page.dart';
 import 'package:fitcall/screens/7_yonetici/ekip/ekip_page.dart';
+import 'package:fitcall/screens/7_yonetici/dekont/bekleyen_dekontlar_page.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/uye_detay_page.dart';
 import 'package:fitcall/screens/7_yonetici/yonetici_main_page.dart';
 import 'package:fitcall/screens/3_antrenor/hakedis/antrenor_hakedis_page.dart';
@@ -84,6 +85,7 @@ enum SayfaAdi {
   yoneticiAnasayfa,
   yoneticiHakedis,
   yoneticiEkip,
+  yoneticiDekontlar,
   ofisAnasayfa,
   ofisProgram,
   ofisDersKayitTalepleri,
@@ -142,6 +144,7 @@ final Map<SayfaAdi, String> routeEnums = {
   SayfaAdi.yoneticiAnasayfa: '/yoneticiAnasayfa',
   SayfaAdi.yoneticiHakedis: '/yoneticiHakedis',
   SayfaAdi.yoneticiEkip: '/yoneticiEkip',
+  SayfaAdi.yoneticiDekontlar: '/yoneticiDekontlar',
   SayfaAdi.ofisAnasayfa: '/ofisAnasayfa',
   SayfaAdi.ofisProgram: '/ofisProgram',
   SayfaAdi.ofisDersKayitTalepleri: '/ofisDersKayitTalepleri',
@@ -193,6 +196,7 @@ final Map<String, WidgetBuilder> routes = {
   routeEnums[SayfaAdi.yoneticiHakedis]!: (c) =>
       const HakedisAntrenorSecimPage(),
   routeEnums[SayfaAdi.yoneticiEkip]!: (c) => const EkipPage(),
+  routeEnums[SayfaAdi.yoneticiDekontlar]!: (c) => const BekleyenDekontlarPage(),
   routeEnums[SayfaAdi.ofisAnasayfa]!: (c) => const OfisMainPage(),
   routeEnums[SayfaAdi.ofisProgram]!: (c) => const OfisProgramPage(),
   routeEnums[SayfaAdi.ofisDersKayitTalepleri]!: (c) =>
@@ -260,6 +264,7 @@ final Map<String, AccessRule> accessPolicies = {
   routeEnums[SayfaAdi.ayarlar]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yoneticiHakedis]!: AccessRule.anyone,
   routeEnums[SayfaAdi.yoneticiEkip]!: AccessRule.anyone,
+  routeEnums[SayfaAdi.yoneticiDekontlar]!: AccessRule.anyone,
   routeEnums[SayfaAdi.ofisProgram]!: AccessRule.anyone,
   routeEnums[SayfaAdi.ofisUyeler]!: AccessRule.anyone,
   routeEnums[SayfaAdi.antrenorHakedis]!: AccessRule.anyone,

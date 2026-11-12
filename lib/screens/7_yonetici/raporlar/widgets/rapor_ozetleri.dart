@@ -3,11 +3,11 @@
 // Raporlar'ın özet kartları (2026-11 yeniden tasarım): rakam + kıyas + grafik.
 // Ayrıntılı gün gün tablolar bu kartların altında durur.
 //
-//   RaporDonemOzeti    ders bedeli (günlük çubuklar), ürün kırılımı, kasaya giren
+//   RaporDonemOzeti    ders bedeli (günlük çubuklar), ürün kırılımı, tahsil edilen
 //   RaporDolulukKarti  dönemin doluluğu ve önceki döneme göre puan farkı
 //   SakinSaatlerNotu   ısı haritasından: haftanın en sakin saatleri ve günü
 //
-// Kasaya giren kıyaslanmaz (ödemeler gecikmeli giriliyor); yerine son giriş.
+// Tahsil edilen kıyaslanmaz (ödemeler gecikmeli giriliyor); yerine son giriş.
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
@@ -299,7 +299,7 @@ class _KasaKarti extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const PanoEtiketi('Kasaya giren · dönem toplamı'),
+                const PanoEtiketi('Tahsil edilen · dönem toplamı'),
                 const SizedBox(height: 2),
                 TutarYazisi(tutarYaz(tahsilat.toplam), birim: 'TL'),
                 const SizedBox(height: 2),

@@ -17,6 +17,8 @@ import 'package:fitcall/screens/1_common/ders_listesi/dersler_page.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/acilis_popuplari.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
+import 'package:fitcall/screens/1_common/widgets/sekme_gecmisi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_modu.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_bottom_bar.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
 import 'package:fitcall/services/core/storage_service.dart';
@@ -34,6 +36,9 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
 
   int _selectedIndex = 0;
   String _yoneticiAdi = '';
+
+  /// Geri tuşu bir önceki sekmeye döner; geçmiş yoksa uygulama kapanır.
+  final _gecmis = SekmeGecmisi();
 
   /// Üyeler sekmesine dışarıdan ön ayar (Ana Sayfa kartı, menü).
   final _uyeOnAyari = ValueNotifier<UyeOnAyarIstegi?>(null);
@@ -53,6 +58,7 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
           onBorcluUyeler: _borcluUyeler,
           onGelmeyenUyeler: _gelmeyenUyeler,
           onEkip: _ekip,
+          onDekontlar: _dekontlar,
         ),
       1 => const RaporlarPage(),
       2 => UyelerPage(onAyarIstegi: _uyeOnAyari),
@@ -84,7 +90,8 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
     super.dispose();
   }
 
-  void _goTab(int index) {
+  void _goTab(int index, {bool geri = false}) {
+    if (!geri) _gecmis.kaydet(_selectedIndex, index);
     setState(() {
       _selectedIndex = index;
       _acilanlar.add(index);
@@ -112,9 +119,24 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
     Navigator.pushNamed(context, routeEnums[SayfaAdi.yoneticiEkip]!);
   }
 
+  /// Ana Sayfa "Dikkat isteyenler": bekleyen dekontlar (yalnız görüntüleme).
+  void _dekontlar() {
+    Navigator.pushNamed(context, routeEnums[SayfaAdi.yoneticiDekontlar]!);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // Ana sayfadaki bir kart başka sekmeyi açtıysa geri tuşu oraya döner;
+    // önceki sekme kalmayınca uygulama kapanır.
+    return PopScope(
+      canPop: _gecmis.kapatabilir(_selectedIndex),
+      onPopInvokedWithResult: (didPop, _) {
+        // Rehber açıkken geri tuşu yalnız rehberi kapatır.
+        if (!didPop && !OgrenmeModu.ornek.acik) {
+          _goTab(_gecmis.geriHedefi(), geri: true);
+        }
+      },
+      child: Scaffold(
       key: _scaffoldKey,
       drawer: YoneticiDrawer(
         yoneticiAdi: _yoneticiAdi,
@@ -135,6 +157,7 @@ class _YoneticiMainPageState extends State<YoneticiMainPage> {
       bottomNavigationBar: YoneticiBottomBar(
         selectedIndex: _selectedIndex,
         onTabSelected: _goTab,
+      ),
       ),
     );
   }

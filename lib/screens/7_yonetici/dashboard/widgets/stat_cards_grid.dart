@@ -81,7 +81,7 @@ class StatCardsGrid extends StatelessWidget {
         OgrenmeHedefi(
           id: Hedef.yoneticiTahsilat,
           child: StatCard(
-            baslik: 'Kasaya giren',
+            baslik: 'Tahsil edilen',
             deger: _formatCurrency(data.tahsilat.toplamTahsilat),
             altBaslik: data.tahsilat.sonGiris == null
                 ? '${data.tahsilat.islemSayisi} ödeme'

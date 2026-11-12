@@ -21,6 +21,7 @@ import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
+import 'package:fitcall/screens/1_common/widgets/sekme_gecmisi.dart';
 import 'package:fitcall/screens/8_ofis/ana_sayfa/ofis_ana_sayfa_page.dart';
 import 'package:fitcall/screens/8_ofis/dersler/ofis_dersler_page.dart';
 import 'package:fitcall/screens/8_ofis/program/ofis_program_page.dart';
@@ -49,6 +50,9 @@ class _OfisMainPageState extends State<OfisMainPage>
   final _dersler = GlobalKey<OfisDerslerPageState>();
 
   int _selectedIndex = 0;
+
+  /// Geri tuşu bir önceki sekmeye döner; geçmiş yoksa uygulama kapanır.
+  final _gecmis = SekmeGecmisi();
   String _ofisAdi = '';
 
   /// Sekmeler ilk açıldığında kurulur (üye/antrenör kabuğu gibi): açılışta
@@ -120,8 +124,9 @@ class _OfisMainPageState extends State<OfisMainPage>
     setState(() => _ofisAdi = hesapGorunenAdi(profil.user));
   }
 
-  void _goTab(int index) {
+  void _goTab(int index, {bool geri = false}) {
     if (index == _selectedIndex) return;
+    if (!geri) _gecmis.kaydet(_selectedIndex, index);
     // İlk açılışta sayfa kendi initState'inde yükler; tazeleme yalnız
     // önceden kurulmuş sekmede.
     final acikti = _acilanlar.contains(index);
@@ -134,13 +139,15 @@ class _OfisMainPageState extends State<OfisMainPage>
 
   @override
   Widget build(BuildContext context) {
-    // Alt sekmelerdeyken geri tuşu uygulamadan çıkmasın, Ana Sayfa'ya dönsün
-    // (üye kabuğuyla aynı).
+    // Geri tuşu bir önceki sekmeye döner; önceki yoksa uygulama kapanır
+    // (tüm kabuklarda aynı, SekmeGecmisi).
     return PopScope(
-      canPop: _selectedIndex == 0,
+      canPop: _gecmis.kapatabilir(_selectedIndex),
       onPopInvokedWithResult: (didPop, _) {
         // Rehber açıkken geri tuşu yalnız rehberi kapatır.
-        if (!didPop && !OgrenmeModu.ornek.acik) _goTab(0);
+        if (!didPop && !OgrenmeModu.ornek.acik) {
+          _goTab(_gecmis.geriHedefi(), geri: true);
+        }
       },
       child: Scaffold(
         key: _scaffoldKey,
