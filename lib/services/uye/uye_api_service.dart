@@ -28,6 +28,17 @@ class UyeApiService {
     );
   }
 
+  /// Kullanıcı adını değiştirir; kaydedilen adı (küçük harf) döndürür.
+  /// Başkası kullanıyorsa sunucu "uygun değil" mesajıyla 400 döner.
+  static Future<String> kullaniciAdiniDegistir(String yeniAd) async {
+    final sonuc = await ApiClient.postParsed<String>(
+      kullaniciAdiDegistir,
+      {'kullanici_adi': yeniAd},
+      (json) => (json as Map?)?['username']?.toString() ?? yeniAd,
+    );
+    return sonuc.data ?? yeniAd;
+  }
+
   /// Profil fotoğrafını yükler; yeni adresi döndürür. Fotoğraf sunucuda
   /// kareye kırpılıp küçültülür, istemci yalnız boyutu düşürüp gönderir.
   static Future<String?> profilFotografiYukle({

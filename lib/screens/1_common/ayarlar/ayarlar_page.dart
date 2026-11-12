@@ -17,6 +17,7 @@ import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/hesap/hesap_sil_page.dart';
+import 'package:fitcall/screens/1_common/hesap/kullanici_adi_degistir_page.dart';
 import 'package:fitcall/screens/1_common/hesap/sifre_degistir_page.dart';
 import 'package:fitcall/screens/1_common/widgets/kvkk.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
@@ -185,6 +186,22 @@ class _AyarlarPageState extends State<AyarlarPage> {
                   MaterialPageRoute(builder: (_) => const SifreDegistirPage()),
                 ),
               ),
+              if (_profil != null)
+                _AyarSatiri(
+                  ikon: Icons.badge_outlined,
+                  baslik: 'Kullanıcı adını değiştir',
+                  altBaslik: 'Şu an: ${_profil!.user.username}',
+                  onTap: () async {
+                    final yeni = await Navigator.push<String>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => KullaniciAdiDegistirPage(
+                            mevcutAd: _profil!.user.username),
+                      ),
+                    );
+                    if (yeni != null && mounted) _yukle();
+                  },
+                ),
               if (_uyeAnaHesapMi)
                 _AyarSatiri(
                   ikon: Icons.storefront_rounded,

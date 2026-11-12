@@ -94,6 +94,42 @@ class StorageService {
     }
   }
 
+  /// Kullanıcı adı değişince cihazdaki kopyaları günceller. "Beni hatırla"
+  /// eski adı tutuyorsa yenisi yazılır; yoksa sessiz giriş eski adla
+  /// düşerdi. E-postayla hatırlanan girişe dokunulmaz.
+  static Future<void> kullaniciAdiniGuncelle(String eski, String yeni) async {
+    final hatirlanan =
+        await SecureStorageService.getValue<String>('remember_username');
+    if (hatirlanan != null &&
+        hatirlanan.trim().toLowerCase() == eski.trim().toLowerCase()) {
+      await SecureStorageService.setValue<String>('remember_username', yeni);
+    }
+
+    Map<String, dynamic> yenile(Map<String, dynamic> m) {
+      if (m['user'] is Map) {
+        final u = Map<String, dynamic>.from(m['user'] as Map);
+        u['username'] = yeni;
+        m['user'] = u;
+      }
+      return m;
+    }
+
+    final profilHam = await SecureStorageService.getValue<String>('uye_profil');
+    if (profilHam != null && profilHam.isNotEmpty) {
+      final m = yenile(Map<String, dynamic>.from(json.decode(profilHam) as Map));
+      await SecureStorageService.setValue<String>('uye_profil', json.encode(m));
+    }
+    final listeHam =
+        await SecureStorageService.getValue<String>('kullanici_profiller');
+    if (listeHam != null && listeHam.isNotEmpty) {
+      final liste = (json.decode(listeHam) as List)
+          .map((e) => yenile(Map<String, dynamic>.from(e as Map)))
+          .toList();
+      await SecureStorageService.setValue<String>(
+          'kullanici_profiller', json.encode(liste));
+    }
+  }
+
   static Future<KullaniciProfilModel?> uyeProfilBilgileriniGetir() async {
     final s = await SecureStorageService.getValue<String>('uye_profil');
     return s == null ? null : KullaniciProfilModel.fromJson(json.decode(s));

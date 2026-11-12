@@ -343,6 +343,15 @@ const _bolumler = <SssBolum>[
             ' "Şifremi unuttum" akışını kullanmanız gerekir.',
       ),
       SssSoru(
+        ikon: Icons.badge_outlined,
+        soru: 'Kullanıcı adımı değiştirebilir miyim?',
+        cevap:
+            'Evet. Ayarlar > Kullanıcı adını değiştir ile yeni adı yazıp kaydedersiniz.'
+            ' Yalnız İngilizce harf ve rakam (4-30 karakter, en az bir harf) kullanılır;'
+            ' ad başka bir hesapta kullanılıyorsa "uygun değil" uyarısı çıkar. Şifreniz'
+            ' değişmez; girişte yeni kullanıcı adınızı ya da e-postanızı yazarsınız.',
+      ),
+      SssSoru(
         ikon: Icons.privacy_tip_outlined,
         soru: 'Verilerim nasıl işleniyor, hesabımı sildirebilir miyim?',
         cevap:

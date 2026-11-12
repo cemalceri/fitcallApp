@@ -246,7 +246,7 @@ class _DerslerPageState extends State<DerslerPage> {
           ),
           const SizedBox(width: 8),
           BaslikCipi(
-            etiket: 'Yönetici onayı yapıldı',
+            etiket: 'Yönetici onayladı',
             secili: _filtre == 'tamamlandi',
             onSec: () => _onFiltreChanged('tamamlandi'),
           ),

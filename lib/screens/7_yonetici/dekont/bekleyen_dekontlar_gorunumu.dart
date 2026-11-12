@@ -6,6 +6,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/bekleyen_dekont_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
@@ -36,67 +38,74 @@ class BekleyenDekontlarGorunumu extends StatelessWidget {
       );
     }
     final toplam = dekontlar.fold<double>(0, (t, d) => t + (d.beyanTutar ?? 0));
-    final enEski = dekontlar.fold<int>(0, (m, d) => d.beklemeGun > m ? d.beklemeGun : m);
+    final enEski =
+        dekontlar.fold<int>(0, (m, d) => d.beklemeGun > m ? d.beklemeGun : m);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.l, Bosluk.l, 0),
-          child: PanoKarti(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _Hucre(
-                        deger: '${dekontlar.length}',
-                        etiket: 'dekont bekliyor',
+          child: OgrenmeHedefi(
+            id: Hedef.dekontOzeti,
+            child: PanoKarti(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _Hucre(
+                          deger: '${dekontlar.length}',
+                          etiket: 'dekont bekliyor',
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: _Hucre(
-                        deger: tutarYaz(toplam),
-                        birim: 'TL',
-                        etiket: 'üyelerin yazdığı tutar',
+                      Expanded(
+                        child: _Hucre(
+                          deger: tutarYaz(toplam),
+                          birim: 'TL',
+                          etiket: 'üyelerin yazdığı tutar',
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: _Hucre(
-                        deger: enEski <= 0 ? 'Bugün' : '$enEski gün',
-                        etiket: 'en eskisi',
+                      Expanded(
+                        child: _Hucre(
+                          deger: enEski <= 0 ? 'Bugün' : '$enEski gün',
+                          etiket: 'en eskisi',
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: Bosluk.m),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.info_outline_rounded,
-                        size: 16, color: cs.onSurfaceVariant),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        'Yalnız görüntüleme: onay ve ret ofiste, web\'deki '
-                        'dekont masasından yapılır. Dekontu görmek için '
-                        'satıra dokun.',
-                        style: TextStyle(
-                            fontSize: 12, color: cs.onSurfaceVariant),
+                    ],
+                  ),
+                  const SizedBox(height: Bosluk.m),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline_rounded,
+                          size: 16, color: cs.onSurfaceVariant),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'Yalnız görüntüleme: onay ve ret ofiste, web\'deki '
+                          'dekont masasından yapılır. Satıra dokununca resim '
+                          'açılır, PDF telefona iner.',
+                          style: TextStyle(
+                              fontSize: 12, color: cs.onSurfaceVariant),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
         const SizedBox(height: Bosluk.m),
         for (var i = 0; i < dekontlar.length; i++) ...[
           if (i > 0) const ListeAyraci(solBosluk: 72),
-          _DekontSatiri(
-            dekont: dekontlar[i],
-            onTap: onDekont == null ? null : () => onDekont!(dekontlar[i]),
+          ogrenmeHedefiSar(
+            i == 0 ? Hedef.dekontSatiri : null,
+            _DekontSatiri(
+              dekont: dekontlar[i],
+              onTap: onDekont == null ? null : () => onDekont!(dekontlar[i]),
+            ),
           ),
         ],
       ],
@@ -154,7 +163,8 @@ class _DekontSatiri extends StatelessWidget {
     // Rozet ve tutar esnek: uzun ad ve büyük tutarda dar ekranda kısalır.
     Widget? rozet;
     if (d.ayniDosya) {
-      rozet = const Flexible(child: DurumHapi('Aynı dosya', ton: ListeTonu.hata));
+      rozet =
+          const Flexible(child: DurumHapi('Aynı dosya', ton: ListeTonu.hata));
     } else if (d.yenidenKontrol) {
       rozet = const Flexible(
           child: DurumHapi('Yeniden kontrol', ton: ListeTonu.uyari));

@@ -161,6 +161,19 @@ const _tumBolumler = <_KapsamliBolum>[
               ' ölçeklerde yerleşim bozulmasın diye bir üst sınır uygular.',
         ),
       ),
+      _KapsamliSoru(
+        _Kapsam.ortak,
+        SssSoru(
+          ikon: Icons.badge_outlined,
+          soru: 'Kullanıcı adımı değiştirebilir miyim?',
+          cevap:
+              'Evet. Ayarlar > Kullanıcı adını değiştir ile yeni adı yazıp'
+              ' kaydedersiniz. Yalnız İngilizce harf ve rakam (4-30 karakter, en az bir'
+              ' harf) kullanılır; ad başka bir hesapta kullanılıyorsa "uygun değil"'
+              ' uyarısı çıkar. Şifreniz değişmez; girişte yeni kullanıcı adınızı ya da'
+              ' e-postanızı yazarsınız.',
+        ),
+      ),
     ],
   ),
 
@@ -550,10 +563,12 @@ const _tumBolumler = <_KapsamliBolum>[
           ikon: Icons.home_outlined,
           soru: 'Ana sayfa neyi gösteriyor?',
           cevap:
-              'En üstte bugünün özeti (yeni üye, ders, doluluk). Bugün / Bu Hafta / Bu Ay'
-              ' seçimi yalnız ona bağlı kartlarla (ciro, tahsilat, ders, iptal) aynı'
-              ' kutudadır; aktif üye ve alacak "Şu an", haftalık grafik bu haftanın'
-              ' günleridir. Kartlardaki yüzde, önceki aynı uzunluktaki dönemle'
+              'En üstte bugünün özeti (tahsil edilen, bugünkü ders, doluluk). Bugün /'
+              ' Bu Hafta / Bu Ay seçimi yalnız ona bağlı kartlarla (ders bedeli, tahsil'
+              ' edilen, ders, iptal) aynı kutudadır; aktif üye ve alacak "Şu an",'
+              ' haftalık grafik bu haftanın günleridir. "Dikkat isteyenler" onay bekleyen'
+              ' ders ve ödemeyi, iptalleri ve ekibin bugünkü işlem sayısını toplar;'
+              ' maddeye dokununca ilgili sayfa açılır. Kartlardaki yüzde, önceki aynı uzunluktaki dönemle'
               ' kıyastır. Bütün hesaplar sunucuda yapılır; uygulama kendi'
               ' başına toplama/çıkarma yapmaz. Bir bölümün verisi alınamazsa o bölüm'
               ' yanlış sayı göstermek yerine gizlenir.',
@@ -563,23 +578,25 @@ const _tumBolumler = <_KapsamliBolum>[
         _Kapsam.yonetici,
         SssSoru(
           ikon: Icons.fact_check_outlined,
-          soru: 'Ders kartındaki "Onaylanan / Planlanan" ne demek?',
+          soru: '"Bugünkü ders 12/20" ne demek?',
           cevap:
-              'Planlanan, dönemde iptal edilmemiş bütün derslerdir. Onaylanan,'
-              ' bunlardan ofisin "Yapıldı" onayı verdikleridir. Aradaki fark henüz'
-              ' başlamamış ya da onay bekleyen derslerdir.',
+              'Sağdaki sayı bugünün iptal edilmemiş bütün dersleridir; soldaki, bunlardan'
+              ' saati bitmiş olanlardır. Kartın altında, varsa, iptal ve onay bekleyen ders'
+              ' sayısı ayrıca yazar. Dönem kutusundaki ders kartında ise "Onaylanan /'
+              ' Planlanan" görünür: planlanan iptal edilmemiş dersler, onaylanan'
+              ' bunlardan "Yapıldı" onayı verilenlerdir.',
         ),
       ),
       _KapsamliSoru(
         _Kapsam.yonetici,
         SssSoru(
           ikon: Icons.payments_outlined,
-          soru: 'Ciro ile tahsilat neden farklı?',
+          soru: 'Ders bedeli ile tahsil edilen neden farklı?',
           cevap:
-              'Ciro, iptal edilmeyen derslerin ücretidir; onay beklemez, ders'
-              ' planlandığı an sayılır. Tahsilat, o günlere yazılan ödemelerdir.'
-              ' Ödemeler sonradan girilebildiği için tahsilat çoğu zaman ciroyu'
-              ' geriden izler.',
+              'Ders bedeli, iptal edilmeyen derslerin ücretidir; onay beklemez, ders'
+              ' planlandığı an sayılır. Tahsil edilen, o günlere yazılan ödemelerdir.'
+              ' Ödemeler sonradan girilebildiği için tahsil edilen çoğu zaman ders'
+              ' bedelini geriden izler.',
         ),
       ),
       _KapsamliSoru(
@@ -632,6 +649,88 @@ const _tumBolumler = <_KapsamliBolum>[
               ' üyeler ve tahsilatlar sayılmaz. Geçmişte iki işletmenin verisinin'
               ' karıştığı bir dönem yaşandıysa, düzeltmeden sonra rakamların düşmesi'
               ' beklenen davranıştır.',
+        ),
+      ),
+    ],
+  ),
+
+  /* ----------------------- EKİP VE BEKLEYEN ÖDEME ----------------------- */
+  _KapsamliBolum(
+    'Ekip ve bekleyen ödemeler',
+    Icons.groups_outlined,
+    [
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.badge_outlined,
+          soru: 'Ekip sayfasında neler var?',
+          cevap:
+              'Menüdeki "Ekip" önce ofis çalışanlarını, altında antrenörleri gösterir.'
+              ' Ofis kartında turnike girişi ve seçili dönemdeki işlem sayısı (ders'
+              ' kaydı, onay, iptal, tahsilat, silme…) yazar; para ve silme işlemleri'
+              ' ayrıca sayılır. Bir çalışana dokununca o günün saat saat işlem akışı ve'
+              ' son 7 günün giriş saatleri açılır.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.login_rounded,
+          soru: 'Giriş bilgisi neden dönemle değişiyor?',
+          cevap:
+              '"Bugün" seçiliyken kartta bugünün ilk turnike giriş saati, yoksa "Bugün'
+              ' giriş yok" yazar. "Bu Hafta" ve "Bu Ay"da ise dönemde turnikeden kaç'
+              ' gün girildiği yazar ("Bu ay 14 gün geldi"). Turnike çıkışı okumadığı'
+              ' için içeride olma, süre ya da geç kalma gösterilmez.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.fact_check_outlined,
+          soru: 'Antrenör kartındaki "yoklama bekliyor" ne demek?',
+          cevap:
+              '"Ders yaptı", seçili dönemde saati bitmiş, iptal edilmemiş ve hocanın'
+              ' "yapılmadı" demediği derslerdir; yardımcı antrenörlük de sayılır.'
+              ' "Yoklamayı tamamladı", hocanın antrenör uygulamasından yoklama girdiği'
+              ' derslerdir. "Yoklama bekliyor", bitmiş ama yoklaması girilmemiş'
+              ' derslerdir. Yoklama bekleyen hocalar listenin başında durur.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.history_rounded,
+          soru: 'Ders satırına dokununca açılan işlem geçmişinde ne var?',
+          cevap:
+              'Dersi kimin kaydettiği, iptal ettiği ya da sildiği, hocanın yoklaması'
+              ' ve yönetici onayı saatleriyle sıralanır. Hoca yoklama girdiyse kaç'
+              ' üyenin geldiği, gelmeyenler, plan dışı katılanlar ve misafir sayısı'
+              ' da yazar.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.filter_alt_outlined,
+          soru: 'Dersler listesindeki süzgeçler ne yapıyor?',
+          cevap:
+              '"Yönetici onayladı" yönetici onayı verilmiş dersleri, "Onay bekliyor"'
+              ' saati bitmiş ama henüz onaylanmamış dersleri, "İptal" iptal edilenleri'
+              ' gösterir. Süzgeç seçili günün dersleri içindir; liste yalnız okunur.',
+        ),
+      ),
+      _KapsamliSoru(
+        _Kapsam.yonetici,
+        SssSoru(
+          ikon: Icons.receipt_long_outlined,
+          soru: '"Ödeme onay bekliyor" listesinden onay verebilir miyim?',
+          cevap:
+              'Hayır, liste yalnız görüntülemedir. Ana sayfadaki "Ödeme onay bekliyor"'
+              ' maddesi, üyelerin gönderdiği ve ofisin henüz işlemediği dekontları'
+              ' açar: üye, yazdığı tutar ve kaç gündür beklediği görünür. Satıra'
+              ' dokununca resim dekont açılır, PDF dekont telefonun "İndirilenler"'
+              ' klasörüne iner. Onay ve ret ofiste, web\'deki dekont masasından yapılır.',
         ),
       ),
     ],

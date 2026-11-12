@@ -123,6 +123,7 @@ const Set<String> yazmaUclari = {
   'getirEventSelfPass',
   'getirTesisSelfPass',
   'isletmeBasvur',
+  'kullaniciAdiDegistir',
   'n',
   'odemeBaslat',
   'odemeDurum',

@@ -30,13 +30,16 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ## 🔴 Açık işler
 
-### Yönetici yeniden tasarım + Ekip takibi (2026-11-12; backend canlı; mobil main'de, sürüm yok)
+### Yönetici yeniden tasarım + Ekip takibi (2026-11-13; backend canlı; mobil main'de push'lu, sürüm yok)
 - Ana Sayfa: bugün bloğu (tahsil edilen + son giriş saati, "saati biten / bugünkü toplam ders (iptaller hariç)", doluluk) ve "Dikkat isteyenler" (onay bekleyen, ödeme onay bekliyor → salt okunur dekont listesi, iptal, 14 gündür gelmeyen, "Ekip bugün N işlem yaptı" → Ekip). Etiketler: Ciro → "Ders bedeli", Tahsilat → "Tahsil edilen". Alt bar, başlık ve sol menü yapısı aynı; menüye yalnız "Ekip" eklendi.
 - Raporlar: dönem özeti (günlük ders bedeli çubukları, ürün kırılımı, tahsil edilen), doluluk özeti, ısı haritası altında "en sakin saatler" notu.
-- Ekip (`7_yonetici/ekip/`): önce ofis (işlem sayıları, bugünkü giriş; kişiye dokununca günlük akış), altında antrenörler (dönemde yaptığı ders, yoklama girilen/bekleyen, bugünkü giriş). Dersler'de satıra dokununca işlem geçmişi; antrenör yoklaması katılım özetiyle görünür. Dersler süzgeci "Onay bekliyor" artık onay bekleyenleri getirir. **Çıkış turnikeden okunmuyor: içeride/süre/geç kalma yok.**
+- Ekip (`7_yonetici/ekip/`): önce ofis (işlem sayıları, giriş; kişiye dokununca günlük akış), altında antrenörler (dönemde yaptığı ders, yoklama girilen/bekleyen, giriş). Giriş döneme göre: Bugün'de ilk giriş saati, hafta/ayda "Bu ay N gün geldi" (`giris_gun_sayisi`). Dersler'de satıra dokununca işlem geçmişi; antrenör yoklaması katılım özetiyle görünür. Dersler süzgeçleri "Yönetici onayladı" / "Onay bekliyor" (onay bekleyenleri getirir).
+- "Ödeme onay bekliyor" (`7_yonetici/dekont/`): salt okunur; resim açılır, PDF Android'de "İndirilenler"e iner (`IndirmeService`, MainActivity `fitcall/indirme` kanalı; iOS/Android ≤9 paylaşım menüsü).
+- Ayarlar > "Kullanıcı adını değiştir" (tüm roller; uç `kullaniciAdiDegistir`: 4-30 harf/rakam, en az bir harf, küçük harf; alınmışsa "uygun değil"). "Beni hatırla" adı da güncellenir. **Çıkış turnikeden okunmuyor: içeride/süre/geç kalma yok.**
 - Geri tuşu (tüm kabuklar, `SekmeGecmisi`): bir önceki sekmeye döner, önceki yoksa uygulama kapanır.
 - Yeni renk teması "Çivit" (`TakimTemasi.civit`).
-- Kalan: sürüm notu + `version:` bump, yeni ekranlar için "?" rehberi, telefonda göz kontrolü.
+- "?" rehberleri: Ekip (3), Ödeme onay bekliyor, Dersler "Onay bekliyor", Ayarlar kullanıcı adı; yönetici SSS'inde "Ekip ve bekleyen ödemeler" bölümü.
+- Kalan: sürüm notu + `version:` bump, telefonda göz kontrolü (PDF indirme gerçek cihazda denenmedi).
 
 ### Üye bildirim tercihleri (2026-11-06; iki repoda commit'li, push/deploy yok)
 - Kod tamam: Ayarlar > "Bildirim tercihleri" (`2_uye/bildirim_tercihleri/`, yalnız üye ana hesabı). Dört

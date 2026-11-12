@@ -5,12 +5,16 @@
 
 import 'dart:io';
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/models/9_yonetici/bekleyen_dekont_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/7_yonetici/dekont/bekleyen_dekontlar_gorunumu.dart';
 import 'package:fitcall/services/api_exception.dart';
+import 'package:fitcall/services/core/indirme_service.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -43,8 +47,33 @@ class _BekleyenDekontlarPageState extends State<BekleyenDekontlarPage> {
       final dosya = await YoneticiApiService.getDekontDosya(d.id);
       if (!mounted) return;
       if (dosya.pdfMi) {
-        // Uygulama içinde PDF görüntüleyici yok: paylaşım menüsünden açılır
-        // (üyenin "Dekontlarım" ekranıyla aynı yol).
+        // PDF doğrudan telefona iner (Android "İndirilenler"); bildirimdeki
+        // «Aç» telefonun PDF okuyucusunu açar.
+        final uri = await IndirmeService.indirilenlereKaydet(
+            ad: dosya.ad, baytlar: dosya.baytlar, tur: dosya.tur);
+        if (!mounted) return;
+        if (uri != null) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(
+              content: Text('${dosya.ad} İndirilenler klasörüne kaydedildi.'),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 6),
+              action: SnackBarAction(
+                label: 'Aç',
+                onPressed: () async {
+                  final acildi = await IndirmeService.ac(uri, dosya.tur);
+                  if (!acildi && mounted) {
+                    ShowMessage.warning(
+                        context, 'Telefonda PDF açacak uygulama yok.');
+                  }
+                },
+              ),
+            ));
+          return;
+        }
+        // iOS ve eski Android: "İndirilenler"e izinsiz yazılamıyor; paylaşım
+        // menüsü açılır ("Dosyalar'a Kaydet" oradadır).
         final dizin = await getTemporaryDirectory();
         final f = File('${dizin.path}/${dosya.ad}');
         await f.writeAsBytes(dosya.baytlar, flush: true);
@@ -75,7 +104,16 @@ class _BekleyenDekontlarPageState extends State<BekleyenDekontlarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ödeme onay bekliyor')),
+      appBar: AppBar(
+        title: const Text('Ödeme onay bekliyor'),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.yoneticiDekontlar,
+            sssRotasi: routeEnums[SayfaAdi.yoneticiYardim]!,
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: FutureBuilder<List<BekleyenDekont>>(
         future: _liste,
         builder: (context, anlik) {

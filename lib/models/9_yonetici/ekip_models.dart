@@ -50,6 +50,10 @@ class EkipGrubu {
       (json as List? ?? []).map((e) => EkipGrubu.fromJson(e)).toList();
 }
 
+/// Dönemde turnikeden girilen gün; eski sunucu göndermezse bugünden türetilir.
+int _girisGunu(Map<String, dynamic> json) =>
+    json['giris_gun_sayisi'] ?? (json['bugun_giris'] != null ? 1 : 0);
+
 List<EkipIslem> _islemler(dynamic json) =>
     (json as List? ?? []).map((e) => EkipIslem.fromJson(e)).toList();
 
@@ -60,6 +64,9 @@ class EkipKisi {
 
   /// Bugünün ilk turnike girişi; okutmadıysa null.
   final DateTime? bugunGiris;
+
+  /// Seçili dönemde (bugüne kadar) turnikeden girdiği gün sayısı.
+  final int girisGunSayisi;
   final int toplamIslem;
   final int kritikIslem;
   final List<EkipIslem> islemler;
@@ -71,12 +78,14 @@ class EkipKisi {
     required this.kritikIslem,
     required this.islemler,
     this.bugunGiris,
+    this.girisGunSayisi = 0,
   });
 
   factory EkipKisi.fromJson(Map<String, dynamic> json) => EkipKisi(
         id: json['id'] ?? 0,
         adSoyad: json['ad_soyad']?.toString() ?? '',
         bugunGiris: parseApiTarih(json['bugun_giris']),
+        girisGunSayisi: _girisGunu(json),
         toplamIslem: json['toplam_islem'] ?? 0,
         kritikIslem: json['kritik_islem'] ?? 0,
         islemler: _islemler(json['islemler']),
@@ -96,6 +105,9 @@ class EkipAntrenor {
   /// Bugünün ilk turnike girişi; okutmadıysa null.
   final DateTime? bugunGiris;
 
+  /// Seçili dönemde (bugüne kadar) turnikeden girdiği gün sayısı.
+  final int girisGunSayisi;
+
   /// Saati bitmiş, iptal edilmemiş ve "yapılmadı" denmemiş ders.
   final int dersSayisi;
 
@@ -112,12 +124,14 @@ class EkipAntrenor {
     required this.yoklamaGirilen,
     required this.yoklamaBekleyen,
     this.bugunGiris,
+    this.girisGunSayisi = 0,
   });
 
   factory EkipAntrenor.fromJson(Map<String, dynamic> json) => EkipAntrenor(
         id: json['id'] ?? 0,
         adSoyad: json['ad_soyad']?.toString() ?? '',
         bugunGiris: parseApiTarih(json['bugun_giris']),
+        girisGunSayisi: _girisGunu(json),
         dersSayisi: json['ders_sayisi'] ?? 0,
         yapilmadi: json['yapilmadi'] ?? 0,
         yoklamaGirilen: json['yoklama_girilen'] ?? 0,
@@ -126,10 +140,14 @@ class EkipAntrenor {
 }
 
 class EkipData {
+  /// bugun | bu_hafta | bu_ay — kartlardaki giriş bilgisi buna göre yazılır.
+  final String donem;
   final DateTime? baslangic;
   final DateTime? bitis;
   final List<EkipGrubu> gruplar;
   final int kisiSayisi;
+
+  /// Dönemde en az bir gün turnikeden giren çalışan.
   final int gelenSayisi;
   final int toplamIslem;
   final int kritikIslem;
@@ -146,6 +164,7 @@ class EkipData {
     required this.kritikIslem,
     required this.kisiler,
     this.antrenorler = const [],
+    this.donem = 'bugun',
     this.baslangic,
     this.bitis,
   });
@@ -153,6 +172,7 @@ class EkipData {
   factory EkipData.fromJson(Map<String, dynamic> json) {
     final ozet = json['ozet'] as Map? ?? const {};
     return EkipData(
+      donem: json['donem']?.toString() ?? 'bugun',
       baslangic: parseApiTarih(json['baslangic']),
       bitis: parseApiTarih(json['bitis']),
       gruplar: EkipGrubu.liste(json['gruplar']),

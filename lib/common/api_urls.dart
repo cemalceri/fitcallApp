@@ -15,6 +15,7 @@ String kayitFormVerileriUrl = "$baseUrl/kayitFormVerileri";
 String uyeBasvuruUrl = "$baseUrl/uyeBasvuru";
 String sifremiUnuttumUrl = "$baseUrl/sifremiUnuttum";
 String uyeSifreDegistir = "$baseUrl/uyeSifreDegistir";
+String kullaniciAdiDegistir = "$baseUrl/kullaniciAdiDegistir";
 String uyeKullaniciSil = "$baseUrl/uyeKullaniciSil";
 
 // =================== ÜYE ===================

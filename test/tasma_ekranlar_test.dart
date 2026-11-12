@@ -135,6 +135,7 @@ import 'package:fitcall/screens/7_yonetici/widgets/yonetici_bottom_bar.dart';
 import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
 import 'package:fitcall/common/tema.dart';
+import 'package:fitcall/screens/1_common/hesap/kullanici_adi_degistir_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -1101,7 +1102,7 @@ void main() {
             children: [
               BaslikCipi(etiket: 'Tümü', secili: true, onSec: () {}),
               const SizedBox(width: 8),
-              BaslikCipi(etiket: 'Yönetici onayı yapıldı', secili: false, onSec: () {}),
+              BaslikCipi(etiket: 'Yönetici onayladı', secili: false, onSec: () {}),
               const SizedBox(width: 8),
               BaslikCipi(etiket: 'Onay bekliyor', secili: false, onSec: () {}),
               const SizedBox(width: 8),
@@ -2487,7 +2488,8 @@ void main() {
     );
 
     // ---- Ekip takibi
-    EkipData ekip() => EkipData.fromJson({
+    EkipData ekip({String donem = 'bugun'}) => EkipData.fromJson({
+          'donem': donem,
           'gruplar': [
             {'kod': 'ders', 'etiket': 'Dersler'},
             {'kod': 'para', 'etiket': 'Para'},
@@ -2505,6 +2507,7 @@ void main() {
               'id': 1,
               'ad_soyad': 'Muhammed Abdurrahman Yılmazoğulları',
               'bugun_giris': '2026-11-12T08:55:00+03:00',
+              'giris_gun_sayisi': 31,
               'toplam_islem': 1234,
               'kritik_islem': 321,
               'islemler': [
@@ -2545,6 +2548,7 @@ void main() {
               'id': 7,
               'ad_soyad': 'Muhammed Abdurrahman Yılmazoğulları',
               'bugun_giris': '2026-11-12T07:40:00+03:00',
+              'giris_gun_sayisi': 31,
               'ders_sayisi': 1234,
               'yapilmadi': 123,
               'yoklama_girilen': 1200,
@@ -2563,6 +2567,9 @@ void main() {
         });
     tasmaTesti('EkipGorunumu',
         () => EkipGorunumu(data: ekip(), onKisi: (_) {}),
+        sar: kaydirmali);
+    tasmaTesti('EkipGorunumu (bu ay: gelinen gün)',
+        () => EkipGorunumu(data: ekip(donem: 'bu_ay'), onKisi: (_) {}),
         sar: kaydirmali);
     tasmaTesti(
       'EkipGorunumu (çalışan yok)',
@@ -2907,6 +2914,10 @@ void main() {
         () => const YonetimYardimPage(ofis: false));
     tasmaTesti(
         'YonetimYardimPage (ofis)', () => const YonetimYardimPage(ofis: true));
+    tasmaTesti(
+        'KullaniciAdiDegistirPage',
+        () => const KullaniciAdiDegistirPage(
+            mevcutAd: 'muhammedabdurrahmanyilmazogu1'));
   });
 
   group('Zorunlu güncelleme sayfaları', () {

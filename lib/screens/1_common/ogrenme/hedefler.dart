@@ -411,6 +411,18 @@ abstract final class Hedef {
   static const yoneticiDersKartlari = 'yonetici.dersKartlari';
   static const yoneticiDersSatiri = 'yonetici.dersSatiri';
 
+  /// Ekip: dönem seçici, ofis özeti, ilk çalışan kartı, antrenör özeti ve
+  /// dersi olan ilk antrenörün kartı (yoklama hapları onda).
+  static const ekipDonemSecici = 'yonetici.ekipDonemSecici';
+  static const ekipOfisOzeti = 'yonetici.ekipOfisOzeti';
+  static const ekipKisiKarti = 'yonetici.ekipKisiKarti';
+  static const ekipAntrenorOzeti = 'yonetici.ekipAntrenorOzeti';
+  static const ekipAntrenorKarti = 'yonetici.ekipAntrenorKarti';
+
+  /// Ödeme onay bekliyor: özet kartı ve ilk dekont satırı.
+  static const dekontOzeti = 'yonetici.dekontOzeti';
+  static const dekontSatiri = 'yonetici.dekontSatiri';
+
   // ── Ortak sayfalar: QR, Bildirimler, Ayarlar ──
 
   /// Kabuk başlıklarındaki sol menü (☰) düğmesi.
@@ -432,6 +444,7 @@ abstract final class Hedef {
   /// Ayarlar: tema bölümü; Şifreyi Değiştir sayfasında alanlar.
   static const genelAyarTema = 'genel.ayarTema';
   static const genelSifreAlanlari = 'genel.sifreAlanlari';
+  static const genelKullaniciAdiAlani = 'genel.kullaniciAdiAlani';
 
   /// Başka işletmeye üyelik: işletme listesi, aktarılacak bilgiler, KVKK kutusu.
   static const isletmeBasvuruIsletmeler = 'isletmeBasvuru.isletmeler';

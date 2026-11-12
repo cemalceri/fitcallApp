@@ -199,6 +199,33 @@ const List<OgrenmeGorevi> genelGorevler = [
         'Şifreni unuttuysan çıkış yapıp «Şifremi unuttum»u kullan.',
   ),
   OgrenmeGorevi(
+    id: 'ayar.kullaniciAdi',
+    sayfa: OgrenmeSayfasi.ayarlar,
+    baslik: 'Kullanıcı adımı nasıl değiştiririm?',
+    kosulMetni: 'Ayarlar açılınca',
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.metin('Kullanıcı adını değiştir'),
+        metin: '«Kullanıcı adını değiştir» satırına dokun.',
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.genelKullaniciAdiAlani),
+        metin: 'Yeni kullanıcı adını yaz.',
+        bilgi: true,
+        dokunulur: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.metin('Kaydet'),
+        metin: '«Kaydet»e dokun.',
+        kalici: true,
+        sonuc: 'kullanıcı adın değişir',
+      ),
+    ],
+    kural: 'Yalnız İngilizce harf ve rakam kullanılır. '
+        'Başkası kullanıyorsa «uygun değil» uyarısı çıkar. '
+        'Girişte yeni adı ya da e-postanı yazarsın.',
+  ),
+  OgrenmeGorevi(
     id: 'ayar.profilDegistir',
     sayfa: OgrenmeSayfasi.ayarlar,
     baslik: 'Başka profile nasıl geçerim?',

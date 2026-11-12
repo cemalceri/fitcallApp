@@ -11,6 +11,8 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/ekip_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
@@ -46,6 +48,34 @@ ListeTonu ekipIslemTonu(String kod, bool kritik) {
   };
 }
 
+/// Kartlardaki giriş hapı: «Bugün» seçiliyken ilk giriş saati, hafta ve
+/// ayda kaç gün geldiği. (Ay seçiliyken "Bugün giriş yok" yazmak yanıltıyordu.)
+Widget _girisHapi(String donem, DateTime? bugunGiris, int gunSayisi) {
+  if (donem == 'bu_hafta' || donem == 'bu_ay') {
+    final ad = donem == 'bu_hafta' ? 'Bu hafta' : 'Bu ay';
+    final geldi = gunSayisi > 0;
+    return DurumHapi(
+      geldi ? '$ad $gunSayisi gün geldi' : '$ad giriş yok',
+      ton: geldi ? ListeTonu.basari : ListeTonu.notr,
+      ikon: geldi ? Icons.login_rounded : Icons.remove_circle_outline_rounded,
+    );
+  }
+  return DurumHapi(
+    bugunGiris == null ? 'Bugün giriş yok' : 'Giriş ${saatYaz(bugunGiris)}',
+    ton: bugunGiris == null ? ListeTonu.notr : ListeTonu.basari,
+    ikon: bugunGiris == null
+        ? Icons.remove_circle_outline_rounded
+        : Icons.login_rounded,
+  );
+}
+
+/// Özet kartındaki "gelen" hücresinin etiketi.
+String _gelenEtiketi(String donem) => switch (donem) {
+      'bu_hafta' => 'Bu hafta gelen',
+      'bu_ay' => 'Bu ay gelen',
+      _ => 'Bugün giriş yapan',
+    };
+
 /* ================================ Liste ================================ */
 
 class EkipGorunumu extends StatelessWidget {
@@ -72,15 +102,23 @@ class EkipGorunumu extends StatelessWidget {
           PanoKarti(
             child: Text(
               'Ofis rolünde tanımlı kullanıcı yok.',
-              style: TextStyle(fontSize: 13, color: context.cs.onSurfaceVariant),
+              style:
+                  TextStyle(fontSize: 13, color: context.cs.onSurfaceVariant),
             ),
           )
         else ...[
-          _EkipOzeti(data: data),
+          OgrenmeHedefi(id: Hedef.ekipOfisOzeti, child: _EkipOzeti(data: data)),
           const SizedBox(height: Bosluk.l),
-          for (final kisi in data.kisiler) ...[
-            _KisiKarti(
-                kisi: kisi, gruplar: data.gruplar, onTap: () => onKisi(kisi)),
+          for (final (i, kisi) in data.kisiler.indexed) ...[
+            ogrenmeHedefiSar(
+              i == 0 ? Hedef.ekipKisiKarti : null,
+              _KisiKarti(
+                kisi: kisi,
+                gruplar: data.gruplar,
+                donem: data.donem,
+                onTap: () => onKisi(kisi),
+              ),
+            ),
             const SizedBox(height: Bosluk.m),
           ],
         ],
@@ -88,16 +126,34 @@ class EkipGorunumu extends StatelessWidget {
           const SizedBox(height: Bosluk.l),
           const PanoBolumEtiketi(
               ikon: Icons.sports_tennis_rounded, etiket: 'Antrenörler'),
-          _AntrenorOzeti(antrenorler: data.antrenorler),
+          OgrenmeHedefi(
+            id: Hedef.ekipAntrenorOzeti,
+            child: _AntrenorOzeti(
+                antrenorler: data.antrenorler, donem: data.donem),
+          ),
           const SizedBox(height: Bosluk.l),
           for (final a in data.antrenorler) ...[
-            _AntrenorKarti(antrenor: a),
+            // Rehber hedefi yoklama hapları olan ilk kartta (dersi yoksa hap yok).
+            ogrenmeHedefiSar(
+              identical(a, _hapliIlkAntrenor(data.antrenorler))
+                  ? Hedef.ekipAntrenorKarti
+                  : null,
+              _AntrenorKarti(antrenor: a, donem: data.donem),
+            ),
             const SizedBox(height: Bosluk.m),
           ],
         ],
       ],
     );
   }
+}
+
+/// Dersi olan (yoklama hapları çizilen) ilk antrenör; yoksa null.
+EkipAntrenor? _hapliIlkAntrenor(List<EkipAntrenor> liste) {
+  for (final a in liste) {
+    if (a.dersSayisi > 0 || a.yapilmadi > 0 || a.yoklamaBekleyen > 0) return a;
+  }
+  return null;
 }
 
 /// Üç sayılık özet hücresi (antrenör özeti).
@@ -120,11 +176,12 @@ Widget _ozetHucresi(BuildContext context, String deger, String etiket) =>
 
 class _AntrenorOzeti extends StatelessWidget {
   final List<EkipAntrenor> antrenorler;
-  const _AntrenorOzeti({required this.antrenorler});
+  final String donem;
+  const _AntrenorOzeti({required this.antrenorler, required this.donem});
 
   @override
   Widget build(BuildContext context) {
-    final gelen = antrenorler.where((a) => a.bugunGiris != null).length;
+    final gelen = antrenorler.where((a) => a.girisGunSayisi > 0).length;
     final ders = antrenorler.fold<int>(0, (t, a) => t + a.dersSayisi);
     final bekleyen = antrenorler.fold<int>(0, (t, a) => t + a.yoklamaBekleyen);
     return PanoKarti(
@@ -132,7 +189,7 @@ class _AntrenorOzeti extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _ozetHucresi(
-              context, '$gelen/${antrenorler.length}', 'Bugün giriş yapan'),
+              context, '$gelen/${antrenorler.length}', _gelenEtiketi(donem)),
           _ozetHucresi(context, '$ders', 'Yapılan ders'),
           _ozetHucresi(context, '$bekleyen', 'Yoklama bekleyen'),
         ],
@@ -143,13 +200,13 @@ class _AntrenorOzeti extends StatelessWidget {
 
 class _AntrenorKarti extends StatelessWidget {
   final EkipAntrenor antrenor;
-  const _AntrenorKarti({required this.antrenor});
+  final String donem;
+  const _AntrenorKarti({required this.antrenor, required this.donem});
 
   @override
   Widget build(BuildContext context) {
     final cs = context.cs;
     final a = antrenor;
-    final giris = a.bugunGiris;
     final dersYok =
         a.dersSayisi == 0 && a.yapilmadi == 0 && a.yoklamaBekleyen == 0;
 
@@ -179,15 +236,7 @@ class _AntrenorKarti extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 3),
-                    DurumHapi(
-                      giris == null
-                          ? 'Bugün giriş yok'
-                          : 'Giriş ${saatYaz(giris)}',
-                      ton: giris == null ? ListeTonu.notr : ListeTonu.basari,
-                      ikon: giris == null
-                          ? Icons.remove_circle_outline_rounded
-                          : Icons.login_rounded,
-                    ),
+                    _girisHapi(donem, a.bugunGiris, a.girisGunSayisi),
                   ],
                 ),
               ),
@@ -268,7 +317,8 @@ class _EkipOzeti extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          hucre('${data.gelenSayisi}/${data.kisiSayisi}', 'Bugün giriş yapan'),
+          hucre('${data.gelenSayisi}/${data.kisiSayisi}',
+              _gelenEtiketi(data.donem)),
           hucre('${data.toplamIslem}', 'İşlem'),
           hucre('${data.kritikIslem}', 'Para ve silme işlemi'),
         ],
@@ -280,18 +330,19 @@ class _EkipOzeti extends StatelessWidget {
 class _KisiKarti extends StatelessWidget {
   final EkipKisi kisi;
   final List<EkipGrubu> gruplar;
+  final String donem;
   final VoidCallback onTap;
 
   const _KisiKarti({
     required this.kisi,
     required this.gruplar,
+    required this.donem,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = context.cs;
-    final giris = kisi.bugunGiris;
     final kritikler = kisi.islemler.where((i) => i.kritik).toList();
 
     return PanoKarti(
@@ -321,15 +372,7 @@ class _KisiKarti extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 3),
-                    DurumHapi(
-                      giris == null
-                          ? 'Bugün giriş yok'
-                          : 'Giriş ${saatYaz(giris)}',
-                      ton: giris == null ? ListeTonu.notr : ListeTonu.basari,
-                      ikon: giris == null
-                          ? Icons.remove_circle_outline_rounded
-                          : Icons.login_rounded,
-                    ),
+                    _girisHapi(donem, kisi.bugunGiris, kisi.girisGunSayisi),
                   ],
                 ),
               ),
@@ -480,12 +523,14 @@ class _EkipDetayGorunumuState extends State<EkipDetayGorunumu> {
               data.akis.isEmpty
                   ? 'Bu gün için kayıtlı işlem yok.'
                   : 'Bu süzgece uyan işlem yok.',
-              style: TextStyle(fontSize: 13, color: context.cs.onSurfaceVariant),
+              style:
+                  TextStyle(fontSize: 13, color: context.cs.onSurfaceVariant),
             ),
           )
         else
           PanoKarti(
-            padding: const EdgeInsets.symmetric(horizontal: Bosluk.l, vertical: 4),
+            padding:
+                const EdgeInsets.symmetric(horizontal: Bosluk.l, vertical: 4),
             child: Column(
               children: [
                 for (var i = 0; i < akis.length; i++) ...[
@@ -645,7 +690,8 @@ class _DagilimKarti extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(ekipIslemIkonu(i.kod),
-                      size: 18, color: ekipIslemTonu(i.kod, i.kritik).on(context)),
+                      size: 18,
+                      color: ekipIslemTonu(i.kod, i.kritik).on(context)),
                   const SizedBox(width: Bosluk.s),
                   Expanded(
                     flex: 5,
@@ -802,8 +848,7 @@ class IslemGecmisiListesi extends StatelessWidget {
                           padding: const EdgeInsets.only(top: 2, bottom: 2),
                           child: Text(
                             satirlar[i].ayrinti!,
-                            style:
-                                TextStyle(fontSize: 13, color: cs.onSurface),
+                            style: TextStyle(fontSize: 13, color: cs.onSurface),
                           ),
                         ),
                       Text(

@@ -49,7 +49,9 @@ enum OgrenmeSayfasi {
   yoneticiAntrenorler('Antrenörlere dön'),
   yoneticiDersler('Derslere dön'),
   yoneticiDegerlendirmeler('Değerlendirmelere dön'),
-  yoneticiHakedis('Hakediş saatlerine dön');
+  yoneticiHakedis('Hakediş saatlerine dön'),
+  yoneticiEkip('Ekibe dön'),
+  yoneticiDekontlar('Ödemelere dön');
 
   /// Bitişte rehberin başladığı sayfaya dönen butonun adı. Yönelme eki
   /// sayfa adından güvenle üretilemediği için elle yazılır.

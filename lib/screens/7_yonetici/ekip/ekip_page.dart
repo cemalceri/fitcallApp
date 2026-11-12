@@ -3,9 +3,14 @@
 // Yönetici → Ekip: ofis çalışanları bu dönemde ne yaptı, bugün kaçta geldi.
 // Yalnız raporlama; görsel gövde [EkipGorunumu]'nda.
 
+import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/ekip_models.dart';
+import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
+import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
@@ -77,7 +82,8 @@ class _EkipPageState extends State<EkipPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => EkipDetayPage(kullaniciId: kisi.id, adSoyad: kisi.adSoyad),
+        builder: (_) =>
+            EkipDetayPage(kullaniciId: kisi.id, adSoyad: kisi.adSoyad),
       ),
     );
   }
@@ -85,15 +91,27 @@ class _EkipPageState extends State<EkipPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ekip')),
+      appBar: AppBar(
+        title: const Text('Ekip'),
+        actions: [
+          OgrenmeButonu(
+            sayfa: OgrenmeSayfasi.yoneticiEkip,
+            sssRotasi: routeEnums[SayfaAdi.yoneticiYardim]!,
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.m, Bosluk.l, 0),
-            child: PeriodFilterTabs(
-              seciliDonem: _donem,
-              onDonemChanged: _donemSec,
-              yuzeyde: true,
+            child: OgrenmeHedefi(
+              id: Hedef.ekipDonemSecici,
+              child: PeriodFilterTabs(
+                seciliDonem: _donem,
+                onDonemChanged: _donemSec,
+                yuzeyde: true,
+              ),
             ),
           ),
           Expanded(child: _icerik()),
@@ -123,7 +141,8 @@ class _EkipPageState extends State<EkipPage> {
       onRefresh: _yukle,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.l, Bosluk.l, Bosluk.xl),
+        padding:
+            const EdgeInsets.fromLTRB(Bosluk.l, Bosluk.l, Bosluk.l, Bosluk.xl),
         child: AnimatedOpacity(
           // Dönem değişirken eski veri soluk durur, sayfa iskelete dönmez.
           opacity: _yukleniyor ? 0.5 : 1,

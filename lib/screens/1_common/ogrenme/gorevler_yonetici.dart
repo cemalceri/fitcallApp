@@ -391,8 +391,8 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
         sonuc: 'Dersler sekmesi bugünün listesiyle açılır',
       ),
     ],
-    kural: 'Onay bekleyen, dersi bitmiş ama ofis onayı olmayan derstir. '
-        'Onayı ofis verir.',
+    kural: 'Onay bekleyen, dersi bitmiş ama onaylanmamış derstir. '
+        'Ekip ve ödeme maddesine dokununca ilgili sayfa açılır.',
   ),
 
   // -------------------------------------------------------------- Raporlar
@@ -984,7 +984,7 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
       ),
       OgrenmeAdimi(
         hedef: Secici.hedef(Hedef.yoneticiDersKartlari),
-        metin: '«Onaylandı» yönetici onayı yapılmış derslerdir.',
+        metin: '«Onaylandı» yöneticinin onayladığı derslerdir.',
         bilgi: true,
       ),
       OgrenmeAdimi(
@@ -1014,8 +1014,8 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
       ),
     ],
     kural: 'Bitmiş dersin onayını ofis verir. '
-        'Onay bekleyenler ana sayfadaki «Bugünkü ders» kartında da yazar. '
-        'Satıra dokununca dersin işlem geçmişi açılır.',
+        'Onay bekleyenler «Onay bekliyor» süzgecinde toplanır. '
+        'Satıra dokununca işlem geçmişi ve hocanın yoklaması açılır.',
   ),
   OgrenmeGorevi(
     id: 'yonetici.dersFiltre',
@@ -1030,5 +1030,114 @@ const List<OgrenmeGorevi> yoneticiGorevleri = [
     ],
     kural: 'Liste yalnız iptal edilenleri gösterir; «Tümü» süzgeci kaldırır. '
         'Süzgeç seçili günün dersleri içindir.',
+  ),
+  OgrenmeGorevi(
+    id: 'yonetici.dersOnayBekleyen',
+    sayfa: OgrenmeSayfasi.yoneticiDersler,
+    baslik: 'Onay bekleyen dersleri nasıl görürüm?',
+    kosulMetni: 'Dersler açılınca',
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.metin('Onay bekliyor'),
+        metin: '«Onay bekliyor»a dokun.',
+        kalici: true,
+        sonuc: 'yalnız bitmiş ama onaylanmamış dersler kalır',
+      ),
+    ],
+    kural: '«Yönetici onayladı» onayı verilmiş dersleri süzer. '
+        'Onayı ofis verir; bu liste yalnız okunur.',
+  ),
+
+  // ------------------------------------------------------------------ Ekip
+  OgrenmeGorevi(
+    id: 'yonetici.ekip',
+    sayfa: OgrenmeSayfasi.yoneticiEkip,
+    baslik: 'Ekip sayfası neyi gösteriyor?',
+    kosulMetni: 'Ekip açılınca',
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.ekipDonemSecici),
+        metin: 'Dönemi buradan seçersin.',
+        bilgi: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.ekipOfisOzeti),
+        metin: 'Üstte ofisin giriş ve işlem özeti var.',
+        bilgi: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.ekipKisiKarti),
+        metin: 'Kartta giriş ve işlem sayısı yazar.',
+        bilgi: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.ekipAntrenorOzeti),
+        metin: 'Altta antrenörlerin ders ve yoklama özeti var.',
+        bilgi: true,
+      ),
+    ],
+    kural: '«Bugün» seçiliyken ilk giriş saati yazar. '
+        'Hafta ve ayda turnikeden gelinen gün sayılır. '
+        'Turnike çıkışı okumaz; süre gösterilmez.',
+  ),
+  OgrenmeGorevi(
+    id: 'yonetici.ekipKisi',
+    sayfa: OgrenmeSayfasi.yoneticiEkip,
+    baslik: 'Bir çalışanın ne yaptığını nasıl görürüm?',
+    kosulMetni: 'Ofis çalışanı olunca',
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.ekipKisiKarti),
+        metin: 'Çalışanın kartına dokun.',
+        kalici: true,
+        sonuc: 'günün işlem akışı ve giriş saatleri açılır',
+      ),
+    ],
+    kural: 'Para ve silme işlemleri akışta vurgulu durur. '
+        'Ana sayfadaki ekip maddesi de buraya getirir.',
+  ),
+  OgrenmeGorevi(
+    id: 'yonetici.ekipYoklama',
+    sayfa: OgrenmeSayfasi.yoneticiEkip,
+    baslik: 'Antrenörün yoklama sayıları ne demek?',
+    kosulMetni: 'Dersi biten antrenör olunca',
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.ekipAntrenorOzeti),
+        metin: 'Burada antrenörlerin toplamı durur.',
+        bilgi: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.ekipAntrenorKarti),
+        metin: 'Kartta yapılan ders ve yoklamalar yazar.',
+        bilgi: true,
+      ),
+    ],
+    kural: '«yoklama bekliyor» hocanın yoklama girmediği biten derstir. '
+        'Yoklamayı hoca antrenör uygulamasından girer. '
+        'Hocanın «yapılmadı» dediği ders ayrı yazılır.',
+  ),
+
+  // ------------------------------------------------------- Bekleyen ödeme
+  OgrenmeGorevi(
+    id: 'yonetici.dekontlar',
+    sayfa: OgrenmeSayfasi.yoneticiDekontlar,
+    baslik: 'Onay bekleyen ödemeyi nasıl incelerim?',
+    kosulMetni: 'Bekleyen ödeme olunca',
+    adimlar: [
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.dekontOzeti),
+        metin: 'Üstte bekleyen sayı ve toplam tutar var.',
+        bilgi: true,
+      ),
+      OgrenmeAdimi(
+        hedef: Secici.hedef(Hedef.dekontSatiri),
+        metin: 'İncelemek istediğin dekonta dokun.',
+        kalici: true,
+        sonuc: 'resim açılır, PDF telefona iner',
+      ),
+    ],
+    kural: 'Onay ve ret ofiste, web dekont masasından yapılır. '
+        '«Aynı dosya» daha önce gönderilmiş dosyayı gösterir.',
   ),
 ];
