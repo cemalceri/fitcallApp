@@ -42,6 +42,53 @@ görüyor (tam ekran popup; kalıcı erişim Ayarlar › "Neler yeni").
    popup işe yaramıyor demektir; kararı tek sürüme değil birkaç sürüme bakarak
    ver.
 
+## 3.16.0 — 2026-11-13
+
+### Mağaza metni (tr-TR)
+
+`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (371 karakter); yalnız üye maddeleri.
+
+- Bildirim tercihleri: Ayarlar'dan hangi bildirimleri alacağınızı seçin; kapattıklarınız Bildirimlerim'de yine durur.
+- Kullanıcı adınızı artık Ayarlar'dan değiştirebilirsiniz.
+- Android'de geri tuşu uygulamayı kapatmak yerine bir önceki sekmeye döner.
+- Yeni renk teması: Çivit (Ayarlar › Görünüm).
+- Rehber iyileştirmeleri, güçlendirilmiş güvenlik ve hata düzeltmeleri.
+
+### "Neler yeni?" popup'ı
+
+Backend `surum_notlari.json`'da 3.16.0 bloğu. Üye: bildirim tercihleri, kullanıcı adı, geri tuşu, Çivit.
+Antrenör: kullanıcı adı, geri tuşu, Çivit. Ofis: ders notları + aynı üç ortak madde. Yönetici: Ana Sayfa,
+Ekip, Raporlar, Ödeme onay bekliyor (ders notları ve ortak üç madde "Tümünü gör"de). Yeni ikon yok.
+
+### Yayın sırası (bu sürüme özel)
+
+1. Backend push + deploy (önce backend): yalnız `surum_notlari.json`; kod ve göçler (0108 dahil) zaten
+   canlı.
+2. Tag `v3.16.0` → doğrudan üretim.
+3. Mağazada canlı görülünce admin'den 3.16.0 sürüm notunun `yayinda`'sını aç (konfig kullanıcıda).
+4. Backend'deki ders iptal talebi uçları `min_destekli` 3.15.0'a çıkmadan silinmez: 3.13.1 ve 3.14.0
+   istemcileri bu uçları hâlâ çağırıyor.
+
+### Teknik
+
+- **Yönetici yeniden tasarım ve Ekip.** Ana Sayfa bugün bloğu + "Dikkat isteyenler", Raporlar dönem
+  özeti, Ekip (`7_yonetici/ekip/`), salt okunur "Ödeme onay bekliyor" (`7_yonetici/dekont/`; PDF
+  Android'de İndirilenler'e iner: `IndirmeService`, `fitcall/indirme` kanalı). Ciro → "Ders bedeli",
+  Tahsilat → "Tahsil edilen". Sunucu eskiyse ekranlar önceki görünüme düşer.
+- **Üye bildirim tercihleri.** Ayarlar › Bildirim tercihleri (yalnız üye ana hesabı); dört grup,
+  kapatılan grubun push'u gitmez (backend 0108, durum `ATLANDI`).
+- **Kullanıcı adı değiştirme** (tüm roller); "Beni hatırla" adı da güncellenir.
+- **Geri tuşu** (`SekmeGecmisi`): tüm kabuklarda bir önceki sekmeye döner, yoksa uygulama kapanır.
+- **Çivit teması** (`TakimTemasi.civit`).
+- **Ofis ders notları.** Ders yönetim sayfasında antrenör, yardımcı ve yönetici notları.
+- **Güvenlik/teknik.** Release derlemeleri `--obfuscate` (semboller Codemagic artifact'ında); App Check
+  token alınamayınca sebebi mobil loga yazılır (`Sayfa=AppCheckServisi`); FCM token yenilemesi oturum
+  yokken gönderilmez; KVKK metnine işlem güvenliği kategorisi.
+- **Rehber.** «Anladım» sonraki hedef yokken ilerlemez; ~20 rehber hedefi düzeltildi.
+- **Küçük işler.** Ders iptal ve üye borç alt sayfalarında çift tutamaç giderildi; profil başlıkları kısa
+  içerikte de tam kapanır (`KapanmaPayi`); antrenör takvim bloğu 1.3 yazı ölçeğinde bir saatlik dersi üç
+  satırla gösterir ("+N kişi daha" yer yoksa düşer).
+
 ## 3.15.0 — 2026-11-05
 
 ### Mağaza metni (tr-TR)
@@ -92,45 +139,3 @@ Yönetici: Ana Sayfa adı, rehber, menü. Yeni ikon yok.
 - **Açılış hızı.** FCM kaydı beklenmez, profil isteği konfigle paralel, sekmeler tembel yüklenir;
   backend'de antrenör/duyuru N+1'leri giderildi.
 - **Android.** Gömülü Kotlin'e geçiş, KGP uygulayan eklentiler güncellendi.
-
-## 3.14.0 — 2026-10-30
-
-### Mağaza metni (tr-TR)
-
-`release_notes.json`'da `tr` ve `tr-TR` girdileri aynı (377 karakter). 3.13.1 iki mağazada da yayında,
-yani yalnız ondan sonraki üye yenilikleri.
-
-- Menü artık her sayfada: sol üstteki menü simgesi alt bardaki tüm sekmelerde; ekranın sol kenarından kaydırarak da açabilirsiniz.
-- Geçmiş Dersler: dersin durumu ve sizin yoklamanız ayrı etiketlerle gösteriliyor; iptal edilen ya da yapılmayan dersler artık katılmadığınız ders gibi görünmüyor.
-- Uygulama güvenliği güçlendirildi.
-- Çeşitli iyileştirmeler ve hata düzeltmeleri.
-
-### "Neler yeni?" popup'ı
-
-Backend `surum_notlari.json`'da 3.14.0 bloğu, `yayinda` kapalı: dört profilde ortak "Menü artık her
-sekmede"; üyede Geçmiş Dersler'de Ders / Yoklama etiketleri; yöneticide Dashboard'un adı Ana Sayfa.
-Antrenör ve ofis yalnız menü maddesini görür. Yeni ikonlar (`menu_rounded`, `home_rounded`) beyaz
-listede.
-
-### Yayın sırası (bu sürüme özel)
-
-1. Backend deploy (yapıldı 2026-10-30, Heroku v350): App Check ara katmanı "log" modunda
-   (`auths.0014`), hiçbir isteği reddetmez; eski sürümler etkilenmez. Sürüm notu `yayinda=False`.
-2. Tag → doğrudan üretim (kullanıcı kararı: dahili test yok, zorunlu güncelleme yok). Android AGP 9 +
-   edge-to-edge (`FlutterFragmentActivity`) bu sürümde ilk kez çıkıyor; güncelleme sonrası oturum
-   düşerse ilk işaret kullanıcıların yeniden giriş yapması olur.
-3. Mağazada canlı görülünce admin'den 3.14.0 sürüm notunun `yayinda`'sını aç.
-
-### Teknik
-
-- **Sol menü her sekmede.** Drawer kabukta (`UyeKabuk`, `AntrenorKabuk`, yönetici/ofis kabukları);
-  `KabukMenusu` menü açma işlevini sekmelere indirir, sekme başlıklarında `KabukMenuButonu` /
-  `kabukMenuLeading`. İtilen sayfalarda geri oku kalır. Yöneticide "Dashboard" → "Ana Sayfa".
-- **Geçmiş dersler.** "Ders" ve "Yoklama" etiketleri ayrı; katılım yalnız antrenör yoklamasından,
-  yapılmamış/iptal derste otomatik `katildi=False` "Katılmadı" gösterilmez.
-- **Firebase App Check.** Her isteğe `X-Firebase-AppCheck` (Play Integrity / App Attest), `X-Platform`,
-  `X-Uygulama-Surumu`. Sunucu `APP_CHECK_MODU=log`: doğrular ve sayar (admin › App Check Sayaçları).
-  Konsol ayarları yapıldı (2026-10-30); zorunlu moda geçiş [MOBIL_GELISTIRMELER.md](MOBIL_GELISTIRMELER.md)'de.
-- **Android.** AGP 9.1, Gradle 9.3.1, Kotlin 2.4.0, `add_2_calendar` 3.1.1; edge-to-edge. En az
-  Flutter 3.44.
-- **Diğer.** Devir bildiriminde "Reddet" çerçeveli; antrenör SSS'ine iki soru.

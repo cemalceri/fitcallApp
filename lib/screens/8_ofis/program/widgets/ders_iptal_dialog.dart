@@ -44,6 +44,8 @@ class DersIptalDialog extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      // Sayfa kendi tutamacını çiziyor; temanınki ikinci bir çubuk olurdu.
+      showDragHandle: false,
       builder: (_) => DersIptalDialog(
         sebepler: sebepler,
         modlar: modlar,

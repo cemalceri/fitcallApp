@@ -165,6 +165,7 @@ class _AntrenorProfilContent extends StatelessWidget {
               ),
             ),
           ),
+          const KapanmaPayi(acikYukseklik: 224),
         ],
       ),
     );

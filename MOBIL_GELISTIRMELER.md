@@ -6,13 +6,13 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ---
 
-## 📌 Şu anki durum (2026-11-05)
+## 📌 Şu anki durum (2026-11-13)
 
 | | |
 |---|---|
-| Mobil | **3.14.0+48** iki mağazada yayında (güncelleme uyarısı açılmadı, üyelerin çoğu 3.13.1'de). **3.15.0+49 hazır, tag'lenmedi** (2026-11-05; ders talebi, rehber, başka işletme, plan dışı telafi + 3.14.0): sıra [SURUM_NOTLARI.md](SURUM_NOTLARI.md)'de, önce backend. |
-| Testler | `flutter test` **4549 geçiyor** (2026-11-05), `flutter analyze` temiz; backend **1729 geçiyor** (yerel Postgres, 2026-11-05). |
-| Backend | Heroku v351 (`040ebb7`). Bekleyen deploy: 0104–0107 (hoca katsayısı, kullanılmayan modeller, işletme başvurusu, plan dışı telafi). |
+| Mobil | **3.15.0+49** iki mağazada yayında (2026-11-06; yumuşak uyarı, `min_destekli` 3.13.1+47). **3.16.0+50** tag'lendi (2026-11-13; yönetici yeniden tasarım, bildirim tercihleri, kullanıcı adı, geri tuşu, Çivit). |
+| Testler | `flutter test` **5096 geçiyor** (2026-11-13), `flutter analyze` temiz; backend **1729 geçiyor** (yerel Postgres, 2026-11-05). |
+| Backend | Heroku `master` ile aynı (v358 `a36578d`, 2026-11-13; göçler 0110'a kadar canlı). |
 | Mağaza | 3.13.0 mağaza metni yalnız 3.12.0'dan sonraki üye yenilikleri. Mağaza görselleri yenilenmedi (kullanıcı kararı 2026-10-20, turuncu tonu değişti — 2.3.3 riski kabul). |
 
 ### Her sürümde
@@ -30,53 +30,18 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 
 ## 🔴 Açık işler
 
-### Yönetici yeniden tasarım + Ekip takibi (2026-11-13; backend canlı; mobil main'de push'lu, sürüm yok)
-- Ana Sayfa: bugün bloğu (tahsil edilen + son giriş saati, "saati biten / bugünkü toplam ders (iptaller hariç)", doluluk) ve "Dikkat isteyenler" (onay bekleyen, ödeme onay bekliyor → salt okunur dekont listesi, iptal, 14 gündür gelmeyen, "Ekip bugün N işlem yaptı" → Ekip). Etiketler: Ciro → "Ders bedeli", Tahsilat → "Tahsil edilen". Alt bar, başlık ve sol menü yapısı aynı; menüye yalnız "Ekip" eklendi.
-- Raporlar: dönem özeti (günlük ders bedeli çubukları, ürün kırılımı, tahsil edilen), doluluk özeti, ısı haritası altında "en sakin saatler" notu.
-- Ekip (`7_yonetici/ekip/`): önce ofis (işlem sayıları, giriş; kişiye dokununca günlük akış), altında antrenörler (dönemde yaptığı ders, yoklama girilen/bekleyen, giriş). Giriş döneme göre: Bugün'de ilk giriş saati, hafta/ayda "Bu ay N gün geldi" (`giris_gun_sayisi`). Dersler'de satıra dokununca işlem geçmişi; antrenör yoklaması katılım özetiyle görünür. Dersler süzgeçleri "Yönetici onayladı" / "Onay bekliyor" (onay bekleyenleri getirir).
-- "Ödeme onay bekliyor" (`7_yonetici/dekont/`): salt okunur; resim açılır, PDF Android'de "İndirilenler"e iner (`IndirmeService`, MainActivity `fitcall/indirme` kanalı; iOS/Android ≤9 paylaşım menüsü).
-- Ayarlar > "Kullanıcı adını değiştir" (tüm roller; uç `kullaniciAdiDegistir`: 4-30 harf/rakam, en az bir harf, küçük harf; alınmışsa "uygun değil"). "Beni hatırla" adı da güncellenir. **Çıkış turnikeden okunmuyor: içeride/süre/geç kalma yok.**
-- Geri tuşu (tüm kabuklar, `SekmeGecmisi`): bir önceki sekmeye döner, önceki yoksa uygulama kapanır.
-- Yeni renk teması "Çivit" (`TakimTemasi.civit`).
-- "?" rehberleri: Ekip (3), Ödeme onay bekliyor, Dersler "Onay bekliyor", Ayarlar kullanıcı adı; yönetici SSS'inde "Ekip ve bekleyen ödemeler" bölümü.
-- Kalan: sürüm notu + `version:` bump, telefonda göz kontrolü (PDF indirme gerçek cihazda denenmedi).
+### 3.16.0 yayın sonrası
+- Mağazada canlı görülünce admin'de 3.16.0 sürüm notunun `yayinda`'sı ve konfig (kullanıcı).
+- Telefonda göz kontrolü: yönetici ekranları; PDF dekont indirme gerçek cihazda denenmedi.
+- App Check tanılama logu bu sürümle geliyor (aşağıda Güvenlik 3).
 
-### Üye bildirim tercihleri (2026-11-06; iki repoda commit'li, push/deploy yok)
-- Kod tamam: Ayarlar > "Bildirim tercihleri" (`2_uye/bildirim_tercihleri/`, yalnız üye ana hesabı). Dört
-  grup (ders hatırlatma/teyit, ders değişiklikleri, ödeme-paket-haklar, talepler); kapatılan grubun push'u
-  gitmez, Bildirimlerim'de durur. Gruplar ve metinler sunucuda (`notification.py` `UYE_BILDIRIM_GRUPLARI`),
-  filtre gönderimde (`notification_tasks`, durum `ATLANDI`). Backend migration `0108`.
-- Kalan (kullanıcı): backend deploy (önce), sonra mobil sürüm. Ofis "Hatırlat" push kapalıysa bunu söyler.
-
-### Başka işletmeye üyelik (Pilates ayrı işletme, 2026-11-05; iki repoda commit'li, push/deploy yok)
-- Kod tamam: üye Ayarlar > "Başka işletmeye üyelik" (`2_uye/isletme_basvuru/`, yalnız ana hesap) →
-  hedef işletmede onay bekleyen kopya üye; onay web "Üye onayla"da, onayda profil mevcut hesaba bağlanır
-  (yeni kullanıcı/şifre SMS'i yok), bildirim `isletme_basvurulari`. Backend migration `0106`.
-  Rehber "Başka işletmeye nasıl üye olurum?" (Ayarlar), üye SSS'i.
-- Kalan (kullanıcı): backend deploy, prod'da Pilates `IsletmeModel` + kort/hoca + hocalara yönetici ve ofis
-  profili. Mobil ofiste üye onay ekranı yok (onay web'de); istenirse ayrı iş.
-- Test ajanı düzeltmeleri commit'li (hesapla eşleştirme, kilit, onay geri alınınca profil kapanır). Aynı
-  turda: ofis bildirim listesi, dekont bildirimi role göre, plan dışı "Telafi" kararı (migration `0107`).
-
-### Üye ders / kort kiralama talebi (2026-10-31; backend CANLI Heroku v351, mobil 2026-11-05'te main'e alındı ve push edildi)
-- Kod tamam: üye sihirbazı + Taleplerim (`2_uye/talep/`; giriş yan menüde "Ders Talebi ve Kort Kiralama", ana sayfada yok), ofis sekmeli Talepler + detay/öneri
-  (`8_ofis/ders_kayit_talepleri/`), hoca "Ofis Soruyor" (`3_antrenor/talep_sorulari/`), web aynı sayfada.
-  Kurallar backend `parametre` tablosunda (`uye_talep_*`). Kullanım kılavuzu: `kilavuz/` (PDF, commit'siz).
-- Hoca katsayısı antrenör kaydında (`ozel_ders_katsayisi`, backend 0104, master `75e77da`, push/deploy yok):
-  yalnız talepte kullanılır; ilk değer geçmiş paket/tek ders derslerinden (Onur Binay 2, diğerleri 1).
-- Tek seferlik ders ürünü şimdilik her üyede "Yetişkin-tekders-tekli" (seviyeye göre seçim istenmedi);
-  kort kiralama "KortKira-1Saat".
-- Mobil main'e birleşti ve push edildi (2026-11-05, ab3d70e) (`kilavuz/` PDF'i commit'siz). Backend telafi bildirimi düzeltmesi
-  (talepten gelen telafili derste ayrı "Telafi kullanıldı" gitmez) master `0b08a70`, GitHub'da, Heroku'da
-  DEĞİL; kullanıcı: sonraki kurulumla gider.
-- Yayından önce (kullanıcı): prod admin'de `uye_talep_hoca_idleri`, `uye_talep_kort_idleri` ve
-  `uye_talep_tek_ders_urun_idleri` doldurulmalı (boş = tümü; salonlar, branş hocaları, pilates ürünleri de
-  çıkar), `uye_talep_ofis_calisma_saatleri` kontrol, Heroku Scheduler'a 10 dakikada bir
-  `python manage.py uye_talep_zamanlayici`. Prod parametre değerleri doğrulanmadı (`heroku run` bu
-  makineden zaman aşımı).
-- 2026-10-31 üye/ofis/antrenör rol ajanlarıyla prod kopyasında denendi; bulunan hatalar düzeltildi.
-  Bilinçli kararlar: öneri saati hocaya uygulamadan sorulmaz (ofis "hocayla konuştum" işaretler), talep
-  detayında zaman çizgisi yok, profile bağlı tüm kullanıcılara bildirim gider.
+### Prod ayarları (kullanıcı, doğrulanmadı)
+- Üye ders talebi: prod admin'de `uye_talep_hoca_idleri`, `uye_talep_kort_idleri`,
+  `uye_talep_tek_ders_urun_idleri` (boş = tümü; salonlar, branş hocaları, pilates ürünleri de çıkar) ve
+  `uye_talep_ofis_calisma_saatleri`. Scheduler'da `uye_talep_zamanlayici` 2026-11-02'den beri var.
+  Bilinçli kararlar: öneri saati hocaya uygulamadan sorulmaz, talep detayında zaman çizgisi yok.
+- Başka işletmeye üyelik: Pilates işletmesi id 3 (2026-11-08); kort/hoca ve hocalara yönetici/ofis
+  profili kurulumu doğrulanmadı. Mobil ofiste üye onay ekranı yok (onay web'de); istenirse ayrı iş.
 
 ### Güvenlik (2026-10-22 incelemesi)
 - **Repodaki sırlar — anahtar yenileme (yapılacak):** 2026-10-28'de `SECRET_KEY`, VatanSMS ve Firebase
@@ -96,12 +61,12 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
      SHA-256'sı) ve iOS App Attest kayıtlı, zorunlu kılma KAPALI; Play Console'da Play Integrity API
      `fitcallapp` Cloud projesine bağlı (günlük 10.000); Apple Developer'da App ID'de **App Attest** açık.
      Emülatörde denerken logdaki debug token'ı konsola eklemek gerekir.
-  2. Backend deploy (`auths.0014` göçü) → App Check'li sürüm yayını.
+  2. ~~Backend deploy (`auths.0014` göçü) → App Check'li sürüm yayını~~ yapıldı.
   3. Sayaçlarda güncel sürümde `yok`/`gecersiz` kalmadığında (GMS'siz Huawei, Play Integrity günlük
      10.000 kotası burada görünür) zorunlu güncelleme aç, sonra (anahtar yenileme bittiyse) Heroku'da
      `APP_CHECK_MODU=zorunlu`.
      **2026-11-08 durumu:** iOS isteklerinin ~%25'i token'sız (Android ~%7), geçersiz neredeyse yok; izin
-     ve kayıt doğru. Şüphe: token 2 sn beklemeyi aşıyor. Sonraki sürüm token alınamayınca/geç gelince
+     ve kayıt doğru. Şüphe: token 2 sn beklemeyi aşıyor. 3.16.0 token alınamayınca/geç gelince
      sebebi mobil loga yazar (`[MOBİL] ... Sayfa=AppCheckServisi`, olay `hata`/`bos`/`gec`, açılış başına
      bir kez). Yayından sonra log tablosundan oku, sonra karar ver.
   root/Frida tespiti için ücretsiz freeRASP sonra eklenebilir.
@@ -115,13 +80,10 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
   eklendi (üye Taleplerim, ofis talepler).
 
 ### Küçük işler
-- 3.10.0 ekran denetiminden ertelenenler (hâlâ geçerli mi bakılmalı): yönetici rapor bölümleri çok renkli,
-  açık modda bazı ikon/yazılar düşük kontrastlı; antrenör profil başlığı kısa içerikte tam kapanmıyor;
-  takvim bloğu 1.3 yazı ölçeğinde bir saatlik dersi kompakt moda düşürüyor; ders iptal sayfasında ikinci
-  tutamaç (`showDragHandle`).
-- **Ders iptal talebi kaldırıldı (2026-11-04):** mobilde üye/antrenör ekranları silindi. Backend tarafı sonra
-  silinecek: `EtkinlikIptalTalebiModel` (`etkinlik_iptal_talebi`, prod'da 63 eski kayıt), `etkinlik_iptal_service`,
-  `api/urls.py` iptal uçları (`etkinlikIptalTalebiOlustur` … `iptalTalebiGeriCek`), admin kaydı, enum'lar.
+- **Ders iptal talebi backend temizliği** (mobil ekranlar 2026-11-04'te silindi, 3.15.0): `EtkinlikIptalTalebiModel`
+  (`etkinlik_iptal_talebi`, prod'da 63 eski kayıt), `etkinlik_iptal_service`, `api/urls.py` iptal uçları
+  (`etkinlikIptalTalebiOlustur` … `iptalTalebiGeriCek`), admin kaydı, enum'lar. **`min_destekli` 3.15.0'a
+  çıkmadan silinmez:** 3.13.1 ve 3.14.0 bu uçları çağırıyor.
 
 ---
 
@@ -133,7 +95,6 @@ de, tarihli). Bir iş bitince buradan silinir, history.md'ye girer.
 - Gelişim/istatistik ekranı — aylık ders sayısı, katılım %, seviye ilerlemesi, rozet.
 - Antrenör karnesi — ders sonrası not/puanın üyeye açılması (değerlendirmeler 2026-10-16'dan beri yalnız
   yöneticiye açık; görüşme notu 2026-08-10'da kaldırıldı).
-- Ders talep sihirbazı — eski yarım akış 2026-09-29'da tümüyle silindi; yapılırsa baştan tasarlanacak.
 - Self-servis telafi — telafi hakkını boş slotlardan üyenin planlaması.
 - Veli görünümü — ana hesabın birden çok çocuğun dersini/borcunu tek ekranda görmesi.
 - Kredi kartıyla ödeme (Param POS kodu var, bağlı değil; buton şimdilik EFT/Havale'ye yönlendiriyor),

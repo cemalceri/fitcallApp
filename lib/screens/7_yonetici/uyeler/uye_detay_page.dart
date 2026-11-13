@@ -109,6 +109,8 @@ class _UyeDetayPageState extends State<UyeDetayPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      // Sayfa kendi tutamacını çiziyor; temanınki ikinci bir çubuk olurdu.
+      showDragHandle: false,
       builder: (_) => UyeBorcSheet(
         adSoyad: _data!.profil.adSoyad,
         bakiye: _data!.bakiye,

@@ -490,3 +490,24 @@ class KapaninciBaslik extends StatelessWidget {
     return Opacity(opacity: opaklik, child: child);
   }
 }
+
+/// Genişleyen başlıklı sayfanın son sliver'ı: içerik kısa olsa da başlık tam
+/// kapanabilsin. Kaydırma alanı "ekran + kapanma mesafesi"nden kısaysa başlık
+/// yarıda kalır ve [KapaninciBaslik] hiç görünmez (uzun ekranlı telefonda
+/// antrenör profili).
+class KapanmaPayi extends StatelessWidget {
+  /// SliverAppBar'ın `expandedHeight`'ı.
+  final double acikYukseklik;
+  const KapanmaPayi({super.key, required this.acikYukseklik});
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverLayoutBuilder(builder: (context, c) {
+      // Üst boşluk (çentik) hem açık hem kapalı yükseklikte var, sadeleşir.
+      final eksik = c.viewportMainAxisExtent +
+          (acikYukseklik - kToolbarHeight) -
+          c.precedingScrollExtent;
+      return SliverToBoxAdapter(child: SizedBox(height: eksik > 0 ? eksik : 0));
+    });
+  }
+}

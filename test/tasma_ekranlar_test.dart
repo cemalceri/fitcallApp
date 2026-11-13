@@ -2757,6 +2757,19 @@ void main() {
       sar: (w) => Center(child: SizedBox(width: 140, height: 60, child: w)),
     );
 
+    // 1.3 yazı ölçeğinde bir saatlik ders tek satıra düşmüyordu: kort satırı
+    // görünür kalır, sığmayan "+N kişi daha" satırı düşer.
+    testWidgets('LessonBlock 1 saat @1.3x üç satırlı düzende', (tester) async {
+      await tasmaKontrol(
+        tester,
+        antrenor_blok.LessonBlock(ders: _etkinlik(katilimci: 6), onTap: () {}),
+        yaziOlcegi: 1.3,
+        sar: (w) => Center(child: SizedBox(width: 300, height: 90, child: w)),
+      );
+      expect(find.textContaining('Kapalı Kort 1'), findsOneWidget);
+      expect(find.textContaining('kişi daha'), findsNothing);
+    });
+
     tasmaTesti('EksikYoklamaListesi', () {
       return EksikYoklamaListesi(
         dersler: [_etkinlik(katilimci: 6), _etkinlik(katilimci: 1)],

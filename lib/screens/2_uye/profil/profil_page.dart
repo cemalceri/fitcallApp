@@ -155,6 +155,7 @@ class _ProfileContent extends StatelessWidget {
               ),
             ),
           ),
+          const KapanmaPayi(acikYukseklik: 224),
         ],
       ),
     );

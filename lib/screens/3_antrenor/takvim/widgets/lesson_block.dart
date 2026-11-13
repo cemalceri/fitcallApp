@@ -70,10 +70,16 @@ class LessonBlock extends StatelessWidget {
                       // Kart yüksekliği ders süresinden gelir, içerik yüksekliği
                       // ise yazı ölçeğiyle büyür; bu yüzden eşikler de ölçeklenir.
                       // Sabit piksel eşiği büyük yazıda kartı aşağı taşırıyordu.
+                      // Normal düzen üç satır (saat/rozet, öğrenci, kort);
+                      // "+N kişi daha" yalnız yer varsa eklenir. Eşik dört
+                      // satıra göreyken 1.3 yazı ölçeğinde bir saatlik ders
+                      // tek satıra düşüyordu.
                       final olcek = MediaQuery.textScalerOf(context);
-                      final isCompact = constraints.maxHeight < olcek.scale(60);
+                      final isCompact = constraints.maxHeight < olcek.scale(46);
                       final isVeryCompact =
-                          constraints.maxHeight < olcek.scale(50);
+                          constraints.maxHeight < olcek.scale(36);
+                      final ekKisiSigar =
+                          constraints.maxHeight >= olcek.scale(60);
 
                       // Saat metni doğal genişliğinde kalsın ama kartın yarısını
                       // aşmasın; aşarsa kısalır, yanındaki isim hep yer bulur.
@@ -234,7 +240,7 @@ class LessonBlock extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           // Katılımcı sayısı (birden fazla ise)
-                          if (katilimcilar.length > 1) ...[
+                          if (katilimcilar.length > 1 && ekKisiSigar) ...[
                             const SizedBox(height: 2),
                             // maxLines yoksa dar kartta alt satıra sarıp kartı
                             // aşağı taşırıyor.
