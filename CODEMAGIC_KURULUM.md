@@ -125,9 +125,9 @@ bloğunda yükselt, sonra dördünü birden gözden geçir:
 
 | Bağımlılık | Nerede | 2026-10 değeri |
 |---|---|---|
-| AGP (`com.android.application`) | `android/settings.gradle` | 9.1.0 (en az Flutter 3.44) |
+| AGP (`com.android.application`) | `android/settings.gradle` | 9.1.1 (stable Flutter 2026-11-13 en az 9.1.1 istiyor) |
 | Kotlin (`org.jetbrains.kotlin.android`) | `android/settings.gradle` | 2.4.0 (yalnız derleyici sürümü, `apply false`) |
-| Gradle wrapper | `android/gradle/wrapper/gradle-wrapper.properties` | 9.3.1 |
+| Gradle wrapper | `android/gradle/wrapper/gradle-wrapper.properties` | 9.5.1 (Flutter 9.5.0 altını yakında bırakıyor) |
 | JDK | `codemagic.yaml` → `java: 17` | 17 |
 
 **Kotlin gömülü (2026-10-30):** `gradle.properties`'te `android.builtInKotlin=true`,
