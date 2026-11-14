@@ -13,7 +13,7 @@ import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});

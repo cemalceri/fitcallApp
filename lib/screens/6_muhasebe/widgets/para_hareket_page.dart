@@ -3,7 +3,7 @@
 
 import 'package:fitcall/services/muhasebe/para_hareket_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/models/6_muhasebe/para_hareket_model.dart';
 import 'package:intl/intl.dart';

@@ -7,7 +7,7 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';

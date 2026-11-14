@@ -14,7 +14,7 @@ import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 

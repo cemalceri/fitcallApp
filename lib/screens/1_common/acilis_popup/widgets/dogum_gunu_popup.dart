@@ -2,7 +2,7 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/konfeti_patlamasi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Tam ekran doğum günü kutlaması: kobalt zemin, konfeti, tek buton.
 ///

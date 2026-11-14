@@ -1,7 +1,7 @@
 // lib/screens/1_common/widgets/kabuk_alt_bar.dart
 
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 /// Alt sekme barındaki bir sekmenin tanımı.

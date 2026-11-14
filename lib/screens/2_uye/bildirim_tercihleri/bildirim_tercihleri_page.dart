@@ -10,7 +10,7 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/2_uye/bildirim_tercihleri/widgets/bildirim_tercihleri_gorunumu.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/uye/bildirim_tercihi_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class BildirimTercihleriPage extends StatefulWidget {
   const BildirimTercihleriPage({super.key});

@@ -7,7 +7,7 @@ import 'package:fitcall/services/core/auth_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class HesapSilPage extends StatefulWidget {
   const HesapSilPage({super.key});

@@ -3,7 +3,7 @@
 
 import 'package:fitcall/models/4_auth/uye_kullanici_model.dart';
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 KullaniciProfilModel _yoneticiProfil({

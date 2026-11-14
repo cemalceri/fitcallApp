@@ -1,7 +1,7 @@
 // lib/screens/1_common/widgets/qr_islem_sheet.dart
 
 import 'package:fitcall/common/routes.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 /// QR işlemleri seçim sayfası (QR Oluştur / QR Doğrula).

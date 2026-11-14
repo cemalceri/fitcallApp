@@ -8,7 +8,7 @@
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
 import 'package:fitcall/screens/1_common/takvim/iptal_taramasi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'program_constants.dart';
 

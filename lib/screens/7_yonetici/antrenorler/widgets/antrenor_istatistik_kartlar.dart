@@ -2,7 +2,7 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AntrenorIstatistikKartlar extends StatelessWidget {
   final AntrenorIstatistik data;

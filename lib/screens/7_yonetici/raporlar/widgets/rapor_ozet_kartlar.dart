@@ -1,6 +1,6 @@
 // lib/screens/7_yonetici/raporlar/widgets/rapor_ozet_kartlar.dart
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 
 class RaporOzetKartlar extends StatelessWidget {

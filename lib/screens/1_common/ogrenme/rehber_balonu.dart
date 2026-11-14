@@ -8,7 +8,7 @@
 import 'dart:math' as math;
 
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Karartma, halka ve balon renkleri. Yeni renk yok, şemadan türer; her
 /// palette test/tema_kontrast_test.dart ölçer.

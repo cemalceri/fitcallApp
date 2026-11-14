@@ -3,7 +3,7 @@
 import 'package:fitcall/common/tarih_util.dart';
 import 'dart:convert';
 import 'package:fitcall/models/3_antrenor/ders_devir_talebi_model.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:http/http.dart' as http;
 
 /// Üye için katılım teyit bilgisi (EtkinlikTeyitModel'den)

@@ -8,7 +8,7 @@ import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_katmani.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_modu.dart';
 import 'package:fitcall/services/ogrenme/ogrenme_kapisi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _gorev = OgrenmeGorevi(

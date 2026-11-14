@@ -16,7 +16,7 @@ import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/core/tema_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 

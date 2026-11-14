@@ -9,7 +9,7 @@ import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/2_uye/profil/widgets/profil_fotografi_secici.dart';
 import 'package:fitcall/services/core/storage_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';

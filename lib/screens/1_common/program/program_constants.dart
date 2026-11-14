@@ -4,7 +4,7 @@
 // Web'deki DayPilot "Resources" görünümünün mobil karşılığı: satırlar saat,
 // kolonlar kort. Kortlar telefona sığmadığı için yatay kaydırmalı.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ProgramOlculeri {
   ProgramOlculeri._();

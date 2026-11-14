@@ -6,7 +6,7 @@ import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/duyurular/widgets/duyuru_bicim.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Yönetici/ofis duyuru listesi — veriyle beslenen gövde (sayfa API çağırdığı
 /// için taşma testleri bunu render eder).

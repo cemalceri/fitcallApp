@@ -7,7 +7,7 @@ import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 import 'package:fitcall/screens/1_common/program/program_constants.dart';

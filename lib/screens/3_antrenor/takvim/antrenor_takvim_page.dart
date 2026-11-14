@@ -16,7 +16,7 @@ import 'package:fitcall/screens/3_antrenor/takvim/widgets/future_lesson_detail_d
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/screens/1_common/takvim/hafta_gun_secici.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_ajanda.dart';

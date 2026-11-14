@@ -12,7 +12,7 @@ import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/widgets/ofis_talepler_gorunumu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class OfisUyeTalepDetayGorunumu extends StatelessWidget {
   final OfisTalepDetay detay;

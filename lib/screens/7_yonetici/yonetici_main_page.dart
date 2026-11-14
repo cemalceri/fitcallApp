@@ -7,7 +7,7 @@
 // sekmesinden, doluluğu Raporlar'daki ısı haritasından görüyor; ızgaraya
 // ihtiyaç kalmadı.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/yonetici_dashboard_page.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/raporlar_page.dart';
 import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';

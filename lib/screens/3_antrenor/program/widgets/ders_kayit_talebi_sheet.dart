@@ -14,7 +14,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_kayit_talebi_service.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 /// Formun açılış değerleri.

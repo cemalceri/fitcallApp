@@ -1,7 +1,7 @@
 import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/plan_disi_bildirim_ozeti.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Action gerektirmeyen veya tanınmayan bildirimler için bottom sheet.
 /// Sadece bildirimin başlık + içeriğini gösterir, kapat butonu sunar.

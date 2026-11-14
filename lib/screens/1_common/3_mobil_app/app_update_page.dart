@@ -3,7 +3,7 @@
 
 import 'package:fitcall/models/1_common/mobil_uygulama_konfig_model.dart';
 import 'package:fitcall/services/core/app_update/app_update_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';

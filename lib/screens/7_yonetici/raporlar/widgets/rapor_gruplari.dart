@@ -12,7 +12,7 @@ import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_ozetleri.dart'
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/tahsilat_raporu_section.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 // Raporlar sayfasının üç bölümü (kullanıcı isteği 2026-10-16). API

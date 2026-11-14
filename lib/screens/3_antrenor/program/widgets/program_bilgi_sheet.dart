@@ -11,7 +11,7 @@ import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_kayit_talebi_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 String _gunMetni(DateTime t) => DateFormat('d MMMM EEEE', 'tr_TR').format(t);

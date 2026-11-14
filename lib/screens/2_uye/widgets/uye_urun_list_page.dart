@@ -5,7 +5,7 @@ import 'package:fitcall/models/8_urun/uye_urun_model.dart';
 import 'package:fitcall/screens/2_uye/widgets/uye_urun_list_view.dart';
 import 'package:fitcall/services/urun/urun_api_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 

@@ -20,7 +20,7 @@ import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_ay_panosu.dart'
 import 'package:fitcall/screens/1_common/hakedis/widgets/hakedis_stil.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class HakedisAyPanosuPage extends StatefulWidget {
   final HakedisVeriKaynagi kaynak;

@@ -23,6 +23,7 @@ Yayın Codemagic'te, tag ile. `lib/common/api_urls.dart`'ta `baseUrl` **her zama
 
 ## Değişmez kurallar (ayrıntı MIMARI.md'de)
 
+- **Material:** import `package:material_ui/material_ui.dart` (Flutter 3.47'de `flutter/material.dart` deprecated); dil `GlobalMaterialLocalizations.delegates`.
 - **API:** yeni kod `ApiClient.postParsed/getParsed<T>` + `auth: true`; uçlar `api_urls.dart`'ta; modeller elle `fromJson`.
 - **Rota:** ekran ekle = `SayfaAdi` + route string + builder (+ gerekirse `anaHesapOnly` politikası), `lib/common/routes.dart`.
 - **Tarih:** okurken `parseApiTarih`, yazarken `formatApiTarih` (`lib/common/tarih_util.dart`); asla `DateTime.parse` / `.toUtc()`.

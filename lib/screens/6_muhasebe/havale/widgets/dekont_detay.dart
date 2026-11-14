@@ -9,7 +9,7 @@ import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_listesi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 class DekontDetayIcerik extends StatelessWidget {

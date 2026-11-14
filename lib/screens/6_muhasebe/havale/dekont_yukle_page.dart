@@ -17,7 +17,7 @@ import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_yukle_govdesi.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/muhasebe/dekont_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 

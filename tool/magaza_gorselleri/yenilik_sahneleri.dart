@@ -8,7 +8,7 @@ import 'dart:convert';
 import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:fitcall/screens/2_uye/uye_kabuk.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/uyeler_page.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'demo_veri.dart';

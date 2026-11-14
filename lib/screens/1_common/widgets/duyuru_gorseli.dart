@@ -5,7 +5,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_varsayilan_poster.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Duyurunun kapak görseli — açılış popup'ı ve ana sayfa şeridi ortak.
 ///

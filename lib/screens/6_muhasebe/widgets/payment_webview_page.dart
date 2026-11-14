@@ -2,7 +2,7 @@
 
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class PaymentWebViewPage extends StatefulWidget {

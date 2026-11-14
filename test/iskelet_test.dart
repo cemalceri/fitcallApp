@@ -1,6 +1,6 @@
 // Geçici doğrulama: iskelet 300 ms'den önce çizilmiyor, sonra çiziliyor.
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

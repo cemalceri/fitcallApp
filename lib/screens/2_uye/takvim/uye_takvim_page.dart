@@ -22,7 +22,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
 class DersListesiPage extends StatefulWidget {

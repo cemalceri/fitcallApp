@@ -26,7 +26,7 @@ import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/core/tema_service.dart';
 import 'package:fitcall/screens/1_common/ayarlar/widgets/renk_temasi_secici.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';

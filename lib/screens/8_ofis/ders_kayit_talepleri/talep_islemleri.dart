@@ -18,7 +18,7 @@ import 'package:fitcall/screens/8_ofis/program/widgets/etkinlik_form_sheet.dart'
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_kayit_talebi_service.dart';
 import 'package:fitcall/services/yonetici/yonetici_etkinlik_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DersKayitTalebiIslemleri {
   DersKayitTalebiIslemleri._();

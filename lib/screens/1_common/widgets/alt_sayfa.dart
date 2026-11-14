@@ -1,7 +1,7 @@
 // lib/screens/1_common/widgets/alt_sayfa.dart
 
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Ders işlemlerinin ortak sunum kalıbı: ekranın altından açılan sayfa.
 ///

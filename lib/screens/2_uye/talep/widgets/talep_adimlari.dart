@@ -14,7 +14,7 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/2_uye/talep/widgets/uygunluk_haritasi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 IconData turIkonu(String tur) => switch (tur) {

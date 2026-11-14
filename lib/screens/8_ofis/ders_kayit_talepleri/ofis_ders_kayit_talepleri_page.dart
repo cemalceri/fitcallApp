@@ -14,7 +14,7 @@ import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/uye_talep_detay_page
 import 'package:fitcall/screens/8_ofis/program/ofis_program_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/ofis/ofis_uye_talep_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'talep_islemleri.dart';
 import 'widgets/ofis_talepler_gorunumu.dart';

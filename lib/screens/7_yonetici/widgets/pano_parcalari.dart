@@ -8,7 +8,7 @@ import 'dart:math' as math;
 
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 final NumberFormat _tamSayi = NumberFormat('#,##0', 'tr_TR');

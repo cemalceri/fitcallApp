@@ -8,7 +8,7 @@ import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/screens/1_common/degerlendirmeler/widgets/puan_parcalari.dart';
 import 'package:fitcall/screens/7_yonetici/antrenorler/widgets/antrenor_liste_item.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 AntrenorListeItem _antrenor({double? puan = 4.8, int sayi = 23}) =>

@@ -1,7 +1,7 @@
 // lib/screens/7_yonetici/dashboard/widgets/stat_card.dart
 
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class StatCard extends StatelessWidget {
   final String baslik;

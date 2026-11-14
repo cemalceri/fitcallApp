@@ -5,7 +5,7 @@
 // sabitleriyle çiziliyordu ve `surface` zeminde kontrast eşiğin altına
 // düşüyordu (turuncu 2,16 · yeşil 2,81 · mavi 3,12; koyu modda mor 2,99).
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 

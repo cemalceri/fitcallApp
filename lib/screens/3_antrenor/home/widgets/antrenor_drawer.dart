@@ -4,7 +4,7 @@ import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/screens/1_common/widgets/yan_menu.dart';
 import 'package:fitcall/screens/3_antrenor/calisma_saatleri/calisma_saatleri_page.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 /// Antrenör kabuğunun sol menüsü.

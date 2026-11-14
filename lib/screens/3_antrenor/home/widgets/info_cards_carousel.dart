@@ -1,7 +1,7 @@
 // lib/screens/3_antrenor/home/widgets/info_cards_carousel.dart
 
 import 'package:fitcall/models/3_antrenor/home_card_model.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'info_card_item.dart';
 
 class InfoCardsCarousel extends StatelessWidget {

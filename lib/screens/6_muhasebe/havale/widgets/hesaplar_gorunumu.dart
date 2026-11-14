@@ -7,7 +7,7 @@ import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/6_muhasebe/banka_hesabi_model.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/banka_hesabi_karti.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class HesaplarGorunumu extends StatelessWidget {
   final List<BankaHesabiModel> hesaplar;

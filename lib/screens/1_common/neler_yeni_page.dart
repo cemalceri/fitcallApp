@@ -13,7 +13,7 @@ import 'package:fitcall/models/1_common/surum_notu_model.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/sss_gorunumu.dart';
 import 'package:fitcall/services/core/surum_notu_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class NelerYeniPage extends StatefulWidget {

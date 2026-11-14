@@ -24,7 +24,7 @@
 // her temada düz kalır. Her tema × mod çifti test/tema_kontrast_test.dart'ta
 // kontrast eşiğine karşı ölçülür.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 /* ============================ Marka renkleri ============================ */

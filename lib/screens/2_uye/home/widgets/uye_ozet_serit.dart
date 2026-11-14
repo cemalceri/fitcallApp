@@ -5,7 +5,7 @@ import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/uye_home_ozet_model.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 

@@ -3,7 +3,7 @@
 // Gradyan örnekleme yardımcısı: kontrast ve tema testleri gradyanı Flutter'ın
 // yaptığı gibi (duraklar arası sRGB karışımı) eşit aralıklı noktalarda okur.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// [g] gradyanını eşit aralıklı [n] noktada örnekler.
 List<Color> gradyanOrnekle(Gradient g, {int n = 41}) {

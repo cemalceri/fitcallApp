@@ -12,7 +12,7 @@ import 'package:fitcall/screens/3_antrenor/takvim/widgets/lesson_approval_dialog
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AntrenorEksikYoklamaPage extends StatefulWidget {
   const AntrenorEksikYoklamaPage({super.key});

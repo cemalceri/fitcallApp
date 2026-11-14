@@ -18,7 +18,7 @@ import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/widgets/ders_kayit_talepleri_gorunumu.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 IconData ofisTurIkonu(String tur) => switch (tur) {
       'TELAFI' => Icons.event_repeat_rounded,

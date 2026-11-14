@@ -18,7 +18,7 @@ import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_modu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/rehber_balonu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/rehber_metni.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 
 class OgrenmeKatmani extends StatefulWidget {

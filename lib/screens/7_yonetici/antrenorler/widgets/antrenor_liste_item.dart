@@ -6,7 +6,7 @@ import 'package:fitcall/screens/1_common/degerlendirmeler/widgets/puan_parcalari
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 /// Antrenör listesi satırı: iki ayrı dokunma alanı.

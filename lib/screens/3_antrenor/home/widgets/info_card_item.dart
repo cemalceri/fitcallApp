@@ -2,7 +2,7 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/3_antrenor/home_card_model.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 /// Yapılacaklar/özet kartının yüksekliği. Taban 172px; erişilebilirlik yazı

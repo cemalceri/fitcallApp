@@ -8,7 +8,7 @@ import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/donem_kutusu.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 

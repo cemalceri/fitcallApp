@@ -4,7 +4,7 @@ import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_gorseli.dart';
 import 'package:fitcall/services/core/acilis_popup_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Tam ekran duyuru popup'ı: üstte görsel (ekranın ~2/3'ü), altta başlık,
 /// kısa özet ve butonlar.

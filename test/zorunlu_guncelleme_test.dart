@@ -9,7 +9,7 @@
 
 import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
 import 'package:fitcall/services/core/app_update/in_app_update_android.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_update/in_app_update.dart';
 

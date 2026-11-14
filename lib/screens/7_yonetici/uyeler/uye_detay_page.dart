@@ -9,7 +9,7 @@ import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter/services.dart';
 import 'package:fitcall/models/9_yonetici/uye_detay_models.dart';

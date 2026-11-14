@@ -8,7 +8,7 @@ import 'package:fitcall/screens/3_antrenor/takvim/widgets/takvim_constants.dart'
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';

@@ -13,7 +13,7 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/duyuru_api_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Bir duyurunun okuma durumu: özet, görenler, görmeyenler.

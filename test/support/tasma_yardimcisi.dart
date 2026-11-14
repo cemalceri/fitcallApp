@@ -10,7 +10,7 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/common/ui_scale.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Test edilen ekran boyutları: küçük telefon → normal → uzun/geniş

@@ -6,7 +6,7 @@
 // gösterilmez (bakiye yalnız onayla değişir).
 
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class HavaleBilgiSatiri extends StatelessWidget {
   final int bekleyenSayisi;

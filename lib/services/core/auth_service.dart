@@ -7,7 +7,7 @@ import 'package:fitcall/services/core/fcm_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/app_badge_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/api_urls.dart';
 import 'package:fitcall/common/constants.dart';

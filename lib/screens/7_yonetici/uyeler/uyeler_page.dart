@@ -6,7 +6,7 @@ import 'package:fitcall/common/sayfali_liste.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';

@@ -28,7 +28,7 @@ import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:fitcall/services/uye/uye_odul_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/common/tarih_util.dart';
 
 class UyeHomePage extends StatefulWidget {

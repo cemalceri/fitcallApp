@@ -16,7 +16,7 @@ import 'package:fitcall/services/core/duyuru_api_service.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/core/surum_notu_service.dart';
 import 'package:fitcall/services/notification/notification_fcm_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 /// Ana sayfa açılışındaki popup sırası: doğum günü → duyuru → sürüm notu.

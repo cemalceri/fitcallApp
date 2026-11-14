@@ -7,7 +7,7 @@ import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uye_istatistik_kartlar.dart';
 import 'package:fitcall/screens/7_yonetici/uyeler/widgets/uyeler_gorunumu.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 

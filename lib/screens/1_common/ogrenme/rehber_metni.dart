@@ -1,6 +1,6 @@
 // lib/screens/1_common/ogrenme/rehber_metni.dart
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Rehber cümlesindeki «buton adı»nı tırnaklı ve kalın yazar:
 /// "«Katılamayacağım»a dokun." → “Katılamayacağım”a dokun.

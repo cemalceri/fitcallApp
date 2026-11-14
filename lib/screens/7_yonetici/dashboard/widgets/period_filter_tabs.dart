@@ -2,7 +2,7 @@
 
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Dönem seçimi (Bugün / Bu Hafta / Bu Ay). Raporlar'da başlık bandında,
 /// panoda etkilediği kartlarla aynı kutuda ([yuzeyde]) durur.

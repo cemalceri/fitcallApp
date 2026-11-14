@@ -7,7 +7,7 @@ import 'package:fitcall/screens/1_common/duyurular/widgets/duyuru_bicim.dart';
 import 'package:fitcall/screens/1_common/duyurular/widgets/duyuru_yonetim_listesi.dart';
 import 'package:fitcall/screens/1_common/duyurular/widgets/okuma_durumu_gorunumu.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 

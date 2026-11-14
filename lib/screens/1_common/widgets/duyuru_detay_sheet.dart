@@ -8,7 +8,7 @@ import 'package:fitcall/models/1_common/duyuru_model.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_varsayilan_poster.dart';
 import 'package:fitcall/services/api_result.dart';
 import 'package:fitcall/services/core/duyuru_api_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 /// Full-screen duyuru detay bottom sheet

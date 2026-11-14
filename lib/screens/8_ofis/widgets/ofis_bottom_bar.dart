@@ -2,7 +2,7 @@
 
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
 import 'package:fitcall/screens/1_common/widgets/qr_islem_sheet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Ofis kabuğunun alt barı — üye/antrenör/yönetici kabuklarıyla aynı bileşen.
 ///

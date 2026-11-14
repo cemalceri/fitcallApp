@@ -7,7 +7,7 @@ import 'package:fitcall/models/10_ofis/ofis_uye_models.dart';
 import 'package:fitcall/screens/8_ofis/uyeler/ofis_uye_detay_page.dart';
 import 'package:fitcall/screens/8_ofis/uyeler/widgets/ofis_uyeler_gorunumu.dart';
 import 'package:fitcall/services/ofis/ofis_api_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 

@@ -16,7 +16,7 @@ import 'package:fitcall/screens/7_yonetici/dekont/bekleyen_dekontlar_gorunumu.da
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/indirme_service.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 

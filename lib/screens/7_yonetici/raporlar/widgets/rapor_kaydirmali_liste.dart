@@ -1,6 +1,6 @@
 // lib/screens/7_yonetici/raporlar/widgets/rapor_kaydirmali_liste.dart
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Rapor kartının içindeki satır listesi: kısa listede içerik kadar yer
 /// kaplar, uzunsa [azamiYukseklik]'te durur ve kendi içinde kayar.

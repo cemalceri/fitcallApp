@@ -15,7 +15,7 @@ import 'package:fitcall/screens/4_auth/widgets/kayit_sihirbazi.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/kayit_service.dart';
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

@@ -10,7 +10,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';

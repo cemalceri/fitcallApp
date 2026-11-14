@@ -17,7 +17,7 @@ import 'package:flutter/foundation.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedef_bulucu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/services/ogrenme/ogrenme_kapisi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// [donus]: başlangıç sayfasına dönülüyor; dokunuşlar yutulur, kapı açık.
 enum RehberDurumu { kapali, adim, bitis, donus }

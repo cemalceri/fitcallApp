@@ -1,7 +1,7 @@
 import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 
 class NotificationsBell extends StatelessWidget {

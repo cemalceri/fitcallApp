@@ -30,7 +30,7 @@ import 'package:fitcall/screens/8_ofis/widgets/ofis_bottom_bar.dart';
 import 'package:fitcall/screens/8_ofis/widgets/ofis_drawer.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_modu.dart';
 
 class OfisMainPage extends StatefulWidget {

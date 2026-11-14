@@ -17,7 +17,7 @@ import 'package:fitcall/common/tema.dart';
 // ListeTonu tema dosyasında (modeller de kullanıyor); bu dosyayı içe alan
 // ekranlar eskisi gibi erişebilsin diye yeniden dışa aktarılır.
 export 'package:fitcall/common/tema.dart' show ListeTonu, ListeTonuRenkleri;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 /// Liste satırının dairesel baş harf avatarı.

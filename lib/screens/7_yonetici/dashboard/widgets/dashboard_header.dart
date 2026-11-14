@@ -8,7 +8,7 @@ import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/screens/1_common/1_notification/notifications_bell.dart';
 import 'package:fitcall/screens/1_common/widgets/profil_degistir_butonu.dart';
 import 'package:fitcall/screens/1_common/widgets/hesap_adi.dart';

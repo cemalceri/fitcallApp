@@ -2,7 +2,7 @@
 
 import 'package:fitcall/screens/1_common/widgets/kabuk_alt_bar.dart';
 import 'package:fitcall/common/routes.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 /// Yönetici kabuğunun alt barı — üye/antrenör/ofis kabuklarıyla aynı bileşen.

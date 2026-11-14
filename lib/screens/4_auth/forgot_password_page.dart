@@ -14,7 +14,7 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/kayit_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});

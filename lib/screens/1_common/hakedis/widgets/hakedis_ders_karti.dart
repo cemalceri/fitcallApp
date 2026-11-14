@@ -15,7 +15,7 @@
 // listede dersini görüp neden para almadığını soruyor, cevabı başka yerde yok.
 
 import 'package:fitcall/models/1_common/hakedis_models.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 import 'hakedis_stil.dart';

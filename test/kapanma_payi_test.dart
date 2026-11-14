@@ -1,7 +1,7 @@
 // KapanmaPayi: içerik kısa olsa da genişleyen başlık tam kapanabilmeli.
 
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Widget _sayfa({required bool payli}) => MaterialApp(

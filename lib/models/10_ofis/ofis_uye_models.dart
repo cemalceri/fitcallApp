@@ -15,7 +15,7 @@
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/models/9_yonetici/uye_detay_models.dart'
     show UyeDersItem, UyePaketItem;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 // ==================== LİSTE ====================
 

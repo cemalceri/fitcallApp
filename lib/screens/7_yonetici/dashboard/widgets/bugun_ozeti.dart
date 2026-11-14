@@ -14,7 +14,7 @@ import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/pano_parcalari.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class BugunOzeti extends StatelessWidget {
   final GununOzeti ozet;

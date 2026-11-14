@@ -14,7 +14,7 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/uye/uye_talep_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AntrenorTalepSorulariPage extends StatefulWidget {
   const AntrenorTalepSorulariPage({super.key});

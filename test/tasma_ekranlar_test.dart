@@ -136,7 +136,7 @@ import 'package:fitcall/screens/1_common/3_mobil_app/app_update_page.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/yonetici_drawer.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/hesap/kullanici_adi_degistir_page.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 

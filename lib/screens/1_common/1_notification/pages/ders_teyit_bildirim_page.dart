@@ -11,7 +11,7 @@ import 'package:fitcall/services/notification/notification_action_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';

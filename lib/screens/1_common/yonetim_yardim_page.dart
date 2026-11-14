@@ -24,7 +24,7 @@
 // (bkz. test/tasma_ekranlar_test.dart).
 
 import 'package:fitcall/screens/1_common/widgets/sss_gorunumu.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Sorunun hangi kabukta görüneceği.
 enum _Kapsam { ortak, ofis, yonetici }

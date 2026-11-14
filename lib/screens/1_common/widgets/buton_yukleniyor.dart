@@ -7,7 +7,7 @@
 // takım temalarında (Sarı-Lacivert, Siyah-Beyaz…) buton zemini açık renk
 // olduğunda beyaz gösterge görünmüyordu.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ButonYukleniyorGostergesi extends StatelessWidget {
   final double kalinlik;

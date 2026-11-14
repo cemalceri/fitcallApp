@@ -1,7 +1,7 @@
 // lib/screens/1_common/program/talep_notu_kutusu.dart
 
 import 'package:fitcall/models/9_yonetici/etkinlik_yonetim_models.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Ders kayıt talebinin notu: talep listesinde ve talepten açılan formda
 /// aynı görünür. Tutar ya da özel üye verisi içermez.

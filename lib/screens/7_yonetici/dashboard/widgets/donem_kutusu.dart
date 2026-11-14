@@ -7,7 +7,7 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/period_filter_tabs.dart';
 import 'package:fitcall/screens/7_yonetici/dashboard/widgets/stat_cards_grid.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Panonun dönem kutusu: dönem seçimi + seçili günler + yalnız o seçimle
 /// değişen kartlar tek çerçevede.

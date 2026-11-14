@@ -10,7 +10,7 @@
 // bilgi şeffaflıkla soluklaştırılmaz — boyut ve kalınlıkla ayrılır.
 
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Gradyanlı kimlik yüzeyi. Alt kenarında ikinci takım renginin şeridi var.
 ///

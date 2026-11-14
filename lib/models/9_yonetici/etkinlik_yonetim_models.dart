@@ -7,7 +7,7 @@
 // gönderimde formatApiTarih kullanılır.
 
 import 'package:fitcall/common/tarih_util.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Sunucu antrenör rengi göndermediğinde kullanılan nötr gri (veri rengi).
 const _varsayilanAntrenorRengi = Color(0xFF8C8C8C);

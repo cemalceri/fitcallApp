@@ -7,7 +7,7 @@
 //   - Kurulu sürümle BİREBİR eşleşen blok gelir (sürüm penceresi yok).
 //   - Gösterilecek bir şey yoksa `data: null` → model hiç kurulmaz.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SurumNotuBlogu {
   /// Sunucudaki `SurumNotuRolModel.id`; "görüldü" kaydı bununla yazılır.

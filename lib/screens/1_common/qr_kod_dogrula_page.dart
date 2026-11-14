@@ -5,7 +5,7 @@ import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/widgets/qr_sonuc_gorunumu.dart';
 import 'package:fitcall/services/core/qr_code_api_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:fitcall/services/core/izin_durumu.dart';
 import 'package:fitcall/services/api_exception.dart';

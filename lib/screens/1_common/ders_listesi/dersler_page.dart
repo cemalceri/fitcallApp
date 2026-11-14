@@ -5,7 +5,7 @@ import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_butonu.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_gorevi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/screens/7_yonetici/ekip/ders_gecmisi_sheet.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';

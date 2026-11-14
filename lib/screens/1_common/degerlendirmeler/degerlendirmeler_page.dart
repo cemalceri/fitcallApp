@@ -12,7 +12,7 @@ import 'package:fitcall/models/1_common/degerlendirme_models.dart';
 import 'package:fitcall/screens/1_common/degerlendirmeler/widgets/degerlendirme_detayi.dart';
 import 'package:fitcall/screens/1_common/degerlendirmeler/widgets/degerlendirmeler_gorunumu.dart';
 import 'package:fitcall/services/etkinlik/degerlendirme_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DegerlendirmelerPage extends StatefulWidget {
   final int antrenorId;

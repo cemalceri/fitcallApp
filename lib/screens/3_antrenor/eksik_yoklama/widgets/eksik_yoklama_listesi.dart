@@ -1,7 +1,7 @@
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 /// Yoklaması eksik derslerin listesi (güne göre gruplu, modern kartlar).

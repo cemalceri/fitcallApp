@@ -17,7 +17,7 @@ import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/8_ofis/plan_disi/widgets/plan_disi_karar_sheet.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/ofis/ofis_ders_yonetimi_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 class PlanDisiKararlarPage extends StatefulWidget {

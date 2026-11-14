@@ -8,7 +8,7 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/pano_parcalari.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class DikkatKarti extends StatelessWidget {
   final List<DikkatMaddesi> maddeler;

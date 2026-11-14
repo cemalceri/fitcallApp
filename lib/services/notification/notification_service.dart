@@ -3,7 +3,7 @@ import 'package:fitcall/models/notification/notification_model.dart';
 import 'package:fitcall/services/api_client.dart';
 import 'package:fitcall/services/api_result.dart';
 import 'package:fitcall/services/notification/app_badge_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class NotificationService {
   static final ValueNotifier<int> unreadCount = ValueNotifier<int>(0);

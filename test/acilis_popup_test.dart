@@ -11,7 +11,7 @@ import 'package:fitcall/screens/1_common/widgets/duyuru_gorseli.dart';
 import 'package:fitcall/screens/1_common/widgets/duyuru_varsayilan_poster.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/duyuru_carousel.dart';
 import 'package:fitcall/services/core/acilis_popup_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 

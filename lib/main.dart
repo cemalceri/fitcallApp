@@ -11,8 +11,7 @@ import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_fcm_service.dart';
 import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:fitcall/common/routes.dart';
@@ -113,11 +112,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         initialRoute: '/',
         locale: const Locale('tr', 'TR'),
         supportedLocales: const [Locale('tr', 'TR')],
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
         // Yazı ölçeğini uygulama genelinde makul üst sınıra çek (bkz. ui_scale.dart);
         // "?" rehberi Navigator'un üstünde, sayfa ve alt sayfaları birlikte örter.
         builder: (context, child) =>

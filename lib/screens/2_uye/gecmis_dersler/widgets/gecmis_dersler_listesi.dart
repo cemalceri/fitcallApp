@@ -3,7 +3,7 @@ import 'package:fitcall/models/2_uye/gecmis_ders_model.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 /// Geçmiş dersleri aya göre gruplayıp düz satırlar hâlinde listeler.

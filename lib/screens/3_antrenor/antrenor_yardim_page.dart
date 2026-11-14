@@ -17,7 +17,7 @@
 // iletişim kartı üç yardım sayfasında tek yerden geliyor.
 
 import 'package:fitcall/screens/1_common/widgets/sss_gorunumu.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AntrenorYardimPage extends StatelessWidget {
   const AntrenorYardimPage({super.key});

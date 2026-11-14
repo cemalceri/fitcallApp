@@ -27,7 +27,7 @@ import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_renkleri.dart';
 import 'package:fitcall/screens/1_common/takvim/takvim_zaman.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Gün başlığının yüksekliği — `SliverAppBar.toolbarHeight` ile aynı olmalı.
 const double _baslikYuksekligi = 40;

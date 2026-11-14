@@ -14,7 +14,7 @@ import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class HakedisDersListesiPage extends StatefulWidget {
   final HakedisVeriKaynagi kaynak;

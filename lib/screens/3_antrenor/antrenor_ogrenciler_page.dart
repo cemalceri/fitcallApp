@@ -16,7 +16,7 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/3_antrenor/ogrenci_detay/antrenor_ogrenci_detay_page.dart';
 import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:fitcall/common/tarih_util.dart';
 import 'package:fitcall/common/tema.dart';

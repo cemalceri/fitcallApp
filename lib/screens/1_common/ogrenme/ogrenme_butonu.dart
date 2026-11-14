@@ -19,7 +19,7 @@ import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/1_common/widgets/kabuk_menusu.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/services/core/storage_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class OgrenmeButonu extends StatelessWidget {
   /// Rehberi olan sayfa; null ise "?" doğrudan Sık sorulanlar'ı açar.

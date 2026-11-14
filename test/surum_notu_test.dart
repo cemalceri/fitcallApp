@@ -13,7 +13,7 @@ import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/1_common/surum_notu_model.dart';
 import 'package:fitcall/screens/1_common/acilis_popup/widgets/surum_notu_popup.dart';
 import 'package:fitcall/screens/1_common/neler_yeni_page.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Test verisi: maddeler "1. yenilik" / "1. yenilik açıklaması" / "Ana Sayfa > 1"

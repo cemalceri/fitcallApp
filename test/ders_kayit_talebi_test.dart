@@ -17,7 +17,7 @@ import 'package:fitcall/screens/1_common/program/program_talep_blok.dart';
 import 'package:fitcall/screens/3_antrenor/program/widgets/ders_kayit_talebi_sheet.dart';
 import 'package:fitcall/screens/8_ofis/ana_sayfa/widgets/ofis_ana_sayfa_gorunumu.dart';
 import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/widgets/ders_kayit_talepleri_gorunumu.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 

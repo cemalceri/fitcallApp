@@ -6,7 +6,7 @@ import 'package:fitcall/models/5_etkinlik/etkinlik_model.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'lesson_devir_dialog.dart';
 import 'takvim_constants.dart';

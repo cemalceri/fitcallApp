@@ -9,7 +9,7 @@
 // kalır; yıkıcı aksiyon biçimiyle (kenarlık) ayrılır.
 
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class YikiciButon extends StatelessWidget {
   final String etiket;

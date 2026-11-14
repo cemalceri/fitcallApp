@@ -19,7 +19,7 @@ import 'package:fitcall/screens/8_ofis/plan_disi/plan_disi_kararlar_page.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/ofis/ofis_ders_yonetimi_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class OfisAnaSayfaPage extends StatefulWidget {
   final VoidCallback? onMenuTap;

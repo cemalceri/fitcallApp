@@ -11,7 +11,7 @@ import 'package:fitcall/screens/3_antrenor/home/antrenor_home_page.dart';
 import 'package:fitcall/screens/3_antrenor/home/widgets/antrenor_drawer.dart';
 import 'package:fitcall/screens/3_antrenor/takvim/antrenor_takvim_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_modu.dart';
 
 /// Antrenörün kalıcı sekme kabuğu — üye kabuğuyla aynı yapı (bkz. `UyeKabuk`).

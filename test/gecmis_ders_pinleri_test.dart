@@ -6,7 +6,7 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/2_uye/gecmis_ders_model.dart';
 import 'package:fitcall/screens/2_uye/gecmis_dersler/widgets/gecmis_dersler_listesi.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 

@@ -10,7 +10,7 @@
 // Kenarlıktaki nabız dışarıdan besleniyor ([nabiz] 0..1); animasyonu sayfa
 // yönetir, bu widget yalnız çizer.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class QrKodGorseli extends StatelessWidget {

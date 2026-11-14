@@ -20,7 +20,7 @@ import 'package:fitcall/common/routes.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:fitcall/screens/6_muhasebe/widgets/odeme_butonlari.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 

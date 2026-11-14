@@ -13,8 +13,7 @@
 import 'package:fitcall/common/ui_scale.dart';
 import 'package:fitcall/models/4_auth/kayit_secenekleri_model.dart';
 import 'package:fitcall/screens/4_auth/widgets/kayit_sihirbazi.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -42,11 +41,7 @@ Future<void> _pump(
       builder: yaziOlceginiSinirla,
       locale: const Locale('tr', 'TR'),
       supportedLocales: const [Locale('tr', 'TR')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       home: Scaffold(
         body: SingleChildScrollView(
           child: KayitSihirbazi(

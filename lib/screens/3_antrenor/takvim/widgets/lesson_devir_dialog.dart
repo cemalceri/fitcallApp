@@ -9,7 +9,7 @@ import 'package:fitcall/services/antrenor/antrenor_api_service.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
 import 'package:fitcall/common/tema.dart';

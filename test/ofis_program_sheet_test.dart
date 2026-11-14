@@ -7,7 +7,7 @@ import 'package:fitcall/screens/8_ofis/program/widgets/ders_iptal_dialog.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/ders_sil_dialog.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/etkinlik_form_sheet.dart';
 import 'package:fitcall/screens/8_ofis/program/widgets/uye_secim_sheet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';

@@ -13,7 +13,7 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/services/api_exception.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 /// Doğrulama sonucunun anlamı. Renk/ikon/başlık bundan türer.

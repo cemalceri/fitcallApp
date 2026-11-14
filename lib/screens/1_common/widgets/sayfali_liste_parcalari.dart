@@ -8,7 +8,7 @@ import 'package:fitcall/common/harf_gruplari.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Dikey kaydırma listenin sonuna [esik] pikselden fazla yaklaşınca
 /// [onSonaYaklasti]'yı çağırır.

@@ -8,7 +8,7 @@ import 'package:fitcall/screens/1_common/1_notification/pages/ders_devir_bildiri
 import 'package:fitcall/screens/8_ofis/uyeler/ofis_uye_detay_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/services/notification/notification_fcm_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Ofise gelen dekont bildiriminin üye id'si; başka bildirimde null.
 /// `notification_type` uygulama kapalıyken eksik gelebildiği için

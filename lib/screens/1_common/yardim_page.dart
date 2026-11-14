@@ -13,7 +13,7 @@
 // sayfaları da aynı gövdeyi kullanıyor.
 
 import 'package:fitcall/screens/1_common/widgets/sss_gorunumu.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class YardimPage extends StatelessWidget {
   const YardimPage({super.key});

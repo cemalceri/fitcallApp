@@ -3,7 +3,7 @@
 
 import 'package:fitcall/models/2_uye/uye_odul_model.dart';
 import 'package:fitcall/screens/2_uye/home/widgets/uye_odul_sayaci.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 OdulDurumModel _durum({int sayac = 7, String? aciklama, int esik = 20}) =>

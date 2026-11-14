@@ -13,7 +13,7 @@ import 'package:fitcall/screens/2_uye/isletme_basvuru/widgets/isletme_basvuru_go
 import 'package:fitcall/screens/4_auth/profil_sec.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/uye/isletme_basvuru_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class IsletmeBasvuruPage extends StatefulWidget {
   const IsletmeBasvuruPage({super.key});

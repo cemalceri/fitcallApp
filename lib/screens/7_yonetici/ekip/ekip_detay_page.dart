@@ -12,7 +12,7 @@ import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/screens/7_yonetici/ekip/widgets/ekip_gorunumu.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/yonetici/yonetici_api_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 class EkipDetayPage extends StatefulWidget {

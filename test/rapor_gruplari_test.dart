@@ -5,7 +5,7 @@ import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_gruplari.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 

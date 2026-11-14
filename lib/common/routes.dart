@@ -22,7 +22,7 @@ import 'package:fitcall/screens/8_ofis/uyeler/ofis_uye_detay_page.dart';
 import 'package:fitcall/screens/8_ofis/uyeler/ofis_uyeler_page.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 import 'package:fitcall/screens/1_common/widgets/erisim_kisitli.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /* ------------------ Ekranlar ------------------ */
 import 'package:fitcall/screens/4_auth/login_page.dart';

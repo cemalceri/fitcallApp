@@ -8,7 +8,7 @@ import 'dart:typed_data';
 
 import 'package:fitcall/common/dekont_dosya_util.dart';
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum DekontKaynagi { kamera, galeri, pdf }
 

@@ -5,7 +5,7 @@
 // bunu söyler ve üyeyi EFT / Havale'ye yönlendirir (2026-10-19).
 
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class OdemeButonlari extends StatelessWidget {
   final VoidCallback onHavale;

@@ -14,7 +14,7 @@ import 'package:fitcall/screens/8_ofis/ders_kayit_talepleri/widgets/uye_talep_de
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/ders_kayit_talebi_service.dart';
 import 'package:fitcall/services/ofis/ofis_uye_talep_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class OfisUyeTalepDetayPage extends StatefulWidget {
   final int talepId;

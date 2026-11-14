@@ -13,7 +13,7 @@ import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
 import 'package:fitcall/screens/1_common/widgets/yikici_buton.dart';
 import 'package:fitcall/screens/2_uye/talep/widgets/talep_adimlari.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 ListeTonu talepTonu(UyeTalep t) => switch (t.uyeDurum) {
       'CEVAP_BEKLIYOR' => ListeTonu.uyari,

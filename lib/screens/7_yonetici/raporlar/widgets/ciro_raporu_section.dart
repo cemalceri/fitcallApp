@@ -1,7 +1,7 @@
 // lib/screens/7_yonetici/raporlar/widgets/ciro_raporu_section.dart
 
 import 'package:fitcall/screens/7_yonetici/raporlar/widgets/rapor_kaydirmali_liste.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:intl/intl.dart';
 

@@ -1,5 +1,5 @@
 import 'package:fitcall/screens/1_common/1_notification/widgets/bildirim_ortak_widgetlari.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Plan dışı katılımcı bildiriminin (OFIS_PLAN_DISI_KATILIM) detay özeti.
 ///

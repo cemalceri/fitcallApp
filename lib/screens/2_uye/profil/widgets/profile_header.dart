@@ -5,7 +5,7 @@ import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/kimlik_yuzeyi.dart';
 import 'package:fitcall/screens/2_uye/profil/widgets/profil_fotografi_secici.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Profil başlığı — avatar, ad ve üye numarası; sayfanın kimlik yüzeyi.
 ///

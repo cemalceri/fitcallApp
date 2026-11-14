@@ -18,7 +18,7 @@ import 'package:fitcall/services/notification/notification_service.dart';
 import 'package:fitcall/services/notification/notification_router.dart';
 import 'package:fitcall/main.dart';
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/screens/1_common/widgets/baslik_bandi.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:fitcall/common/tarih_util.dart';

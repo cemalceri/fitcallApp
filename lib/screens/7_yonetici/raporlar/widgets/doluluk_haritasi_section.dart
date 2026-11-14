@@ -1,6 +1,6 @@
 // lib/screens/7_yonetici/raporlar/widgets/doluluk_haritasi_section.dart
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
 import 'package:fitcall/common/tema.dart';
 

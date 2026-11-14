@@ -3,7 +3,7 @@
 import 'dart:math' as math;
 
 import 'package:fitcall/common/tema.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Tek seferlik konfeti patlaması (~2,4 sn, döngü yok).
 ///

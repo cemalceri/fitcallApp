@@ -12,7 +12,7 @@
 // bozar, taşma riski de yok).
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Desteklenen en büyük yazı ölçeği. Android sistem "en büyük" ayarı ~1.3x'e
 /// denk gelir; testler de bu sınıra kadar taşma olmadığını doğrular.

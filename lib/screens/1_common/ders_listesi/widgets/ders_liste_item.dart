@@ -3,7 +3,7 @@
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Ders listesi satırı — ortak [ListeSatiri] kalıbı üzerine kurulu.
 ///

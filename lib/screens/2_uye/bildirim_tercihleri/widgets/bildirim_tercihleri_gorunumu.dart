@@ -10,7 +10,7 @@ import 'package:fitcall/models/2_uye/bildirim_tercihi_models.dart';
 import 'package:fitcall/screens/1_common/widgets/bos_durum.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
 import 'package:fitcall/screens/1_common/widgets/liste_satiri.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class BildirimTercihleriGorunumu extends StatelessWidget {
   final BildirimTercihleri? veri;

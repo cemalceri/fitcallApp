@@ -13,7 +13,7 @@ import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/models/9_yonetici/dashboard_models.dart';
 import 'package:fitcall/models/9_yonetici/doluluk_haritasi_model.dart';
 import 'package:fitcall/screens/7_yonetici/widgets/pano_parcalari.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 class RaporDonemOzeti extends StatelessWidget {

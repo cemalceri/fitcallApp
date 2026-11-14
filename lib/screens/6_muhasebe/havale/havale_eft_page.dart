@@ -33,7 +33,7 @@ import 'package:fitcall/screens/6_muhasebe/havale/widgets/dekont_listesi.dart';
 import 'package:fitcall/screens/6_muhasebe/havale/widgets/hesaplar_gorunumu.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/muhasebe/dekont_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';

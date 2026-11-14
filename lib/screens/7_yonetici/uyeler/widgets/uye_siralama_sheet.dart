@@ -5,7 +5,7 @@ import 'package:fitcall/models/9_yonetici/uye_filtreleri.dart';
 import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/alt_sayfa.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 /// Yönetici Üyeler — sıralama seçimi. Satıra dokununca seçilir ve kapanır.

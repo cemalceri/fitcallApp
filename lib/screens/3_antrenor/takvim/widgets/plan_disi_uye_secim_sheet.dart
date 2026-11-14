@@ -5,7 +5,7 @@ import 'package:fitcall/screens/1_common/ogrenme/hedefler.dart';
 import 'package:fitcall/models/2_uye/basit_uye_model.dart';
 import 'package:fitcall/services/uye/uye_api_service.dart';
 import 'package:fitcall/screens/1_common/widgets/iskelet.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 /// Plan dışı üye seçim sheet'i.

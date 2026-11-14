@@ -1,8 +1,8 @@
-﻿// Bildirim silme uyarısının (notification_page.dart `_bildirimSil`) davranışı.
+// Bildirim silme uyarısının (notification_page.dart `_bildirimSil`) davranışı.
 // Gerçek sayfa ağ/izin servislerine bağlı olduğundan aynı kalıp küçük bir
 // düzenekte yeniden kuruldu: önceki uyarıyı kaldır, yenisini göster, kapanınca
 // (geri alınmadıysa) sil; dispose'ta güncel uyarıyı kaldır.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 final List<int> silinenler = [];

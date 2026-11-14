@@ -14,7 +14,7 @@
 
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/screens/1_common/widgets/sss_arama.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Tek bir soru-cevap.

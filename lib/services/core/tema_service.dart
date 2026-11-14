@@ -10,7 +10,7 @@
 // güvenli depo temizlendiği için anahtarlar `StorageService.clearAll()` içinde
 // korunup geri yazılır — kullanıcı oturumdan çıkınca teması sıfırlanmasın.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fitcall/common/tema.dart';
 import 'package:fitcall/services/core/storage_service.dart';
 

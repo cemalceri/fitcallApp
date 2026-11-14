@@ -7,7 +7,7 @@ import 'package:fitcall/screens/1_common/ogrenme/ogrenme_hedefi.dart';
 import 'package:fitcall/screens/1_common/widgets/show_message_widget.dart';
 import 'package:fitcall/services/api_exception.dart';
 import 'package:fitcall/services/etkinlik/takvim_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'takvim_constants.dart';
 import 'package:fitcall/screens/1_common/widgets/buton_yukleniyor.dart';

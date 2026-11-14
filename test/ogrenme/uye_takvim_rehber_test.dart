@@ -14,8 +14,7 @@ import 'package:fitcall/screens/2_uye/takvim/uye_takvim_page.dart';
 import 'package:fitcall/screens/2_uye/takvim/widgets/ders_detay_popup.dart';
 import 'package:fitcall/services/ogrenme/ogrenme_kapisi.dart';
 import 'package:fitcall/services/ogrenme/uc_siniflari.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -73,11 +72,7 @@ void main() {
       theme: FitcallTema.temasi(TakimTemasi.binay, Brightness.light),
       locale: const Locale('tr', 'TR'),
       supportedLocales: const [Locale('tr', 'TR')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       builder: (context, child) => OgrenmeKatmani(child: child!),
       home: const DersListesiPage(),
     ));
